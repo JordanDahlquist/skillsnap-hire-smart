@@ -180,9 +180,15 @@ const PrivacyPolicy = () => {
                 If you have any questions about this Privacy Policy or our data practices, please contact us at:
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-gray-700"><strong>Email:</strong> privacy@atract.ai</p>
+                <p className="text-gray-700"><strong>Email:</strong> jordan@aeonmarketing.co</p>
                 <p className="text-gray-700"><strong>Company:</strong> Atract</p>
-                <p className="text-gray-700"><strong>Address:</strong> [Your Business Address]</p>
+                <div className="text-gray-700">
+                  <strong>Address:</strong>
+                  <br />
+                  1401 Lavaca St PMB 41664
+                  <br />
+                  Austin, TX 78701
+                </div>
               </div>
             </section>
 
