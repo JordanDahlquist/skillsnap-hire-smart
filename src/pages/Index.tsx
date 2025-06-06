@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Clock, Users, Target, Zap, User, LogOut, BarChart3 } from "lucide-react";
+import { ArrowRight, Clock, Users, Target, User, LogOut, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
 import { AuthModal } from "@/components/AuthModal";
@@ -27,8 +28,12 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <img 
+                  src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
+                  alt="Atract"
+                  className="w-6 h-6"
+                />
               </div>
               <span className="text-xl font-bold text-gray-900">Atract</span>
             </div>

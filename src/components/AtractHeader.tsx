@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Zap, User, LogOut, BarChart3 } from "lucide-react";
+import { User, LogOut, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import {
@@ -30,8 +30,12 @@ export const AtractHeader = ({ breadcrumbs, showMyJobsButton = true }: AtractHea
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <img 
+                  src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
+                  alt="Atract"
+                  className="w-6 h-6"
+                />
               </div>
               <span className="text-xl font-bold text-gray-900">Atract</span>
             </Link>
