@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, MapPin, Calendar, DollarSign, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface PublicJobCardProps {
   job: {
@@ -25,6 +25,17 @@ interface PublicJobCardProps {
 }
 
 export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/apply/${job.id}`);
+  };
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    // Prevent the card click from triggering when button is clicked
+    e.stopPropagation();
+  };
+
   const getLocationDisplay = () => {
     const { location_type, country, state, region, city } = job;
     
@@ -60,7 +71,10 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500">
+    <Card 
+      className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500 cursor-pointer"
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-2 pt-4 px-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -105,7 +119,12 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
             </p>
           </div>
           
-          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700 flex-shrink-0">
+          <Button 
+            asChild 
+            size="sm" 
+            className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+            onClick={handleButtonClick}
+          >
             <a 
               href={`/apply/${job.id}`} 
               target="_blank" 
