@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,18 +25,24 @@ interface LinkedInProfile {
 }
 
 interface LinkedInConnectProps {
+  jobId?: string;
   onLinkedInData: (data: any) => void;
   onRemove: () => void;
   connectedProfile: LinkedInProfile | null;
 }
 
-export const LinkedInConnect = ({ onLinkedInData, onRemove, connectedProfile }: LinkedInConnectProps) => {
+export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProfile }: LinkedInConnectProps) => {
   const [connecting, setConnecting] = useState(false);
   const { toast } = useToast();
 
   const handleLinkedInConnect = async () => {
     setConnecting(true);
     try {
+      // Store the job ID before starting OAuth flow
+      if (jobId) {
+        localStorage.setItem('linkedin_job_id', jobId);
+      }
+
       // Use Supabase Auth's LinkedIn OIDC provider
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',

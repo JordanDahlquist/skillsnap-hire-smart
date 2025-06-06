@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,6 +60,7 @@ interface ParsedResumeData {
 
 export const JobApplication = () => {
   const { jobId } = useParams();
+  const [searchParams] = useSearchParams();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -111,6 +112,87 @@ export const JobApplication = () => {
 
     fetchJob();
   }, [jobId, toast]);
+
+  // Check for LinkedIn connection on component mount
+  useEffect(() => {
+    const linkedInConnected = searchParams.get('linkedin');
+    if (linkedInConnected === 'connected') {
+      const accessToken = sessionStorage.getItem('linkedin_access_token');
+      if (accessToken) {
+        // Fetch LinkedIn profile data
+        fetchLinkedInProfileData(accessToken);
+        // Clean up
+        sessionStorage.removeItem('linkedin_access_token');
+      }
+    }
+  }, [searchParams]);
+
+  const fetchLinkedInProfileData = async (accessToken: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-linkedin-profile', {
+        body: { accessToken }
+      });
+
+      if (error) throw error;
+
+      const profileData = data.profile;
+      
+      // Transform LinkedIn data to match our application format
+      const transformedData = {
+        personalInfo: {
+          name: profileData.name || "",
+          email: profileData.email || "",
+          phone: "",
+          location: profileData.location || "",
+        },
+        workExperience: profileData.positions?.map((pos: any) => ({
+          company: pos.company || "",
+          position: pos.title || "",
+          startDate: pos.startDate || "",
+          endDate: pos.endDate || "Present",
+          description: pos.description || "",
+        })) || [],
+        education: [],
+        skills: profileData.skills || [],
+        summary: profileData.headline || profileData.summary || "",
+        totalExperience: calculateTotalExperience(profileData.positions || []),
+      };
+
+      handleLinkedInData(transformedData);
+      
+      toast({
+        title: "LinkedIn connected!",
+        description: "Your profile information has been imported successfully.",
+      });
+    } catch (error) {
+      console.error('Error fetching LinkedIn profile:', error);
+      toast({
+        title: "Profile import failed",
+        description: "Unable to import your LinkedIn profile. Please try uploading a resume instead.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const calculateTotalExperience = (positions: any[]) => {
+    if (!positions.length) return "0 years";
+    
+    let totalMonths = 0;
+    positions.forEach(pos => {
+      const startDate = new Date(pos.startDate || '1970-01-01');
+      const endDate = pos.endDate && pos.endDate !== 'Present' ? new Date(pos.endDate) : new Date();
+      const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                    (endDate.getMonth() - startDate.getMonth());
+      totalMonths += Math.max(0, months);
+    });
+    
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+    
+    if (years === 0) return `${months} months`;
+    if (months === 0) return `${years} years`;
+    return `${years} years ${months} months`;
+  };
 
   const handleResumeData = (data: ParsedResumeData, filePath: string) => {
     setParsedData(data);
@@ -432,6 +514,7 @@ export const JobApplication = () => {
                 {/* LinkedIn Connect Option */}
                 <div className={`p-1 rounded-lg ${applicationMethod === 'linkedin' ? 'bg-blue-50 border border-blue-200' : ''}`}>
                   <LinkedInConnect
+                    jobId={jobId}
                     onLinkedInData={handleLinkedInData}
                     onRemove={handleRemoveLinkedIn}
                     connectedProfile={linkedInProfile}
