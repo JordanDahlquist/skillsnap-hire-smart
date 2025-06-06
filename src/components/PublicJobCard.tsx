@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, MapPin, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ExternalLink, MapPin, Calendar, DollarSign, Clock } from "lucide-react";
 
 interface PublicJobCardProps {
   job: {
@@ -53,68 +54,69 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
     }
     
     // Fallback to truncated original description
-    return job.description.length > 150 
-      ? job.description.substring(0, 150) + "..." 
+    return job.description.length > 120 
+      ? job.description.substring(0, 120) + "..." 
       : job.description;
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <CardTitle className="text-xl">
-                {job.title}
-              </CardTitle>
+    <Card className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500">
+      <CardHeader className="pb-2 pt-4 px-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+              {job.title}
+            </CardTitle>
+            
+            <div className="flex items-center flex-wrap gap-2 mb-2">
+              <Badge variant="secondary" className="text-xs">
+                {job.role_type}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {job.experience_level}
+              </Badge>
             </div>
             
-            <div className="flex items-center flex-wrap gap-4 text-sm text-gray-600 mb-2">
-              <span>{job.role_type} • {job.experience_level}</span>
+            <div className="flex items-center flex-wrap gap-3 text-xs text-gray-600 mb-2">
               <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-3 h-3" />
                 <span>{getLocationDisplay()}</span>
               </div>
               {job.budget && (
-                <div className="flex items-center gap-1 text-green-600">
-                  <span className="font-medium">{job.budget}</span>
+                <div className="flex items-center gap-1 text-green-600 font-medium">
+                  <DollarSign className="w-3 h-3" />
+                  <span>{job.budget}</span>
                 </div>
               )}
               {job.duration && (
                 <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
                   <span>{job.duration}</span>
                 </div>
               )}
-            </div>
-            
-            <div className="mb-3">
-              <p className="text-gray-700 line-clamp-3">{getDisplayDescription()}</p>
-            </div>
-            
-            <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1 text-gray-500">
-                <Calendar className="w-4 h-4" />
-                <span>Posted {getTimeAgo(job.created_at)}</span>
+                <Calendar className="w-3 h-3" />
+                <span>{getTimeAgo(job.created_at)}</span>
               </div>
             </div>
+            
+            <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed">
+              {getDisplayDescription()}
+            </p>
           </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent>
-        <div className="flex items-center justify-end">
-          <Button asChild className="bg-blue-600 hover:bg-blue-700">
+          
+          <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700 flex-shrink-0">
             <a 
               href={`/apply/${job.id}`} 
               target="_blank" 
               rel="noopener noreferrer"
             >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Apply Now
+              <ExternalLink className="w-3 h-3 mr-1" />
+              Apply
             </a>
           </Button>
         </div>
-      </CardContent>
+      </CardHeader>
     </Card>
   );
 };
