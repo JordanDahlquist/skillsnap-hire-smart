@@ -57,6 +57,26 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Helper function to format content for display
+  const formatContentForDisplay = (content: string) => {
+    if (!content) return '';
+    
+    // If content already has HTML tags, return as is
+    if (content.includes('<') && content.includes('>')) {
+      return content;
+    }
+    
+    // Convert plain text to HTML with proper formatting
+    return content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/^(.*)$/, '<p>$1</p>')
+      .replace(/<p><\/p>/g, '');
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -576,9 +596,9 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 ) : (
                   <div className="prose max-w-none">
                     <div 
-                      className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg"
+                      className="text-sm text-gray-700 bg-gray-50 p-6 rounded-lg border leading-relaxed"
                       dangerouslySetInnerHTML={{ 
-                        __html: hasEditedJobPost ? editedJobPost : generatedJob 
+                        __html: formatContentForDisplay(hasEditedJobPost ? editedJobPost : generatedJob)
                       }}
                     />
                   </div>
@@ -626,9 +646,9 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 ) : (
                   <div className="prose max-w-none">
                     <div 
-                      className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg"
+                      className="text-sm text-gray-700 bg-gray-50 p-6 rounded-lg border leading-relaxed"
                       dangerouslySetInnerHTML={{ 
-                        __html: hasEditedSkillsTest ? editedSkillsTest : generatedTest 
+                        __html: formatContentForDisplay(hasEditedSkillsTest ? editedSkillsTest : generatedTest)
                       }}
                     />
                   </div>
