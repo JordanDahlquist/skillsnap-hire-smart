@@ -49,8 +49,21 @@ export const JobManagementToolbar = ({
   workTypeFilter = 'all',
   onWorkTypeFilterChange = () => {}
 }: JobManagementToolbarProps) => {
-  const statusOptions = ['all', 'active', 'paused', 'draft', 'closed'];
-  const workTypeOptions = ['all', 'remote', 'on-site', 'hybrid'];
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'active', label: 'Active' },
+    { value: 'paused', label: 'Paused' },
+    { value: 'draft', label: 'Draft' },
+    { value: 'closed', label: 'Closed' }
+  ];
+  
+  const workTypeOptions = [
+    { value: 'all', label: 'All Types' },
+    { value: 'remote', label: 'Remote' },
+    { value: 'on-site', label: 'On-site' },
+    { value: 'hybrid', label: 'Hybrid' }
+  ];
+  
   const sortOptions = [
     { value: 'created_desc', label: 'Newest first' },
     { value: 'created_asc', label: 'Oldest first' },
@@ -61,33 +74,33 @@ export const JobManagementToolbar = ({
   ];
 
   return (
-    <div className="bg-white border-b border-gray-200 p-4 space-y-4">
+    <div className="bg-white border-b border-gray-200 p-4 space-y-3">
       {/* Search and filters row */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex flex-1 gap-3 items-center">
-          <div className="relative flex-1 max-w-md">
+          <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Search jobs by title, skills, location..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10"
+              className="pl-10 w-full"
             />
           </div>
           
-          <div className="flex gap-2">
-            {statusOptions.map((status) => (
-              <Button
-                key={status}
-                variant={statusFilter === status ? "default" : "outline"}
-                size="sm"
-                onClick={() => onStatusFilterChange(status)}
-                className="capitalize"
-              >
-                {status}
-              </Button>
-            ))}
-          </div>
+          <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+            <SelectTrigger className="w-32">
+              <Filter className="w-4 h-4 mr-1" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((status) => (
+                <SelectItem key={status.value} value={status.value}>
+                  {status.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         <div className="flex gap-2 items-center">
@@ -97,26 +110,26 @@ export const JobManagementToolbar = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              {workTypeOptions.slice(1).map((type) => (
-                <SelectItem key={type} value={type} className="capitalize">
-                  {type}
+              {workTypeOptions.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           
-          <select
-            value={sortBy}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-          >
-            {sortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <Select value={sortBy} onValueChange={onSortChange}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
           <Button variant="outline" size="sm" onClick={onRefresh}>
             <RefreshCw className="w-4 h-4" />
@@ -125,7 +138,7 @@ export const JobManagementToolbar = ({
       </div>
 
       {/* Stats and bulk actions row */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex gap-4 items-center text-sm text-gray-600">
           <span>{totalJobs} total jobs</span>
           {selectedJobs.length > 0 && (
