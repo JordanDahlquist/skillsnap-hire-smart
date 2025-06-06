@@ -425,7 +425,7 @@ export const JobApplication = () => {
     }
   };
 
-  // Show loading state - ADD DEBUGGING
+  // Show loading state
   if (jobLoading && !linkedInDataLoading) {
     console.log('Rendering loading state - jobLoading:', jobLoading, 'linkedInDataLoading:', linkedInDataLoading);
     return (
@@ -481,24 +481,6 @@ export const JobApplication = () => {
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
-          {/* Debug info panel - only in development */}
-          {process.env.NODE_ENV === 'development' && (
-            <Card className="mb-4 border-orange-200 bg-orange-50">
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-orange-800 mb-2">Debug Info</h3>
-                <div className="text-sm text-orange-700 space-y-1">
-                  <p>Job ID: {jobId}</p>
-                  <p>Job Loading: {jobLoading.toString()}</p>
-                  <p>Job Error: {jobError || 'none'}</p>
-                  <p>LinkedIn Loading: {linkedInDataLoading.toString()}</p>
-                  <p>Application Method: {applicationMethod}</p>
-                  <p>LinkedIn Profile: {linkedInProfile ? 'loaded' : 'none'}</p>
-                  <p>URL: {window.location.href}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Show job error warning if exists but don't block the form */}
           {jobError && (
             <Card className="mb-6 border-amber-200 bg-amber-50">
