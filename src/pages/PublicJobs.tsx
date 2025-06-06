@@ -25,7 +25,10 @@ const PublicJobs = () => {
     try {
       let query = supabase
         .from('jobs')
-        .select('*')
+        .select(`
+          *,
+          applications(count)
+        `)
         .eq('status', 'active')
         .order('updated_at', { ascending: false });
       

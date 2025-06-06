@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, MapPin, Calendar, DollarSign, Clock } from "lucide-react";
+import { ExternalLink, MapPin, Calendar, DollarSign, Clock, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface PublicJobCardProps {
@@ -20,6 +20,7 @@ interface PublicJobCardProps {
     budget?: string | null;
     created_at: string;
     duration?: string | null;
+    applications?: { count: number }[];
   };
   getTimeAgo: (dateString: string) => string;
 }
@@ -70,6 +71,8 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
       : job.description;
   };
 
+  const applicationsCount = job.applications?.[0]?.count || 0;
+
   return (
     <Card 
       className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500 cursor-pointer"
@@ -108,6 +111,10 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
                   <span>{job.duration}</span>
                 </div>
               )}
+              <div className="flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                <span>{applicationsCount} application{applicationsCount !== 1 ? 's' : ''}</span>
+              </div>
               <div className="flex items-center gap-1 text-gray-500">
                 <Calendar className="w-3 h-3" />
                 <span>{getTimeAgo(job.created_at)}</span>
