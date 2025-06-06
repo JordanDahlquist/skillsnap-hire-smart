@@ -44,7 +44,12 @@ const MyJobs = () => {
   const { data: jobs = [], isLoading, refetch } = useQuery({
     queryKey: ['user-jobs', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id) {
+        console.log('No user ID available for jobs query');
+        return [];
+      }
+      
+      console.log('Fetching jobs for user:', user.id);
       
       const { data, error } = await supabase
         .from('jobs')
@@ -55,10 +60,23 @@ const MyJobs = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      console.log('Jobs query result:', {
+        data: data || [],
+        error,
+        totalJobs: data?.length || 0,
+        jobStatuses: data?.map(job => ({ id: job.id, title: job.title, status: job.status })) || []
+      });
+      
+      if (error) {
+        console.error('Error fetching jobs:', error);
+        throw error;
+      }
+      
       return data as Job[];
     },
     enabled: !!user?.id,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
   // Fetch applications for this week calculation
@@ -89,11 +107,15 @@ const MyJobs = () => {
     const totalApplications = jobs.reduce((acc, job) => acc + (job.applications?.[0]?.count || 0), 0);
     const applicationsThisWeek = recentApplications.length;
 
+    console.log('Calculated stats:', { totalJobs, activeJobs, totalApplications, applicationsThisWeek });
+
     return { totalJobs, activeJobs, totalApplications, applicationsThisWeek };
   }, [jobs, recentApplications]);
 
   const filteredAndSortedJobs = useMemo(() => {
     let filtered = jobs;
+
+    console.log('Starting with jobs:', filtered.length);
 
     // Apply search filter
     if (searchTerm) {
@@ -105,16 +127,19 @@ const MyJobs = () => {
         job.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.city?.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      console.log('After search filter:', filtered.length);
     }
 
     // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(job => job.status === statusFilter);
+      console.log(`After status filter (${statusFilter}):`, filtered.length);
     }
 
     // Apply work type filter
     if (workTypeFilter !== 'all') {
       filtered = filtered.filter(job => job.location_type === workTypeFilter);
+      console.log(`After work type filter (${workTypeFilter}):`, filtered.length);
     }
 
     // Apply sorting
@@ -136,6 +161,9 @@ const MyJobs = () => {
           return 0;
       }
     });
+
+    console.log('Final filtered and sorted jobs:', filtered.length);
+    console.log('Applied filters:', { searchTerm, statusFilter, workTypeFilter, sortBy });
 
     return filtered;
   }, [jobs, searchTerm, statusFilter, workTypeFilter, sortBy]);
@@ -231,6 +259,16 @@ const MyJobs = () => {
         variant: "destructive",
       });
     }
+  };
+
+  // Enhanced refetch function with cache invalidation
+  const handleRefresh = async () => {
+    console.log('Manual refresh triggered');
+    await refetch();
+    toast({
+      title: "Refreshed",
+      description: "Job data has been updated",
+    });
   };
 
   if (isLoading) {
@@ -360,7 +398,7 @@ const MyJobs = () => {
         totalJobs={jobs.length}
         selectedJobs={selectedJobs}
         onBulkAction={handleBulkAction}
-        onRefresh={refetch}
+        onRefresh={handleRefresh}
       />
 
       <div className="max-w-7xl mx-auto px-8 py-8">
@@ -383,20 +421,30 @@ const MyJobs = () => {
             <CardContent className="p-8 text-center text-gray-500">
               <p className="text-lg font-medium mb-2">No jobs match your filters</p>
               <p className="mb-4">Try adjusting your search or filter criteria</p>
-              <Button 
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm("");
-                  setStatusFilter("all");
-                  setWorkTypeFilter("all");
-                }}
-              >
-                Clear Filters
-              </Button>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">
+                  Showing {filteredAndSortedJobs.length} of {jobs.length} total jobs
+                </p>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setStatusFilter("all");
+                    setWorkTypeFilter("all");
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
+            {/* Debug info */}
+            <div className="text-sm text-gray-600 mb-4">
+              Showing {filteredAndSortedJobs.length} of {jobs.length} total jobs
+            </div>
+
             {/* Bulk selection header */}
             {filteredAndSortedJobs.length > 0 && (
               <div className="flex items-center gap-3 p-4 bg-white rounded-lg border">
