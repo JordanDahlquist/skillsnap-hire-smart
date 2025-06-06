@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,18 +61,36 @@ const MyJobs = () => {
     enabled: !!user?.id,
   });
 
+  // Fetch applications for this week calculation
+  const { data: recentApplications = [] } = useQuery({
+    queryKey: ['recent-applications', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      const { data, error } = await supabase
+        .from('applications')
+        .select('created_at, job_id')
+        .in('job_id', jobs.map(job => job.id))
+        .gte('created_at', oneWeekAgo.toISOString());
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && jobs.length > 0,
+  });
+
   // Calculate quick stats
   const stats = useMemo(() => {
     const totalJobs = jobs.length;
     const activeJobs = jobs.filter(job => job.status === 'active').length;
     const totalApplications = jobs.reduce((acc, job) => acc + (job.applications?.[0]?.count || 0), 0);
-    const recentJobs = jobs.filter(job => {
-      const daysSinceCreated = Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24));
-      return daysSinceCreated <= 7;
-    }).length;
+    const applicationsThisWeek = recentApplications.length;
 
-    return { totalJobs, activeJobs, totalApplications, recentJobs };
-  }, [jobs]);
+    return { totalJobs, activeJobs, totalApplications, applicationsThisWeek };
+  }, [jobs, recentApplications]);
 
   const filteredAndSortedJobs = useMemo(() => {
     let filtered = jobs;
@@ -312,11 +329,11 @@ const MyJobs = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">This Week</p>
-                      <p className="text-2xl font-bold text-[#007af6]">{stats.recentJobs}</p>
-                      {stats.recentJobs > 0 && (
+                      <p className="text-sm font-medium text-gray-600">Applications This Week</p>
+                      <p className="text-2xl font-bold text-[#007af6]">{stats.applicationsThisWeek}</p>
+                      {stats.applicationsThisWeek > 0 && (
                         <Badge className="mt-1 bg-blue-100 text-[#007af6]">
-                          New jobs
+                          Applications this week
                         </Badge>
                       )}
                     </div>
