@@ -60,8 +60,8 @@ export const useJobFiltering = (jobs: any[]) => {
     };
   }, [jobs]);
 
-  // Enhanced budget parsing with better null handling
-  const parseBudget = (budgetStr: string | null): number => {
+  // Enhanced budget parsing with better null handling and employment-type awareness
+  const parseBudget = (budgetStr: string | null, employmentType: string = 'project'): number => {
     if (!budgetStr || budgetStr.trim() === '') return 0;
     
     const cleanBudget = budgetStr.replace(/[^\d.,kK]/g, '');
@@ -70,7 +70,16 @@ export const useJobFiltering = (jobs: any[]) => {
       return parseFloat(cleanBudget.replace(/[kK]/g, '')) * 1000;
     }
     
-    return parseFloat(cleanBudget.replace(/,/g, '')) || 0;
+    const amount = parseFloat(cleanBudget.replace(/,/g, '')) || 0;
+    
+    // Handle hourly rates for full-time/part-time positions
+    if ((employmentType === 'full-time' || employmentType === 'part-time') && amount < 1000) {
+      // Assume it's an hourly rate, convert to annual (assuming 2000 hours/year for full-time)
+      const hoursPerYear = employmentType === 'full-time' ? 2000 : 1000;
+      return amount * hoursPerYear;
+    }
+    
+    return amount;
   };
 
   // Enhanced search function with better partial matching
@@ -150,7 +159,7 @@ export const useJobFiltering = (jobs: any[]) => {
     return "all";
   };
 
-  // Filter jobs with enhanced debugging
+  // Filter jobs with enhanced debugging and employment-type-aware budget filtering
   const filteredJobs = useMemo(() => {
     console.log('Filtering jobs with:', { searchTerm, filters, totalJobs: jobs.length });
     
@@ -167,8 +176,8 @@ export const useJobFiltering = (jobs: any[]) => {
       const matchesState = filters.state === "all" || job.state === filters.state;
       const matchesDuration = filters.duration === "all" || job.duration === filters.duration;
       
-      // Enhanced budget range check
-      const jobBudget = parseBudget(job.budget);
+      // Enhanced budget range check with employment-type awareness
+      const jobBudget = parseBudget(job.budget, job.employment_type);
       const [minBudget, maxBudget] = filters.budgetRange;
       const matchesBudget = jobBudget >= minBudget && (maxBudget >= 200000 || jobBudget <= maxBudget);
       
@@ -185,7 +194,9 @@ export const useJobFiltering = (jobs: any[]) => {
           matchesCountry: `${matchesCountry} (${job.country} vs ${filters.country})`,
           matchesState: `${matchesState} (${job.state} vs ${filters.state})`,
           matchesDuration: `${matchesDuration} (${job.duration} vs ${filters.duration})`,
-          matchesBudget: `${matchesBudget} (${jobBudget} in range [${minBudget}, ${maxBudget}])`
+          matchesBudget: `${matchesBudget} (${jobBudget} in range [${minBudget}, ${maxBudget}])`,
+          jobBudgetRaw: job.budget,
+          jobEmploymentType: job.employment_type
         });
       }
       
@@ -213,8 +224,8 @@ export const useJobFiltering = (jobs: any[]) => {
       
       switch (sortBy) {
         case "budget":
-          aValue = parseBudget(a.budget);
-          bValue = parseBudget(b.budget);
+          aValue = parseBudget(a.budget, a.employment_type);
+          bValue = parseBudget(b.budget, b.employment_type);
           break;
         case "applications":
           aValue = a.applications?.[0]?.count || 0;

@@ -39,8 +39,19 @@ CRITICAL INSTRUCTIONS:
 4. If you can't find exact matches, use "all" instead of forcing a match
 5. Always include relevant keywords in searchTerm for better text search
 6. Prioritize searchTerm over strict filtering when uncertain
-7. NEVER set budgetRange to [0, 0] unless user specifically mentions "free" or "$0"
-8. Default budgetRange should be [0, 200000] when no budget is mentioned
+
+EMPLOYMENT TYPE & BUDGET HANDLING:
+- ALWAYS determine employment type FIRST, then set appropriate budget ranges
+- Full-time/Part-time jobs: Use annual salary ranges
+  - "under $100k" for full-time → budgetRange: [0, 100000]
+  - "$80k-120k" for full-time → budgetRange: [80000, 120000]
+  - No budget mentioned for full-time → budgetRange: [0, 200000]
+- Contract/Project jobs: Use project total value ranges
+  - "under $10k" for projects → budgetRange: [0, 10000]
+  - "$5k-25k" for projects → budgetRange: [5000, 25000]
+  - No budget mentioned for projects → budgetRange: [0, 200000]
+- NEVER set budgetRange to [0, 0] unless user specifically mentions "free" or "$0"
+- If employment type is unclear, default to project-based budgeting
 
 LOCATION MAPPING EXAMPLES:
 - "Los Angeles" → state: "California", searchTerm should include "Los Angeles"
@@ -53,12 +64,6 @@ ROLE MAPPING EXAMPLES:
 - "frontend" → roleType: find closest "developer" match OR "all", searchTerm: "frontend development"
 - "data analysis" → roleType: find closest "analyst" match OR "all", searchTerm: "data analysis"
 
-BUDGET HANDLING:
-- No budget mentioned → budgetRange: [0, 200000]
-- "under $100k" → budgetRange: [0, 100000]
-- "above $50k" → budgetRange: [50000, 200000]
-- "free" or "$0" → budgetRange: [0, 0]
-
 Return a JSON object with these fields:
 {
   "searchTerm": "extracted keywords for text search (always include specific terms like city names, specializations)",
@@ -66,19 +71,19 @@ Return a JSON object with these fields:
     "roleType": "closest matching role or 'all'",
     "locationType": "remote/onsite/hybrid or 'all'", 
     "experienceLevel": "entry/mid/senior or 'all'",
-    "employmentType": "full-time/part-time/contract or 'all'",
+    "employmentType": "full-time/part-time/contract/project or 'all'",
     "country": "exact country match or 'all'",
     "state": "exact state match or 'all'",
-    "budgetRange": [min, max] (default [0, 200000]),
+    "budgetRange": [min, max] (employment-type-appropriate ranges),
     "duration": "exact duration match or 'all'"
   },
-  "explanation": "Brief explanation of what filters were applied and why"
+  "explanation": "Brief explanation of what filters were applied and why, including budget reasoning"
 }
 
 Examples:
-- "Branding roles in Los Angeles" → searchTerm: "branding design Los Angeles", state: "California", roleType: closest design match or "all", budgetRange: [0, 200000]
-- "Remote senior React developer under 100k" → searchTerm: "React developer", locationType: "remote", experienceLevel: "senior", budgetRange: [0, 100000], roleType: closest developer match or "all"
-- "Part-time design work in California" → searchTerm: "design", employmentType: "part-time", state: "California", roleType: closest design match or "all", budgetRange: [0, 200000]`;
+- "Full-time React developer $80k-120k" → searchTerm: "React developer", employmentType: "full-time", budgetRange: [80000, 120000], roleType: closest developer match or "all"
+- "Contract design project under $10k" → searchTerm: "design", employmentType: "contract", budgetRange: [0, 10000], roleType: closest design match or "all"
+- "Remote senior developer" → searchTerm: "senior developer", locationType: "remote", experienceLevel: "senior", employmentType: "all", budgetRange: [0, 200000]`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

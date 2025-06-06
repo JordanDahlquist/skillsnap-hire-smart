@@ -1,11 +1,12 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Search, Filter, X, ChevronDown, Sparkles } from "lucide-react";
+import { BudgetFilter } from "./BudgetFilter";
 
 interface JobFiltersProps {
   searchTerm: string;
@@ -59,8 +60,8 @@ export const JobFilters = ({
       setIsAiSearching(true);
       try {
         await onAiSearch(aiSearchPrompt);
-        setAiSearchPrompt(""); // Clear the AI search input after search
-        setIsAiSearchMode(false); // Switch back to standard mode after search
+        setAiSearchPrompt("");
+        setIsAiSearchMode(false);
       } finally {
         setIsAiSearching(false);
       }
@@ -134,7 +135,7 @@ export const JobFilters = ({
           <div className="relative">
             <Sparkles className="absolute left-3 top-3 h-4 w-4 text-purple-500" />
             <Input
-              placeholder="Try: 'Branding roles in Los Angeles' or 'Remote React developer jobs under $100k'"
+              placeholder="Try: 'Full-time React developer jobs $80k-120k' or 'Contract design projects under $10k'"
               value={aiSearchPrompt}
               onChange={(e) => setAiSearchPrompt(e.target.value)}
               className="pl-9"
@@ -161,6 +162,18 @@ export const JobFilters = ({
 
       {/* Quick Filters */}
       <div className="flex flex-wrap gap-3">
+        <Select value={filters.employmentType} onValueChange={(value) => handleFilterChange("employmentType", value)}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Employment type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            {availableOptions.employmentTypes.map(type => (
+              <SelectItem key={type} value={type || "unknown"}>{type || "Unknown"}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Select value={filters.roleType} onValueChange={(value) => handleFilterChange("roleType", value)}>
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Role type" />
@@ -185,18 +198,6 @@ export const JobFilters = ({
           </SelectContent>
         </Select>
 
-        <Select value={filters.experienceLevel} onValueChange={(value) => handleFilterChange("experienceLevel", value)}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Experience" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All levels</SelectItem>
-            {availableOptions.experienceLevels.map(level => (
-              <SelectItem key={level} value={level || "unknown"}>{level || "Unknown"}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="outline" className="gap-2">
@@ -212,79 +213,76 @@ export const JobFilters = ({
           </CollapsibleTrigger>
           
           <CollapsibleContent className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Employment Type</label>
-                <Select value={filters.employmentType} onValueChange={(value) => handleFilterChange("employmentType", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All types</SelectItem>
-                    {availableOptions.employmentTypes.map(type => (
-                      <SelectItem key={type} value={type || "unknown"}>{type || "Unknown"}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Country</label>
-                <Select value={filters.country} onValueChange={(value) => handleFilterChange("country", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All countries</SelectItem>
-                    {availableOptions.countries.map(country => (
-                      <SelectItem key={country} value={country || "unknown"}>{country || "Unknown"}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">State</label>
-                <Select value={filters.state} onValueChange={(value) => handleFilterChange("state", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All states</SelectItem>
-                    {availableOptions.states.map(state => (
-                      <SelectItem key={state} value={state || "unknown"}>{state || "Unknown"}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Duration</label>
-                <Select value={filters.duration} onValueChange={(value) => handleFilterChange("duration", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All durations</SelectItem>
-                    {availableOptions.durations.map(duration => (
-                      <SelectItem key={duration} value={duration || "unknown"}>{duration || "Unknown"}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium">
-                  Budget Range: ${filters.budgetRange[0].toLocaleString()} - ${filters.budgetRange[1].toLocaleString()}
-                </label>
-                <Slider
-                  value={filters.budgetRange}
-                  onValueChange={(value) => handleFilterChange("budgetRange", value)}
-                  max={200000}
-                  min={0}
-                  step={5000}
-                  className="w-full"
+            <div className="space-y-6 p-4 bg-gray-50 rounded-lg">
+              {/* Budget Filter - Employment Type Dependent */}
+              {filters.employmentType !== "all" && (
+                <BudgetFilter
+                  employmentType={filters.employmentType}
+                  budgetRange={filters.budgetRange}
+                  onBudgetChange={(range) => handleFilterChange("budgetRange", range)}
                 />
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Experience Level</label>
+                  <Select value={filters.experienceLevel} onValueChange={(value) => handleFilterChange("experienceLevel", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All levels</SelectItem>
+                      {availableOptions.experienceLevels.map(level => (
+                        <SelectItem key={level} value={level || "unknown"}>{level || "Unknown"}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Country</label>
+                  <Select value={filters.country} onValueChange={(value) => handleFilterChange("country", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All countries</SelectItem>
+                      {availableOptions.countries.map(country => (
+                        <SelectItem key={country} value={country || "unknown"}>{country || "Unknown"}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">State</label>
+                  <Select value={filters.state} onValueChange={(value) => handleFilterChange("state", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All states</SelectItem>
+                      {availableOptions.states.map(state => (
+                        <SelectItem key={state} value={state || "unknown"}>{state || "Unknown"}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Duration</label>
+                  <Select value={filters.duration} onValueChange={(value) => handleFilterChange("duration", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All durations</SelectItem>
+                      {availableOptions.durations.map(duration => (
+                        <SelectItem key={duration} value={duration || "unknown"}>{duration || "Unknown"}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </CollapsibleContent>

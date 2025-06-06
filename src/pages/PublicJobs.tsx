@@ -86,17 +86,32 @@ const PublicJobs = () => {
       // Apply AI-generated filters
       applyAiSearchResults(aiSearchTerm, aiFilters);
       
-      // Provide feedback about what was applied
-      const appliedFilters = Object.entries(aiFilters)
-        .filter(([key, value]) => {
-          if (key === 'budgetRange') return value[0] > 0 || value[1] < 200000;
-          return value !== 'all';
-        })
-        .map(([key, value]) => `${key}: ${Array.isArray(value) ? `$${value[0]}-$${value[1]}` : value}`)
-        .join(', ');
+      // Provide enhanced feedback about what was applied
+      const appliedFilters = [];
+      
+      if (aiFilters.employmentType !== 'all') {
+        appliedFilters.push(`Employment: ${aiFilters.employmentType}`);
+      }
+      if (aiFilters.roleType !== 'all') {
+        appliedFilters.push(`Role: ${aiFilters.roleType}`);
+      }
+      if (aiFilters.experienceLevel !== 'all') {
+        appliedFilters.push(`Experience: ${aiFilters.experienceLevel}`);
+      }
+      if (aiFilters.locationType !== 'all') {
+        appliedFilters.push(`Location: ${aiFilters.locationType}`);
+      }
+      if (aiFilters.state !== 'all') {
+        appliedFilters.push(`State: ${aiFilters.state}`);
+      }
+      if (aiFilters.budgetRange && (aiFilters.budgetRange[0] > 0 || aiFilters.budgetRange[1] < 200000)) {
+        const budgetType = aiFilters.employmentType === 'full-time' || aiFilters.employmentType === 'part-time' 
+          ? 'salary' : 'budget';
+        appliedFilters.push(`${budgetType}: $${aiFilters.budgetRange[0].toLocaleString()}-$${aiFilters.budgetRange[1].toLocaleString()}`);
+      }
       
       const message = appliedFilters.length > 0 
-        ? `AI Search applied with filters: ${appliedFilters}`
+        ? `AI Search applied: ${appliedFilters.join(', ')}${aiSearchTerm ? ` | Text search: "${aiSearchTerm}"` : ''}`
         : `AI Search using text search: "${aiSearchTerm}"`;
       
       toast.success(message);
