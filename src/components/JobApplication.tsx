@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, DollarSign, Calendar, FileText, Send, Loader2, MapPin, Briefcase } from "lucide-react";
+import { Clock, DollarSign, Calendar, FileText, Send, Loader2, MapPin, Briefcase, User, Mail, Phone, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { parseMarkdown } from "@/utils/markdownParser";
+import { ResumeUpload } from "./ResumeUpload";
 
 interface Job {
   id: string;
@@ -31,19 +33,50 @@ interface Job {
   created_at: string;
 }
 
+interface ParsedResumeData {
+  personalInfo: {
+    name: string;
+    email: string;
+    phone: string;
+    location: string;
+  };
+  workExperience: Array<{
+    company: string;
+    position: string;
+    startDate: string;
+    endDate: string;
+    description: string;
+  }>;
+  education: Array<{
+    institution: string;
+    degree: string;
+    graduationDate: string;
+    gpa?: string;
+  }>;
+  skills: string[];
+  summary: string;
+  totalExperience: string;
+}
+
 export const JobApplication = () => {
   const { jobId } = useParams();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [resumeFile, setResumeFile] = useState<string | null>(null);
+  const [parsedData, setParsedData] = useState<ParsedResumeData | null>(null);
   const [applicationData, setApplicationData] = useState({
     name: "",
     email: "",
-    portfolio: "",
-    experience: "",
+    phone: "",
+    location: "",
+    available_start_date: "",
+    portfolio_url: "",
+    linkedin_url: "",
+    github_url: "",
+    cover_letter: "",
     answer1: "",
     answer2: "",
-    answer3: "",
   });
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
@@ -77,6 +110,39 @@ export const JobApplication = () => {
     fetchJob();
   }, [jobId, toast]);
 
+  const handleResumeData = (data: ParsedResumeData, filePath: string) => {
+    setParsedData(data);
+    setResumeFile(filePath);
+    
+    // Auto-fill form with parsed data
+    setApplicationData(prev => ({
+      ...prev,
+      name: data.personalInfo?.name || "",
+      email: data.personalInfo?.email || "",
+      phone: data.personalInfo?.phone || "",
+      location: data.personalInfo?.location || "",
+    }));
+  };
+
+  const handleRemoveResume = () => {
+    setResumeFile(null);
+    setParsedData(null);
+    // Reset form to empty state
+    setApplicationData({
+      name: "",
+      email: "",
+      phone: "",
+      location: "",
+      available_start_date: "",
+      portfolio_url: "",
+      linkedin_url: "",
+      github_url: "",
+      cover_letter: "",
+      answer1: "",
+      answer2: "",
+    });
+  };
+
   const getLocationDisplay = () => {
     if (!job) return '';
     
@@ -108,18 +174,28 @@ export const JobApplication = () => {
 
     setSubmitting(true);
     try {
-      // Submit application
+      // Submit application with comprehensive data
       const { data: application, error: submitError } = await supabase
         .from('applications')
         .insert({
           job_id: job.id,
           name: applicationData.name,
           email: applicationData.email,
-          portfolio: applicationData.portfolio,
-          experience: applicationData.experience,
+          phone: applicationData.phone,
+          location: applicationData.location,
+          available_start_date: applicationData.available_start_date || null,
+          portfolio_url: applicationData.portfolio_url || null,
+          linkedin_url: applicationData.linkedin_url || null,
+          github_url: applicationData.github_url || null,
+          cover_letter: applicationData.cover_letter || null,
+          resume_file_path: resumeFile,
+          parsed_resume_data: parsedData,
+          work_experience: parsedData?.workExperience || null,
+          education: parsedData?.education || null,
+          skills: parsedData?.skills || null,
           answer_1: applicationData.answer1,
           answer_2: applicationData.answer2,
-          answer_3: applicationData.answer3
+          experience: parsedData?.summary || "",
         })
         .select()
         .single();
@@ -132,18 +208,17 @@ export const JobApplication = () => {
           body: {
             applicationData: {
               name: applicationData.name,
-              experience: applicationData.experience,
-              portfolio: applicationData.portfolio,
+              experience: parsedData?.summary || "",
+              portfolio: applicationData.portfolio_url,
               answer_1: applicationData.answer1,
               answer_2: applicationData.answer2,
-              answer_3: applicationData.answer3
+              parsedData: parsedData
             },
             jobData: job
           }
         });
 
         if (analysis) {
-          // Update application with AI analysis
           await supabase
             .from('applications')
             .update({
@@ -154,7 +229,6 @@ export const JobApplication = () => {
         }
       } catch (analysisError) {
         console.error('Error analyzing application:', analysisError);
-        // Continue even if analysis fails
       }
 
       setSubmitted(true);
@@ -208,8 +282,7 @@ export const JobApplication = () => {
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-4">Application Submitted!</h1>
               <p className="text-gray-600 mb-6">
-                Thank you for taking the time to complete our skills assessment. 
-                We'll review your application and get back to you within 2-3 business days.
+                Thank you for your application. We'll review your information and get back to you within 2-3 business days.
               </p>
               <Button onClick={() => window.close()} variant="outline">
                 Close Window
@@ -292,12 +365,29 @@ export const JobApplication = () => {
 
         {/* Application Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Info */}
+          {/* Resume Upload */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="w-5 h-5" />
-                Your Information
+                Quick Apply with Resume
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResumeUpload 
+                onResumeData={handleResumeData}
+                onRemove={handleRemoveResume}
+                uploadedFile={resumeFile}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Personal Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Personal Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -322,36 +412,93 @@ export const JobApplication = () => {
                   />
                 </div>
               </div>
-              <div>
-                <Label htmlFor="portfolio">Portfolio/GitHub URL</Label>
-                <Input
-                  id="portfolio"
-                  type="url"
-                  placeholder="https://github.com/yourusername"
-                  value={applicationData.portfolio}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, portfolio: e.target.value }))}
-                />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={applicationData.phone}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="location">Current Location</Label>
+                  <Input
+                    id="location"
+                    placeholder="City, State/Country"
+                    value={applicationData.location}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, location: e.target.value }))}
+                  />
+                </div>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="start_date">Available Start Date</Label>
+                  <Input
+                    id="start_date"
+                    type="date"
+                    value={applicationData.available_start_date}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, available_start_date: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="portfolio">Portfolio/Website URL</Label>
+                  <Input
+                    id="portfolio"
+                    type="url"
+                    placeholder="https://yourportfolio.com"
+                    value={applicationData.portfolio_url}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, portfolio_url: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="linkedin">LinkedIn Profile</Label>
+                  <Input
+                    id="linkedin"
+                    type="url"
+                    placeholder="https://linkedin.com/in/yourprofile"
+                    value={applicationData.linkedin_url}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="github">GitHub Profile</Label>
+                  <Input
+                    id="github"
+                    type="url"
+                    placeholder="https://github.com/yourusername"
+                    value={applicationData.github_url}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, github_url: e.target.value }))}
+                  />
+                </div>
+              </div>
+
               <div>
-                <Label htmlFor="experience">Brief overview of your experience</Label>
+                <Label htmlFor="cover_letter">Cover Letter (Optional)</Label>
                 <Textarea
-                  id="experience"
-                  placeholder="Tell us about your background and relevant experience..."
-                  value={applicationData.experience}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, experience: e.target.value }))}
-                  rows={3}
+                  id="cover_letter"
+                  placeholder="Tell us why you're interested in this role..."
+                  value={applicationData.cover_letter}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, cover_letter: e.target.value }))}
+                  rows={4}
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* Skills Test */}
+          {/* Quick Assessment */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
-                Skills Assessment
-                <Badge variant="secondary" className="ml-auto">Estimated: 2 hours</Badge>
+                Quick Assessment
+                <Badge variant="secondary" className="ml-auto">2 Questions</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -368,36 +515,24 @@ export const JobApplication = () => {
                 <Label className="text-base font-semibold">Your Responses</Label>
                 <div className="space-y-4 mt-3">
                   <div>
-                    <Label htmlFor="answer1">Response 1</Label>
+                    <Label htmlFor="answer1">Response 1 *</Label>
                     <Textarea
                       id="answer1"
                       placeholder="Your response to the first question..."
                       value={applicationData.answer1}
                       onChange={(e) => setApplicationData(prev => ({ ...prev, answer1: e.target.value }))}
-                      rows={6}
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="answer2">Response 2</Label>
-                    <Textarea
-                      id="answer2"
-                      placeholder="Your response to the second question..."
-                      value={applicationData.answer2}
-                      onChange={(e) => setApplicationData(prev => ({ ...prev, answer2: e.target.value }))}
                       rows={4}
                       required
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="answer3">Response 3</Label>
+                    <Label htmlFor="answer2">Response 2 *</Label>
                     <Textarea
-                      id="answer3"
-                      placeholder="Your response to the third question..."
-                      value={applicationData.answer3}
-                      onChange={(e) => setApplicationData(prev => ({ ...prev, answer3: e.target.value }))}
+                      id="answer2"
+                      placeholder="Your response to the second question..."
+                      value={applicationData.answer2}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, answer2: e.target.value }))}
                       rows={4}
                       required
                     />

@@ -16,15 +16,27 @@ export type Database = {
           answer_1: string | null
           answer_2: string | null
           answer_3: string | null
+          available_start_date: string | null
+          cover_letter: string | null
           created_at: string
+          education: Json | null
           email: string
           experience: string | null
+          github_url: string | null
           id: string
           job_id: string
+          linkedin_url: string | null
+          location: string | null
           name: string
+          parsed_resume_data: Json | null
+          phone: string | null
           portfolio: string | null
+          portfolio_url: string | null
+          resume_file_path: string | null
+          skills: Json | null
           status: string
           updated_at: string
+          work_experience: Json | null
         }
         Insert: {
           ai_rating?: number | null
@@ -32,15 +44,27 @@ export type Database = {
           answer_1?: string | null
           answer_2?: string | null
           answer_3?: string | null
+          available_start_date?: string | null
+          cover_letter?: string | null
           created_at?: string
+          education?: Json | null
           email: string
           experience?: string | null
+          github_url?: string | null
           id?: string
           job_id: string
+          linkedin_url?: string | null
+          location?: string | null
           name: string
+          parsed_resume_data?: Json | null
+          phone?: string | null
           portfolio?: string | null
+          portfolio_url?: string | null
+          resume_file_path?: string | null
+          skills?: Json | null
           status?: string
           updated_at?: string
+          work_experience?: Json | null
         }
         Update: {
           ai_rating?: number | null
@@ -48,15 +72,27 @@ export type Database = {
           answer_1?: string | null
           answer_2?: string | null
           answer_3?: string | null
+          available_start_date?: string | null
+          cover_letter?: string | null
           created_at?: string
+          education?: Json | null
           email?: string
           experience?: string | null
+          github_url?: string | null
           id?: string
           job_id?: string
+          linkedin_url?: string | null
+          location?: string | null
           name?: string
+          parsed_resume_data?: Json | null
+          phone?: string | null
           portfolio?: string | null
+          portfolio_url?: string | null
+          resume_file_path?: string | null
+          skills?: Json | null
           status?: string
           updated_at?: string
+          work_experience?: Json | null
         }
         Relationships: [
           {
