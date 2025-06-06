@@ -15,12 +15,14 @@ import {
   Eye,
   Calendar,
   MapPin,
-  Pencil
+  Pencil,
+  Sparkles
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { EditJobModal } from "./EditJobModal";
+import { useGenerateMiniDescription } from "@/hooks/useGenerateMiniDescription";
 import { Database } from "@/integrations/supabase/types";
 
 type JobRow = Database['public']['Tables']['jobs']['Row'];
@@ -37,8 +39,10 @@ interface EnhancedJobCardProps {
 
 export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCardProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { toast } = useToast();
+  const { generateMiniDescription } = useGenerateMiniDescription();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -71,6 +75,40 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
     }
     
     return location_type ? location_type.charAt(0).toUpperCase() + location_type.slice(1) : 'Not specified';
+  };
+
+  const getDisplayDescription = () => {
+    if (job.ai_mini_description) {
+      return job.ai_mini_description;
+    }
+    // Fallback to truncated original description
+    return job.description.length > 100 
+      ? job.description.substring(0, 100) + "..." 
+      : job.description;
+  };
+
+  const handleGenerateDescription = async () => {
+    setIsGeneratingDescription(true);
+    try {
+      const miniDescription = await generateMiniDescription({
+        id: job.id,
+        title: job.title,
+        description: job.description,
+        role_type: job.role_type,
+      });
+
+      if (miniDescription) {
+        toast({
+          title: "Description generated",
+          description: "AI mini description has been created",
+        });
+        onJobUpdate();
+      }
+    } catch (error) {
+      console.error('Error generating description:', error);
+    } finally {
+      setIsGeneratingDescription(false);
+    }
   };
 
   const handleStatusChange = async (newStatus: string) => {
@@ -197,7 +235,21 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
                 )}
               </div>
               
-              <p className="text-gray-700 line-clamp-2 mb-3">{job.description}</p>
+              <div className="flex items-center gap-2 mb-3">
+                <p className="text-gray-700 line-clamp-2 flex-1">{getDisplayDescription()}</p>
+                {!job.ai_mini_description && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateDescription}
+                    disabled={isGeneratingDescription}
+                    className="flex-shrink-0"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    {isGeneratingDescription ? "Generating..." : "AI Description"}
+                  </Button>
+                )}
+              </div>
               
               <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-1 text-blue-600">

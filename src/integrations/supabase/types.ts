@@ -70,6 +70,7 @@ export type Database = {
       }
       jobs: {
         Row: {
+          ai_mini_description: string | null
           budget: string | null
           city: string | null
           country: string | null
@@ -92,6 +93,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_mini_description?: string | null
           budget?: string | null
           city?: string | null
           country?: string | null
@@ -114,6 +116,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_mini_description?: string | null
           budget?: string | null
           city?: string | null
           country?: string | null
