@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -233,7 +234,7 @@ const MyJobs = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Enhanced Header */}
       <div className="bg-gradient-to-r from-purple-50 via-white to-purple-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-8">
           {/* Top Navigation Bar */}
           <div className="flex items-center justify-between py-4 border-b border-gray-100">
             {/* Atract Logo */}
@@ -375,7 +376,7 @@ const MyJobs = () => {
         onRefresh={refetch}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-8 py-8">
         {filteredAndSortedJobs.length === 0 && jobs.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-gray-500">
