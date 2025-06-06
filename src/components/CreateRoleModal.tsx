@@ -26,6 +26,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     title: "",
     description: "",
     roleType: "",
+    employmentType: "",
     experience: "",
     duration: "",
     budget: "",
@@ -98,8 +99,9 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             title: formData.title,
             description: formData.description,
             role_type: formData.roleType,
+            employment_type: formData.employmentType,
             experience_level: formData.experience,
-            duration: formData.duration,
+            duration: formData.duration || null,
             budget: formData.budget,
             required_skills: formData.skills,
             location_type: formData.locationType,
@@ -130,6 +132,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           title: "",
           description: "",
           roleType: "",
+          employmentType: "",
           experience: "",
           duration: "",
           budget: "",
@@ -156,8 +159,80 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   };
 
   const canProceed = step === 1 ? 
-    formData.title && formData.description && formData.roleType && formData.experience :
+    formData.title && formData.description && formData.roleType && formData.employmentType && formData.experience :
     true;
+
+  const isProjectBased = formData.employmentType === 'project' || formData.employmentType === 'contract-to-hire';
+
+  const getEmploymentTypes = () => [
+    { value: 'project', label: 'Project-based' },
+    { value: 'full-time', label: 'Full-time' },
+    { value: 'part-time', label: 'Part-time' },
+    { value: 'contract-to-hire', label: 'Contract-to-hire' }
+  ];
+
+  const getDurationOptions = () => {
+    if (formData.employmentType === 'contract-to-hire') {
+      return [
+        { value: '3 months', label: '3 months' },
+        { value: '6 months', label: '6 months' },
+        { value: '12 months', label: '12 months' },
+        { value: '18 months', label: '18 months' }
+      ];
+    }
+    return [
+      { value: '1-2 weeks', label: '1-2 weeks' },
+      { value: '1 month', label: '1 month' },
+      { value: '2-3 months', label: '2-3 months' },
+      { value: '3-6 months', label: '3-6 months' },
+      { value: 'ongoing', label: 'Ongoing' }
+    ];
+  };
+
+  const getBudgetOptions = () => {
+    if (formData.employmentType === 'full-time') {
+      return [
+        { value: '$40,000-$60,000', label: '$40,000 - $60,000 annually' },
+        { value: '$60,000-$80,000', label: '$60,000 - $80,000 annually' },
+        { value: '$80,000-$100,000', label: '$80,000 - $100,000 annually' },
+        { value: '$100,000-$120,000', label: '$100,000 - $120,000 annually' },
+        { value: '$120,000+', label: '$120,000+ annually' }
+      ];
+    } else if (formData.employmentType === 'part-time') {
+      return [
+        { value: '$20-$30/hour', label: '$20 - $30 per hour' },
+        { value: '$30-$50/hour', label: '$30 - $50 per hour' },
+        { value: '$50-$75/hour', label: '$50 - $75 per hour' },
+        { value: '$75-$100/hour', label: '$75 - $100 per hour' },
+        { value: '$100+/hour', label: '$100+ per hour' }
+      ];
+    }
+    // Project-based or contract-to-hire
+    return [
+      { value: '$500-$1,000', label: '$500 - $1,000' },
+      { value: '$1,000-$2,500', label: '$1,000 - $2,500' },
+      { value: '$2,500-$5,000', label: '$2,500 - $5,000' },
+      { value: '$5,000-$10,000', label: '$5,000 - $10,000' },
+      { value: '$10,000+', label: '$10,000+' }
+    ];
+  };
+
+  const getBudgetLabel = () => {
+    switch (formData.employmentType) {
+      case 'full-time':
+        return 'Salary Range';
+      case 'part-time':
+        return 'Hourly Rate';
+      case 'contract-to-hire':
+        return 'Contract Budget';
+      default:
+        return 'Project Budget';
+    }
+  };
+
+  const getDurationLabel = () => {
+    return formData.employmentType === 'contract-to-hire' ? 'Contract Duration' : 'Project Duration';
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -219,6 +294,22 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 </div>
 
                 <div>
+                  <Label htmlFor="employmentType">Employment Type</Label>
+                  <Select value={formData.employmentType} onValueChange={(value) => handleInputChange("employmentType", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select employment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getEmploymentTypes().map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <Label htmlFor="experience">Experience Level</Label>
                   <Select value={formData.experience} onValueChange={(value) => handleInputChange("experience", value)}>
                     <SelectTrigger>
@@ -234,34 +325,36 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="duration">Project Duration</Label>
-                  <Select value={formData.duration} onValueChange={(value) => handleInputChange("duration", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-2 weeks">1-2 weeks</SelectItem>
-                      <SelectItem value="1 month">1 month</SelectItem>
-                      <SelectItem value="2-3 months">2-3 months</SelectItem>
-                      <SelectItem value="3-6 months">3-6 months</SelectItem>
-                      <SelectItem value="ongoing">Ongoing</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {isProjectBased && (
+                  <div>
+                    <Label htmlFor="duration">{getDurationLabel()}</Label>
+                    <Select value={formData.duration} onValueChange={(value) => handleInputChange("duration", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={`Select ${getDurationLabel().toLowerCase()}`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getDurationOptions().map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div>
-                  <Label htmlFor="budget">Budget Range</Label>
+                  <Label htmlFor="budget">{getBudgetLabel()}</Label>
                   <Select value={formData.budget} onValueChange={(value) => handleInputChange("budget", value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select budget range" />
+                      <SelectValue placeholder={`Select ${getBudgetLabel().toLowerCase()}`} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="$500-$1,000">$500 - $1,000</SelectItem>
-                      <SelectItem value="$1,000-$2,500">$1,000 - $2,500</SelectItem>
-                      <SelectItem value="$2,500-$5,000">$2,500 - $5,000</SelectItem>
-                      <SelectItem value="$5,000-$10,000">$5,000 - $10,000</SelectItem>
-                      <SelectItem value="$10,000+">$10,000+</SelectItem>
+                      {getBudgetOptions().map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

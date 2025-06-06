@@ -19,10 +19,11 @@ interface Job {
   title: string;
   description: string;
   role_type: string;
+  employment_type?: string;
   experience_level: string;
   status: string;
   created_at: string;
-  duration: string;
+  duration?: string;
   budget: string;
   required_skills: string;
   location_type?: string;

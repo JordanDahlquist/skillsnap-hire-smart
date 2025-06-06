@@ -75,7 +75,8 @@ export type Database = {
           country: string | null
           created_at: string
           description: string
-          duration: string
+          duration: string | null
+          employment_type: string
           experience_level: string
           generated_job_post: string | null
           generated_test: string | null
@@ -96,7 +97,8 @@ export type Database = {
           country?: string | null
           created_at?: string
           description: string
-          duration: string
+          duration?: string | null
+          employment_type?: string
           experience_level: string
           generated_job_post?: string | null
           generated_test?: string | null
@@ -117,7 +119,8 @@ export type Database = {
           country?: string | null
           created_at?: string
           description?: string
-          duration?: string
+          duration?: string | null
+          employment_type?: string
           experience_level?: string
           generated_job_post?: string | null
           generated_test?: string | null
