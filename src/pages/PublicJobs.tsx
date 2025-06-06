@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { PublicJobCard } from "@/components/PublicJobCard";
@@ -68,7 +69,7 @@ const PublicJobs = () => {
 
   const handleAiSearch = async (prompt: string) => {
     try {
-      console.log('Starting AI search with prompt:', prompt);
+      console.log('Starting flexible AI search with prompt:', prompt);
       console.log('Available options:', availableOptions);
       
       const response = await supabase.functions.invoke('ai-job-search', {
@@ -86,7 +87,7 @@ const PublicJobs = () => {
       // Apply AI-generated filters
       applyAiSearchResults(aiSearchTerm, aiFilters);
       
-      // Provide enhanced feedback about what was applied
+      // Provide enhanced feedback about what was applied with flexibility messaging
       const appliedFilters = [];
       
       if (aiFilters.employmentType !== 'all') {
@@ -110,11 +111,14 @@ const PublicJobs = () => {
         appliedFilters.push(`${budgetType}: $${aiFilters.budgetRange[0].toLocaleString()}-$${aiFilters.budgetRange[1].toLocaleString()}`);
       }
       
-      const message = appliedFilters.length > 0 
-        ? `AI Search applied: ${appliedFilters.join(', ')}${aiSearchTerm ? ` | Text search: "${aiSearchTerm}"` : ''}`
-        : `AI Search using text search: "${aiSearchTerm}"`;
+      const flexibilityMessage = appliedFilters.length > 0 
+        ? `AI Search applied flexible filters: ${appliedFilters.join(', ')}${aiSearchTerm ? ` | Text search: "${aiSearchTerm}"` : ''}`
+        : `AI Search using flexible text search: "${aiSearchTerm}"`;
       
-      toast.success(message);
+      // Add note about flexibility
+      const finalMessage = `${flexibilityMessage} • Showing broader results including close matches`;
+      
+      toast.success(finalMessage);
     } catch (error) {
       console.error('AI search error:', error);
       toast.error('AI search failed, using basic text search instead');
@@ -184,7 +188,7 @@ const PublicJobs = () => {
             <h3 className="text-xl font-medium text-gray-900 mb-1">No matching positions found</h3>
             <p className="text-gray-500 max-w-md mx-auto">
               {searchTerm || activeFiltersCount > 0 ? 
-                "Try adjusting your filters or search terms to find more opportunities" : 
+                "Try using fewer specific terms or clearing some filters to see more opportunities" : 
                 "Check back soon for new opportunities"}
             </p>
           </div>

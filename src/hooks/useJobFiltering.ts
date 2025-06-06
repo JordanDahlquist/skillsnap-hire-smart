@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 
 export interface JobFilters {
@@ -23,14 +22,16 @@ const defaultFilters: JobFilters = {
   duration: "all"
 };
 
-// Role type synonyms for better matching
+// Enhanced role type synonyms for better flexible matching
 const roleTypeSynonyms: Record<string, string[]> = {
-  designer: ["branding", "design", "graphic", "ui", "ux", "creative"],
-  developer: ["programming", "coding", "frontend", "backend", "fullstack", "react", "javascript", "python"],
-  marketer: ["marketing", "branding", "advertising", "social media", "seo"],
-  analyst: ["data", "analytics", "business intelligence", "reporting"],
-  writer: ["content", "copywriting", "blogging", "technical writing"],
-  manager: ["project management", "product management", "team lead"]
+  designer: ["branding", "design", "graphic", "ui", "ux", "creative", "visual", "art"],
+  developer: ["programming", "coding", "frontend", "backend", "fullstack", "react", "javascript", "python", "software", "web", "app"],
+  marketer: ["marketing", "branding", "advertising", "social media", "seo", "digital marketing", "growth"],
+  analyst: ["data", "analytics", "business intelligence", "reporting", "research", "insights"],
+  writer: ["content", "copywriting", "blogging", "technical writing", "journalism", "editing"],
+  manager: ["project management", "product management", "team lead", "coordinator", "director"],
+  consultant: ["consulting", "strategy", "advisory", "expert", "specialist"],
+  sales: ["sales", "business development", "account management", "customer success"]
 };
 
 export const useJobFiltering = (jobs: any[]) => {
@@ -82,7 +83,7 @@ export const useJobFiltering = (jobs: any[]) => {
     return amount;
   };
 
-  // Enhanced search function with better partial matching
+  // Enhanced flexible search function with better partial matching
   const matchesSearchTerm = (job: any, searchTerm: string): boolean => {
     if (!searchTerm || searchTerm.trim() === "") return true;
     
@@ -93,13 +94,18 @@ export const useJobFiltering = (jobs: any[]) => {
       job.title || '',
       job.description || '',
       job.required_skills || '',
-      job.role_type || ''
+      job.role_type || '',
+      job.city || '',
+      job.state || '',
+      job.country || ''
     ].join(' ').toLowerCase();
     
-    return searchWords.every(word => {
+    // More flexible matching - require at least 60% of search words to match
+    const matchedWords = searchWords.filter(word => {
       if (searchableContent.includes(word)) return true;
       
-      if (word.length > 2) {
+      // Partial word matching for words longer than 3 characters
+      if (word.length > 3) {
         const contentWords = searchableContent.split(/\s+/);
         return contentWords.some(jobWord => {
           return jobWord.includes(word) || 
@@ -111,9 +117,13 @@ export const useJobFiltering = (jobs: any[]) => {
       
       return false;
     });
+    
+    // Require at least 60% match, but at least 1 word for short searches
+    const requiredMatches = Math.max(1, Math.ceil(searchWords.length * 0.6));
+    return matchedWords.length >= requiredMatches;
   };
 
-  // Enhanced role matching with synonyms
+  // Enhanced role matching with better synonym support
   const findBestRoleMatch = (value: string, availableValues: string[]): string => {
     if (!value || value === "all") return "all";
     
@@ -130,7 +140,7 @@ export const useJobFiltering = (jobs: any[]) => {
     );
     if (partialMatch) return partialMatch;
     
-    // Synonym matching
+    // Enhanced synonym matching
     for (const [roleType, synonyms] of Object.entries(roleTypeSynonyms)) {
       if (synonyms.some(synonym => normalizedValue.includes(synonym) || synonym.includes(normalizedValue))) {
         const matchingRole = availableValues.find(av => av.toLowerCase().includes(roleType));
@@ -138,6 +148,7 @@ export const useJobFiltering = (jobs: any[]) => {
       }
     }
     
+    // If no match found, prefer "all" for flexibility
     return "all";
   };
 
@@ -159,15 +170,15 @@ export const useJobFiltering = (jobs: any[]) => {
     return "all";
   };
 
-  // Filter jobs with enhanced debugging and employment-type-aware budget filtering
+  // Enhanced filtering with flexible matching and fallback logic
   const filteredJobs = useMemo(() => {
     console.log('Filtering jobs with:', { searchTerm, filters, totalJobs: jobs.length });
     
     let filtered = jobs.filter(job => {
-      // Enhanced text search
+      // Enhanced text search with more weight
       const matchesSearch = matchesSearchTerm(job, searchTerm);
       
-      // Filter checks with debugging
+      // Flexible filter checks
       const matchesRoleType = filters.roleType === "all" || job.role_type === filters.roleType;
       const matchesLocationType = filters.locationType === "all" || job.location_type === filters.locationType;
       const matchesExperienceLevel = filters.experienceLevel === "all" || job.experience_level === filters.experienceLevel;
@@ -176,46 +187,73 @@ export const useJobFiltering = (jobs: any[]) => {
       const matchesState = filters.state === "all" || job.state === filters.state;
       const matchesDuration = filters.duration === "all" || job.duration === filters.duration;
       
-      // Enhanced budget range check with employment-type awareness
+      // More flexible budget matching
       const jobBudget = parseBudget(job.budget, job.employment_type);
       const [minBudget, maxBudget] = filters.budgetRange;
-      const matchesBudget = jobBudget >= minBudget && (maxBudget >= 200000 || jobBudget <= maxBudget);
-      
-      // Debug logging for jobs that fail filters
-      if (!matchesSearch || !matchesRoleType || !matchesLocationType || 
-          !matchesExperienceLevel || !matchesEmploymentType || !matchesCountry || 
-          !matchesState || !matchesDuration || !matchesBudget) {
-        console.log(`Job "${job.title}" filtered out:`, {
-          matchesSearch,
-          matchesRoleType: `${matchesRoleType} (${job.role_type} vs ${filters.roleType})`,
-          matchesLocationType: `${matchesLocationType} (${job.location_type} vs ${filters.locationType})`,
-          matchesExperienceLevel: `${matchesExperienceLevel} (${job.experience_level} vs ${filters.experienceLevel})`,
-          matchesEmploymentType: `${matchesEmploymentType} (${job.employment_type} vs ${filters.employmentType})`,
-          matchesCountry: `${matchesCountry} (${job.country} vs ${filters.country})`,
-          matchesState: `${matchesState} (${job.state} vs ${filters.state})`,
-          matchesDuration: `${matchesDuration} (${job.duration} vs ${filters.duration})`,
-          matchesBudget: `${matchesBudget} (${jobBudget} in range [${minBudget}, ${maxBudget}])`,
-          jobBudgetRaw: job.budget,
-          jobEmploymentType: job.employment_type
-        });
-      }
+      // Include jobs with no budget if budget filter is at default
+      const matchesBudget = (minBudget === 0 && maxBudget >= 200000) || 
+                           (jobBudget === 0) || // Include jobs without budget data
+                           (jobBudget >= minBudget && (maxBudget >= 200000 || jobBudget <= maxBudget));
       
       return matchesSearch && matchesRoleType && matchesLocationType && 
              matchesExperienceLevel && matchesEmploymentType && matchesCountry && 
              matchesState && matchesDuration && matchesBudget;
     });
 
-    console.log(`Filtered results: ${filtered.length} out of ${jobs.length} jobs`);
+    console.log(`Initial filtered results: ${filtered.length} out of ${jobs.length} jobs`);
     
-    // If no results with filters, fall back to text search only
-    if (filtered.length === 0 && searchTerm && (
+    // Enhanced fallback logic - if too few results, progressively relax filters
+    if (filtered.length < 5 && searchTerm && (
       filters.roleType !== "all" || filters.locationType !== "all" || 
       filters.experienceLevel !== "all" || filters.employmentType !== "all" ||
       filters.country !== "all" || filters.state !== "all" || filters.duration !== "all" ||
       filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000
     )) {
-      console.log('No results with filters, falling back to text search only');
-      filtered = jobs.filter(job => matchesSearchTerm(job, searchTerm));
+      console.log('Too few results, applying fallback with relaxed filters');
+      
+      // First fallback: Remove budget and duration constraints
+      let relaxedFiltered = jobs.filter(job => {
+        const matchesSearch = matchesSearchTerm(job, searchTerm);
+        const matchesRoleType = filters.roleType === "all" || job.role_type === filters.roleType;
+        const matchesLocationType = filters.locationType === "all" || job.location_type === filters.locationType;
+        const matchesExperienceLevel = filters.experienceLevel === "all" || job.experience_level === filters.experienceLevel;
+        const matchesEmploymentType = filters.employmentType === "all" || job.employment_type === filters.employmentType;
+        const matchesCountry = filters.country === "all" || job.country === filters.country;
+        const matchesState = filters.state === "all" || job.state === filters.state;
+        
+        return matchesSearch && matchesRoleType && matchesLocationType && 
+               matchesExperienceLevel && matchesEmploymentType && matchesCountry && matchesState;
+      });
+
+      if (relaxedFiltered.length > filtered.length) {
+        filtered = relaxedFiltered;
+        console.log(`Relaxed filtering (removed budget/duration): ${filtered.length} jobs`);
+      }
+      
+      // Second fallback: Keep only essential filters (role, employment type) + text search
+      if (filtered.length < 3) {
+        relaxedFiltered = jobs.filter(job => {
+          const matchesSearch = matchesSearchTerm(job, searchTerm);
+          const matchesRoleType = filters.roleType === "all" || job.role_type === filters.roleType;
+          const matchesEmploymentType = filters.employmentType === "all" || job.employment_type === filters.employmentType;
+          
+          return matchesSearch && matchesRoleType && matchesEmploymentType;
+        });
+        
+        if (relaxedFiltered.length > filtered.length) {
+          filtered = relaxedFiltered;
+          console.log(`Highly relaxed filtering (role + employment + search): ${filtered.length} jobs`);
+        }
+      }
+      
+      // Final fallback: Text search only
+      if (filtered.length < 2) {
+        relaxedFiltered = jobs.filter(job => matchesSearchTerm(job, searchTerm));
+        if (relaxedFiltered.length > filtered.length) {
+          filtered = relaxedFiltered;
+          console.log(`Text search only fallback: ${filtered.length} jobs`);
+        }
+      }
     }
 
     // Sort filtered results
@@ -270,7 +308,7 @@ export const useJobFiltering = (jobs: any[]) => {
     setFilters(defaultFilters);
   };
 
-  // Enhanced AI search apply function
+  // Enhanced AI search apply function with flexible matching
   const applyAiSearchResults = (aiSearchTerm: string, aiFilters: JobFilters) => {
     console.log("AI Search Results:", { aiSearchTerm, aiFilters });
     console.log("Available Options:", availableOptions);
@@ -286,7 +324,7 @@ export const useJobFiltering = (jobs: any[]) => {
       console.log("Fixed budget range from [0, 0] to [0, 200000]");
     }
     
-    // Apply smart matching for filters
+    // Apply smart matching for filters with enhanced flexibility
     const smartFilters: JobFilters = {
       roleType: findBestRoleMatch(aiFilters.roleType, availableOptions.roleTypes),
       locationType: findBestMatch(aiFilters.locationType, availableOptions.locationTypes),

@@ -17,7 +17,7 @@ serve(async (req) => {
   try {
     const { prompt, availableOptions } = await req.json();
 
-    const systemPrompt = `You are a job search assistant. Parse the user's natural language job search query and return structured filter criteria.
+    const systemPrompt = `You are a flexible job search assistant. Parse the user's natural language job search query and return structured filter criteria. Your goal is to be INCLUSIVE and show relevant opportunities, not restrictive.
 
 Available options for filtering:
 - Role Types: ${availableOptions.roleTypes.join(', ')}
@@ -28,62 +28,66 @@ Available options for filtering:
 - States: ${availableOptions.states.join(', ')}
 - Durations: ${availableOptions.durations.join(', ')}
 
-CRITICAL INSTRUCTIONS:
-1. Be VERY flexible with matching - use partial matches and synonyms
-2. For locations like "Los Angeles", map to the state "California" 
-3. For role types, match broadly using synonyms:
-   - "branding" → look for "designer", "marketing", "creative" roles
-   - "frontend", "react", "javascript" → look for "developer", "engineer" roles
-   - "data" → look for "analyst", "scientist", "engineer" roles
-   - "content", "writing" → look for "writer", "content" roles
-4. If you can't find exact matches, use "all" instead of forcing a match
-5. Always include relevant keywords in searchTerm for better text search
-6. Prioritize searchTerm over strict filtering when uncertain
+CORE PHILOSOPHY: BE FLEXIBLE AND INCLUSIVE
+1. **PREFER TEXT SEARCH OVER STRICT FILTERS**: Use searchTerm heavily to capture intent rather than rigid categories
+2. **ONLY SET SPECIFIC FILTERS WHEN USER IS VERY EXPLICIT**: 
+   - "only full-time jobs" → set employmentType
+   - "remote work" → set locationType: "remote"
+   - "senior level only" → set experienceLevel
+   - Otherwise, default most filters to "all"
+3. **EXPAND RATHER THAN RESTRICT**: If unsure, include more rather than exclude
+4. **PRIORITIZE KEYWORDS**: Put specific skills, technologies, and requirements in searchTerm
 
-EMPLOYMENT TYPE & BUDGET HANDLING:
-- ALWAYS determine employment type FIRST, then set appropriate budget ranges
-- Full-time/Part-time jobs: Use annual salary ranges
-  - "under $100k" for full-time → budgetRange: [0, 100000]
-  - "$80k-120k" for full-time → budgetRange: [80000, 120000]
-  - No budget mentioned for full-time → budgetRange: [0, 200000]
-- Contract/Project jobs: Use project total value ranges
-  - "under $10k" for projects → budgetRange: [0, 10000]
-  - "$5k-25k" for projects → budgetRange: [5000, 25000]
-  - No budget mentioned for projects → budgetRange: [0, 200000]
-- NEVER set budgetRange to [0, 0] unless user specifically mentions "free" or "$0"
-- If employment type is unclear, default to project-based budgeting
+MATCHING RULES:
+- For role types: Match broadly using keywords and synonyms, but default to "all" unless very specific
+- For locations: Be flexible - "California" can include remote jobs, "LA" includes all California
+- For experience: Unless user says "only senior" or "entry level only", default to "all"
+- For employment type: Only set if user is specific about full-time vs contract vs project
+- For budget: Be generous with ranges, expand by 20-30% from user's stated preferences
 
-LOCATION MAPPING EXAMPLES:
-- "Los Angeles" → state: "California", searchTerm should include "Los Angeles"
-- "New York" → state: "New York", searchTerm should include "New York"
-- "San Francisco" → state: "California", searchTerm should include "San Francisco"
-- "remote" → locationType: "remote", no need to set state
+EMPLOYMENT TYPE & BUDGET FLEXIBILITY:
+- If user mentions salary ranges, assume full-time unless stated otherwise
+- If user mentions project budgets, assume contract/project work
+- ALWAYS make budget ranges 20-30% wider than requested to catch edge cases
+- If no budget mentioned, use full range [0, 200000]
+- Budget examples:
+  - "around $80k" → budgetRange: [65000, 95000] for full-time
+  - "$5k-15k project" → budgetRange: [4000, 18000] for contract/project
+  - "under $100k" → budgetRange: [0, 120000] for flexibility
 
-ROLE MAPPING EXAMPLES:
-- "branding" → roleType: find closest "designer"/"marketing" match OR "all", searchTerm: "branding design"
-- "frontend" → roleType: find closest "developer" match OR "all", searchTerm: "frontend development"
-- "data analysis" → roleType: find closest "analyst" match OR "all", searchTerm: "data analysis"
+LOCATION FLEXIBILITY:
+- City names (e.g., "San Francisco", "Austin") → use searchTerm AND state, but also consider remote
+- "Remote" → locationType: "remote", but don't restrict other fields
+- State names → set state but allow all location types
+- "Anywhere" or "flexible" → keep location filters as "all"
 
-Return a JSON object with these fields:
+ROLE FLEXIBILITY:
+- Technical skills → include in searchTerm, roleType: "all" unless clear category match
+- "Design" → searchTerm: "design creative branding", roleType: closest match or "all"
+- "Development" → searchTerm: "development programming coding", roleType: closest match or "all"
+- "Marketing" → searchTerm: "marketing advertising social media", roleType: closest match or "all"
+
+Return JSON object:
 {
-  "searchTerm": "extracted keywords for text search (always include specific terms like city names, specializations)",
+  "searchTerm": "comprehensive keywords for flexible text search - include synonyms and related terms",
   "filters": {
-    "roleType": "closest matching role or 'all'",
-    "locationType": "remote/onsite/hybrid or 'all'", 
-    "experienceLevel": "entry/mid/senior or 'all'",
-    "employmentType": "full-time/part-time/contract/project or 'all'",
-    "country": "exact country match or 'all'",
-    "state": "exact state match or 'all'",
-    "budgetRange": [min, max] (employment-type-appropriate ranges),
-    "duration": "exact duration match or 'all'"
+    "roleType": "closest match or 'all' (prefer 'all' unless very specific)",
+    "locationType": "remote/onsite/hybrid or 'all' (prefer 'all' unless explicitly mentioned)", 
+    "experienceLevel": "'all' unless user specifically excludes levels",
+    "employmentType": "'all' unless user is specific about type",
+    "country": "exact match or 'all'",
+    "state": "exact match or 'all'",
+    "budgetRange": [generous_min, generous_max],
+    "duration": "'all' unless specific duration mentioned"
   },
-  "explanation": "Brief explanation of what filters were applied and why, including budget reasoning"
+  "explanation": "Brief explanation emphasizing flexibility and what was kept broad vs specific"
 }
 
-Examples:
-- "Full-time React developer $80k-120k" → searchTerm: "React developer", employmentType: "full-time", budgetRange: [80000, 120000], roleType: closest developer match or "all"
-- "Contract design project under $10k" → searchTerm: "design", employmentType: "contract", budgetRange: [0, 10000], roleType: closest design match or "all"
-- "Remote senior developer" → searchTerm: "senior developer", locationType: "remote", experienceLevel: "senior", employmentType: "all", budgetRange: [0, 200000]`;
+EXAMPLES OF FLEXIBLE APPROACH:
+- "React developer" → searchTerm: "React developer frontend JavaScript", roleType: "all", employmentType: "all"
+- "Design work in California" → searchTerm: "design creative branding", state: "California", locationType: "all"
+- "Senior full-time developer $100k+" → searchTerm: "senior developer", experienceLevel: "senior", employmentType: "full-time", budgetRange: [100000, 150000]
+- "Freelance writing projects" → searchTerm: "writing content copywriting", employmentType: "contract", roleType: "all"`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -111,19 +115,23 @@ Examples:
     try {
       parsedResponse = JSON.parse(aiResponse);
       
-      // Ensure budgetRange is never [0, 0] unless intentional
-      if (parsedResponse.filters.budgetRange && 
-          parsedResponse.filters.budgetRange[0] === 0 && 
-          parsedResponse.filters.budgetRange[1] === 0 &&
-          !prompt.toLowerCase().includes('free') && 
-          !prompt.toLowerCase().includes('$0')) {
-        parsedResponse.filters.budgetRange = [0, 200000];
-        console.log('Fixed budget range from [0, 0] to [0, 200000]');
+      // Ensure budget range is generous and never [0, 0]
+      if (parsedResponse.filters.budgetRange) {
+        const [min, max] = parsedResponse.filters.budgetRange;
+        if (min === 0 && max === 0) {
+          parsedResponse.filters.budgetRange = [0, 200000];
+        }
+        // Make ranges more generous by expanding them slightly
+        if (min > 0 || max < 200000) {
+          const expandedMin = Math.max(0, Math.floor(min * 0.8));
+          const expandedMax = max < 200000 ? Math.ceil(max * 1.2) : 200000;
+          parsedResponse.filters.budgetRange = [expandedMin, expandedMax];
+        }
       }
       
     } catch (e) {
       console.error('JSON parsing error:', e);
-      // Fallback if JSON parsing fails
+      // Flexible fallback - use broad text search
       parsedResponse = {
         searchTerm: prompt,
         filters: {
@@ -136,7 +144,7 @@ Examples:
           budgetRange: [0, 200000],
           duration: "all"
         },
-        explanation: "Using basic text search due to parsing error"
+        explanation: "Using flexible text search with all filters open for maximum results"
       };
     }
 
