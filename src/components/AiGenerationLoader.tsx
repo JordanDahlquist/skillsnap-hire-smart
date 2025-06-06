@@ -16,7 +16,7 @@ const loadingMessages = [
 
 export const AiGenerationLoader = ({ onComplete }: AiGenerationLoaderProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [countdown, setCountdown] = useState(20);
+  const [countdown, setCountdown] = useState(24);
 
   useEffect(() => {
     // Rotate messages every 4 seconds
@@ -105,7 +105,7 @@ export const AiGenerationLoader = ({ onComplete }: AiGenerationLoaderProps) => {
             <div className="w-full bg-gray-200/60 backdrop-blur-sm rounded-full h-3 shadow-inner">
               <div 
                 className="bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-1000 ease-out shadow-lg relative overflow-hidden"
-                style={{ width: `${((20 - countdown) / 20) * 100}%` }}
+                style={{ width: `${((24 - countdown) / 24) * 100}%` }}
               >
                 {/* Shimmer effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
