@@ -1,15 +1,33 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, DollarSign, Calendar, FileText, Send } from "lucide-react";
+import { Clock, DollarSign, Calendar, FileText, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Job {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  budget: string;
+  required_skills: string;
+  generated_job_post: string;
+  generated_test: string;
+  created_at: string;
+}
 
 export const JobApplication = () => {
+  const { jobId } = useParams();
+  const [job, setJob] = useState<Job | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [applicationData, setApplicationData] = useState({
     name: "",
     email: "",
@@ -22,17 +40,129 @@ export const JobApplication = () => {
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchJob = async () => {
+      if (!jobId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('jobs')
+          .select('*')
+          .eq('id', jobId)
+          .eq('status', 'active')
+          .single();
+
+        if (error) throw error;
+        setJob(data);
+      } catch (error) {
+        console.error('Error fetching job:', error);
+        toast({
+          title: "Job not found",
+          description: "This job posting may no longer be available.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJob();
+  }, [jobId, toast]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate submission
-    setTimeout(() => {
+    if (!job) return;
+
+    setSubmitting(true);
+    try {
+      // Submit application
+      const { data: application, error: submitError } = await supabase
+        .from('applications')
+        .insert({
+          job_id: job.id,
+          name: applicationData.name,
+          email: applicationData.email,
+          portfolio: applicationData.portfolio,
+          experience: applicationData.experience,
+          answer_1: applicationData.answer1,
+          answer_2: applicationData.answer2,
+          answer_3: applicationData.answer3
+        })
+        .select()
+        .single();
+
+      if (submitError) throw submitError;
+
+      // Analyze application with AI
+      try {
+        const { data: analysis } = await supabase.functions.invoke('analyze-application', {
+          body: {
+            applicationData: {
+              name: applicationData.name,
+              experience: applicationData.experience,
+              portfolio: applicationData.portfolio,
+              answer_1: applicationData.answer1,
+              answer_2: applicationData.answer2,
+              answer_3: applicationData.answer3
+            },
+            jobData: job
+          }
+        });
+
+        if (analysis) {
+          // Update application with AI analysis
+          await supabase
+            .from('applications')
+            .update({
+              ai_summary: analysis.summary,
+              ai_rating: analysis.rating
+            })
+            .eq('id', application.id);
+        }
+      } catch (analysisError) {
+        console.error('Error analyzing application:', analysisError);
+        // Continue even if analysis fails
+      }
+
       setSubmitted(true);
       toast({
         title: "Application submitted!",
         description: "Thank you for your application. We'll review it and get back to you soon.",
       });
-    }, 1000);
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast({
+        title: "Error submitting application",
+        description: "Please try again or contact support if the problem persists.",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-3xl mx-auto px-4">
+          <Card className="text-center">
+            <CardContent className="p-12">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Job Not Found</h1>
+              <p className="text-gray-600">This job posting is no longer available.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -58,6 +188,9 @@ export const JobApplication = () => {
     );
   }
 
+  const skills = job.required_skills.split(',').map(skill => skill.trim());
+  const daysSincePosted = Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24));
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -66,22 +199,22 @@ export const JobApplication = () => {
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Senior React Developer</h1>
-                <p className="text-lg text-gray-600 mb-4">
-                  Join our team to build the next generation of our SaaS platform
-                </p>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
+                <div className="prose max-w-none mb-4">
+                  <div className="text-gray-700 whitespace-pre-wrap">{job.generated_job_post}</div>
+                </div>
                 <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    2-3 months
+                    {job.duration}
                   </div>
                   <div className="flex items-center gap-1">
                     <DollarSign className="w-4 h-4" />
-                    $5,000 - $10,000
+                    {job.budget}
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    Posted 2 days ago
+                    Posted {daysSincePosted} {daysSincePosted === 1 ? 'day' : 'days'} ago
                   </div>
                 </div>
               </div>
@@ -91,19 +224,10 @@ export const JobApplication = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="prose max-w-none">
-              <h3 className="text-lg font-semibold mb-3">What you'll do:</h3>
-              <p className="text-gray-600 mb-4">
-                We're looking for a senior React developer to help us rebuild our dashboard with modern technologies. 
-                You'll work closely with our design team to create intuitive user interfaces and implement complex features.
-              </p>
-              
-              <h3 className="text-lg font-semibold mb-3">Required skills:</h3>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {["React", "TypeScript", "Node.js", "Tailwind CSS", "REST APIs"].map((skill) => (
-                  <Badge key={skill} variant="outline">{skill}</Badge>
-                ))}
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill, index) => (
+                <Badge key={index} variant="outline">{skill}</Badge>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -173,50 +297,51 @@ export const JobApplication = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <Label className="text-base font-semibold">
-                  Question 1: Practical Challenge (60 minutes)
-                </Label>
-                <p className="text-sm text-gray-600 mt-1 mb-3">
-                  Build a simple task management component with React. Include add, edit, delete, and mark complete functionality. 
-                  Focus on clean code and user experience.
-                </p>
-                <Textarea
-                  placeholder="Share your approach, key decisions, and include relevant code snippets or links to your solution..."
-                  value={applicationData.answer1}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, answer1: e.target.value }))}
-                  rows={6}
-                />
+              <div className="prose max-w-none">
+                <div className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
+                  {job.generated_test}
+                </div>
               </div>
-
+              
               <div>
-                <Label className="text-base font-semibold">
-                  Question 2: Problem Solving (30 minutes)
-                </Label>
-                <p className="text-sm text-gray-600 mt-1 mb-3">
-                  Describe how you would optimize a React app that's loading slowly. What tools would you use to identify bottlenecks?
-                </p>
-                <Textarea
-                  placeholder="Describe your optimization strategy and tools..."
-                  value={applicationData.answer2}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, answer2: e.target.value }))}
-                  rows={4}
-                />
-              </div>
-
-              <div>
-                <Label className="text-base font-semibold">
-                  Question 3: Communication (15 minutes)
-                </Label>
-                <p className="text-sm text-gray-600 mt-1 mb-3">
-                  Tell us about a challenging project you worked on. What obstacles did you face and how did you overcome them?
-                </p>
-                <Textarea
-                  placeholder="Share your story..."
-                  value={applicationData.answer3}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, answer3: e.target.value }))}
-                  rows={4}
-                />
+                <Label className="text-base font-semibold">Your Responses</Label>
+                <div className="space-y-4 mt-3">
+                  <div>
+                    <Label htmlFor="answer1">Response 1</Label>
+                    <Textarea
+                      id="answer1"
+                      placeholder="Your response to the first question..."
+                      value={applicationData.answer1}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, answer1: e.target.value }))}
+                      rows={6}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="answer2">Response 2</Label>
+                    <Textarea
+                      id="answer2"
+                      placeholder="Your response to the second question..."
+                      value={applicationData.answer2}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, answer2: e.target.value }))}
+                      rows={4}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="answer3">Response 3</Label>
+                    <Textarea
+                      id="answer3"
+                      placeholder="Your response to the third question..."
+                      value={applicationData.answer3}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, answer3: e.target.value }))}
+                      rows={4}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -226,7 +351,11 @@ export const JobApplication = () => {
               type="submit" 
               size="lg" 
               className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+              disabled={submitting}
             >
+              {submitting ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : null}
               Submit Application
             </Button>
           </div>

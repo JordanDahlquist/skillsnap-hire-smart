@@ -1,12 +1,23 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Clock, Users, Target, Zap } from "lucide-react";
+import { ArrowRight, Clock, Users, Target, Zap, User, LogOut } from "lucide-react";
 import { useState } from "react";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
+import { AuthModal } from "@/components/AuthModal";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { user, loading, signOut } = useAuth();
+
+  const handleCreateRole = () => {
+    if (!user) {
+      setShowAuthModal(true);
+    } else {
+      setShowCreateModal(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -20,12 +31,45 @@ const Index = () => {
               </div>
               <span className="text-xl font-bold text-gray-900">SkillSnap</span>
             </div>
-            <Button 
-              onClick={() => setShowCreateModal(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              Create a Role
-            </Button>
+            <div className="flex items-center gap-4">
+              {loading ? null : user ? (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <User className="w-4 h-4" />
+                    {user.email}
+                  </div>
+                  <Button 
+                    variant="outline"
+                    onClick={signOut}
+                    size="sm"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                  <Button 
+                    onClick={handleCreateRole}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    Create a Role
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowAuthModal(true)}
+                  >
+                    Sign In
+                  </Button>
+                  <Button 
+                    onClick={handleCreateRole}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    Create a Role
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -42,7 +86,7 @@ const Index = () => {
             Skip the noise, skip the interviews, get straight to the talent.
           </p>
           <Button 
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleCreateRole}
             size="lg" 
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg"
           >
@@ -168,7 +212,7 @@ const Index = () => {
             Create your first role and start getting quality applicants in minutes.
           </p>
           <Button 
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleCreateRole}
             size="lg" 
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg"
           >
@@ -178,6 +222,7 @@ const Index = () => {
       </section>
 
       <CreateRoleModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, FileText, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface CreateRoleModalProps {
   open: boolean;
@@ -31,98 +32,108 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   const [generatedJob, setGeneratedJob] = useState("");
   const [generatedTest, setGeneratedTest] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const generateJobPost = async () => {
+  const generateJobContent = async () => {
     setLoading(true);
-    // Simulate AI generation
-    setTimeout(() => {
-      const jobPost = `🚀 ${formData.title} - ${formData.experience} Level
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-job-content', {
+        body: { jobData: formData }
+      });
 
-We're looking for a talented ${formData.title.toLowerCase()} to join our team for a ${formData.duration} project.
+      if (error) throw error;
 
-**What you'll do:**
-${formData.description}
-
-**Required skills:**
-${formData.skills.split(',').map(skill => `• ${skill.trim()}`).join('\n')}
-
-**Project details:**
-• Duration: ${formData.duration}
-• Budget: ${formData.budget}
-• Experience level: ${formData.experience}
-
-Ready to show us what you can do? Complete the skills test below!`;
-
-      setGeneratedJob(jobPost);
+      setGeneratedJob(data.jobPost);
+      setGeneratedTest(data.test);
+    } catch (error) {
+      console.error('Error generating job content:', error);
+      toast({
+        title: "Error generating content",
+        description: "Please try again or contact support if the problem persists.",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
-  const generateTest = async () => {
-    setLoading(true);
-    // Simulate AI test generation
-    setTimeout(() => {
-      const test = `**Skills Assessment for ${formData.title}**
-
-**Question 1: Practical Challenge (60 minutes)**
-${formData.roleType === "developer" ? 
-  "Build a simple task management component with React. Include add, edit, delete, and mark complete functionality. Focus on clean code and user experience." :
-  formData.roleType === "designer" ?
-  "Design a mobile-first landing page for a productivity app. Include wireframes and high-fidelity mockups. Show your process from concept to final design." :
-  "Create a content strategy for a B2B SaaS startup launching their first product. Include target audience analysis, content calendar for first month, and 3 sample pieces."
-}
-
-**Question 2: Problem Solving (30 minutes)**
-${formData.roleType === "developer" ?
-  "Describe how you would optimize a React app that's loading slowly. What tools would you use to identify bottlenecks?" :
-  formData.roleType === "designer" ?
-  "A client wants their checkout process to convert better. Walk through your research and design process." :
-  "A client's blog traffic has plateaued. What's your 90-day plan to increase organic traffic by 50%?"
-}
-
-**Question 3: Communication (15 minutes)**
-Tell us about a challenging project you worked on. What obstacles did you face and how did you overcome them?
-
-**Submission Instructions:**
-• Complete all questions
-• Include relevant work samples
-• Estimated time: 2 hours maximum`;
-
-      setGeneratedTest(test);
-      setLoading(false);
-    }, 2000);
-  };
-
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === 1) {
-      generateJobPost();
+      await generateJobContent();
       setStep(2);
     } else if (step === 2) {
-      generateTest();
       setStep(3);
     } else {
-      // Create the role
-      toast({
-        title: "Role created successfully!",
-        description: "Your job posting is now live. We'll notify you when applications come in.",
-      });
-      onOpenChange(false);
-      setStep(1);
-      setFormData({
-        title: "",
-        description: "",
-        roleType: "",
-        experience: "",
-        duration: "",
-        budget: "",
-        skills: "",
-      });
-      setGeneratedJob("");
-      setGeneratedTest("");
+      // Create the role in database
+      setLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          toast({
+            title: "Authentication required",
+            description: "Please sign in to create a job posting.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const { data: job, error } = await supabase
+          .from('jobs')
+          .insert({
+            user_id: user.id,
+            title: formData.title,
+            description: formData.description,
+            role_type: formData.roleType,
+            experience_level: formData.experience,
+            duration: formData.duration,
+            budget: formData.budget,
+            required_skills: formData.skills,
+            generated_job_post: generatedJob,
+            generated_test: generatedTest,
+            status: 'active'
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        toast({
+          title: "Role created successfully!",
+          description: "Your job posting is now live and ready to receive applications.",
+        });
+
+        // Navigate to dashboard
+        navigate(`/dashboard/${job.id}`);
+        
+        // Reset form
+        onOpenChange(false);
+        setStep(1);
+        setFormData({
+          title: "",
+          description: "",
+          roleType: "",
+          experience: "",
+          duration: "",
+          budget: "",
+          skills: "",
+        });
+        setGeneratedJob("");
+        setGeneratedTest("");
+      } catch (error) {
+        console.error('Error creating job:', error);
+        toast({
+          title: "Error creating job",
+          description: "Please try again or contact support if the problem persists.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -291,18 +302,11 @@ Tell us about a challenging project you worked on. What obstacles did you face a
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
-                    <span className="ml-2 text-gray-600">Creating your skills test...</span>
-                  </div>
-                ) : (
-                  <div className="prose max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                      {generatedTest}
-                    </pre>
-                  </div>
-                )}
+                <div className="prose max-w-none">
+                  <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                    {generatedTest}
+                  </pre>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
