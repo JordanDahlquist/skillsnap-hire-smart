@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { EnhancedDashboardHeader } from "./dashboard/EnhancedDashboardHeader";
-import { EnhancedDashboardStats } from "./dashboard/EnhancedDashboardStats";
+import { CompactDashboardHeader } from "./dashboard/CompactDashboardHeader";
+import { CompactDashboardStats } from "./dashboard/CompactDashboardStats";
 import { ApplicationTrendsChart } from "./dashboard/ApplicationTrendsChart";
 import { PerformanceMetrics } from "./dashboard/PerformanceMetrics";
 import { ApplicationsList } from "./dashboard/ApplicationsList";
@@ -143,7 +143,7 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <EnhancedDashboardHeader 
+      <CompactDashboardHeader 
         job={job} 
         applications={applications}
         getTimeAgo={getTimeAgo}
@@ -153,10 +153,10 @@ export const Dashboard = () => {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
-          {/* Enhanced Stats Section */}
-          <EnhancedDashboardStats applications={applications} job={job} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
+          {/* Compact Stats Section */}
+          <CompactDashboardStats applications={applications} job={job} />
 
           {/* Analytics Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
