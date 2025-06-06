@@ -219,7 +219,7 @@ const MyJobs = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007af6] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading your jobs...</p>
         </div>
       </div>
@@ -229,7 +229,7 @@ const MyJobs = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Enhanced Header */}
-      <div className="bg-gradient-to-r from-purple-50 via-white to-purple-50 border-b border-gray-200">
+      <div className="bg-gradient-to-r from-blue-50 via-white to-blue-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-8">
           {/* Top Navigation Bar */}
           <div className="flex items-center justify-between py-4 border-b border-gray-100">
@@ -265,7 +265,7 @@ const MyJobs = () => {
           {/* Breadcrumb */}
           <div className="py-3">
             <nav className="flex items-center space-x-2 text-sm text-gray-600">
-              <Link to="/" className="hover:text-purple-600 transition-colors">
+              <Link to="/" className="hover:text-[#007af6] transition-colors">
                 <Home className="w-4 h-4" />
               </Link>
               <ChevronRight className="w-4 h-4" />
@@ -286,7 +286,7 @@ const MyJobs = () => {
               </div>
               <Button 
                 onClick={() => setIsCreateModalOpen(true)}
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-3 text-lg"
+                className="bg-[#007af6] hover:bg-[#0056b3] px-6 py-3 text-lg"
                 size="lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
@@ -304,7 +304,7 @@ const MyJobs = () => {
                       <p className="text-2xl font-bold text-gray-900">{stats.totalJobs}</p>
                     </div>
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Briefcase className="w-6 h-6 text-blue-600" />
+                      <Briefcase className="w-6 h-6 text-[#007af6]" />
                     </div>
                   </div>
                 </CardContent>
@@ -315,10 +315,10 @@ const MyJobs = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Active Jobs</p>
-                      <p className="text-2xl font-bold text-green-600">{stats.activeJobs}</p>
+                      <p className="text-2xl font-bold text-[#007af6]">{stats.activeJobs}</p>
                     </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-green-600" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-6 h-6 text-[#007af6]" />
                     </div>
                   </div>
                 </CardContent>
@@ -329,10 +329,10 @@ const MyJobs = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Applications</p>
-                      <p className="text-2xl font-bold text-purple-600">{stats.totalApplications}</p>
+                      <p className="text-2xl font-bold text-[#007af6]">{stats.totalApplications}</p>
                     </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Users className="w-6 h-6 text-purple-600" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Users className="w-6 h-6 text-[#007af6]" />
                     </div>
                   </div>
                 </CardContent>
@@ -343,15 +343,15 @@ const MyJobs = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">This Week</p>
-                      <p className="text-2xl font-bold text-orange-600">{stats.recentJobs}</p>
+                      <p className="text-2xl font-bold text-[#007af6]">{stats.recentJobs}</p>
                       {stats.recentJobs > 0 && (
-                        <Badge className="mt-1 bg-orange-100 text-orange-800">
+                        <Badge className="mt-1 bg-blue-100 text-[#007af6]">
                           New jobs
                         </Badge>
                       )}
                     </div>
-                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                      <BarChart3 className="w-6 h-6 text-orange-600" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-[#007af6]" />
                     </div>
                   </div>
                 </CardContent>
@@ -385,7 +385,7 @@ const MyJobs = () => {
               <p className="mb-4">Create your first job posting to start receiving applications</p>
               <Button 
                 onClick={() => setIsCreateModalOpen(true)}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-[#007af6] hover:bg-[#0056b3]"
               >
                 Create Your First Job
               </Button>
