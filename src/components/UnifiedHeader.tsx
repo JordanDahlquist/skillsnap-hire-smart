@@ -6,7 +6,6 @@ import { Link, useLocation } from "react-router-dom";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
 
 interface UnifiedHeaderProps {
@@ -102,30 +101,6 @@ export const UnifiedHeader = ({
                 )}
               </NavigationMenuList>
             </NavigationMenu>
-
-            {/* Breadcrumbs */}
-            {breadcrumbs && breadcrumbs.length > 0 && (
-              <div className="hidden sm:block">
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    {breadcrumbs.map((crumb, index) => (
-                      <div key={index} className="flex items-center">
-                        {index > 0 && <BreadcrumbSeparator />}
-                        <BreadcrumbItem>
-                          {crumb.isCurrentPage ? (
-                            <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                          ) : (
-                            <BreadcrumbLink asChild>
-                              <Link to={crumb.href || "#"}>{crumb.label}</Link>
-                            </BreadcrumbLink>
-                          )}
-                        </BreadcrumbItem>
-                      </div>
-                    ))}
-                  </BreadcrumbList>
-                </Breadcrumb>
-              </div>
-            )}
           </div>
           
           {/* Right Side Navigation */}
