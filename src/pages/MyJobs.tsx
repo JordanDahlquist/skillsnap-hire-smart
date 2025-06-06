@@ -1,17 +1,18 @@
+
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Zap, User, LogOut, BarChart3, Briefcase, Users, TrendingUp, Home, ChevronRight } from "lucide-react";
+import { Plus, Briefcase, Users, TrendingUp, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
 import { EnhancedJobCard } from "@/components/EnhancedJobCard";
 import { JobManagementToolbar } from "@/components/JobManagementToolbar";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { useToast } from "@/components/ui/use-toast";
-import { Link } from "react-router-dom";
 import { Database } from "@/integrations/supabase/types";
 import { getWelcomeMessage, getWelcomeSubtitle } from "@/utils/welcomeMessages";
 
@@ -22,7 +23,7 @@ interface Job extends JobRow {
 }
 
 const MyJobs = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -226,53 +227,22 @@ const MyJobs = () => {
     );
   }
 
+  const breadcrumbs = [
+    { label: "Dashboard", isCurrentPage: true }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Unified Header */}
+      <UnifiedHeader 
+        breadcrumbs={breadcrumbs}
+        onCreateRole={() => setIsCreateModalOpen(true)}
+        showCreateButton={true}
+      />
+
       {/* Enhanced Header */}
       <div className="bg-gradient-to-r from-blue-50 via-white to-blue-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-8">
-          {/* Top Navigation Bar */}
-          <div className="flex items-center justify-between py-4 border-b border-gray-100">
-            {/* Atract Logo */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <img 
-                  src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
-                  alt="Atract"
-                  className="w-6 h-6"
-                />
-              </div>
-              <span className="text-xl font-bold text-gray-900">Atract</span>
-            </div>
-
-            {/* User Navigation */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <User className="w-4 h-4" />
-                {user?.email}
-              </div>
-              <Button 
-                variant="outline"
-                onClick={signOut}
-                size="sm"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-
-          {/* Breadcrumb */}
-          <div className="py-3">
-            <nav className="flex items-center space-x-2 text-sm text-gray-600">
-              <Link to="/" className="hover:text-[#007af6] transition-colors">
-                <Home className="w-4 h-4" />
-              </Link>
-              <ChevronRight className="w-4 h-4" />
-              <span className="font-medium text-gray-900">My Jobs</span>
-            </nav>
-          </div>
-
           {/* Main Header Content */}
           <div className="py-8">
             <div className="flex items-center justify-between mb-6">

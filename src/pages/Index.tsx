@@ -1,16 +1,17 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Clock, Users, Target, User, LogOut, BarChart3, LogIn } from "lucide-react";
+import { ArrowRight, Clock, Users, Target, LogIn } from "lucide-react";
 import { useState } from "react";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
 
 const Index = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { user, loading, signOut } = useAuth();
+  const { user } = useAuth();
 
   const handleCreateRole = () => {
     if (!user) {
@@ -22,72 +23,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <img 
-                  src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
-                  alt="Atract"
-                  className="w-6 h-6"
-                />
-              </div>
-              <span className="text-xl font-bold text-gray-900">Atract</span>
-            </div>
-            <div className="flex items-center gap-4">
-              {loading ? null : user ? (
-                <>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <User className="w-4 h-4" />
-                    {user.email}
-                  </div>
-                  <Button 
-                    variant="outline"
-                    asChild
-                    size="sm"
-                  >
-                    <Link to="/jobs">
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      My Jobs
-                    </Link>
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={signOut}
-                    size="sm"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
-                  <Button 
-                    onClick={handleCreateRole}
-                    className="bg-[#007af6] hover:bg-[#0056b3] text-white"
-                  >
-                    Create a Role
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button 
-                    variant="outline"
-                    onClick={() => setShowAuthModal(true)}
-                  >
-                    Sign In
-                  </Button>
-                  <Button 
-                    onClick={handleCreateRole}
-                    className="bg-[#007af6] hover:bg-[#0056b3] text-white"
-                  >
-                    Create a Role
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Unified Header */}
+      <UnifiedHeader 
+        onCreateRole={handleCreateRole}
+        showCreateButton={true}
+      />
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20">
