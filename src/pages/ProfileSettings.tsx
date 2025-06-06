@@ -9,16 +9,25 @@ import { ProfileForm } from '@/components/profile/ProfileForm';
 import { AccountSettings } from '@/components/profile/AccountSettings';
 import { HiringPreferences } from '@/components/profile/HiringPreferences';
 import { ProfilePictureUpload } from '@/components/profile/ProfilePictureUpload';
+import { UnifiedHeader } from '@/components/UnifiedHeader';
 
 export const ProfileSettings = () => {
   const { user, profile, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading profile...</p>
+      <div className="min-h-screen bg-gray-50">
+        <UnifiedHeader 
+          breadcrumbs={[
+            { label: "Home", href: "/" },
+            { label: "Profile Settings", isCurrentPage: true }
+          ]}
+        />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading profile...</p>
+          </div>
         </div>
       </div>
     );
@@ -26,19 +35,34 @@ export const ProfileSettings = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You must be logged in to access your profile settings.</CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="min-h-screen bg-gray-50">
+        <UnifiedHeader 
+          breadcrumbs={[
+            { label: "Home", href: "/" },
+            { label: "Profile Settings", isCurrentPage: true }
+          ]}
+        />
+        <div className="flex items-center justify-center py-12">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Access Denied</CardTitle>
+              <CardDescription>You must be logged in to access your profile settings.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <UnifiedHeader 
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Profile Settings", isCurrentPage: true }
+        ]}
+      />
+      
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
