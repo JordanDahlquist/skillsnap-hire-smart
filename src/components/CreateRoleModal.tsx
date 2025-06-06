@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,7 @@ import { LocationSelector } from "./LocationSelector";
 import { PdfUpload } from "./PdfUpload";
 import { AiGenerationLoader } from "./AiGenerationLoader";
 import { RichTextEditor } from "./RichTextEditor";
+import { useGenerateMiniDescription } from "@/hooks/useGenerateMiniDescription";
 
 interface CreateRoleModalProps {
   open: boolean;
@@ -57,6 +57,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { generateMiniDescription } = useGenerateMiniDescription();
 
   // Helper function to format content for display
   const formatContentForDisplay = (content: string) => {
@@ -277,6 +278,19 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           .single();
 
         if (error) throw error;
+
+        // Automatically generate mini description for the new job
+        try {
+          await generateMiniDescription({
+            id: job.id,
+            title: job.title,
+            description: job.description,
+            role_type: job.role_type,
+          });
+        } catch (miniDescError) {
+          console.error('Error generating mini description:', miniDescError);
+          // Don't fail the job creation if mini description fails
+        }
 
         toast({
           title: "Role created successfully!",
