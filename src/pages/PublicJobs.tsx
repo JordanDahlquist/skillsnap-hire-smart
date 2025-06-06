@@ -13,8 +13,8 @@ const PublicJobs = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleTypeFilter, setRoleTypeFilter] = useState<string>("");
-  const [locationTypeFilter, setLocationTypeFilter] = useState<string>("");
+  const [roleTypeFilter, setRoleTypeFilter] = useState<string>("all");
+  const [locationTypeFilter, setLocationTypeFilter] = useState<string>("all");
   
   useEffect(() => {
     fetchJobs();
@@ -55,10 +55,10 @@ const PublicJobs = () => {
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       job.description.toLowerCase().includes(searchTerm.toLowerCase());
       
-    const matchesRoleType = roleTypeFilter === "" || 
+    const matchesRoleType = roleTypeFilter === "all" || 
       job.role_type === roleTypeFilter;
       
-    const matchesLocationType = locationTypeFilter === "" || 
+    const matchesLocationType = locationTypeFilter === "all" || 
       job.location_type === locationTypeFilter;
       
     return matchesSearch && matchesRoleType && matchesLocationType;
@@ -108,9 +108,9 @@ const PublicJobs = () => {
                   <SelectValue placeholder="Role type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All roles</SelectItem>
+                  <SelectItem value="all">All roles</SelectItem>
                   {roleTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type || "unknown"}>{type || "Unknown"}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -120,9 +120,9 @@ const PublicJobs = () => {
                   <SelectValue placeholder="Location type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All locations</SelectItem>
+                  <SelectItem value="all">All locations</SelectItem>
                   {locationTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type || "unknown"}>{type || "Unknown"}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -131,8 +131,8 @@ const PublicJobs = () => {
                 variant="outline" 
                 onClick={() => {
                   setSearchTerm("");
-                  setRoleTypeFilter("");
-                  setLocationTypeFilter("");
+                  setRoleTypeFilter("all");
+                  setLocationTypeFilter("all");
                 }}
               >
                 Clear
@@ -160,7 +160,7 @@ const PublicJobs = () => {
             <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-medium text-gray-900 mb-1">No open positions found</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              {searchTerm || roleTypeFilter || locationTypeFilter ? 
+              {searchTerm || roleTypeFilter !== "all" || locationTypeFilter !== "all" ? 
                 "Try adjusting your filters or search terms" : 
                 "Check back soon for new opportunities"}
             </p>
