@@ -803,7 +803,7 @@ export const JobApplication = () => {
               <Button 
                 type="submit" 
                 size="lg" 
-                className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8"
                 disabled={submitting}
               >
                 {submitting ? (
