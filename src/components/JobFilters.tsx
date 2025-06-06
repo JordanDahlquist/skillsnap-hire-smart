@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -57,7 +56,8 @@ export const JobFilters = ({
   const handleAiSearch = () => {
     if (aiSearchPrompt.trim()) {
       onAiSearch(aiSearchPrompt);
-      setAiSearchPrompt("");
+      setAiSearchPrompt(""); // Clear the AI search input after search
+      setIsAiSearchMode(false); // Switch back to standard mode after search
     }
   };
 
@@ -128,7 +128,7 @@ export const JobFilters = ({
           <div className="relative">
             <Sparkles className="absolute left-3 top-3 h-4 w-4 text-purple-500" />
             <Input
-              placeholder="Try: 'Remote React developer jobs under $100k' or 'Senior designer roles in California'"
+              placeholder="Try: 'Branding roles in Los Angeles' or 'Remote React developer jobs under $100k'"
               value={aiSearchPrompt}
               onChange={(e) => setAiSearchPrompt(e.target.value)}
               className="pl-9"

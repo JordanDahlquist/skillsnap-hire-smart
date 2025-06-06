@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { PublicJobCard } from "@/components/PublicJobCard";
@@ -26,7 +25,8 @@ const PublicJobs = () => {
     filteredJobs,
     availableOptions,
     activeFiltersCount,
-    clearFilters
+    clearFilters,
+    applyAiSearchResults
   } = useJobFiltering(jobs);
   
   useEffect(() => {
@@ -68,6 +68,8 @@ const PublicJobs = () => {
 
   const handleAiSearch = async (prompt: string) => {
     try {
+      console.log('Starting AI search with prompt:', prompt);
+      
       const response = await supabase.functions.invoke('ai-job-search', {
         body: { prompt, availableOptions }
       });
@@ -78,16 +80,18 @@ const PublicJobs = () => {
 
       const { searchTerm: aiSearchTerm, filters: aiFilters, explanation } = response.data;
       
-      // Apply AI-generated filters
-      setSearchTerm(aiSearchTerm);
-      setFilters(aiFilters);
+      console.log('AI Search Response:', { aiSearchTerm, aiFilters, explanation });
+      
+      // Apply AI-generated filters using the new method
+      applyAiSearchResults(aiSearchTerm, aiFilters);
       
       toast.success(`AI Search Applied: ${explanation}`);
     } catch (error) {
       console.error('AI search error:', error);
       toast.error('AI search failed, using basic text search instead');
       
-      // Fallback to basic search
+      // Fallback to basic search - clear filters first
+      clearFilters();
       setSearchTerm(prompt);
     }
   };

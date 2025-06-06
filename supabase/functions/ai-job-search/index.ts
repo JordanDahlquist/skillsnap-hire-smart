@@ -28,26 +28,44 @@ Available options for filtering:
 - States: ${availableOptions.states.join(', ')}
 - Durations: ${availableOptions.durations.join(', ')}
 
-Return a JSON object with these fields (use "all" for any unspecified filters):
+IMPORTANT INSTRUCTIONS:
+1. Be flexible with matching - use partial matches and synonyms
+2. For locations like "Los Angeles", map to the state "California" 
+3. For role types, match broadly (e.g., "branding" could match "designer", "marketing", etc.)
+4. If you can't find exact matches, use the closest available option or "all"
+5. Always include relevant keywords in searchTerm for better text search
+6. Prioritize searchTerm over strict filtering when uncertain
+
+LOCATION MAPPING EXAMPLES:
+- "Los Angeles" → state: "California", searchTerm should include "Los Angeles"
+- "New York" → state: "New York", searchTerm should include "New York"
+- "San Francisco" → state: "California", searchTerm should include "San Francisco"
+
+ROLE MAPPING EXAMPLES:
+- "branding" → look for "designer", "marketing", "creative" roles, searchTerm: "branding design"
+- "frontend" → look for "developer", "engineer" roles, searchTerm: "frontend development"
+- "data" → look for "analyst", "scientist", "engineer" roles, searchTerm: "data analysis"
+
+Return a JSON object with these fields:
 {
-  "searchTerm": "extracted keywords for text search",
+  "searchTerm": "extracted keywords for text search (always include specific terms like city names, specializations)",
   "filters": {
-    "roleType": "all",
-    "locationType": "all", 
-    "experienceLevel": "all",
-    "employmentType": "all",
-    "country": "all",
-    "state": "all",
-    "budgetRange": [min, max], // budget range in dollars
-    "duration": "all"
+    "roleType": "closest matching role or 'all'",
+    "locationType": "remote/onsite/hybrid or 'all'", 
+    "experienceLevel": "entry/mid/senior or 'all'",
+    "employmentType": "full-time/part-time/contract or 'all'",
+    "country": "exact country match or 'all'",
+    "state": "exact state match or 'all'",
+    "budgetRange": [min, max],
+    "duration": "exact duration match or 'all'"
   },
-  "explanation": "Brief explanation of what filters were applied"
+  "explanation": "Brief explanation of what filters were applied and why"
 }
 
 Examples:
-- "React developer jobs in California" → roleType: closest match to React, state: "California"
-- "Remote senior engineer under 100k" → locationType: "remote", experienceLevel: "senior", budgetRange: [0, 100000]
-- "Part-time design work" → employmentType: "part-time", roleType: closest design match`;
+- "Branding roles in Los Angeles" → searchTerm: "branding design Los Angeles", state: "California", roleType: closest design match
+- "Remote senior React developer under 100k" → searchTerm: "React developer", locationType: "remote", experienceLevel: "senior", budgetRange: [0, 100000]
+- "Part-time design work in California" → searchTerm: "design", employmentType: "part-time", state: "California", roleType: closest design match`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -68,11 +86,14 @@ Examples:
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
     
+    console.log('AI Response:', aiResponse);
+    
     // Parse the JSON response
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(aiResponse);
     } catch (e) {
+      console.error('JSON parsing error:', e);
       // Fallback if JSON parsing fails
       parsedResponse = {
         searchTerm: prompt,
@@ -89,6 +110,8 @@ Examples:
         explanation: "Using basic text search due to parsing error"
       };
     }
+
+    console.log('Parsed Response:', parsedResponse);
 
     return new Response(JSON.stringify(parsedResponse), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

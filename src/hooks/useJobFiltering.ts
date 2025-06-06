@@ -65,7 +65,7 @@ export const useJobFiltering = (jobs: any[]) => {
     return parseFloat(cleanBudget.replace(/,/g, '')) || 0;
   };
 
-  // Enhanced search function
+  // Enhanced search function with better partial matching
   const matchesSearchTerm = (job: any, searchTerm: string): boolean => {
     if (!searchTerm || searchTerm.trim() === "") return true;
     
@@ -85,13 +85,43 @@ export const useJobFiltering = (jobs: any[]) => {
     
     // Check if ALL search words are found in the job content
     return searchWords.every(word => {
-      // Check for exact word matches and partial matches
-      return searchableContent.includes(word) || 
-             // Support partial matching for words longer than 2 characters
-             (word.length > 2 && searchableContent.split(/\s+/).some(jobWord => 
-               jobWord.includes(word) || word.includes(jobWord.substring(0, Math.min(jobWord.length, word.length)))
-             ));
+      // Check for exact word matches first
+      if (searchableContent.includes(word)) return true;
+      
+      // For words longer than 2 characters, check partial matches
+      if (word.length > 2) {
+        const contentWords = searchableContent.split(/\s+/);
+        return contentWords.some(jobWord => {
+          // Check if job word contains search word or vice versa
+          return jobWord.includes(word) || 
+                 word.includes(jobWord) ||
+                 // Check for common variations (e.g., "design" matches "designer")
+                 (jobWord.length > 3 && word.length > 3 && 
+                  (jobWord.startsWith(word.substring(0, 4)) || word.startsWith(jobWord.substring(0, 4))));
+        });
+      }
+      
+      return false;
     });
+  };
+
+  // Smart filter matching with fallbacks
+  const findBestMatch = (value: string, availableValues: string[]): string => {
+    if (!value || value === "all") return "all";
+    
+    // Exact match first
+    const exactMatch = availableValues.find(av => av.toLowerCase() === value.toLowerCase());
+    if (exactMatch) return exactMatch;
+    
+    // Partial match
+    const partialMatch = availableValues.find(av => 
+      av.toLowerCase().includes(value.toLowerCase()) || 
+      value.toLowerCase().includes(av.toLowerCase())
+    );
+    if (partialMatch) return partialMatch;
+    
+    // Return "all" if no match found
+    return "all";
   };
 
   // Filter jobs based on search term and filters
@@ -170,6 +200,34 @@ export const useJobFiltering = (jobs: any[]) => {
     setFilters(defaultFilters);
   };
 
+  // Enhanced AI search apply function
+  const applyAiSearchResults = (aiSearchTerm: string, aiFilters: JobFilters) => {
+    console.log("AI Search Results:", { aiSearchTerm, aiFilters });
+    console.log("Available Options:", availableOptions);
+    
+    // Clear existing filters first
+    setFilters(defaultFilters);
+    setSearchTerm("");
+    
+    // Apply smart matching for filters
+    const smartFilters: JobFilters = {
+      roleType: findBestMatch(aiFilters.roleType, availableOptions.roleTypes),
+      locationType: findBestMatch(aiFilters.locationType, availableOptions.locationTypes),
+      experienceLevel: findBestMatch(aiFilters.experienceLevel, availableOptions.experienceLevels),
+      employmentType: findBestMatch(aiFilters.employmentType, availableOptions.employmentTypes),
+      country: findBestMatch(aiFilters.country, availableOptions.countries),
+      state: findBestMatch(aiFilters.state, availableOptions.states),
+      duration: findBestMatch(aiFilters.duration, availableOptions.durations),
+      budgetRange: aiFilters.budgetRange || [0, 200000]
+    };
+    
+    console.log("Smart Filters Applied:", smartFilters);
+    
+    // Set the search term and filters
+    setSearchTerm(aiSearchTerm);
+    setFilters(smartFilters);
+  };
+
   return {
     searchTerm,
     setSearchTerm,
@@ -182,6 +240,7 @@ export const useJobFiltering = (jobs: any[]) => {
     filteredJobs,
     availableOptions,
     activeFiltersCount,
-    clearFilters
+    clearFilters,
+    applyAiSearchResults
   };
 };
