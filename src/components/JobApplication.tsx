@@ -117,62 +117,30 @@ export const JobApplication = () => {
   useEffect(() => {
     const linkedInConnected = searchParams.get('linkedin');
     if (linkedInConnected === 'connected') {
-      const accessToken = sessionStorage.getItem('linkedin_access_token');
-      if (accessToken) {
-        // Fetch LinkedIn profile data
-        fetchLinkedInProfileData(accessToken);
-        // Clean up
-        sessionStorage.removeItem('linkedin_access_token');
+      // Get the stored LinkedIn profile data
+      const storedProfileData = sessionStorage.getItem('linkedin_profile_data');
+      if (storedProfileData) {
+        try {
+          const profileData = JSON.parse(storedProfileData);
+          handleLinkedInData(profileData);
+          // Clean up
+          sessionStorage.removeItem('linkedin_profile_data');
+          
+          toast({
+            title: "LinkedIn connected!",
+            description: "Your profile information has been imported successfully.",
+          });
+        } catch (error) {
+          console.error('Error parsing LinkedIn profile data:', error);
+          toast({
+            title: "Profile import failed",
+            description: "Unable to parse your LinkedIn profile data.",
+            variant: "destructive"
+          });
+        }
       }
     }
   }, [searchParams]);
-
-  const fetchLinkedInProfileData = async (accessToken: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('fetch-linkedin-profile', {
-        body: { accessToken }
-      });
-
-      if (error) throw error;
-
-      const profileData = data.profile;
-      
-      // Transform LinkedIn data to match our application format
-      const transformedData = {
-        personalInfo: {
-          name: profileData.name || "",
-          email: profileData.email || "",
-          phone: "",
-          location: profileData.location || "",
-        },
-        workExperience: profileData.positions?.map((pos: any) => ({
-          company: pos.company || "",
-          position: pos.title || "",
-          startDate: pos.startDate || "",
-          endDate: pos.endDate || "Present",
-          description: pos.description || "",
-        })) || [],
-        education: [],
-        skills: profileData.skills || [],
-        summary: profileData.headline || profileData.summary || "",
-        totalExperience: calculateTotalExperience(profileData.positions || []),
-      };
-
-      handleLinkedInData(transformedData);
-      
-      toast({
-        title: "LinkedIn connected!",
-        description: "Your profile information has been imported successfully.",
-      });
-    } catch (error) {
-      console.error('Error fetching LinkedIn profile:', error);
-      toast({
-        title: "Profile import failed",
-        description: "Unable to import your LinkedIn profile. Please try uploading a resume instead.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const calculateTotalExperience = (positions: any[]) => {
     if (!positions.length) return "0 years";
