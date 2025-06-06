@@ -14,7 +14,8 @@ import {
   Clock, 
   TrendingUp,
   Eye,
-  Calendar
+  Calendar,
+  MapPin
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,11 @@ interface Job {
   experience_level: string;
   status: string;
   created_at: string;
+  location_type?: string;
+  country?: string;
+  state?: string;
+  region?: string;
+  city?: string;
   applications?: { count: number }[];
 }
 
@@ -49,6 +55,29 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
       case "draft": return "bg-gray-100 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const getLocationDisplay = () => {
+    const { location_type, country, state, region, city } = job;
+    
+    if (location_type === 'remote') {
+      if (country) {
+        return `Remote (${country})`;
+      }
+      return 'Remote';
+    }
+    
+    if (country === 'United States' && state) {
+      const parts = [city, state, region].filter(Boolean);
+      return parts.join(', ');
+    }
+    
+    if (country) {
+      const parts = [city, country].filter(Boolean);
+      return parts.join(', ');
+    }
+    
+    return location_type ? location_type.charAt(0).toUpperCase() + location_type.slice(1) : 'Not specified';
   };
 
   const handleStatusToggle = async (newStatus: string) => {
@@ -89,7 +118,10 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
 
       if (!originalJob) throw new Error('Job not found');
 
-      const { title, description, role_type, experience_level, budget, required_skills, duration, user_id } = originalJob;
+      const { 
+        title, description, role_type, experience_level, budget, required_skills, duration, user_id,
+        location_type, country, state, region, city 
+      } = originalJob;
       
       const { error } = await supabase
         .from('jobs')
@@ -102,6 +134,11 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
           required_skills,
           duration,
           user_id,
+          location_type,
+          country,
+          state,
+          region,
+          city,
           status: 'draft'
         });
 
@@ -144,20 +181,14 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
                   {job.title}
                 </Link>
               </CardTitle>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={isActive}
-                  onCheckedChange={(checked) => handleStatusToggle(checked ? 'active' : 'paused')}
-                  disabled={isUpdating}
-                />
-                <span className="text-sm text-gray-600">
-                  {isActive ? 'Live' : 'Paused'}
-                </span>
-              </div>
             </div>
             
             <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
               <span>{job.role_type} • {job.experience_level}</span>
+              <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                <span>{getLocationDisplay()}</span>
+              </div>
               <div className="flex items-center gap-1">
                 <Eye className="w-4 h-4" />
                 <span>42 views</span>
@@ -188,9 +219,22 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
           </div>
           
           <div className="flex flex-col items-end gap-2">
-            <Badge className={getStatusColor(job.status)}>
-              {job.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge className={getStatusColor(job.status)}>
+                {job.status}
+              </Badge>
+              <div className="flex items-center gap-1">
+                <Switch
+                  checked={isActive}
+                  onCheckedChange={(checked) => handleStatusToggle(checked ? 'active' : 'paused')}
+                  disabled={isUpdating}
+                  className="scale-75"
+                />
+                <span className="text-xs text-gray-600">
+                  {isActive ? 'Live' : 'Paused'}
+                </span>
+              </div>
+            </div>
             {applicationsCount > 10 && (
               <Badge variant="outline" className="text-green-600 border-green-200">
                 High Interest

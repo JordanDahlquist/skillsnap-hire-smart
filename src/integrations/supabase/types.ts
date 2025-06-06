@@ -71,6 +71,8 @@ export type Database = {
       jobs: {
         Row: {
           budget: string
+          city: string | null
+          country: string | null
           created_at: string
           description: string
           duration: string
@@ -78,8 +80,11 @@ export type Database = {
           generated_job_post: string | null
           generated_test: string | null
           id: string
+          location_type: string | null
+          region: string | null
           required_skills: string
           role_type: string
+          state: string | null
           status: string
           title: string
           updated_at: string
@@ -87,6 +92,8 @@ export type Database = {
         }
         Insert: {
           budget: string
+          city?: string | null
+          country?: string | null
           created_at?: string
           description: string
           duration: string
@@ -94,8 +101,11 @@ export type Database = {
           generated_job_post?: string | null
           generated_test?: string | null
           id?: string
+          location_type?: string | null
+          region?: string | null
           required_skills: string
           role_type: string
+          state?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -103,6 +113,8 @@ export type Database = {
         }
         Update: {
           budget?: string
+          city?: string | null
+          country?: string | null
           created_at?: string
           description?: string
           duration?: string
@@ -110,8 +122,11 @@ export type Database = {
           generated_job_post?: string | null
           generated_test?: string | null
           id?: string
+          location_type?: string | null
+          region?: string | null
           required_skills?: string
           role_type?: string
+          state?: string | null
           status?: string
           title?: string
           updated_at?: string

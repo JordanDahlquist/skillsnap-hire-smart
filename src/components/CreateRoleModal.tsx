@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, FileText, Users } from "lucide-react";
+import { Loader2, Sparkles, FileText, Users, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { LocationSelector } from "./LocationSelector";
 
 interface CreateRoleModalProps {
   open: boolean;
@@ -28,6 +30,11 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     duration: "",
     budget: "",
     skills: "",
+    locationType: "remote",
+    country: "",
+    state: "",
+    region: "",
+    city: "",
   });
   const [generatedJob, setGeneratedJob] = useState("");
   const [generatedTest, setGeneratedTest] = useState("");
@@ -63,10 +70,12 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
 
   const handleNext = async () => {
     if (step === 1) {
-      await generateJobContent();
       setStep(2);
     } else if (step === 2) {
+      await generateJobContent();
       setStep(3);
+    } else if (step === 3) {
+      setStep(4);
     } else {
       // Create the role in database
       setLoading(true);
@@ -93,6 +102,11 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             duration: formData.duration,
             budget: formData.budget,
             required_skills: formData.skills,
+            location_type: formData.locationType,
+            country: formData.country || null,
+            state: formData.state || null,
+            region: formData.region || null,
+            city: formData.city || null,
             generated_job_post: generatedJob,
             generated_test: generatedTest,
             status: 'active'
@@ -107,7 +121,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           description: "Your job posting is now live and ready to receive applications.",
         });
 
-        // Navigate to dashboard
         navigate(`/dashboard/${job.id}`);
         
         // Reset form
@@ -121,6 +134,11 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           duration: "",
           budget: "",
           skills: "",
+          locationType: "remote",
+          country: "",
+          state: "",
+          region: "",
+          city: "",
         });
         setGeneratedJob("");
         setGeneratedTest("");
@@ -152,16 +170,20 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         </DialogHeader>
 
         <Tabs value={step.toString()} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="1" disabled={step < 1}>
               <FileText className="w-4 h-4 mr-2" />
               Role Details
             </TabsTrigger>
             <TabsTrigger value="2" disabled={step < 2}>
+              <MapPin className="w-4 h-4 mr-2" />
+              Location
+            </TabsTrigger>
+            <TabsTrigger value="3" disabled={step < 3}>
               <Sparkles className="w-4 h-4 mr-2" />
               Job Post
             </TabsTrigger>
-            <TabsTrigger value="3" disabled={step < 3}>
+            <TabsTrigger value="4" disabled={step < 4}>
               <Users className="w-4 h-4 mr-2" />
               Skills Test
             </TabsTrigger>
@@ -272,6 +294,27 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-purple-600" />
+                  Location & Work Type
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LocationSelector
+                  locationType={formData.locationType}
+                  country={formData.country}
+                  state={formData.state}
+                  region={formData.region}
+                  city={formData.city}
+                  onLocationChange={handleInputChange}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="3" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-purple-600" />
                   AI-Generated Job Post
                 </CardTitle>
@@ -293,7 +336,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             </Card>
           </TabsContent>
 
-          <TabsContent value="3" className="space-y-6">
+          <TabsContent value="4" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -328,7 +371,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
             ) : null}
-            {step === 3 ? "Publish Role" : "Next Step"}
+            {step === 4 ? "Publish Role" : "Next Step"}
           </Button>
         </div>
       </DialogContent>

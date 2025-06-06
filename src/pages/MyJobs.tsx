@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +19,11 @@ interface Job {
   experience_level: string;
   status: string;
   created_at: string;
+  location_type?: string;
+  country?: string;
+  state?: string;
+  region?: string;
+  city?: string;
   applications?: { count: number }[];
 }
 
@@ -28,6 +32,7 @@ const MyJobs = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [workTypeFilter, setWorkTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("created_desc");
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const { toast } = useToast();
@@ -60,13 +65,21 @@ const MyJobs = () => {
       filtered = filtered.filter(job =>
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.role_type.toLowerCase().includes(searchTerm.toLowerCase())
+        job.role_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.city?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(job => job.status === statusFilter);
+    }
+
+    // Apply work type filter
+    if (workTypeFilter !== 'all') {
+      filtered = filtered.filter(job => job.location_type === workTypeFilter);
     }
 
     // Apply sorting
@@ -90,7 +103,7 @@ const MyJobs = () => {
     });
 
     return filtered;
-  }, [jobs, searchTerm, statusFilter, sortBy]);
+  }, [jobs, searchTerm, statusFilter, workTypeFilter, sortBy]);
 
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -146,14 +159,15 @@ const MyJobs = () => {
           // Simple CSV export
           const selectedJobsData = jobs.filter(job => selectedJobs.includes(job.id));
           const csvContent = [
-            ['Title', 'Status', 'Applications', 'Created', 'Type', 'Experience'].join(','),
+            ['Title', 'Status', 'Applications', 'Created', 'Type', 'Experience', 'Location'].join(','),
             ...selectedJobsData.map(job => [
               job.title,
               job.status,
               job.applications?.[0]?.count || 0,
               new Date(job.created_at).toLocaleDateString(),
               job.role_type,
-              job.experience_level
+              job.experience_level,
+              job.location_type || 'Not specified'
             ].join(','))
           ].join('\n');
 
@@ -220,6 +234,8 @@ const MyJobs = () => {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
+        workTypeFilter={workTypeFilter}
+        onWorkTypeFilterChange={setWorkTypeFilter}
         sortBy={sortBy}
         onSortChange={setSortBy}
         totalJobs={jobs.length}
@@ -253,6 +269,7 @@ const MyJobs = () => {
                 onClick={() => {
                   setSearchTerm("");
                   setStatusFilter("all");
+                  setWorkTypeFilter("all");
                 }}
               >
                 Clear Filters

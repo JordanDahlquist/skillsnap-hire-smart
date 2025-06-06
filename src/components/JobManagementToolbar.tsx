@@ -11,8 +11,10 @@ import {
   Archive, 
   Trash2,
   Download,
-  RefreshCw
+  RefreshCw,
+  MapPin
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface JobManagementToolbarProps {
   searchTerm: string;
@@ -25,6 +27,10 @@ interface JobManagementToolbarProps {
   selectedJobs: string[];
   onBulkAction: (action: string) => void;
   onRefresh: () => void;
+  locationFilter?: string;
+  onLocationFilterChange?: (location: string) => void;
+  workTypeFilter?: string;
+  onWorkTypeFilterChange?: (workType: string) => void;
 }
 
 export const JobManagementToolbar = ({
@@ -37,9 +43,14 @@ export const JobManagementToolbar = ({
   totalJobs,
   selectedJobs,
   onBulkAction,
-  onRefresh
+  onRefresh,
+  locationFilter = 'all',
+  onLocationFilterChange = () => {},
+  workTypeFilter = 'all',
+  onWorkTypeFilterChange = () => {}
 }: JobManagementToolbarProps) => {
   const statusOptions = ['all', 'active', 'paused', 'draft', 'closed'];
+  const workTypeOptions = ['all', 'remote', 'on-site', 'hybrid'];
   const sortOptions = [
     { value: 'created_desc', label: 'Newest first' },
     { value: 'created_asc', label: 'Oldest first' },
@@ -57,7 +68,7 @@ export const JobManagementToolbar = ({
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Search jobs by title, skills, or description..."
+              placeholder="Search jobs by title, skills, location..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-10"
@@ -80,6 +91,21 @@ export const JobManagementToolbar = ({
         </div>
         
         <div className="flex gap-2 items-center">
+          <Select value={workTypeFilter} onValueChange={onWorkTypeFilterChange}>
+            <SelectTrigger className="w-32">
+              <MapPin className="w-4 h-4 mr-1" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {workTypeOptions.slice(1).map((type) => (
+                <SelectItem key={type} value={type} className="capitalize">
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
