@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { User, LogOut, BarChart3, Plus, Home, Loader2, Briefcase } from "lucide-react";
+import { User, LogOut, BarChart3, Plus, Home, Loader2, Briefcase, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useLocation } from "react-router-dom";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
@@ -128,6 +128,13 @@ export const UnifiedHeader = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center w-full">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Profile Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     {onCreateRole && (
                       <>
                         <DropdownMenuItem onClick={onCreateRole}>

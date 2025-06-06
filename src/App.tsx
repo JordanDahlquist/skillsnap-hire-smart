@@ -4,47 +4,39 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import MyJobs from "./pages/MyJobs";
 import PublicJobs from "./pages/PublicJobs";
-import Auth from "./pages/Auth";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import { JobApplication } from "./components/JobApplication";
-import { Dashboard } from "./components/Dashboard";
+import LinkedInCallback from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
-import { LinkedInCallback } from "./pages/LinkedInCallback";
-import { Footer } from "./components/Footer";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import { ProfileSettings } from "./pages/ProfileSettings";
 
 const queryClient = new QueryClient();
 
-function App() {
-  return (
+const App = () => (
+  <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="min-h-screen bg-background font-sans antialiased flex flex-col">
-            <div className="flex-1">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/jobs" element={<MyJobs />} />
-                <Route path="/jobs/public" element={<PublicJobs />} />
-                <Route path="/apply/:jobId" element={<JobApplication />} />
-                <Route path="/dashboard/:jobId" element={<Dashboard />} />
-                <Route path="/linkedin-callback" element={<LinkedInCallback />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
-            <Footer />
-          </div>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/jobs" element={<MyJobs />} />
+            <Route path="/jobs/public" element={<PublicJobs />} />
+            <Route path="/profile" element={<ProfileSettings />} />
+            <Route path="/linkedin/callback" element={<LinkedInCallback />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
-  );
-}
+  </ErrorBoundary>
+);
 
 export default App;
