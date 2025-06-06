@@ -13,50 +13,51 @@ export const LinkedInCallback = () => {
     console.log('=== LinkedIn Callback Component Mounted ===');
     console.log('Current URL:', window.location.href);
     console.log('URL search params:', window.location.search);
-    console.log('URL pathname:', window.location.pathname);
-    console.log('URL hash:', window.location.hash);
 
     const handleCallback = async () => {
       try {
         console.log('=== Starting LinkedIn callback handling ===');
 
-        // Extract state parameter from URL to get job ID
+        // Check for OAuth errors first
         const urlParams = new URLSearchParams(window.location.search);
-        const stateParam = urlParams.get('state');
         const errorParam = urlParams.get('error');
         const errorDescription = urlParams.get('error_description');
         
-        console.log('State parameter from URL:', stateParam);
         console.log('Error parameter from URL:', errorParam);
         console.log('Error description from URL:', errorDescription);
+
+        if (errorParam) {
+          console.error('OAuth error detected:', errorParam, errorDescription);
+          throw new Error(`OAuth error: ${errorParam} - ${errorDescription}`);
+        }
+
+        // Retrieve job context from sessionStorage
+        console.log('Retrieving job context from sessionStorage...');
+        const storedContext = sessionStorage.getItem('linkedin_job_context');
+        console.log('Stored context raw:', storedContext);
 
         let jobId = null;
         let originRoute = null;
         let originDomain = null;
 
-        if (stateParam) {
+        if (storedContext) {
           try {
-            console.log('Attempting to decode state parameter...');
-            const stateData = JSON.parse(atob(stateParam));
-            jobId = stateData.jobId;
-            originRoute = stateData.originRoute;
-            originDomain = stateData.originDomain;
-            console.log('Successfully decoded state data:', stateData);
+            const jobContext = JSON.parse(storedContext);
+            jobId = jobContext.jobId;
+            originRoute = jobContext.originRoute;
+            originDomain = jobContext.originDomain;
+            console.log('Successfully parsed job context:', jobContext);
             console.log('Extracted job ID:', jobId);
             console.log('Extracted origin route:', originRoute);
-            console.log('Extracted origin domain:', originDomain);
+            
+            // Clean up the stored context
+            sessionStorage.removeItem('linkedin_job_context');
+            console.log('Cleaned up stored job context');
           } catch (error) {
-            console.error('Error decoding state parameter:', error);
-            console.log('Raw state parameter for debugging:', stateParam);
+            console.error('Error parsing stored job context:', error);
           }
         } else {
-          console.warn('No state parameter found in URL');
-        }
-
-        // Check for OAuth errors first
-        if (errorParam) {
-          console.error('OAuth error detected:', errorParam, errorDescription);
-          throw new Error(`OAuth error: ${errorParam} - ${errorDescription}`);
+          console.warn('No job context found in sessionStorage');
         }
 
         // Wait for the OAuth flow to complete and session to be established
@@ -115,15 +116,15 @@ export const LinkedInCallback = () => {
           // Add another small delay to ensure sessionStorage write completes
           await new Promise(resolve => setTimeout(resolve, 200));
           
-          // Determine the correct redirect URL
+          // Determine the correct redirect URL based on retrieved job context
           let redirectUrl;
           
           if (jobId) {
             // Always redirect to the application page with the job ID
             redirectUrl = `/apply/${jobId}?linkedin=connected&t=${Date.now()}`;
-            console.log('Job ID found, redirecting to application page:', redirectUrl);
+            console.log('Job ID found from context, redirecting to application page:', redirectUrl);
           } else {
-            console.log('No job ID found, checking for fallback redirect options');
+            console.log('No job ID found in context, checking for fallback options');
             
             // If we have origin route but no job ID, try to extract job ID from origin route
             if (originRoute && originRoute.includes('/apply/')) {
@@ -148,17 +149,6 @@ export const LinkedInCallback = () => {
           window.location.replace(redirectUrl);
         } else {
           console.error('No user session found after LinkedIn authentication');
-          
-          // Double-check for any URL-based errors
-          const urlParams = new URLSearchParams(window.location.search);
-          const error = urlParams.get('error');
-          const errorDescription = urlParams.get('error_description');
-          
-          if (error) {
-            console.error('OAuth error from URL:', error, errorDescription);
-            throw new Error(`OAuth error: ${error} - ${errorDescription}`);
-          }
-          
           throw new Error('No user session found after LinkedIn authentication');
         }
       } catch (error) {
@@ -170,18 +160,20 @@ export const LinkedInCallback = () => {
           variant: "destructive"
         });
         
-        // Try to extract job ID from URL state parameter for error redirect
-        const urlParams = new URLSearchParams(window.location.search);
-        const stateParam = urlParams.get('state');
+        // Try to extract job ID from stored context for error redirect
         let jobId = null;
-
-        if (stateParam) {
+        const storedContext = sessionStorage.getItem('linkedin_job_context');
+        
+        if (storedContext) {
           try {
-            const stateData = JSON.parse(atob(stateParam));
-            jobId = stateData.jobId;
+            const jobContext = JSON.parse(storedContext);
+            jobId = jobContext.jobId;
             console.log('Extracted job ID for error redirect:', jobId);
+            
+            // Clean up the stored context
+            sessionStorage.removeItem('linkedin_job_context');
           } catch (error) {
-            console.error('Error decoding state parameter for error redirect:', error);
+            console.error('Error parsing stored job context for error redirect:', error);
           }
         }
 

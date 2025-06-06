@@ -38,47 +38,36 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
     setConnecting(true);
     try {
       console.log('=== LinkedIn OAuth Flow Started ===');
-      console.log('Current origin:', window.location.origin);
       console.log('Job ID from props:', jobId);
       console.log('Current pathname:', window.location.pathname);
-      console.log('Current search params:', window.location.search);
+      console.log('Current origin:', window.location.origin);
 
-      // Create the redirect URL using the production domain to avoid cross-domain issues
-      const redirectUrl = `https://atract.ai/linkedin-callback`;
-      console.log('Redirect URL:', redirectUrl);
-
-      // Create a state parameter that includes the job ID and origin route
-      const stateData = {
+      // Store job context in sessionStorage before OAuth flow
+      const jobContext = {
         jobId: jobId || null,
         originRoute: window.location.pathname,
         originDomain: window.location.origin,
         timestamp: Date.now()
       };
-      console.log('State data before encoding:', stateData);
       
-      const stateParam = btoa(JSON.stringify(stateData));
-      console.log('Encoded state parameter:', stateParam);
-      console.log('State parameter length:', stateParam.length);
+      console.log('Storing job context in sessionStorage:', jobContext);
+      sessionStorage.setItem('linkedin_job_context', JSON.stringify(jobContext));
+      
+      // Verify storage worked
+      const storedContext = sessionStorage.getItem('linkedin_job_context');
+      console.log('Verified stored context:', storedContext);
 
-      // Verify we can decode it back
-      try {
-        const decodedTest = JSON.parse(atob(stateParam));
-        console.log('State parameter decode test successful:', decodedTest);
-      } catch (error) {
-        console.error('State parameter encode/decode test failed:', error);
-        throw new Error('Failed to encode state parameter');
-      }
+      // Create the redirect URL
+      const redirectUrl = `https://atract.ai/linkedin-callback`;
+      console.log('Redirect URL:', redirectUrl);
 
-      // Use Supabase Auth's LinkedIn OIDC provider with state parameter
-      console.log('Initiating LinkedIn OAuth with Supabase...');
+      // Use Supabase Auth's LinkedIn OIDC provider WITHOUT custom state parameter
+      console.log('Initiating LinkedIn OAuth with Supabase (no custom state)...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           scopes: 'openid profile email',
-          redirectTo: redirectUrl,
-          queryParams: {
-            state: stateParam
-          }
+          redirectTo: redirectUrl
         }
       });
 
@@ -93,6 +82,9 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
     } catch (error) {
       console.error('LinkedIn connection error:', error);
       setConnecting(false);
+      
+      // Clean up stored context on error
+      sessionStorage.removeItem('linkedin_job_context');
       
       toast({
         title: "Connection failed",
