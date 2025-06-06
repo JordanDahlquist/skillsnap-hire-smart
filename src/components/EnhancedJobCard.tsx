@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { StatusDropdown } from "@/components/ui/status-dropdown";
 import { 
   Users, 
   ExternalLink, 
@@ -88,7 +87,7 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
     return location_type ? location_type.charAt(0).toUpperCase() + location_type.slice(1) : 'Not specified';
   };
 
-  const handleStatusToggle = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: string) => {
     setIsUpdating(true);
     try {
       const { error } = await supabase
@@ -169,11 +168,10 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
   };
 
   const handleArchiveJob = async () => {
-    await handleStatusToggle('closed');
+    await handleStatusChange('closed');
   };
 
   const applicationsCount = job.applications?.[0]?.count || 0;
-  const isActive = job.status === 'active';
 
   return (
     <>
@@ -232,17 +230,12 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
                 <Badge className={getStatusColor(job.status)}>
                   {job.status}
                 </Badge>
-                <div className="flex items-center gap-1">
-                  <Switch
-                    checked={isActive}
-                    onCheckedChange={(checked) => handleStatusToggle(checked ? 'active' : 'paused')}
-                    disabled={isUpdating}
-                    className="scale-75"
-                  />
-                  <span className="text-xs text-gray-600">
-                    {isActive ? 'Live' : 'Paused'}
-                  </span>
-                </div>
+                <StatusDropdown
+                  currentStatus={job.status}
+                  onStatusChange={handleStatusChange}
+                  disabled={isUpdating}
+                  size="sm"
+                />
               </div>
               {applicationsCount > 10 && (
                 <Badge variant="outline" className="text-green-600 border-green-200">

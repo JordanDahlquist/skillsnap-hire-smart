@@ -1,6 +1,6 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StatusDropdown } from "@/components/ui/status-dropdown";
 import { 
   ExternalLink, 
   ArrowLeft, 
@@ -8,8 +8,6 @@ import {
   Share2, 
   Download, 
   MoreHorizontal,
-  Play,
-  Pause,
   BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -56,9 +54,8 @@ export const EnhancedDashboardHeader = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
 
-  const handleStatusToggle = async () => {
+  const handleStatusChange = async (newStatus: string) => {
     setIsUpdating(true);
-    const newStatus = job.status === 'active' ? 'paused' : 'active';
     
     try {
       const { error } = await supabase
@@ -187,26 +184,12 @@ export const EnhancedDashboardHeader = ({
           </div>
           
           <div className="flex items-center gap-3">
-            {/* Quick Status Toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleStatusToggle}
+            {/* Status Dropdown */}
+            <StatusDropdown
+              currentStatus={job.status}
+              onStatusChange={handleStatusChange}
               disabled={isUpdating}
-              className={job.status === 'active' ? 'text-green-600 border-green-200' : 'text-yellow-600 border-yellow-200'}
-            >
-              {job.status === 'active' ? (
-                <>
-                  <Pause className="w-4 h-4 mr-2" />
-                  Pause Job
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 mr-2" />
-                  Activate Job
-                </>
-              )}
-            </Button>
+            />
 
             {/* Main Action Buttons */}
             <Button variant="outline" size="sm" onClick={handleShareJob}>
@@ -245,7 +228,7 @@ export const EnhancedDashboardHeader = ({
             </DropdownMenu>
 
             {/* Job Status Badge */}
-            <Badge className={job.status === 'active' ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+            <Badge className={job.status === 'active' ? "bg-green-100 text-green-800" : job.status === 'paused' ? "bg-yellow-100 text-yellow-800" : job.status === 'closed' ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"}>
               {job.status}
             </Badge>
           </div>
