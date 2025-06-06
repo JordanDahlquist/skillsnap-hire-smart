@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,17 +40,17 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
       // Store the job ID before starting OAuth flow
       if (jobId) {
         localStorage.setItem('linkedin_job_id', jobId);
+        console.log('Stored job ID for LinkedIn OAuth:', jobId);
       }
 
       console.log('Starting LinkedIn OAuth flow...');
       console.log('Current origin:', window.location.origin);
-      console.log('Job ID being stored:', jobId);
 
-      // Create a more explicit redirect URL
+      // Create the redirect URL using the current origin
       const redirectUrl = `${window.location.origin}/linkedin-callback`;
       console.log('Redirect URL:', redirectUrl);
 
-      // Use Supabase Auth's LinkedIn OIDC provider with basic scopes
+      // Use Supabase Auth's LinkedIn OIDC provider
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
@@ -66,16 +65,21 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
       }
 
       console.log('LinkedIn OAuth initiated successfully:', data);
+      
+      // The OAuth flow will redirect to LinkedIn, so we don't need to do anything else here
+      // The user will be redirected back to our callback page after authentication
+      
     } catch (error) {
       console.error('LinkedIn connection error:', error);
+      setConnecting(false);
+      
       toast({
         title: "Connection failed",
-        description: "Unable to connect to LinkedIn. Please try again.",
+        description: error instanceof Error ? error.message : "Unable to connect to LinkedIn. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      setConnecting(false);
     }
+    // Note: We don't set connecting to false here because the page will redirect
   };
 
   const fetchLinkedInProfile = async (accessToken: string) => {
