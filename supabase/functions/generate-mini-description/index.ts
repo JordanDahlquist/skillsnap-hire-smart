@@ -37,7 +37,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a job posting expert. Create a concise, engaging one-sentence description (max 15 words) that captures the essence of the job for a job card. Focus on the key role, main responsibility, and what makes it attractive. No periods at the end.'
+            content: 'You are a job posting expert. Create a concise, factual one-sentence description (max 15 words) that helps hiring managers quickly identify what this job is. Focus on seniority level, main function, and key context. Write it as a descriptive statement, not a call-to-action. No periods at the end.'
           },
           {
             role: 'user',
