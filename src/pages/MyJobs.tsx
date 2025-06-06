@@ -13,6 +13,7 @@ import { JobManagementToolbar } from "@/components/JobManagementToolbar";
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
 import { Database } from "@/integrations/supabase/types";
+import { getWelcomeMessage, getWelcomeSubtitle } from "@/utils/welcomeMessages";
 
 type JobRow = Database['public']['Tables']['jobs']['Row'];
 
@@ -21,7 +22,7 @@ interface Job extends JobRow {
 }
 
 const MyJobs = () => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -29,6 +30,15 @@ const MyJobs = () => {
   const [sortBy, setSortBy] = useState("created_desc");
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // Get user's display name
+  const getUserDisplayName = () => {
+    if (profile?.full_name) {
+      return profile.full_name;
+    }
+    // Fallback to email username
+    return user?.email?.split('@')[0] || 'there';
+  };
 
   const { data: jobs = [], isLoading, refetch } = useQuery({
     queryKey: ['user-jobs', user?.id],
@@ -263,10 +273,10 @@ const MyJobs = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Welcome back, {user?.email?.split('@')[0]}!
+                  {getWelcomeMessage(getUserDisplayName())}
                 </h1>
                 <p className="text-lg text-gray-600">
-                  Manage your job postings and track applications
+                  {getWelcomeSubtitle()}
                 </p>
               </div>
               <Button 
