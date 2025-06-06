@@ -2,19 +2,32 @@
 import { useState, useEffect } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { PublicJobCard } from "@/components/PublicJobCard";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Briefcase, Search } from "lucide-react";
+import { JobFilters } from "@/components/JobFilters";
+import { JobSorting } from "@/components/JobSorting";
+import { Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
+import { useJobFiltering } from "@/hooks/useJobFiltering";
+import { toast } from "sonner";
 
 const PublicJobs = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [roleTypeFilter, setRoleTypeFilter] = useState<string>("all");
-  const [locationTypeFilter, setLocationTypeFilter] = useState<string>("all");
+  
+  const {
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilters,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    filteredJobs,
+    availableOptions,
+    activeFiltersCount,
+    clearFilters
+  } = useJobFiltering(jobs);
   
   useEffect(() => {
     fetchJobs();
@@ -39,6 +52,7 @@ const PublicJobs = () => {
       setJobs(data || []);
     } catch (error) {
       console.error('Error fetching jobs:', error);
+      toast.error('Failed to load jobs');
     } finally {
       setLoading(false);
     }
@@ -52,26 +66,31 @@ const PublicJobs = () => {
     }
   };
 
-  // Filter jobs based on search and filters
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = searchTerm === "" || 
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      job.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
-    const matchesRoleType = roleTypeFilter === "all" || 
-      job.role_type === roleTypeFilter;
-      
-    const matchesLocationType = locationTypeFilter === "all" || 
-      job.location_type === locationTypeFilter;
-      
-    return matchesSearch && matchesRoleType && matchesLocationType;
-  });
+  const handleAiSearch = async (prompt: string) => {
+    try {
+      const response = await supabase.functions.invoke('ai-job-search', {
+        body: { prompt, availableOptions }
+      });
 
-  // Get unique role types for filter
-  const roleTypes = [...new Set(jobs.map(job => job.role_type))];
-  
-  // Get unique location types for filter
-  const locationTypes = [...new Set(jobs.map(job => job.location_type).filter(Boolean))];
+      if (response.error) {
+        throw response.error;
+      }
+
+      const { searchTerm: aiSearchTerm, filters: aiFilters, explanation } = response.data;
+      
+      // Apply AI-generated filters
+      setSearchTerm(aiSearchTerm);
+      setFilters(aiFilters);
+      
+      toast.success(`AI Search Applied: ${explanation}`);
+    } catch (error) {
+      console.error('AI search error:', error);
+      toast.error('AI search failed, using basic text search instead');
+      
+      // Fallback to basic search
+      setSearchTerm(prompt);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -93,56 +112,24 @@ const PublicJobs = () => {
           </div>
         </div>
         
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search jobs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            
-            <div className="flex gap-3">
-              <Select value={roleTypeFilter} onValueChange={setRoleTypeFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Role type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All roles</SelectItem>
-                  {roleTypes.map(type => (
-                    <SelectItem key={type} value={type || "unknown"}>{type || "Unknown"}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={locationTypeFilter} onValueChange={setLocationTypeFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Location type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All locations</SelectItem>
-                  {locationTypes.map(type => (
-                    <SelectItem key={type} value={type || "unknown"}>{type || "Unknown"}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm("");
-                  setRoleTypeFilter("all");
-                  setLocationTypeFilter("all");
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-        </div>
+        <JobFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filters={filters}
+          setFilters={setFilters}
+          onAiSearch={handleAiSearch}
+          onClearFilters={clearFilters}
+          availableOptions={availableOptions}
+          activeFiltersCount={activeFiltersCount}
+        />
+        
+        <JobSorting
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          resultCount={filteredJobs.length}
+        />
         
         {loading ? (
           <div className="flex justify-center items-center py-12">
@@ -161,10 +148,10 @@ const PublicJobs = () => {
         ) : (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-1">No open positions found</h3>
+            <h3 className="text-xl font-medium text-gray-900 mb-1">No matching positions found</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              {searchTerm || roleTypeFilter !== "all" || locationTypeFilter !== "all" ? 
-                "Try adjusting your filters or search terms" : 
+              {searchTerm || activeFiltersCount > 0 ? 
+                "Try adjusting your filters or search terms to find more opportunities" : 
                 "Check back soon for new opportunities"}
             </p>
           </div>
