@@ -89,7 +89,7 @@ export const JobManagementToolbar = ({
               />
             </div>
             
-            <Select value={statusFilter} onValueChange={onStatusFilterChange}>
+            <Select value={statusFilter || 'all'} onValueChange={onStatusFilterChange}>
               <SelectTrigger className="w-32">
                 <Filter className="w-4 h-4 mr-1" />
                 <SelectValue />
@@ -105,7 +105,7 @@ export const JobManagementToolbar = ({
           </div>
           
           <div className="flex gap-2 items-center">
-            <Select value={workTypeFilter} onValueChange={onWorkTypeFilterChange}>
+            <Select value={workTypeFilter || 'all'} onValueChange={onWorkTypeFilterChange}>
               <SelectTrigger className="w-32">
                 <MapPin className="w-4 h-4 mr-1" />
                 <SelectValue />
@@ -119,7 +119,7 @@ export const JobManagementToolbar = ({
               </SelectContent>
             </Select>
             
-            <Select value={sortBy} onValueChange={onSortChange}>
+            <Select value={sortBy || 'created_desc'} onValueChange={onSortChange}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
