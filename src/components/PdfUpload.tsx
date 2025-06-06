@@ -88,19 +88,19 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
   if (uploadedFile) {
     return (
       <Card className="border-green-200 bg-green-50">
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-green-600" />
+              <FileText className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-green-800">PDF uploaded successfully</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={onRemove}
-              className="text-green-600 hover:text-green-800"
+              className="text-green-600 hover:text-green-800 h-6 w-6 p-0"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3" />
             </Button>
           </div>
           <p className="text-xs text-green-600 mt-1">
@@ -120,20 +120,20 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="text-center">
           {isProcessing ? (
             <div className="flex flex-col items-center gap-2">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
               <p className="text-sm text-gray-600">Processing PDF...</p>
             </div>
           ) : (
             <>
-              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-700 mb-1">
                 Upload existing job description (PDF)
               </p>
-              <p className="text-xs text-gray-500 mb-4">
+              <p className="text-xs text-gray-500 mb-3">
                 Drag and drop or click to select a PDF file
               </p>
               <input
@@ -147,6 +147,7 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
                 variant="outline"
                 size="sm"
                 onClick={() => document.getElementById('pdf-upload')?.click()}
+                className="h-8 px-3 text-sm"
               >
                 Choose File
               </Button>

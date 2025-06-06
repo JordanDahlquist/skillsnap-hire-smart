@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -387,19 +386,35 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                   <div>
                     <h4 className="font-medium text-blue-900 mb-1">Job Description Made Easy</h4>
                     <p className="text-sm text-blue-800">
-                      Just provide basic details about the role - our AI will create a comprehensive, professional job description for you. 
-                      You can also upload an existing job description PDF if you have one.
+                      Describe the role below or upload an existing job description PDF. Our AI will create a comprehensive, professional job description for you.
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <PdfUpload
-                  onFileUpload={handlePdfUpload}
-                  onRemove={handlePdfRemove}
-                  uploadedFile={uploadedPdf}
-                />
+                <div>
+                  <Label htmlFor="description">Role Description</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Describe what the person will be working on, key responsibilities, and any specific requirements..."
+                    value={formData.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    rows={4}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="text-center text-sm text-gray-500 font-medium">
+                    OR
+                  </div>
+                  
+                  <PdfUpload
+                    onFileUpload={handlePdfUpload}
+                    onRemove={handlePdfRemove}
+                    uploadedFile={uploadedPdf}
+                  />
+                </div>
 
                 {uploadedPdf && useAiRewrite === null && (
                   <Card className="border-orange-200 bg-orange-50">
@@ -427,19 +442,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                       </div>
                     </CardContent>
                   </Card>
-                )}
-
-                {!uploadedPdf && (
-                  <div>
-                    <Label htmlFor="description">Role Description</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Describe what the person will be working on, key responsibilities, and any specific requirements..."
-                      value={formData.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
-                      rows={4}
-                    />
-                  </div>
                 )}
               </div>
             </div>
