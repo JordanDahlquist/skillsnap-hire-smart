@@ -1,11 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { User, LogOut, Plus, Home, Loader2 } from "lucide-react";
+import { User, LogOut, BarChart3, Plus, Home, Loader2, Briefcase } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import { cn } from "@/lib/utils";
 
 interface UnifiedHeaderProps {
   breadcrumbs?: Array<{
@@ -28,6 +30,12 @@ export const UnifiedHeader = ({
     signOut,
     loading
   } = useAuth();
+  const location = useLocation();
+  const isActive = (path: string) => location.pathname === path;
+  
+  // Check if current location is the dashboard or any subdirectory of /jobs (except /jobs/public)
+  const isDashboard = location.pathname === "/jobs" || 
+    (location.pathname.startsWith("/jobs/") && !location.pathname.startsWith("/jobs/public"));
   
   const getUserInitials = () => {
     if (profile?.full_name) {
@@ -47,7 +55,7 @@ export const UnifiedHeader = ({
     <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo and Breadcrumbs */}
+          {/* Logo and Main Navigation */}
           <div className="flex items-center space-x-6">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
@@ -55,6 +63,45 @@ export const UnifiedHeader = ({
               </div>
               <span className="text-xl font-bold text-gray-900">Atract</span>
             </Link>
+
+            {/* Main Navigation Menu */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                {/* Home link - visible to all */}
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link to="/" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/") && "bg-accent text-accent-foreground")}>
+                      <Home className="w-4 h-4 mr-2" />
+                      Home
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
+                {/* Public Jobs link - only visible when not in dashboard */}
+                {!isDashboard && (
+                  <NavigationMenuItem>
+                    <NavigationMenuLink asChild>
+                      <Link to="/jobs/public" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs/public") && "bg-accent text-accent-foreground")}>
+                        <Briefcase className="w-4 h-4 mr-2" />
+                        Jobs
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )}
+
+                {/* Admin Dashboard link - only for logged in users */}
+                {!loading && user && (
+                  <NavigationMenuItem>
+                    <NavigationMenuLink asChild>
+                      <Link to="/jobs" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs") && "bg-accent text-accent-foreground")}>
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )}
+              </NavigationMenuList>
+            </NavigationMenu>
 
             {/* Breadcrumbs */}
             {breadcrumbs && breadcrumbs.length > 0 && (
