@@ -90,7 +90,7 @@ export const LocationSelector = ({
               <SelectValue placeholder="Any location" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any location</SelectItem>
+              <SelectItem value="any">Any location</SelectItem>
               {COUNTRIES.map((countryOption) => (
                 <SelectItem key={countryOption} value={countryOption}>
                   {countryOption}
