@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { User, LogOut, BarChart3, Plus, Home } from "lucide-react";
+import { User, LogOut, BarChart3, Plus, Home, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -44,7 +44,7 @@ export const UnifiedHeader = ({
   onCreateRole,
   showCreateButton = true 
 }: UnifiedHeaderProps) => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, loading } = useAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -86,7 +86,7 @@ export const UnifiedHeader = ({
             </Link>
 
             {/* Main Navigation Menu */}
-            {user && (
+            {!loading && user && (
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
@@ -148,7 +148,12 @@ export const UnifiedHeader = ({
           
           {/* Right Side Navigation */}
           <div className="flex items-center gap-4">
-            {user ? (
+            {loading ? (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading...
+              </div>
+            ) : user ? (
               <>
                 {/* Create Job Button */}
                 {showCreateButton && onCreateRole && (

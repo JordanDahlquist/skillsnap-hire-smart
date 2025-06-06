@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Clock, Users, Target, LogIn } from "lucide-react";
@@ -51,12 +50,14 @@ const Index = () => {
             {!user && (
               <Button 
                 variant="outline"
-                onClick={() => setShowAuthModal(true)}
+                asChild
                 size="lg" 
                 className="px-8 py-4 text-lg border-[#007af6] text-[#007af6] hover:bg-[#007af6] hover:text-white"
               >
-                <LogIn className="mr-2 w-5 h-5" />
-                Sign In
+                <a href="/auth">
+                  <LogIn className="mr-2 w-5 h-5" />
+                  Sign In
+                </a>
               </Button>
             )}
           </div>
@@ -190,12 +191,14 @@ const Index = () => {
             {!user && (
               <Button 
                 variant="outline"
-                onClick={() => setShowAuthModal(true)}
+                asChild
                 size="lg" 
                 className="px-8 py-4 text-lg border-[#007af6] text-[#007af6] hover:bg-[#007af6] hover:text-white"
               >
-                <LogIn className="mr-2 w-5 h-5" />
-                Sign In
+                <a href="/auth">
+                  <LogIn className="mr-2 w-5 h-5" />
+                  Sign In
+                </a>
               </Button>
             )}
           </div>
