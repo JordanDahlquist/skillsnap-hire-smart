@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -142,10 +141,9 @@ export const Dashboard = () => {
     );
   }
 
-  // Define breadcrumbs for the dashboard
+  // Updated breadcrumbs - remove the confusing "My Jobs" breadcrumb
   const breadcrumbs = [
-    { label: "Home", href: "/" },
-    { label: "My Jobs", href: "/jobs" },
+    { label: "Dashboard", href: "/jobs" },
     { label: job.title, isCurrentPage: true },
   ];
 
