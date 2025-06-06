@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import MyJobs from "./pages/MyJobs";
 import PublicJobs from "./pages/PublicJobs";
-import LinkedInCallback from "./pages/LinkedInCallback";
+import { LinkedInCallback } from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { ProfileSettings } from "./pages/ProfileSettings";

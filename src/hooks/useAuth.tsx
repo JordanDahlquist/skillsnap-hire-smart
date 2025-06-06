@@ -7,6 +7,13 @@ interface UserProfile {
   id: string;
   full_name: string | null;
   email: string | null;
+  company_name: string | null;
+  job_title: string | null;
+  phone: string | null;
+  profile_picture_url: string | null;
+  company_website: string | null;
+  default_location: string | null;
+  industry: string | null;
 }
 
 export const useAuth = () => {
