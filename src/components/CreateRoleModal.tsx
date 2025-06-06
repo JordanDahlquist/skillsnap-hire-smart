@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, FileText, Users, MapPin, Info } from "lucide-react";
+import { Loader2, Sparkles, FileText, Users, MapPin, Info, Edit3, Save, X, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LocationSelector } from "./LocationSelector";
@@ -44,6 +44,15 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   const [useAiRewrite, setUseAiRewrite] = useState<boolean | null>(null);
   const [generatedJob, setGeneratedJob] = useState("");
   const [generatedTest, setGeneratedTest] = useState("");
+  
+  // Editing states
+  const [isEditingJobPost, setIsEditingJobPost] = useState(false);
+  const [isEditingSkillsTest, setIsEditingSkillsTest] = useState(false);
+  const [editedJobPost, setEditedJobPost] = useState("");
+  const [editedSkillsTest, setEditedSkillsTest] = useState("");
+  const [hasEditedJobPost, setHasEditedJobPost] = useState(false);
+  const [hasEditedSkillsTest, setHasEditedSkillsTest] = useState(false);
+  
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -82,6 +91,9 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
 
       setGeneratedJob(data.jobPost);
       setGeneratedTest(data.test);
+      // Initialize edited content with generated content
+      setEditedJobPost(data.jobPost);
+      setEditedSkillsTest(data.test);
       setIsGenerating(false);
     } catch (error) {
       console.error('Error generating job content:', error);
@@ -94,6 +106,44 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditJobPost = () => {
+    setIsEditingJobPost(true);
+    setEditedJobPost(hasEditedJobPost ? editedJobPost : generatedJob);
+  };
+
+  const handleSaveJobPost = () => {
+    setIsEditingJobPost(false);
+    setHasEditedJobPost(true);
+    toast({
+      title: "Job post updated",
+      description: "Your changes have been saved.",
+    });
+  };
+
+  const handleCancelJobPostEdit = () => {
+    setIsEditingJobPost(false);
+    setEditedJobPost(hasEditedJobPost ? editedJobPost : generatedJob);
+  };
+
+  const handleEditSkillsTest = () => {
+    setIsEditingSkillsTest(true);
+    setEditedSkillsTest(hasEditedSkillsTest ? editedSkillsTest : generatedTest);
+  };
+
+  const handleSaveSkillsTest = () => {
+    setIsEditingSkillsTest(false);
+    setHasEditedSkillsTest(true);
+    toast({
+      title: "Skills test updated",
+      description: "Your changes have been saved.",
+    });
+  };
+
+  const handleCancelSkillsTestEdit = () => {
+    setIsEditingSkillsTest(false);
+    setEditedSkillsTest(hasEditedSkillsTest ? editedSkillsTest : generatedTest);
   };
 
   const handleNext = async () => {
@@ -121,6 +171,10 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           return;
         }
 
+        // Use edited content if available, otherwise use generated content
+        const finalJobPost = hasEditedJobPost ? editedJobPost : generatedJob;
+        const finalSkillsTest = hasEditedSkillsTest ? editedSkillsTest : generatedTest;
+
         const { data: job, error } = await supabase
           .from('jobs')
           .insert({
@@ -138,8 +192,8 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             state: formData.state || null,
             region: formData.region || null,
             city: formData.city || null,
-            generated_job_post: generatedJob,
-            generated_test: generatedTest,
+            generated_job_post: finalJobPost,
+            generated_test: finalSkillsTest,
             status: 'active'
           })
           .select()
@@ -177,6 +231,12 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         setUseAiRewrite(null);
         setGeneratedJob("");
         setGeneratedTest("");
+        setEditedJobPost("");
+        setEditedSkillsTest("");
+        setHasEditedJobPost(false);
+        setHasEditedSkillsTest(false);
+        setIsEditingJobPost(false);
+        setIsEditingSkillsTest(false);
       } catch (error) {
         console.error('Error creating job:', error);
         toast({
@@ -477,18 +537,68 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           <TabsContent value="3" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-600" />
-                  AI-Generated Job Post
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    AI-Generated Job Post
+                    {hasEditedJobPost && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                        <Check className="w-3 h-3" />
+                        Edited
+                      </span>
+                    )}
+                  </div>
+                  {!isGenerating && !isEditingJobPost && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditJobPost}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Edit
+                    </Button>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {isGenerating ? (
                   <AiGenerationLoader />
+                ) : isEditingJobPost ? (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800">
+                        <strong>Formatting tips:</strong> Use markdown-style links: [link text](url) • Use **bold** for emphasis • Use bullet points with - or *
+                      </p>
+                    </div>
+                    <Textarea
+                      value={editedJobPost}
+                      onChange={(e) => setEditedJobPost(e.target.value)}
+                      className="min-h-[400px] font-mono text-sm"
+                      placeholder="Edit your job post content..."
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSaveJobPost}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save Changes
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleCancelJobPostEdit}
+                        className="flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="prose max-w-none">
                     <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                      {generatedJob}
+                      {hasEditedJobPost ? editedJobPost : generatedJob}
                     </pre>
                   </div>
                 )}
@@ -499,17 +609,69 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           <TabsContent value="4" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-purple-600" />
-                  AI-Generated Skills Test
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-purple-600" />
+                    AI-Generated Skills Test
+                    {hasEditedSkillsTest && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                        <Check className="w-3 h-3" />
+                        Edited
+                      </span>
+                    )}
+                  </div>
+                  {!isEditingSkillsTest && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditSkillsTest}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Edit
+                    </Button>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose max-w-none">
-                  <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                    {generatedTest}
-                  </pre>
-                </div>
+                {isEditingSkillsTest ? (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800">
+                        <strong>Formatting tips:</strong> Use markdown-style links: [link text](url) • Use **bold** for emphasis • Use bullet points with - or *
+                      </p>
+                    </div>
+                    <Textarea
+                      value={editedSkillsTest}
+                      onChange={(e) => setEditedSkillsTest(e.target.value)}
+                      className="min-h-[400px] font-mono text-sm"
+                      placeholder="Edit your skills test content..."
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSaveSkillsTest}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                      >
+                        <Save className="w-4 h-4" />
+                        Save Changes
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleCancelSkillsTestEdit}
+                        className="flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="prose max-w-none">
+                    <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                      {hasEditedSkillsTest ? editedSkillsTest : generatedTest}
+                    </pre>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
