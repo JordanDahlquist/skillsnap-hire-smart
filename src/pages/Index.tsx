@@ -1,10 +1,12 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Clock, Users, Target, Zap, User, LogOut } from "lucide-react";
+import { ArrowRight, Clock, Users, Target, Zap, User, LogOut, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -38,6 +40,16 @@ const Index = () => {
                     <User className="w-4 h-4" />
                     {user.email}
                   </div>
+                  <Button 
+                    variant="outline"
+                    asChild
+                    size="sm"
+                  >
+                    <Link to="/jobs">
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      My Jobs
+                    </Link>
+                  </Button>
                   <Button 
                     variant="outline"
                     onClick={signOut}
