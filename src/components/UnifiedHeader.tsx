@@ -32,18 +32,25 @@ export const UnifiedHeader = ({
   } = useAuth();
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
+  
+  // Check if current location is the dashboard or any subdirectory of /jobs (except /jobs/public)
+  const isDashboard = location.pathname === "/jobs" || 
+    (location.pathname.startsWith("/jobs/") && !location.pathname.startsWith("/jobs/public"));
+  
   const getUserInitials = () => {
     if (profile?.full_name) {
       return profile.full_name.split(' ').map(name => name[0]).join('').toUpperCase().slice(0, 2);
     }
     return user?.email?.[0]?.toUpperCase() || 'U';
   };
+  
   const getUserDisplayName = () => {
     if (profile?.full_name) {
       return profile.full_name;
     }
     return user?.email || 'User';
   };
+  
   return <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
@@ -69,15 +76,17 @@ export const UnifiedHeader = ({
                   </NavigationMenuLink>
                 </NavigationMenuItem>
 
-                {/* Public Jobs link - visible to all */}
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild>
-                    <Link to="/jobs/public" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs/public") && "bg-accent text-accent-foreground")}>
-                      <Briefcase className="w-4 h-4 mr-2" />
-                      Jobs
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
+                {/* Public Jobs link - only visible when not in dashboard */}
+                {!isDashboard && (
+                  <NavigationMenuItem>
+                    <NavigationMenuLink asChild>
+                      <Link to="/jobs/public" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs/public") && "bg-accent text-accent-foreground")}>
+                        <Briefcase className="w-4 h-4 mr-2" />
+                        Jobs
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )}
 
                 {/* Admin Dashboard link - only for logged in users */}
                 {!loading && user && (
