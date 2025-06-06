@@ -65,14 +65,40 @@ export const useJobFiltering = (jobs: any[]) => {
     return parseFloat(cleanBudget.replace(/,/g, '')) || 0;
   };
 
+  // Enhanced search function
+  const matchesSearchTerm = (job: any, searchTerm: string): boolean => {
+    if (!searchTerm || searchTerm.trim() === "") return true;
+    
+    // Normalize and clean search term
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+    
+    // Split search term into individual words
+    const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0);
+    
+    // Combine all searchable job fields
+    const searchableContent = [
+      job.title || '',
+      job.description || '',
+      job.required_skills || '',
+      job.role_type || ''
+    ].join(' ').toLowerCase();
+    
+    // Check if ALL search words are found in the job content
+    return searchWords.every(word => {
+      // Check for exact word matches and partial matches
+      return searchableContent.includes(word) || 
+             // Support partial matching for words longer than 2 characters
+             (word.length > 2 && searchableContent.split(/\s+/).some(jobWord => 
+               jobWord.includes(word) || word.includes(jobWord.substring(0, Math.min(jobWord.length, word.length)))
+             ));
+    });
+  };
+
   // Filter jobs based on search term and filters
   const filteredJobs = useMemo(() => {
     let filtered = jobs.filter(job => {
-      // Text search
-      const matchesSearch = searchTerm === "" || 
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (job.required_skills && job.required_skills.toLowerCase().includes(searchTerm.toLowerCase()));
+      // Enhanced text search
+      const matchesSearch = matchesSearchTerm(job, searchTerm);
         
       // Filter checks
       const matchesRoleType = filters.roleType === "all" || job.role_type === filters.roleType;
