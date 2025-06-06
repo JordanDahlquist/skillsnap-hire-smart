@@ -182,19 +182,13 @@ export const UnifiedHeader = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem asChild>
-                      <Link to="/jobs" className="flex items-center">
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
                     {onCreateRole && (
                       <DropdownMenuItem onClick={onCreateRole}>
                         <Plus className="w-4 h-4 mr-2" />
                         Create Job
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuSeparator />
+                    {onCreateRole && <DropdownMenuSeparator />}
                     <DropdownMenuItem onClick={signOut}>
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
