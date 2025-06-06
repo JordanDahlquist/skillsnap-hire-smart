@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,10 +28,11 @@ interface Job {
   title: string;
   description: string;
   role_type: string;
+  employment_type?: string;
   experience_level: string;
   status: string;
   created_at: string;
-  duration: string;
+  duration?: string;
   budget: string;
   required_skills: string;
   location_type?: string;
