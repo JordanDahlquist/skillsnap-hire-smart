@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LocationSelector } from "./LocationSelector";
 import { PdfUpload } from "./PdfUpload";
+import { AiGenerationLoader } from "./AiGenerationLoader";
 
 interface CreateRoleModalProps {
   open: boolean;
@@ -22,6 +23,7 @@ interface CreateRoleModalProps {
 export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -80,6 +82,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
 
       setGeneratedJob(data.jobPost);
       setGeneratedTest(data.test);
+      setIsGenerating(false);
     } catch (error) {
       console.error('Error generating job content:', error);
       toast({
@@ -87,6 +90,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         description: "Please try again or contact support if the problem persists.",
         variant: "destructive"
       });
+      setIsGenerating(false);
     } finally {
       setLoading(false);
     }
@@ -96,8 +100,10 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     if (step === 1) {
       setStep(2);
     } else if (step === 2) {
-      await generateJobContent();
+      setIsGenerating(true);
       setStep(3);
+      // Start generation in the background
+      await generateJobContent();
     } else if (step === 3) {
       setStep(4);
     } else {
@@ -477,11 +483,8 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
-                    <span className="ml-2 text-gray-600">Generating your job post...</span>
-                  </div>
+                {isGenerating ? (
+                  <AiGenerationLoader />
                 ) : (
                   <div className="prose max-w-none">
                     <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
@@ -516,13 +519,13 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           <Button
             variant="outline"
             onClick={() => setStep(Math.max(1, step - 1))}
-            disabled={step === 1}
+            disabled={step === 1 || isGenerating}
           >
             Back
           </Button>
           <Button
             onClick={handleNext}
-            disabled={!canProceed || loading}
+            disabled={!canProceed || loading || isGenerating}
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
             {loading ? (
