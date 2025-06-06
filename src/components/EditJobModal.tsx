@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +48,8 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
     employmentType: "",
     experience: "",
     duration: "",
-    budget: "",
+    budgetMin: "",
+    budgetMax: "",
     skills: "",
     locationType: "remote",
     country: "",
@@ -60,9 +60,38 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
   const [generatedTest, setGeneratedTest] = useState("");
   const { toast } = useToast();
 
+  // Helper function to parse budget range from stored format
+  const parseBudgetRange = (budget: string) => {
+    if (!budget) return { min: "", max: "" };
+    
+    // Handle ranges like "$60,000 - $80,000" or "2000-5000"
+    const rangeMatch = budget.match(/^(.+?)\s*-\s*(.+)$/);
+    if (rangeMatch) {
+      return { min: rangeMatch[1].trim(), max: rangeMatch[2].trim() };
+    }
+    
+    // Handle "Up to X" format
+    const upToMatch = budget.match(/^Up to (.+)$/i);
+    if (upToMatch) {
+      return { min: "", max: upToMatch[1].trim() };
+    }
+    
+    // Single value, put in min field
+    return { min: budget, max: "" };
+  };
+
+  // Helper function to format budget range for storage
+  const formatBudgetRange = (min: string, max: string) => {
+    if (!min && !max) return "";
+    if (min && !max) return min;
+    if (!min && max) return `Up to ${max}`;
+    return `${min} - ${max}`;
+  };
+
   // Populate form with existing job data when modal opens
   useEffect(() => {
     if (open && job) {
+      const { min, max } = parseBudgetRange(job.budget || "");
       setFormData({
         title: job.title,
         description: job.description,
@@ -70,7 +99,8 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
         employmentType: job.employment_type || "project",
         experience: job.experience_level,
         duration: job.duration || "",
-        budget: job.budget || "",
+        budgetMin: min,
+        budgetMax: max,
         skills: job.required_skills,
         locationType: job.location_type || "remote",
         country: job.country || "",
@@ -89,8 +119,13 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
   const generateJobContent = async () => {
     setLoading(true);
     try {
+      const jobData = {
+        ...formData,
+        budget: formatBudgetRange(formData.budgetMin, formData.budgetMax)
+      };
+
       const { data, error } = await supabase.functions.invoke('generate-job-content', {
-        body: { jobData: formData }
+        body: { jobData }
       });
 
       if (error) throw error;
@@ -130,7 +165,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
             employment_type: formData.employmentType,
             experience_level: formData.experience,
             duration: formData.duration || null,
-            budget: formData.budget || null,
+            budget: formatBudgetRange(formData.budgetMin, formData.budgetMax) || null,
             required_skills: formData.skills,
             location_type: formData.locationType,
             country: formData.country || null,
@@ -196,16 +231,16 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
     ];
   };
 
-  const getBudgetPlaceholder = () => {
+  const getBudgetPlaceholders = () => {
     switch (formData.employmentType) {
       case 'full-time':
-        return 'e.g., $80,000 annually';
+        return { min: 'e.g., $70,000', max: 'e.g., $90,000' };
       case 'part-time':
-        return 'e.g., $50/hour';
+        return { min: 'e.g., $40/hour', max: 'e.g., $60/hour' };
       case 'contract-to-hire':
-        return 'e.g., $5,000/month';
+        return { min: 'e.g., $4,000/month', max: 'e.g., $6,000/month' };
       default:
-        return 'e.g., $2,500 total';
+        return { min: 'e.g., $2,000', max: 'e.g., $5,000' };
     }
   };
 
@@ -214,11 +249,11 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
       case 'full-time':
         return 'Salary Range (Optional)';
       case 'part-time':
-        return 'Hourly Rate (Optional)';
+        return 'Hourly Rate Range (Optional)';
       case 'contract-to-hire':
-        return 'Contract Budget (Optional)';
+        return 'Contract Budget Range (Optional)';
       default:
-        return 'Project Budget (Optional)';
+        return 'Project Budget Range (Optional)';
     }
   };
 
@@ -331,13 +366,24 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
 
                 {formData.employmentType && (
                   <div>
-                    <Label htmlFor="budget">{getBudgetLabel()}</Label>
-                    <Input
-                      id="budget"
-                      placeholder={getBudgetPlaceholder()}
-                      value={formData.budget}
-                      onChange={(e) => handleInputChange("budget", e.target.value)}
-                    />
+                    <Label>{getBudgetLabel()}</Label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          placeholder={getBudgetPlaceholders().min}
+                          value={formData.budgetMin}
+                          onChange={(e) => handleInputChange("budgetMin", e.target.value)}
+                        />
+                      </div>
+                      <div className="flex items-center px-2 text-gray-500">to</div>
+                      <div className="flex-1">
+                        <Input
+                          placeholder={getBudgetPlaceholders().max}
+                          value={formData.budgetMax}
+                          onChange={(e) => handleInputChange("budgetMax", e.target.value)}
+                        />
+                      </div>
+                    </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Leave empty if you don't want to show compensation details
                     </p>

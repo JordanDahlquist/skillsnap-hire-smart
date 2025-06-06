@@ -34,7 +34,8 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     employmentType: "",
     experience: "",
     duration: "",
-    budget: "",
+    budgetMin: "",
+    budgetMax: "",
     skills: "",
     locationType: "remote",
     country: "",
@@ -118,11 +119,20 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     setFormData(prev => ({ ...prev, description: "" }));
   };
 
+  // Helper function to format budget range for storage
+  const formatBudgetRange = (min: string, max: string) => {
+    if (!min && !max) return "";
+    if (min && !max) return min;
+    if (!min && max) return `Up to ${max}`;
+    return `${min} - ${max}`;
+  };
+
   const generateJobPost = async () => {
     setLoading(true);
     try {
       const jobData = {
         ...formData,
+        budget: formatBudgetRange(formData.budgetMin, formData.budgetMax),
         description: uploadedPdf && !useAiRewrite ? uploadedPdf : formData.description,
         isPdfUpload: !!uploadedPdf,
         useAiRewrite: useAiRewrite
@@ -264,7 +274,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             employment_type: formData.employmentType,
             experience_level: formData.experience,
             duration: formData.duration || null,
-            budget: formData.budget || null,
+            budget: formatBudgetRange(formData.budgetMin, formData.budgetMax) || null,
             required_skills: formData.skills,
             location_type: formData.locationType,
             country: formData.country || null,
@@ -309,7 +319,8 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           employmentType: "",
           experience: "",
           duration: "",
-          budget: "",
+          budgetMin: "",
+          budgetMax: "",
           skills: "",
           locationType: "remote",
           country: "",
@@ -371,16 +382,16 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     ];
   };
 
-  const getBudgetPlaceholder = () => {
+  const getBudgetPlaceholders = () => {
     switch (formData.employmentType) {
       case 'full-time':
-        return 'e.g., $80,000 annually';
+        return { min: 'e.g., $70,000', max: 'e.g., $90,000' };
       case 'part-time':
-        return 'e.g., $50/hour';
+        return { min: 'e.g., $40/hour', max: 'e.g., $60/hour' };
       case 'contract-to-hire':
-        return 'e.g., $5,000/month';
+        return { min: 'e.g., $4,000/month', max: 'e.g., $6,000/month' };
       default:
-        return 'e.g., $2,500 total';
+        return { min: 'e.g., $2,000', max: 'e.g., $5,000' };
     }
   };
 
@@ -389,11 +400,11 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       case 'full-time':
         return 'Salary Range (Optional)';
       case 'part-time':
-        return 'Hourly Rate (Optional)';
+        return 'Hourly Rate Range (Optional)';
       case 'contract-to-hire':
-        return 'Contract Budget (Optional)';
+        return 'Contract Budget Range (Optional)';
       default:
-        return 'Project Budget (Optional)';
+        return 'Project Budget Range (Optional)';
     }
   };
 
@@ -496,13 +507,24 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
 
                 {formData.employmentType && (
                   <div>
-                    <Label htmlFor="budget">{getBudgetLabel()}</Label>
-                    <Input
-                      id="budget"
-                      placeholder={getBudgetPlaceholder()}
-                      value={formData.budget}
-                      onChange={(e) => handleInputChange("budget", e.target.value)}
-                    />
+                    <Label>{getBudgetLabel()}</Label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          placeholder={getBudgetPlaceholders().min}
+                          value={formData.budgetMin}
+                          onChange={(e) => handleInputChange("budgetMin", e.target.value)}
+                        />
+                      </div>
+                      <div className="flex items-center px-2 text-gray-500">to</div>
+                      <div className="flex-1">
+                        <Input
+                          placeholder={getBudgetPlaceholders().max}
+                          value={formData.budgetMax}
+                          onChange={(e) => handleInputChange("budgetMax", e.target.value)}
+                        />
+                      </div>
+                    </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Leave empty if you don't want to show compensation details
                     </p>
