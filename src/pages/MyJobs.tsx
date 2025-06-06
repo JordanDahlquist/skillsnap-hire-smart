@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +23,7 @@ interface Job {
   status: string;
   created_at: string;
   duration?: string;
-  budget: string;
+  budget?: string | null;
   required_skills: string;
   location_type?: string;
   country?: string;
