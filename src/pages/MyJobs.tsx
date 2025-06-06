@@ -1,16 +1,17 @@
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Zap, User, LogOut, BarChart3, Briefcase, Users, TrendingUp, Home, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
 import { EnhancedJobCard } from "@/components/EnhancedJobCard";
 import { JobManagementToolbar } from "@/components/JobManagementToolbar";
 import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
 interface Job {
   id: string;
@@ -34,7 +35,7 @@ interface Job {
 }
 
 const MyJobs = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -62,6 +63,19 @@ const MyJobs = () => {
     },
     enabled: !!user?.id,
   });
+
+  // Calculate quick stats
+  const stats = useMemo(() => {
+    const totalJobs = jobs.length;
+    const activeJobs = jobs.filter(job => job.status === 'active').length;
+    const totalApplications = jobs.reduce((acc, job) => acc + (job.applications?.[0]?.count || 0), 0);
+    const recentJobs = jobs.filter(job => {
+      const daysSinceCreated = Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24));
+      return daysSinceCreated <= 7;
+    }).length;
+
+    return { totalJobs, activeJobs, totalApplications, recentJobs };
+  }, [jobs]);
 
   const filteredAndSortedJobs = useMemo(() => {
     let filtered = jobs;
@@ -217,20 +231,131 @@ const MyJobs = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Jobs</h1>
-              <p className="text-gray-600">Manage your job postings and applications</p>
+      {/* Enhanced Header */}
+      <div className="bg-gradient-to-r from-purple-50 via-white to-purple-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top Navigation Bar */}
+          <div className="flex items-center justify-between py-4 border-b border-gray-100">
+            {/* Atract Logo */}
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-900">Atract</span>
             </div>
-            <Button 
-              onClick={() => setIsCreateModalOpen(true)}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create New Job
-            </Button>
+
+            {/* User Navigation */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <User className="w-4 h-4" />
+                {user?.email}
+              </div>
+              <Button 
+                variant="outline"
+                onClick={signOut}
+                size="sm"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+
+          {/* Breadcrumb */}
+          <div className="py-3">
+            <nav className="flex items-center space-x-2 text-sm text-gray-600">
+              <Link to="/" className="hover:text-purple-600 transition-colors">
+                <Home className="w-4 h-4" />
+              </Link>
+              <ChevronRight className="w-4 h-4" />
+              <span className="font-medium text-gray-900">My Jobs</span>
+            </nav>
+          </div>
+
+          {/* Main Header Content */}
+          <div className="py-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Welcome back, {user?.email?.split('@')[0]}!
+                </h1>
+                <p className="text-lg text-gray-600">
+                  Manage your job postings and track applications
+                </p>
+              </div>
+              <Button 
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-purple-600 hover:bg-purple-700 px-6 py-3 text-lg"
+                size="lg"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Create New Job
+              </Button>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Jobs</p>
+                      <p className="text-2xl font-bold text-gray-900">{stats.totalJobs}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Briefcase className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Active Jobs</p>
+                      <p className="text-2xl font-bold text-green-600">{stats.activeJobs}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-6 h-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Applications</p>
+                      <p className="text-2xl font-bold text-purple-600">{stats.totalApplications}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Users className="w-6 h-6 text-purple-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">This Week</p>
+                      <p className="text-2xl font-bold text-orange-600">{stats.recentJobs}</p>
+                      {stats.recentJobs > 0 && (
+                        <Badge className="mt-1 bg-orange-100 text-orange-800">
+                          New jobs
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
