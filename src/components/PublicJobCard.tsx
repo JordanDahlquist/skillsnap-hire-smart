@@ -2,7 +2,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, MapPin, Calendar } from "lucide-react";
-import { Link } from "react-router-dom";
 
 interface PublicJobCardProps {
   job: {
@@ -105,10 +104,14 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
       <CardContent>
         <div className="flex items-center justify-end">
           <Button asChild className="bg-blue-600 hover:bg-blue-700">
-            <Link to={`/apply/${job.id}`}>
+            <a 
+              href={`/apply/${job.id}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
               <ExternalLink className="w-4 h-4 mr-2" />
               Apply Now
-            </Link>
+            </a>
           </Button>
         </div>
       </CardContent>
