@@ -55,14 +55,14 @@ export const JobManagementToolbar = ({
     { value: 'paused', label: 'Paused' },
     { value: 'draft', label: 'Draft' },
     { value: 'closed', label: 'Closed' }
-  ];
+  ].filter(option => option.value && option.value.trim() !== '');
   
   const workTypeOptions = [
     { value: 'all', label: 'All Types' },
     { value: 'remote', label: 'Remote' },
     { value: 'on-site', label: 'On-site' },
     { value: 'hybrid', label: 'Hybrid' }
-  ];
+  ].filter(option => option.value && option.value.trim() !== '');
   
   const sortOptions = [
     { value: 'created_desc', label: 'Newest first' },
@@ -71,7 +71,7 @@ export const JobManagementToolbar = ({
     { value: 'applications_asc', label: 'Least applications' },
     { value: 'title_asc', label: 'Title A-Z' },
     { value: 'title_desc', label: 'Title Z-A' }
-  ];
+  ].filter(option => option.value && option.value.trim() !== '');
 
   return (
     <div className="bg-white border-b border-gray-200 py-5 space-y-4">
