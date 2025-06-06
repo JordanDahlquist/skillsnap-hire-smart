@@ -408,7 +408,7 @@ export const JobApplication = () => {
   };
 
   // Show loading state
-  if (jobLoading) {
+  if (jobLoading && !linkedInDataLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -419,114 +419,7 @@ export const JobApplication = () => {
     );
   }
 
-  // Show error state but allow application submission
-  if (jobError && !job) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-3xl mx-auto px-4">
-          <Card className="mb-6 border-red-200 bg-red-50">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-bold text-red-800 mb-2">Job Loading Error</h2>
-              <p className="text-red-600 mb-4">{jobError}</p>
-              <p className="text-gray-600 text-sm">
-                You can still submit your application below, but some job details may not be available.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Fallback application form */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Submit Your Application</CardTitle>
-              <p className="text-gray-600">Job ID: {jobId}</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {/* LinkedIn Data Loading State */}
-                {linkedInDataLoading && (
-                  <Card className="border-blue-200 bg-blue-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-3">
-                        <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                        <div>
-                          <p className="text-blue-800 font-medium">Processing LinkedIn data...</p>
-                          <p className="text-blue-600 text-sm">Please wait while we import your profile information.</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Quick Apply Options */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ResumeUpload 
-                    onResumeData={handleResumeData}
-                    onRemove={handleRemoveResume}
-                    uploadedFile={resumeFile}
-                  />
-                  <LinkedInConnect
-                    jobId={jobId}
-                    onLinkedInData={handleLinkedInData}
-                    onRemove={handleRemoveLinkedIn}
-                    connectedProfile={linkedInProfile}
-                  />
-                </div>
-
-                {/* Basic application form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">Full Name *</Label>
-                      <Input
-                        id="name"
-                        required
-                        value={applicationData.name}
-                        onChange={(e) => setApplicationData(prev => ({ ...prev, name: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email Address *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        required
-                        value={applicationData.email}
-                        onChange={(e) => setApplicationData(prev => ({ ...prev, email: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="cover_letter">Cover Letter</Label>
-                    <Textarea
-                      id="cover_letter"
-                      placeholder="Tell us why you're interested in this role..."
-                      value={applicationData.cover_letter}
-                      onChange={(e) => setApplicationData(prev => ({ ...prev, cover_letter: e.target.value }))}
-                      rows={4}
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="bg-purple-600 hover:bg-purple-700 text-white w-full"
-                    disabled={submitting}
-                  >
-                    {submitting ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    ) : null}
-                    Submit Application
-                  </Button>
-                </form>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
+  // Show success state
   if (submitted) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -550,74 +443,92 @@ export const JobApplication = () => {
     );
   }
 
-  const skills = job.required_skills.split(',').map(skill => skill.trim());
-  const daysSincePosted = Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24));
+  // Main application form - show even if there's a job error, but with a warning
+  const skills = job?.required_skills?.split(',').map(skill => skill.trim()) || [];
+  const daysSincePosted = job ? Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Job Header */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">{job.title}</h1>
-                
-                <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    <Briefcase className="w-3 h-3 mr-1" />
-                    {job.role_type}
-                  </Badge>
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
-                    {job.experience_level}
-                  </Badge>
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                    {job.employment_type}
-                  </Badge>
-                  <div className="flex items-center gap-1 text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-sm">{getLocationDisplay()}</span>
-                  </div>
-                </div>
+        {/* Show job error warning if exists but don't block the form */}
+        {jobError && (
+          <Card className="mb-6 border-amber-200 bg-amber-50">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-amber-800 mb-2">Job Details Unavailable</h2>
+              <p className="text-amber-700 mb-2">{jobError}</p>
+              <p className="text-gray-600 text-sm">
+                You can still submit your application below. Job ID: {jobId}
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-                <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-6">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>{job.duration}</span>
+        {/* Job Header - only show if job data is available */}
+        {job && (
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{job.title}</h1>
+                  
+                  <div className="flex flex-wrap items-center gap-4 mb-4">
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      <Briefcase className="w-3 h-3 mr-1" />
+                      {job.role_type}
+                    </Badge>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      {job.experience_level}
+                    </Badge>
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                      {job.employment_type}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span className="text-sm">{getLocationDisplay()}</span>
+                    </div>
                   </div>
-                  {job.budget && (
-                    <div className="flex items-center gap-1 text-green-600 font-medium">
-                      <DollarSign className="w-4 h-4" />
-                      <span>{job.budget}</span>
+
+                  <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-6">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>{job.duration}</span>
+                    </div>
+                    {job.budget && (
+                      <div className="flex items-center gap-1 text-green-600 font-medium">
+                        <DollarSign className="w-4 h-4" />
+                        <span>{job.budget}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>Posted {daysSincePosted} {daysSincePosted === 1 ? 'day' : 'days'} ago</span>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Role</h3>
+                    <div className="prose max-w-none">
+                      <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
+                    </div>
+                  </div>
+
+                  {skills.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Required Skills</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {skills.map((skill, index) => (
+                          <Badge key={index} variant="outline" className="bg-gray-50">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>Posted {daysSincePosted} {daysSincePosted === 1 ? 'day' : 'days'} ago</span>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Role</h3>
-                  <div className="prose max-w-none">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Required Skills</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((skill, index) => (
-                      <Badge key={index} variant="outline" className="bg-gray-50">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
                 </div>
               </div>
-            </div>
-          </CardHeader>
-        </Card>
+            </CardHeader>
+          </Card>
+        )}
 
         {/* LinkedIn Data Loading State */}
         {linkedInDataLoading && (

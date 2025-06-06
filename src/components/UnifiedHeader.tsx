@@ -51,7 +51,8 @@ export const UnifiedHeader = ({
     return user?.email || 'User';
   };
   
-  return <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+  return (
+    <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Main Navigation */}
@@ -103,31 +104,39 @@ export const UnifiedHeader = ({
             </NavigationMenu>
 
             {/* Breadcrumbs */}
-            {breadcrumbs && breadcrumbs.length > 0 && <div className="hidden sm:block">
+            {breadcrumbs && breadcrumbs.length > 0 && (
+              <div className="hidden sm:block">
                 <Breadcrumb>
                   <BreadcrumbList>
-                    {breadcrumbs.map((crumb, index) => <div key={index} className="flex items-center">
+                    {breadcrumbs.map((crumb, index) => (
+                      <div key={index} className="flex items-center">
                         {index > 0 && <BreadcrumbSeparator />}
                         <BreadcrumbItem>
-                          {crumb.isCurrentPage ? <BreadcrumbPage>{crumb.label}</BreadcrumbPage> : <BreadcrumbLink asChild>
+                          {crumb.isCurrentPage ? (
+                            <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                          ) : (
+                            <BreadcrumbLink asChild>
                               <Link to={crumb.href || "#"}>{crumb.label}</Link>
-                            </BreadcrumbLink>}
+                            </BreadcrumbLink>
+                          )}
                         </BreadcrumbItem>
-                      </div>)}
+                      </div>
+                    ))}
                   </BreadcrumbList>
                 </Breadcrumb>
-              </div>}
+              </div>
+            )}
           </div>
           
           {/* Right Side Navigation */}
           <div className="flex items-center gap-4">
-            {loading ? <div className="flex items-center gap-2 text-sm text-gray-600">
+            {loading ? (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Loading...
-              </div> : user ? <>
-                {/* Create Job Button */}
-                {showCreateButton && onCreateRole}
-
+              </div>
+            ) : user ? (
+              <>
                 {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -144,27 +153,37 @@ export const UnifiedHeader = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    {onCreateRole && <DropdownMenuItem onClick={onCreateRole}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Job
-                      </DropdownMenuItem>}
-                    {onCreateRole && <DropdownMenuSeparator />}
+                    {onCreateRole && (
+                      <>
+                        <DropdownMenuItem onClick={onCreateRole}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Job
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
                     <DropdownMenuItem onClick={signOut}>
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </> : <div className="flex items-center gap-2">
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
                 <Button variant="outline" asChild>
                   <Link to="/auth">Sign In</Link>
                 </Button>
-                {showCreateButton && onCreateRole && <Button onClick={onCreateRole} className="bg-[#007af6] hover:bg-[#0056b3] text-white">
+                {showCreateButton && onCreateRole && (
+                  <Button onClick={onCreateRole} className="bg-[#007af6] hover:bg-[#0056b3] text-white">
                     Create Job
-                  </Button>}
-              </div>}
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </header>;
+    </header>
+  );
 };
