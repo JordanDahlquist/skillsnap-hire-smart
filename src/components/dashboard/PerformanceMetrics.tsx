@@ -4,13 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   Target, 
-  Clock, 
-  Users, 
-  Star,
   TrendingUp,
   AlertCircle,
-  CheckCircle,
-  Globe
+  CheckCircle
 } from "lucide-react";
 
 interface Application {
@@ -132,61 +128,6 @@ export const PerformanceMetrics = ({ applications, job }: PerformanceMetricsProp
           </div>
         </CardContent>
       </Card>
-
-      {/* Key Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Clock className="w-6 h-6 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600">Time to First App</p>
-                <p className="text-lg font-bold">
-                  {totalApplications > 0 ? '< 24h' : 'Pending'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Users className="w-6 h-6 text-purple-600" />
-              <div>
-                <p className="text-sm text-gray-600">Active Days</p>
-                <p className="text-lg font-bold">{jobAge} days</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Star className="w-6 h-6 text-yellow-600" />
-              <div>
-                <p className="text-sm text-gray-600">Top Rating</p>
-                <p className="text-lg font-bold">
-                  {Math.max(...applications.map(app => app.ai_rating || 0), 0).toFixed(1)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Globe className="w-6 h-6 text-green-600" />
-              <div>
-                <p className="text-sm text-gray-600">Reach</p>
-                <p className="text-lg font-bold">Global</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Recommendations */}
       {recommendations.length > 0 && (
