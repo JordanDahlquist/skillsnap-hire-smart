@@ -6,9 +6,16 @@ import { Users, Star } from "lucide-react";
 interface Application {
   id: string;
   name: string;
-  status: string;
-  ai_rating: number | null;
+  email: string;
+  portfolio: string | null;
   created_at: string;
+  ai_rating: number | null;
+  ai_summary: string | null;
+  status: string;
+  experience: string | null;
+  answer_1: string | null;
+  answer_2: string | null;
+  answer_3: string | null;
 }
 
 interface ApplicationsListProps {

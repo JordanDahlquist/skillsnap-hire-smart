@@ -4,16 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Star } from "lucide-react";
 
 interface Application {
+  id: string;
+  name: string;
+  email: string;
+  portfolio: string | null;
+  created_at: string;
   ai_rating: number | null;
   ai_summary: string | null;
   status: string;
+  experience: string | null;
   answer_1: string | null;
   answer_2: string | null;
   answer_3: string | null;
-  email: string;
-  portfolio: string | null;
-  experience: string | null;
-  created_at: string;
 }
 
 interface ApplicationTabsProps {

@@ -8,15 +8,15 @@ interface Application {
   id: string;
   name: string;
   email: string;
+  portfolio: string | null;
+  created_at: string;
   ai_rating: number | null;
   ai_summary: string | null;
   status: string;
+  experience: string | null;
   answer_1: string | null;
   answer_2: string | null;
   answer_3: string | null;
-  portfolio: string | null;
-  experience: string | null;
-  created_at: string;
 }
 
 interface Job {
