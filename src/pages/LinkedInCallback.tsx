@@ -18,6 +18,25 @@ export const LinkedInCallback = () => {
       try {
         console.log('Starting LinkedIn callback handling...');
 
+        // Extract state parameter from URL to get job ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const stateParam = urlParams.get('state');
+        console.log('State parameter from URL:', stateParam);
+
+        let jobId = null;
+        let originRoute = null;
+
+        if (stateParam) {
+          try {
+            const stateData = JSON.parse(atob(stateParam));
+            jobId = stateData.jobId;
+            originRoute = stateData.originRoute;
+            console.log('Decoded state data:', stateData);
+          } catch (error) {
+            console.error('Error decoding state parameter:', error);
+          }
+        }
+
         // Wait for the OAuth flow to complete and session to be established
         await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -69,20 +88,10 @@ export const LinkedInCallback = () => {
           // Also store a flag to indicate successful LinkedIn connection
           sessionStorage.setItem('linkedin_connected', 'true');
           
-          // Get the original job ID and route from localStorage
-          const jobId = localStorage.getItem('linkedin_job_id');
-          const originRoute = localStorage.getItem('linkedin_origin_route');
-          console.log('Retrieved job ID from localStorage:', jobId);
-          console.log('Retrieved origin route from localStorage:', originRoute);
-          
           // Add another small delay to ensure sessionStorage write completes
           await new Promise(resolve => setTimeout(resolve, 200));
           
           if (jobId) {
-            // Clean up localStorage
-            localStorage.removeItem('linkedin_job_id');
-            localStorage.removeItem('linkedin_origin_route');
-            
             // Always redirect to the application page regardless of origin
             // This ensures users can complete their job application with LinkedIn data
             const redirectUrl = `/apply/${jobId}?linkedin=connected&t=${Date.now()}`;
@@ -118,11 +127,21 @@ export const LinkedInCallback = () => {
           variant: "destructive"
         });
         
-        // Get job ID to redirect back to application page
-        const jobId = localStorage.getItem('linkedin_job_id');
+        // Try to extract job ID from URL state parameter for error redirect
+        const urlParams = new URLSearchParams(window.location.search);
+        const stateParam = urlParams.get('state');
+        let jobId = null;
+
+        if (stateParam) {
+          try {
+            const stateData = JSON.parse(atob(stateParam));
+            jobId = stateData.jobId;
+          } catch (error) {
+            console.error('Error decoding state parameter for error redirect:', error);
+          }
+        }
+
         if (jobId) {
-          localStorage.removeItem('linkedin_job_id');
-          localStorage.removeItem('linkedin_origin_route');
           window.location.replace(`/apply/${jobId}`);
         } else {
           window.location.replace('/jobs/public');

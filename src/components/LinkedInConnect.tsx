@@ -37,27 +37,32 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
   const handleLinkedInConnect = async () => {
     setConnecting(true);
     try {
-      // Store the job ID and current route before starting OAuth flow
-      if (jobId) {
-        localStorage.setItem('linkedin_job_id', jobId);
-        // Store the current URL to determine if we're on dashboard or application page
-        localStorage.setItem('linkedin_origin_route', window.location.pathname);
-        console.log('Stored job ID and origin route for LinkedIn OAuth:', jobId, window.location.pathname);
-      }
-
       console.log('Starting LinkedIn OAuth flow...');
       console.log('Current origin:', window.location.origin);
+      console.log('Job ID:', jobId);
 
-      // Create the redirect URL using the current origin
-      const redirectUrl = `${window.location.origin}/linkedin-callback`;
+      // Create the redirect URL using the production domain to avoid cross-domain issues
+      const redirectUrl = `https://atract.ai/linkedin-callback`;
       console.log('Redirect URL:', redirectUrl);
 
-      // Use Supabase Auth's LinkedIn OIDC provider
+      // Create a state parameter that includes the job ID and origin route
+      const stateData = {
+        jobId: jobId || null,
+        originRoute: window.location.pathname,
+        timestamp: Date.now()
+      };
+      const stateParam = btoa(JSON.stringify(stateData));
+      console.log('State parameter created:', stateData);
+
+      // Use Supabase Auth's LinkedIn OIDC provider with state parameter
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           scopes: 'openid profile email',
           redirectTo: redirectUrl,
+          queryParams: {
+            state: stateParam
+          }
         }
       });
 
