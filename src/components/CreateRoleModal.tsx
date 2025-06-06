@@ -417,7 +417,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-600" />
+            <Sparkles className="w-5 h-5 text-blue-600" />
             Create a New Role
           </DialogTitle>
         </DialogHeader>
@@ -615,7 +615,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <MapPin className="w-5 h-5 text-blue-600" />
                   Location & Work Type
                 </CardTitle>
               </CardHeader>
@@ -636,7 +636,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    <Sparkles className="w-5 h-5 text-blue-600" />
                     AI-Generated Job Post
                     {hasEditedJobPost && (
                       <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
@@ -701,7 +701,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-purple-600" />
+                    <Users className="w-5 h-5 text-blue-600" />
                     AI-Generated Skills Test
                     {hasEditedSkillsTest && (
                       <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
@@ -773,7 +773,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           <Button
             onClick={handleNext}
             disabled={!canProceed || loading || isGeneratingJobPost || isGeneratingSkillsTest}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
