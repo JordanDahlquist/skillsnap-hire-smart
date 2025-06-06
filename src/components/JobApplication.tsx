@@ -114,31 +114,33 @@ export const JobApplication = () => {
     fetchJob();
   }, [jobId, toast]);
 
-  // Enhanced LinkedIn connection check with retry logic
+  // Enhanced LinkedIn connection check with more robust error handling
   useEffect(() => {
     const linkedInConnected = searchParams.get('linkedin');
     console.log('LinkedIn connected param:', linkedInConnected);
+    console.log('Current URL pathname:', window.location.pathname);
+    console.log('Expected route pattern:', `/apply/${jobId}`);
     
     if (linkedInConnected === 'connected') {
       setLinkedInDataLoading(true);
       
-      const checkForLinkedInData = (attempt = 1, maxAttempts = 5) => {
-        console.log(`Checking for LinkedIn data, attempt ${attempt}`);
+      const checkForLinkedInData = (attempt = 1, maxAttempts = 8) => {
+        console.log(`Checking for LinkedIn data, attempt ${attempt}/${maxAttempts}`);
         
         const storedProfileData = sessionStorage.getItem('linkedin_profile_data');
         const linkedInConnectedFlag = sessionStorage.getItem('linkedin_connected');
         
-        console.log('Stored profile data:', storedProfileData);
+        console.log('Stored profile data exists:', !!storedProfileData);
         console.log('LinkedIn connected flag:', linkedInConnectedFlag);
         
         if (storedProfileData) {
           try {
             const profileData = JSON.parse(storedProfileData);
-            console.log('Parsed LinkedIn profile data:', profileData);
+            console.log('Successfully parsed LinkedIn profile data:', profileData);
             
             handleLinkedInData(profileData);
             
-            // Clean up
+            // Clean up session storage
             sessionStorage.removeItem('linkedin_profile_data');
             sessionStorage.removeItem('linkedin_connected');
             
@@ -148,26 +150,29 @@ export const JobApplication = () => {
               title: "LinkedIn connected!",
               description: "Your profile information has been imported successfully.",
             });
+            
+            return; // Exit the retry loop
           } catch (error) {
             console.error('Error parsing LinkedIn profile data:', error);
             setLinkedInDataLoading(false);
             toast({
               title: "Profile import failed",
-              description: "Unable to parse your LinkedIn profile data.",
+              description: "Unable to parse your LinkedIn profile data. You can still fill out the form manually.",
               variant: "destructive"
             });
+            return;
           }
         } else if (attempt < maxAttempts) {
-          console.log(`LinkedIn data not found, retrying in 500ms (attempt ${attempt}/${maxAttempts})`);
+          console.log(`LinkedIn data not found, retrying in 750ms (attempt ${attempt}/${maxAttempts})`);
           setTimeout(() => {
             checkForLinkedInData(attempt + 1, maxAttempts);
-          }, 500);
+          }, 750);
         } else {
           console.error('LinkedIn data not found after maximum attempts');
           setLinkedInDataLoading(false);
           toast({
-            title: "LinkedIn connection issue",
-            description: "We couldn't retrieve your LinkedIn profile data. Please try connecting again.",
+            title: "LinkedIn connection timeout",
+            description: "We couldn't retrieve your LinkedIn profile data in time. You can try connecting again or fill out the form manually.",
             variant: "destructive"
           });
         }
@@ -176,9 +181,9 @@ export const JobApplication = () => {
       // Start checking for LinkedIn data with a small initial delay
       setTimeout(() => {
         checkForLinkedInData();
-      }, 200);
+      }, 300);
     }
-  }, [searchParams]);
+  }, [searchParams, toast]);
 
   const calculateTotalExperience = (positions: any[]) => {
     if (!positions.length) return "0 years";
@@ -381,7 +386,10 @@ export const JobApplication = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading job details...</p>
+        </div>
       </div>
     );
   }
@@ -394,6 +402,13 @@ export const JobApplication = () => {
             <CardContent className="p-12">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">Job Not Found</h1>
               <p className="text-gray-600">This job posting is no longer available.</p>
+              <Button 
+                onClick={() => window.location.href = '/jobs/public'} 
+                className="mt-4"
+                variant="outline"
+              >
+                Browse Other Jobs
+              </Button>
             </CardContent>
           </Card>
         </div>

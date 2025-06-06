@@ -18,7 +18,7 @@ export const LinkedInCallback = () => {
       try {
         console.log('Starting LinkedIn callback handling...');
 
-        // Wait longer for the OAuth flow to complete and session to be established
+        // Wait for the OAuth flow to complete and session to be established
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Get the session after OAuth redirect
@@ -69,19 +69,27 @@ export const LinkedInCallback = () => {
           // Also store a flag to indicate successful LinkedIn connection
           sessionStorage.setItem('linkedin_connected', 'true');
           
-          // Get the original job ID from localStorage
+          // Get the original job ID and route from localStorage
           const jobId = localStorage.getItem('linkedin_job_id');
+          const originRoute = localStorage.getItem('linkedin_origin_route');
           console.log('Retrieved job ID from localStorage:', jobId);
+          console.log('Retrieved origin route from localStorage:', originRoute);
           
           // Add another small delay to ensure sessionStorage write completes
           await new Promise(resolve => setTimeout(resolve, 200));
           
           if (jobId) {
+            // Clean up localStorage
             localStorage.removeItem('linkedin_job_id');
-            console.log('Navigating to application page with job ID:', jobId);
+            localStorage.removeItem('linkedin_origin_route');
+            
+            // Always redirect to the application page regardless of origin
+            // This ensures users can complete their job application with LinkedIn data
+            const redirectUrl = `/apply/${jobId}?linkedin=connected&t=${Date.now()}`;
+            console.log('Redirecting to application page:', redirectUrl);
             
             // Use replace to avoid back button issues
-            window.location.replace(`/apply/${jobId}?linkedin=connected&t=${Date.now()}`);
+            window.location.replace(redirectUrl);
           } else {
             console.log('No job ID found, navigating to public jobs');
             window.location.replace('/jobs/public');
@@ -114,6 +122,7 @@ export const LinkedInCallback = () => {
         const jobId = localStorage.getItem('linkedin_job_id');
         if (jobId) {
           localStorage.removeItem('linkedin_job_id');
+          localStorage.removeItem('linkedin_origin_route');
           window.location.replace(`/apply/${jobId}`);
         } else {
           window.location.replace('/jobs/public');
@@ -133,6 +142,7 @@ export const LinkedInCallback = () => {
         <p className="text-gray-600 mb-4">Please wait while we import your profile information.</p>
         <div className="text-sm text-gray-500">
           <p>Processing your LinkedIn profile data...</p>
+          <p className="mt-2">You'll be redirected to complete your application shortly.</p>
         </div>
       </div>
     </div>

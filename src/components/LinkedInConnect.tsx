@@ -37,10 +37,12 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
   const handleLinkedInConnect = async () => {
     setConnecting(true);
     try {
-      // Store the job ID before starting OAuth flow
+      // Store the job ID and current route before starting OAuth flow
       if (jobId) {
         localStorage.setItem('linkedin_job_id', jobId);
-        console.log('Stored job ID for LinkedIn OAuth:', jobId);
+        // Store the current URL to determine if we're on dashboard or application page
+        localStorage.setItem('linkedin_origin_route', window.location.pathname);
+        console.log('Stored job ID and origin route for LinkedIn OAuth:', jobId, window.location.pathname);
       }
 
       console.log('Starting LinkedIn OAuth flow...');
@@ -66,9 +68,6 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
 
       console.log('LinkedIn OAuth initiated successfully:', data);
       
-      // The OAuth flow will redirect to LinkedIn, so we don't need to do anything else here
-      // The user will be redirected back to our callback page after authentication
-      
     } catch (error) {
       console.error('LinkedIn connection error:', error);
       setConnecting(false);
@@ -79,7 +78,6 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         variant: "destructive"
       });
     }
-    // Note: We don't set connecting to false here because the page will redirect
   };
 
   const fetchLinkedInProfile = async (accessToken: string) => {
