@@ -21,26 +21,11 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { EditJobModal } from "./EditJobModal";
+import { Database } from "@/integrations/supabase/types";
 
-interface Job {
-  id: string;
-  title: string;
-  description: string;
-  role_type: string;
-  employment_type?: string;
-  experience_level: string;
-  status: string;
-  created_at: string;
-  duration?: string;
-  budget?: string | null;
-  required_skills: string;
-  location_type?: string;
-  country?: string;
-  state?: string;
-  region?: string;
-  city?: string;
-  generated_job_post?: string;
-  generated_test?: string;
+type JobRow = Database['public']['Tables']['jobs']['Row'];
+
+interface Job extends JobRow {
   applications?: { count: number }[];
 }
 
