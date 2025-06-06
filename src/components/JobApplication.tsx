@@ -62,7 +62,8 @@ export const JobApplication = () => {
   const { jobId } = useParams();
   const [searchParams] = useSearchParams();
   const [job, setJob] = useState<Job | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [jobLoading, setJobLoading] = useState(true);
+  const [jobError, setJobError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [resumeFile, setResumeFile] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<ParsedResumeData | null>(null);
@@ -87,9 +88,15 @@ export const JobApplication = () => {
 
   useEffect(() => {
     const fetchJob = async () => {
-      if (!jobId) return;
+      if (!jobId) {
+        console.error('No job ID provided');
+        setJobError('No job ID provided');
+        setJobLoading(false);
+        return;
+      }
       
       try {
+        console.log('Fetching job with ID:', jobId);
         const { data, error } = await supabase
           .from('jobs')
           .select('*')
@@ -97,17 +104,33 @@ export const JobApplication = () => {
           .eq('status', 'active')
           .single();
 
-        if (error) throw error;
+        console.log('Job fetch result:', { data, error });
+
+        if (error) {
+          console.error('Job fetch error:', error);
+          setJobError(`Job fetch failed: ${error.message}`);
+          throw error;
+        }
+        
+        if (!data) {
+          console.error('No job data returned');
+          setJobError('Job not found');
+          return;
+        }
+        
+        console.log('Job fetched successfully:', data.title);
         setJob(data);
+        setJobError(null);
       } catch (error) {
         console.error('Error fetching job:', error);
+        setJobError(error instanceof Error ? error.message : 'Failed to fetch job');
         toast({
-          title: "Job not found",
-          description: "This job posting may no longer be available.",
+          title: "Job fetch error",
+          description: "There was an issue loading the job details. You can still submit your application.",
           variant: "destructive"
         });
       } finally {
-        setLoading(false);
+        setJobLoading(false);
       }
     };
 
@@ -118,13 +141,14 @@ export const JobApplication = () => {
   useEffect(() => {
     const linkedInConnected = searchParams.get('linkedin');
     console.log('LinkedIn connected param:', linkedInConnected);
-    console.log('Current URL pathname:', window.location.pathname);
-    console.log('Expected route pattern:', `/apply/${jobId}`);
+    console.log('Current URL:', window.location.href);
+    console.log('Job loading state:', jobLoading);
     
     if (linkedInConnected === 'connected') {
+      console.log('LinkedIn connection detected, starting data retrieval...');
       setLinkedInDataLoading(true);
       
-      const checkForLinkedInData = (attempt = 1, maxAttempts = 8) => {
+      const checkForLinkedInData = (attempt = 1, maxAttempts = 10) => {
         console.log(`Checking for LinkedIn data, attempt ${attempt}/${maxAttempts}`);
         
         const storedProfileData = sessionStorage.getItem('linkedin_profile_data');
@@ -163,10 +187,10 @@ export const JobApplication = () => {
             return;
           }
         } else if (attempt < maxAttempts) {
-          console.log(`LinkedIn data not found, retrying in 750ms (attempt ${attempt}/${maxAttempts})`);
+          console.log(`LinkedIn data not found, retrying in 500ms (attempt ${attempt}/${maxAttempts})`);
           setTimeout(() => {
             checkForLinkedInData(attempt + 1, maxAttempts);
-          }, 750);
+          }, 500);
         } else {
           console.error('LinkedIn data not found after maximum attempts');
           setLinkedInDataLoading(false);
@@ -181,7 +205,7 @@ export const JobApplication = () => {
       // Start checking for LinkedIn data with a small initial delay
       setTimeout(() => {
         checkForLinkedInData();
-      }, 300);
+      }, 200);
     }
   }, [searchParams, toast]);
 
@@ -383,7 +407,8 @@ export const JobApplication = () => {
     }
   };
 
-  if (loading) {
+  // Show loading state
+  if (jobLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -394,21 +419,107 @@ export const JobApplication = () => {
     );
   }
 
-  if (!job) {
+  // Show error state but allow application submission
+  if (jobError && !job) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-3xl mx-auto px-4">
-          <Card className="text-center">
-            <CardContent className="p-12">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">Job Not Found</h1>
-              <p className="text-gray-600">This job posting is no longer available.</p>
-              <Button 
-                onClick={() => window.location.href = '/jobs/public'} 
-                className="mt-4"
-                variant="outline"
-              >
-                Browse Other Jobs
-              </Button>
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold text-red-800 mb-2">Job Loading Error</h2>
+              <p className="text-red-600 mb-4">{jobError}</p>
+              <p className="text-gray-600 text-sm">
+                You can still submit your application below, but some job details may not be available.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Fallback application form */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Submit Your Application</CardTitle>
+              <p className="text-gray-600">Job ID: {jobId}</p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* LinkedIn Data Loading State */}
+                {linkedInDataLoading && (
+                  <Card className="border-blue-200 bg-blue-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3">
+                        <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                        <div>
+                          <p className="text-blue-800 font-medium">Processing LinkedIn data...</p>
+                          <p className="text-blue-600 text-sm">Please wait while we import your profile information.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Quick Apply Options */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ResumeUpload 
+                    onResumeData={handleResumeData}
+                    onRemove={handleRemoveResume}
+                    uploadedFile={resumeFile}
+                  />
+                  <LinkedInConnect
+                    jobId={jobId}
+                    onLinkedInData={handleLinkedInData}
+                    onRemove={handleRemoveLinkedIn}
+                    connectedProfile={linkedInProfile}
+                  />
+                </div>
+
+                {/* Basic application form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Full Name *</Label>
+                      <Input
+                        id="name"
+                        required
+                        value={applicationData.name}
+                        onChange={(e) => setApplicationData(prev => ({ ...prev, name: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email Address *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        required
+                        value={applicationData.email}
+                        onChange={(e) => setApplicationData(prev => ({ ...prev, email: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="cover_letter">Cover Letter</Label>
+                    <Textarea
+                      id="cover_letter"
+                      placeholder="Tell us why you're interested in this role..."
+                      value={applicationData.cover_letter}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, cover_letter: e.target.value }))}
+                      rows={4}
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : null}
+                    Submit Application
+                  </Button>
+                </form>
+              </div>
             </CardContent>
           </Card>
         </div>
