@@ -1,5 +1,4 @@
 
-
 import { Button } from "@/components/ui/button";
 import { User, LogOut, BarChart3, Plus, Home, Loader2, Briefcase, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,58 +53,45 @@ export const UnifiedHeader = ({
   return (
     <>
       <style>{`
-        @keyframes home-build {
-          0% { stroke-dasharray: 0 100; }
-          25% { stroke-dasharray: 25 100; }
-          50% { stroke-dasharray: 50 100; }
-          75% { stroke-dasharray: 75 100; }
-          100% { stroke-dasharray: 100 100; }
+        @keyframes home-bounce {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          50% { transform: scale(1.1) rotate(3deg); }
         }
         
-        @keyframes briefcase-open {
-          0% { transform: rotateX(0deg); }
-          50% { transform: rotateX(-15deg); }
-          100% { transform: rotateX(0deg); }
+        @keyframes briefcase-shake {
+          0%, 100% { transform: translateX(0) rotate(0deg); }
+          25% { transform: translateX(-1px) rotate(-1deg); }
+          75% { transform: translateX(1px) rotate(1deg); }
         }
         
-        @keyframes chart-bar-1 {
-          0% { transform: scaleY(0); }
-          100% { transform: scaleY(1); }
+        @keyframes chart-grow {
+          0% { transform: scale(1) rotate(0deg); }
+          50% { transform: scale(1.15) rotate(-2deg); }
+          100% { transform: scale(1) rotate(0deg); }
         }
         
-        @keyframes chart-bar-2 {
-          0% { transform: scaleY(0); }
-          100% { transform: scaleY(1); }
+        .home-icon {
+          transition: transform 0.2s ease-in-out;
         }
         
-        @keyframes chart-bar-3 {
-          0% { transform: scaleY(0); }
-          100% { transform: scaleY(1); }
+        .home-icon:hover {
+          animation: home-bounce 0.4s ease-in-out;
         }
         
-        .home-icon:hover path {
-          animation: home-build 0.4s ease-in-out;
-          stroke-dasharray: 100 100;
+        .briefcase-icon {
+          transition: transform 0.2s ease-in-out;
         }
         
         .briefcase-icon:hover {
-          animation: briefcase-open 0.3s ease-in-out;
-          transform-style: preserve-3d;
+          animation: briefcase-shake 0.3s ease-in-out;
         }
         
-        .chart-icon:hover rect:nth-child(1) {
-          animation: chart-bar-1 0.35s ease-out;
-          transform-origin: bottom;
+        .chart-icon {
+          transition: transform 0.2s ease-in-out;
         }
         
-        .chart-icon:hover rect:nth-child(2) {
-          animation: chart-bar-2 0.35s ease-out 0.1s;
-          transform-origin: bottom;
-        }
-        
-        .chart-icon:hover rect:nth-child(3) {
-          animation: chart-bar-3 0.35s ease-out 0.2s;
-          transform-origin: bottom;
+        .chart-icon:hover {
+          animation: chart-grow 0.35s ease-in-out;
         }
       `}</style>
       
@@ -232,4 +218,3 @@ export const UnifiedHeader = ({
     </>
   );
 };
-
