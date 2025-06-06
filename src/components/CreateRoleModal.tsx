@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    roleType: "",
+    roleType: "developer", // Default value since dropdown is removed
     employmentType: "",
     experience: "",
     duration: "",
@@ -38,7 +39,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     locationType: "remote",
     country: "",
     state: "",
-    region: "",
     city: "",
   });
   const [uploadedPdf, setUploadedPdf] = useState<string | null>(null);
@@ -69,13 +69,35 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     
     // Convert plain text to HTML with proper formatting
     return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>')
-      .replace(/^(.*)$/, '<p>$1</p>')
-      .replace(/<p><\/p>/g, '');
+      .split('\n\n') // Split by double line breaks for paragraphs
+      .map(paragraph => {
+        if (!paragraph.trim()) return '';
+        
+        // Handle numbered lists
+        if (paragraph.match(/^\d+\./m)) {
+          const items = paragraph.split('\n').filter(line => line.trim());
+          return '<ol>' + items.map(item => 
+            `<li>${item.replace(/^\d+\.\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}</li>`
+          ).join('') + '</ol>';
+        }
+        
+        // Handle bullet points
+        if (paragraph.match(/^[-•*]/m)) {
+          const items = paragraph.split('\n').filter(line => line.trim());
+          return '<ul>' + items.map(item => 
+            `<li>${item.replace(/^[-•*]\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}</li>`
+          ).join('') + '</ul>';
+        }
+        
+        // Handle regular paragraphs
+        return '<p>' + paragraph
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+          .replace(/\n/g, '<br>') + '</p>';
+      })
+      .filter(Boolean)
+      .join('');
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -246,7 +268,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             location_type: formData.locationType,
             country: formData.country || null,
             state: formData.state || null,
-            region: formData.region || null,
             city: formData.city || null,
             generated_job_post: finalJobPost,
             generated_test: finalSkillsTest,
@@ -270,7 +291,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         setFormData({
           title: "",
           description: "",
-          roleType: "",
+          roleType: "developer",
           employmentType: "",
           experience: "",
           duration: "",
@@ -279,7 +300,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           locationType: "remote",
           country: "",
           state: "",
-          region: "",
           city: "",
         });
         setUploadedPdf(null);
@@ -307,7 +327,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   };
 
   const canProceed = step === 1 ? 
-    formData.title && (formData.description || uploadedPdf) && formData.roleType && formData.employmentType && formData.experience :
+    formData.title && (formData.description || uploadedPdf) && formData.employmentType && formData.experience :
     true;
 
   const isProjectBased = formData.employmentType === 'project' || formData.employmentType === 'contract-to-hire';
@@ -411,22 +431,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 </div>
 
                 <div>
-                  <Label htmlFor="roleType">Role Type</Label>
-                  <Select value={formData.roleType} onValueChange={(value) => handleInputChange("roleType", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select role type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="developer">Developer</SelectItem>
-                      <SelectItem value="designer">Designer</SelectItem>
-                      <SelectItem value="marketer">Marketer</SelectItem>
-                      <SelectItem value="writer">Writer</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
                   <Label htmlFor="employmentType">Employment Type</Label>
                   <Select value={formData.employmentType} onValueChange={(value) => handleInputChange("employmentType", value)}>
                     <SelectTrigger>
@@ -476,18 +480,20 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                   </div>
                 )}
 
-                <div>
-                  <Label htmlFor="budget">{getBudgetLabel()}</Label>
-                  <Input
-                    id="budget"
-                    placeholder={getBudgetPlaceholder()}
-                    value={formData.budget}
-                    onChange={(e) => handleInputChange("budget", e.target.value)}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Leave empty if you don't want to show compensation details
-                  </p>
-                </div>
+                {formData.employmentType && (
+                  <div>
+                    <Label htmlFor="budget">{getBudgetLabel()}</Label>
+                    <Input
+                      id="budget"
+                      placeholder={getBudgetPlaceholder()}
+                      value={formData.budget}
+                      onChange={(e) => handleInputChange("budget", e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave empty if you don't want to show compensation details
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <Label htmlFor="skills">Required Skills (comma separated)</Label>
@@ -582,7 +588,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                   locationType={formData.locationType}
                   country={formData.country}
                   state={formData.state}
-                  region={formData.region}
                   city={formData.city}
                   onLocationChange={handleInputChange}
                 />

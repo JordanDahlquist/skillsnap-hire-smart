@@ -8,7 +8,6 @@ interface LocationSelectorProps {
   locationType: string;
   country: string;
   state: string;
-  region: string;
   city: string;
   onLocationChange: (field: string, value: string) => void;
 }
@@ -21,10 +20,6 @@ const US_STATES = [
   "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
   "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
   "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
-];
-
-const US_REGIONS = [
-  "Northeast", "Southeast", "Midwest", "Southwest", "West"
 ];
 
 const COUNTRIES = [
@@ -41,7 +36,6 @@ export const LocationSelector = ({
   locationType,
   country,
   state,
-  region,
   city,
   onLocationChange
 }: LocationSelectorProps) => {
@@ -102,38 +96,20 @@ export const LocationSelector = ({
       )}
 
       {isUS && !isRemote && (
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="state">State</Label>
-            <Select value={state} onValueChange={(value) => onLocationChange("state", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select state" />
-              </SelectTrigger>
-              <SelectContent>
-                {US_STATES.map((stateOption) => (
-                  <SelectItem key={stateOption} value={stateOption}>
-                    {stateOption}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="region">Region</Label>
-            <Select value={region} onValueChange={(value) => onLocationChange("region", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select region" />
-              </SelectTrigger>
-              <SelectContent>
-                {US_REGIONS.map((regionOption) => (
-                  <SelectItem key={regionOption} value={regionOption}>
-                    {regionOption}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div>
+          <Label htmlFor="state">State</Label>
+          <Select value={state} onValueChange={(value) => onLocationChange("state", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select state" />
+            </SelectTrigger>
+            <SelectContent>
+              {US_STATES.map((stateOption) => (
+                <SelectItem key={stateOption} value={stateOption}>
+                  {stateOption}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 
