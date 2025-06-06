@@ -48,16 +48,22 @@ export const JobFilters = ({
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [aiSearchPrompt, setAiSearchPrompt] = useState("");
   const [isAiSearchMode, setIsAiSearchMode] = useState(false);
+  const [isAiSearching, setIsAiSearching] = useState(false);
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters({ ...filters, [key]: value });
   };
 
-  const handleAiSearch = () => {
-    if (aiSearchPrompt.trim()) {
-      onAiSearch(aiSearchPrompt);
-      setAiSearchPrompt(""); // Clear the AI search input after search
-      setIsAiSearchMode(false); // Switch back to standard mode after search
+  const handleAiSearch = async () => {
+    if (aiSearchPrompt.trim() && !isAiSearching) {
+      setIsAiSearching(true);
+      try {
+        await onAiSearch(aiSearchPrompt);
+        setAiSearchPrompt(""); // Clear the AI search input after search
+        setIsAiSearchMode(false); // Switch back to standard mode after search
+      } finally {
+        setIsAiSearching(false);
+      }
     }
   };
 
@@ -132,11 +138,23 @@ export const JobFilters = ({
               value={aiSearchPrompt}
               onChange={(e) => setAiSearchPrompt(e.target.value)}
               className="pl-9"
-              onKeyPress={(e) => e.key === 'Enter' && handleAiSearch()}
+              onKeyPress={(e) => e.key === 'Enter' && !isAiSearching && handleAiSearch()}
+              disabled={isAiSearching}
             />
           </div>
-          <Button onClick={handleAiSearch} disabled={!aiSearchPrompt.trim()}>
-            Search with AI
+          <Button 
+            onClick={handleAiSearch} 
+            disabled={!aiSearchPrompt.trim() || isAiSearching}
+            className="relative"
+          >
+            {isAiSearching ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                Searching...
+              </>
+            ) : (
+              'Search with AI'
+            )}
           </Button>
         </div>
       )}

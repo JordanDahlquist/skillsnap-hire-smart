@@ -28,23 +28,36 @@ Available options for filtering:
 - States: ${availableOptions.states.join(', ')}
 - Durations: ${availableOptions.durations.join(', ')}
 
-IMPORTANT INSTRUCTIONS:
-1. Be flexible with matching - use partial matches and synonyms
+CRITICAL INSTRUCTIONS:
+1. Be VERY flexible with matching - use partial matches and synonyms
 2. For locations like "Los Angeles", map to the state "California" 
-3. For role types, match broadly (e.g., "branding" could match "designer", "marketing", etc.)
-4. If you can't find exact matches, use the closest available option or "all"
+3. For role types, match broadly using synonyms:
+   - "branding" → look for "designer", "marketing", "creative" roles
+   - "frontend", "react", "javascript" → look for "developer", "engineer" roles
+   - "data" → look for "analyst", "scientist", "engineer" roles
+   - "content", "writing" → look for "writer", "content" roles
+4. If you can't find exact matches, use "all" instead of forcing a match
 5. Always include relevant keywords in searchTerm for better text search
 6. Prioritize searchTerm over strict filtering when uncertain
+7. NEVER set budgetRange to [0, 0] unless user specifically mentions "free" or "$0"
+8. Default budgetRange should be [0, 200000] when no budget is mentioned
 
 LOCATION MAPPING EXAMPLES:
 - "Los Angeles" → state: "California", searchTerm should include "Los Angeles"
 - "New York" → state: "New York", searchTerm should include "New York"
 - "San Francisco" → state: "California", searchTerm should include "San Francisco"
+- "remote" → locationType: "remote", no need to set state
 
 ROLE MAPPING EXAMPLES:
-- "branding" → look for "designer", "marketing", "creative" roles, searchTerm: "branding design"
-- "frontend" → look for "developer", "engineer" roles, searchTerm: "frontend development"
-- "data" → look for "analyst", "scientist", "engineer" roles, searchTerm: "data analysis"
+- "branding" → roleType: find closest "designer"/"marketing" match OR "all", searchTerm: "branding design"
+- "frontend" → roleType: find closest "developer" match OR "all", searchTerm: "frontend development"
+- "data analysis" → roleType: find closest "analyst" match OR "all", searchTerm: "data analysis"
+
+BUDGET HANDLING:
+- No budget mentioned → budgetRange: [0, 200000]
+- "under $100k" → budgetRange: [0, 100000]
+- "above $50k" → budgetRange: [50000, 200000]
+- "free" or "$0" → budgetRange: [0, 0]
 
 Return a JSON object with these fields:
 {
@@ -56,16 +69,16 @@ Return a JSON object with these fields:
     "employmentType": "full-time/part-time/contract or 'all'",
     "country": "exact country match or 'all'",
     "state": "exact state match or 'all'",
-    "budgetRange": [min, max],
+    "budgetRange": [min, max] (default [0, 200000]),
     "duration": "exact duration match or 'all'"
   },
   "explanation": "Brief explanation of what filters were applied and why"
 }
 
 Examples:
-- "Branding roles in Los Angeles" → searchTerm: "branding design Los Angeles", state: "California", roleType: closest design match
-- "Remote senior React developer under 100k" → searchTerm: "React developer", locationType: "remote", experienceLevel: "senior", budgetRange: [0, 100000]
-- "Part-time design work in California" → searchTerm: "design", employmentType: "part-time", state: "California", roleType: closest design match`;
+- "Branding roles in Los Angeles" → searchTerm: "branding design Los Angeles", state: "California", roleType: closest design match or "all", budgetRange: [0, 200000]
+- "Remote senior React developer under 100k" → searchTerm: "React developer", locationType: "remote", experienceLevel: "senior", budgetRange: [0, 100000], roleType: closest developer match or "all"
+- "Part-time design work in California" → searchTerm: "design", employmentType: "part-time", state: "California", roleType: closest design match or "all", budgetRange: [0, 200000]`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -79,7 +92,7 @@ Examples:
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.3,
+        temperature: 0.1,
       }),
     });
 
@@ -92,6 +105,17 @@ Examples:
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(aiResponse);
+      
+      // Ensure budgetRange is never [0, 0] unless intentional
+      if (parsedResponse.filters.budgetRange && 
+          parsedResponse.filters.budgetRange[0] === 0 && 
+          parsedResponse.filters.budgetRange[1] === 0 &&
+          !prompt.toLowerCase().includes('free') && 
+          !prompt.toLowerCase().includes('$0')) {
+        parsedResponse.filters.budgetRange = [0, 200000];
+        console.log('Fixed budget range from [0, 0] to [0, 200000]');
+      }
+      
     } catch (e) {
       console.error('JSON parsing error:', e);
       // Fallback if JSON parsing fails

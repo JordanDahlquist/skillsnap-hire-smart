@@ -69,6 +69,7 @@ const PublicJobs = () => {
   const handleAiSearch = async (prompt: string) => {
     try {
       console.log('Starting AI search with prompt:', prompt);
+      console.log('Available options:', availableOptions);
       
       const response = await supabase.functions.invoke('ai-job-search', {
         body: { prompt, availableOptions }
@@ -82,15 +83,28 @@ const PublicJobs = () => {
       
       console.log('AI Search Response:', { aiSearchTerm, aiFilters, explanation });
       
-      // Apply AI-generated filters using the new method
+      // Apply AI-generated filters
       applyAiSearchResults(aiSearchTerm, aiFilters);
       
-      toast.success(`AI Search Applied: ${explanation}`);
+      // Provide feedback about what was applied
+      const appliedFilters = Object.entries(aiFilters)
+        .filter(([key, value]) => {
+          if (key === 'budgetRange') return value[0] > 0 || value[1] < 200000;
+          return value !== 'all';
+        })
+        .map(([key, value]) => `${key}: ${Array.isArray(value) ? `$${value[0]}-$${value[1]}` : value}`)
+        .join(', ');
+      
+      const message = appliedFilters.length > 0 
+        ? `AI Search applied with filters: ${appliedFilters}`
+        : `AI Search using text search: "${aiSearchTerm}"`;
+      
+      toast.success(message);
     } catch (error) {
       console.error('AI search error:', error);
       toast.error('AI search failed, using basic text search instead');
       
-      // Fallback to basic search - clear filters first
+      // Fallback to basic search
       clearFilters();
       setSearchTerm(prompt);
     }
