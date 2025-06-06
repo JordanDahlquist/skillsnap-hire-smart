@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, DollarSign, Calendar, FileText, Send, Loader2 } from "lucide-react";
+import { Clock, DollarSign, Calendar, FileText, Send, Loader2, MapPin, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,6 +15,14 @@ interface Job {
   id: string;
   title: string;
   description: string;
+  role_type: string;
+  experience_level: string;
+  employment_type: string;
+  location_type?: string | null;
+  country?: string | null;
+  state?: string | null;
+  region?: string | null;
+  city?: string | null;
   duration: string;
   budget: string;
   required_skills: string;
@@ -68,6 +76,31 @@ export const JobApplication = () => {
 
     fetchJob();
   }, [jobId, toast]);
+
+  const getLocationDisplay = () => {
+    if (!job) return '';
+    
+    const { location_type, country, state, region, city } = job;
+    
+    if (location_type === 'remote') {
+      if (country) {
+        return `Remote (${country})`;
+      }
+      return 'Remote';
+    }
+    
+    if (country === 'United States' && state) {
+      const parts = [city, state, region].filter(Boolean);
+      return parts.join(', ');
+    }
+    
+    if (country) {
+      const parts = [city, country].filter(Boolean);
+      return parts.join(', ');
+    }
+    
+    return location_type ? location_type.charAt(0).toUpperCase() + location_type.slice(1) : 'Not specified';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,39 +230,64 @@ export const JobApplication = () => {
         {/* Job Header */}
         <Card className="mb-8">
           <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
-                <div className="prose max-w-none mb-4">
-                  <div className="text-gray-700 whitespace-pre-wrap">{job.generated_job_post}</div>
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-900 mb-3">{job.title}</h1>
+                
+                <div className="flex flex-wrap items-center gap-4 mb-4">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    <Briefcase className="w-3 h-3 mr-1" />
+                    {job.role_type}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    {job.experience_level}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                    {job.employment_type}
+                  </Badge>
+                  <div className="flex items-center gap-1 text-gray-600">
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-sm">{getLocationDisplay()}</span>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+
+                <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-6">
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {job.duration}
+                    <span>{job.duration}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="w-4 h-4" />
-                    {job.budget}
-                  </div>
+                  {job.budget && (
+                    <div className="flex items-center gap-1 text-green-600 font-medium">
+                      <DollarSign className="w-4 h-4" />
+                      <span>{job.budget}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    Posted {daysSincePosted} {daysSincePosted === 1 ? 'day' : 'days'} ago
+                    <span>Posted {daysSincePosted} {daysSincePosted === 1 ? 'day' : 'days'} ago</span>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Role</h3>
+                  <div className="prose max-w-none">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Required Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((skill, index) => (
+                      <Badge key={index} variant="outline" className="bg-gray-50">
+                        {skill}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               </div>
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                Remote
-              </Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {skills.map((skill, index) => (
-                <Badge key={index} variant="outline">{skill}</Badge>
-              ))}
-            </div>
-          </CardContent>
         </Card>
 
         {/* Application Form */}
@@ -297,8 +355,8 @@ export const JobApplication = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="prose max-w-none">
-                <div className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="text-gray-700 whitespace-pre-line leading-relaxed">
                   {job.generated_test}
                 </div>
               </div>
