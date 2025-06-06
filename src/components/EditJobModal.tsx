@@ -71,7 +71,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
         employmentType: job.employment_type || "project",
         experience: job.experience_level,
         duration: job.duration || "",
-        budget: job.budget,
+        budget: job.budget || "",
         skills: job.required_skills,
         locationType: job.location_type || "remote",
         country: job.country || "",
@@ -132,7 +132,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
             employment_type: formData.employmentType,
             experience_level: formData.experience,
             duration: formData.duration || null,
-            budget: formData.budget,
+            budget: formData.budget || null,
             required_skills: formData.skills,
             location_type: formData.locationType,
             country: formData.country || null,
@@ -199,44 +199,29 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
     ];
   };
 
-  const getBudgetOptions = () => {
-    if (formData.employmentType === 'full-time') {
-      return [
-        { value: '$40,000-$60,000', label: '$40,000 - $60,000 annually' },
-        { value: '$60,000-$80,000', label: '$60,000 - $80,000 annually' },
-        { value: '$80,000-$100,000', label: '$80,000 - $100,000 annually' },
-        { value: '$100,000-$120,000', label: '$100,000 - $120,000 annually' },
-        { value: '$120,000+', label: '$120,000+ annually' }
-      ];
-    } else if (formData.employmentType === 'part-time') {
-      return [
-        { value: '$20-$30/hour', label: '$20 - $30 per hour' },
-        { value: '$30-$50/hour', label: '$30 - $50 per hour' },
-        { value: '$50-$75/hour', label: '$50 - $75 per hour' },
-        { value: '$75-$100/hour', label: '$75 - $100 per hour' },
-        { value: '$100+/hour', label: '$100+ per hour' }
-      ];
+  const getBudgetPlaceholder = () => {
+    switch (formData.employmentType) {
+      case 'full-time':
+        return 'e.g., $80,000 annually';
+      case 'part-time':
+        return 'e.g., $50/hour';
+      case 'contract-to-hire':
+        return 'e.g., $5,000/month';
+      default:
+        return 'e.g., $2,500 total';
     }
-    // Project-based or contract-to-hire
-    return [
-      { value: '$500-$1,000', label: '$500 - $1,000' },
-      { value: '$1,000-$2,500', label: '$1,000 - $2,500' },
-      { value: '$2,500-$5,000', label: '$2,500 - $5,000' },
-      { value: '$5,000-$10,000', label: '$5,000 - $10,000' },
-      { value: '$10,000+', label: '$10,000+' }
-    ];
   };
 
   const getBudgetLabel = () => {
     switch (formData.employmentType) {
       case 'full-time':
-        return 'Salary Range';
+        return 'Salary Range (Optional)';
       case 'part-time':
-        return 'Hourly Rate';
+        return 'Hourly Rate (Optional)';
       case 'contract-to-hire':
-        return 'Contract Budget';
+        return 'Contract Budget (Optional)';
       default:
-        return 'Project Budget';
+        return 'Project Budget (Optional)';
     }
   };
 
@@ -355,18 +340,15 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
 
                 <div>
                   <Label htmlFor="budget">{getBudgetLabel()}</Label>
-                  <Select value={formData.budget} onValueChange={(value) => handleInputChange("budget", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={`Select ${getBudgetLabel().toLowerCase()}`} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getBudgetOptions().map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="budget"
+                    placeholder={getBudgetPlaceholder()}
+                    value={formData.budget}
+                    onChange={(e) => handleInputChange("budget", e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty if you don't want to show compensation details
+                  </p>
                 </div>
 
                 <div>

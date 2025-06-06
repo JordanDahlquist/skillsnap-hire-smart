@@ -70,7 +70,7 @@ export type Database = {
       }
       jobs: {
         Row: {
-          budget: string
+          budget: string | null
           city: string | null
           country: string | null
           created_at: string
@@ -92,7 +92,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          budget: string
+          budget?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -114,7 +114,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          budget?: string
+          budget?: string | null
           city?: string | null
           country?: string | null
           created_at?: string

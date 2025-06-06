@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, FileText, Users, MapPin } from "lucide-react";
+import { Loader2, Sparkles, FileText, Users, MapPin, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LocationSelector } from "./LocationSelector";
+import { PdfUpload } from "./PdfUpload";
 
 interface CreateRoleModalProps {
   open: boolean;
@@ -37,6 +38,9 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     region: "",
     city: "",
   });
+  const [uploadedPdf, setUploadedPdf] = useState<string | null>(null);
+  const [pdfFileName, setPdfFileName] = useState<string>("");
+  const [useAiRewrite, setUseAiRewrite] = useState<boolean | null>(null);
   const [generatedJob, setGeneratedJob] = useState("");
   const [generatedTest, setGeneratedTest] = useState("");
   const { toast } = useToast();
@@ -46,11 +50,31 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePdfUpload = (content: string, fileName: string) => {
+    setUploadedPdf(content);
+    setPdfFileName(fileName);
+    setFormData(prev => ({ ...prev, description: content }));
+  };
+
+  const handlePdfRemove = () => {
+    setUploadedPdf(null);
+    setPdfFileName("");
+    setUseAiRewrite(null);
+    setFormData(prev => ({ ...prev, description: "" }));
+  };
+
   const generateJobContent = async () => {
     setLoading(true);
     try {
+      const jobData = {
+        ...formData,
+        description: uploadedPdf && !useAiRewrite ? uploadedPdf : formData.description,
+        isPdfUpload: !!uploadedPdf,
+        useAiRewrite: useAiRewrite
+      };
+
       const { data, error } = await supabase.functions.invoke('generate-job-content', {
-        body: { jobData: formData }
+        body: { jobData }
       });
 
       if (error) throw error;
@@ -102,7 +126,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
             employment_type: formData.employmentType,
             experience_level: formData.experience,
             duration: formData.duration || null,
-            budget: formData.budget,
+            budget: formData.budget || null,
             required_skills: formData.skills,
             location_type: formData.locationType,
             country: formData.country || null,
@@ -143,6 +167,9 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           region: "",
           city: "",
         });
+        setUploadedPdf(null);
+        setPdfFileName("");
+        setUseAiRewrite(null);
         setGeneratedJob("");
         setGeneratedTest("");
       } catch (error) {
@@ -159,7 +186,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   };
 
   const canProceed = step === 1 ? 
-    formData.title && formData.description && formData.roleType && formData.employmentType && formData.experience :
+    formData.title && (formData.description || uploadedPdf) && formData.roleType && formData.employmentType && formData.experience :
     true;
 
   const isProjectBased = formData.employmentType === 'project' || formData.employmentType === 'contract-to-hire';
@@ -189,44 +216,29 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     ];
   };
 
-  const getBudgetOptions = () => {
-    if (formData.employmentType === 'full-time') {
-      return [
-        { value: '$40,000-$60,000', label: '$40,000 - $60,000 annually' },
-        { value: '$60,000-$80,000', label: '$60,000 - $80,000 annually' },
-        { value: '$80,000-$100,000', label: '$80,000 - $100,000 annually' },
-        { value: '$100,000-$120,000', label: '$100,000 - $120,000 annually' },
-        { value: '$120,000+', label: '$120,000+ annually' }
-      ];
-    } else if (formData.employmentType === 'part-time') {
-      return [
-        { value: '$20-$30/hour', label: '$20 - $30 per hour' },
-        { value: '$30-$50/hour', label: '$30 - $50 per hour' },
-        { value: '$50-$75/hour', label: '$50 - $75 per hour' },
-        { value: '$75-$100/hour', label: '$75 - $100 per hour' },
-        { value: '$100+/hour', label: '$100+ per hour' }
-      ];
+  const getBudgetPlaceholder = () => {
+    switch (formData.employmentType) {
+      case 'full-time':
+        return 'e.g., $80,000 annually';
+      case 'part-time':
+        return 'e.g., $50/hour';
+      case 'contract-to-hire':
+        return 'e.g., $5,000/month';
+      default:
+        return 'e.g., $2,500 total';
     }
-    // Project-based or contract-to-hire
-    return [
-      { value: '$500-$1,000', label: '$500 - $1,000' },
-      { value: '$1,000-$2,500', label: '$1,000 - $2,500' },
-      { value: '$2,500-$5,000', label: '$2,500 - $5,000' },
-      { value: '$5,000-$10,000', label: '$5,000 - $10,000' },
-      { value: '$10,000+', label: '$10,000+' }
-    ];
   };
 
   const getBudgetLabel = () => {
     switch (formData.employmentType) {
       case 'full-time':
-        return 'Salary Range';
+        return 'Salary Range (Optional)';
       case 'part-time':
-        return 'Hourly Rate';
+        return 'Hourly Rate (Optional)';
       case 'contract-to-hire':
-        return 'Contract Budget';
+        return 'Contract Budget (Optional)';
       default:
-        return 'Project Budget';
+        return 'Project Budget (Optional)';
     }
   };
 
@@ -345,18 +357,15 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
 
                 <div>
                   <Label htmlFor="budget">{getBudgetLabel()}</Label>
-                  <Select value={formData.budget} onValueChange={(value) => handleInputChange("budget", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={`Select ${getBudgetLabel().toLowerCase()}`} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getBudgetOptions().map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="budget"
+                    placeholder={getBudgetPlaceholder()}
+                    value={formData.budget}
+                    onChange={(e) => handleInputChange("budget", e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty if you don't want to show compensation details
+                  </p>
                 </div>
 
                 <div>
@@ -371,15 +380,68 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="description">Role Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe what the person will be working on, key responsibilities, and any specific requirements..."
-                value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                rows={4}
-              />
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-blue-900 mb-1">Job Description Made Easy</h4>
+                    <p className="text-sm text-blue-800">
+                      Just provide basic details about the role - our AI will create a comprehensive, professional job description for you. 
+                      You can also upload an existing job description PDF if you have one.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <PdfUpload
+                  onFileUpload={handlePdfUpload}
+                  onRemove={handlePdfRemove}
+                  uploadedFile={uploadedPdf}
+                />
+
+                {uploadedPdf && useAiRewrite === null && (
+                  <Card className="border-orange-200 bg-orange-50">
+                    <CardContent className="p-4">
+                      <h4 className="font-medium text-orange-900 mb-2">AI Enhancement Option</h4>
+                      <p className="text-sm text-orange-800 mb-3">
+                        Would you like our AI to rewrite and enhance your uploaded job description?
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => setUseAiRewrite(true)}
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          Yes, enhance it
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setUseAiRewrite(false)}
+                          className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                        >
+                          No, use as-is
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {!uploadedPdf && (
+                  <div>
+                    <Label htmlFor="description">Role Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Describe what the person will be working on, key responsibilities, and any specific requirements..."
+                      value={formData.description}
+                      onChange={(e) => handleInputChange("description", e.target.value)}
+                      rows={4}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </TabsContent>
 

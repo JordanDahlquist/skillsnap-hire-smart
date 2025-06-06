@@ -33,7 +33,7 @@ interface Job {
   status: string;
   created_at: string;
   duration?: string;
-  budget: string;
+  budget?: string | null;
   required_skills: string;
   location_type?: string;
   country?: string;
@@ -206,6 +206,11 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
                   <TrendingUp className="w-4 h-4" />
                   <span>12% response rate</span>
                 </div>
+                {job.budget && (
+                  <div className="flex items-center gap-1 text-green-600">
+                    <span className="font-medium">{job.budget}</span>
+                  </div>
+                )}
               </div>
               
               <p className="text-gray-700 line-clamp-2 mb-3">{job.description}</p>
