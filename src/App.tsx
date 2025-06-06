@@ -13,6 +13,7 @@ import { LinkedInCallback } from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { ProfileSettings } from "./pages/ProfileSettings";
+import { Dashboard } from "./components/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/jobs" element={<MyJobs />} />
             <Route path="/jobs/public" element={<PublicJobs />} />
+            <Route path="/dashboard/:jobId" element={<Dashboard />} />
             <Route path="/profile" element={<ProfileSettings />} />
             <Route path="/linkedin/callback" element={<LinkedInCallback />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
