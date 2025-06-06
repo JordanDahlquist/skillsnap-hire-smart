@@ -66,17 +66,13 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
       console.log('Verified stored context:', storedContext);
       console.log('Verified stored redirect:', storedRedirect);
 
-      // Create the redirect URL
-      const callbackUrl = `https://atract.ai/linkedin-callback`;
-      console.log('Callback URL:', callbackUrl);
-
-      // Use Supabase Auth's LinkedIn OIDC provider WITHOUT custom state parameter
-      console.log('Initiating LinkedIn OAuth with Supabase (no custom state)...');
+      // Use Supabase Auth's LinkedIn OIDC provider with default redirect handling
+      console.log('Initiating LinkedIn OAuth with Supabase...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          scopes: 'openid profile email',
-          redirectTo: callbackUrl
+          scopes: 'openid profile email'
+          // Removed custom redirectTo - let Supabase handle the default callback
         }
       });
 
