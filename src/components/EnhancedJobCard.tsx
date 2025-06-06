@@ -15,11 +15,13 @@ import {
   TrendingUp,
   Eye,
   Calendar,
-  MapPin
+  MapPin,
+  Pencil
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { EditJobModal } from "./EditJobModal";
 
 interface Job {
   id: string;
@@ -29,11 +31,16 @@ interface Job {
   experience_level: string;
   status: string;
   created_at: string;
+  duration: string;
+  budget: string;
+  required_skills: string;
   location_type?: string;
   country?: string;
   state?: string;
   region?: string;
   city?: string;
+  generated_job_post?: string;
+  generated_test?: string;
   applications?: { count: number }[];
 }
 
@@ -45,6 +52,7 @@ interface EnhancedJobCardProps {
 
 export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCardProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { toast } = useToast();
 
   const getStatusColor = (status: string) => {
@@ -168,119 +176,136 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
   const isActive = job.status === 'active';
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <CardTitle className="text-xl">
-                <Link 
-                  to={`/dashboard/${job.id}`}
-                  className="hover:text-purple-600 transition-colors cursor-pointer"
-                >
-                  {job.title}
-                </Link>
-              </CardTitle>
+    <>
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <CardTitle className="text-xl">
+                  <Link 
+                    to={`/dashboard/${job.id}`}
+                    className="hover:text-purple-600 transition-colors cursor-pointer"
+                  >
+                    {job.title}
+                  </Link>
+                </CardTitle>
+              </div>
+              
+              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                <span>{job.role_type} • {job.experience_level}</span>
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  <span>{getLocationDisplay()}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  <span>42 views</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>12% response rate</span>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 line-clamp-2 mb-3">{job.description}</p>
+              
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-1 text-blue-600">
+                  <Users className="w-4 h-4" />
+                  <span className="font-medium">{applicationsCount} applications</span>
+                  {applicationsCount > 0 && (
+                    <span className="text-gray-500">
+                      (+{Math.floor(Math.random() * 5) + 1} this week)
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 text-gray-500">
+                  <Calendar className="w-4 h-4" />
+                  <span>Created {getTimeAgo(job.created_at)}</span>
+                </div>
+              </div>
             </div>
             
-            <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-              <span>{job.role_type} • {job.experience_level}</span>
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                <span>{getLocationDisplay()}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                <span>42 views</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <TrendingUp className="w-4 h-4" />
-                <span>12% response rate</span>
-              </div>
-            </div>
-            
-            <p className="text-gray-700 line-clamp-2 mb-3">{job.description}</p>
-            
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-1 text-blue-600">
-                <Users className="w-4 h-4" />
-                <span className="font-medium">{applicationsCount} applications</span>
-                {applicationsCount > 0 && (
-                  <span className="text-gray-500">
-                    (+{Math.floor(Math.random() * 5) + 1} this week)
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2">
+                <Badge className={getStatusColor(job.status)}>
+                  {job.status}
+                </Badge>
+                <div className="flex items-center gap-1">
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={(checked) => handleStatusToggle(checked ? 'active' : 'paused')}
+                    disabled={isUpdating}
+                    className="scale-75"
+                  />
+                  <span className="text-xs text-gray-600">
+                    {isActive ? 'Live' : 'Paused'}
                   </span>
-                )}
+                </div>
               </div>
-              <div className="flex items-center gap-1 text-gray-500">
-                <Calendar className="w-4 h-4" />
-                <span>Created {getTimeAgo(job.created_at)}</span>
-              </div>
+              {applicationsCount > 10 && (
+                <Badge variant="outline" className="text-green-600 border-green-200">
+                  High Interest
+                </Badge>
+              )}
             </div>
           </div>
-          
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2">
-              <Badge className={getStatusColor(job.status)}>
-                {job.status}
-              </Badge>
-              <div className="flex items-center gap-1">
-                <Switch
-                  checked={isActive}
-                  onCheckedChange={(checked) => handleStatusToggle(checked ? 'active' : 'paused')}
-                  disabled={isUpdating}
-                  className="scale-75"
-                />
-                <span className="text-xs text-gray-600">
-                  {isActive ? 'Live' : 'Paused'}
-                </span>
-              </div>
+        </CardHeader>
+        
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsEditModalOpen(true)}
+              >
+                <Pencil className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleDuplicateJob}
+              >
+                <Copy className="w-4 h-4 mr-1" />
+                Duplicate
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleArchiveJob}
+              >
+                <Archive className="w-4 h-4 mr-1" />
+                Archive
+              </Button>
             </div>
-            {applicationsCount > 10 && (
-              <Badge variant="outline" className="text-green-600 border-green-200">
-                High Interest
-              </Badge>
-            )}
+            
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  View Public
+                </a>
+              </Button>
+              <Button size="sm" asChild className="bg-purple-600 hover:bg-purple-700">
+                <Link to={`/dashboard/${job.id}`}>
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Link>
+              </Button>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent>
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleDuplicateJob}
-            >
-              <Copy className="w-4 h-4 mr-1" />
-              Duplicate
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleArchiveJob}
-            >
-              <Archive className="w-4 h-4 mr-1" />
-              Archive
-            </Button>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                View Public
-              </a>
-            </Button>
-            <Button size="sm" asChild className="bg-purple-600 hover:bg-purple-700">
-              <Link to={`/dashboard/${job.id}`}>
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Dashboard
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <EditJobModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        job={job}
+        onJobUpdate={onJobUpdate}
+      />
+    </>
   );
 };
