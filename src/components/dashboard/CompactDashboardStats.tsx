@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { 
   Users, 
   Clock, 
-  Award,
+  Calendar,
   TrendingUp
 } from "lucide-react";
 
@@ -25,16 +25,19 @@ interface CompactDashboardStatsProps {
 export const CompactDashboardStats = ({ applications, job }: CompactDashboardStatsProps) => {
   const pendingCount = applications.filter(app => app.status === 'pending').length;
   
+  // Calculate applications today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const applicationsToday = applications.filter(
+    app => new Date(app.created_at) >= today
+  ).length;
+
   // Calculate applications this week
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   const applicationsThisWeek = applications.filter(
     app => new Date(app.created_at) >= oneWeekAgo
   ).length;
-
-  // Quality score based on AI ratings
-  const highQualityApps = applications.filter(app => (app.ai_rating || 0) >= 4).length;
-  const qualityScore = applications.length > 0 ? Math.round((highQualityApps / applications.length) * 100) : 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -65,10 +68,10 @@ export const CompactDashboardStats = ({ applications, job }: CompactDashboardSta
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center">
-            <Award className="w-6 h-6 text-yellow-600" />
+            <Calendar className="w-6 h-6 text-blue-600" />
             <div className="ml-3">
-              <p className="text-xs font-medium text-gray-600">Quality Score</p>
-              <p className="text-xl font-bold text-gray-900">{qualityScore}%</p>
+              <p className="text-xs font-medium text-gray-600">Today</p>
+              <p className="text-xl font-bold text-gray-900">{applicationsToday}</p>
             </div>
           </div>
         </CardContent>
