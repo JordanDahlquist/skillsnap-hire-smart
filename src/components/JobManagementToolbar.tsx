@@ -74,8 +74,8 @@ export const JobManagementToolbar = ({
   ];
 
   return (
-    <div className="bg-white border-b border-gray-200 px-8 py-5 space-y-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="bg-white border-b border-gray-200 py-5 space-y-4">
+      <div className="max-w-7xl mx-auto px-8">
         {/* Search and filters row */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div className="flex flex-1 gap-3 items-center">
