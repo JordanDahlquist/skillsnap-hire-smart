@@ -124,7 +124,7 @@ export const CompactDashboardHeader = ({
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-lg font-semibold text-gray-900">{job.title}</h1>
-                <Badge className={job.status === 'active' ? "bg-purple-100 text-purple-800" : job.status === 'paused' ? "bg-gray-100 text-gray-800" : job.status === 'closed' ? "bg-gray-100 text-gray-600" : "bg-gray-100 text-gray-800"}>
+                <Badge className={job.status === 'active' ? "bg-blue-100 text-blue-800" : job.status === 'paused' ? "bg-gray-100 text-gray-800" : job.status === 'closed' ? "bg-gray-100 text-gray-600" : "bg-gray-100 text-gray-800"}>
                   {job.status}
                 </Badge>
               </div>

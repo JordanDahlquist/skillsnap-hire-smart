@@ -221,7 +221,7 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
                 <CardTitle className="text-xl">
                   <Link 
                     to={`/dashboard/${job.id}`}
-                    className="hover:text-purple-600 transition-colors cursor-pointer"
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     {job.title}
                   </Link>
@@ -327,7 +327,7 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
                   View Public
                 </a>
               </Button>
-              <Button size="sm" asChild className="bg-purple-600 hover:bg-purple-700">
+              <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700">
                 <Link to={`/dashboard/${job.id}`}>
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Dashboard

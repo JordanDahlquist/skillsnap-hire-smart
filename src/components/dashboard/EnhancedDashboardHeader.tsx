@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
@@ -228,7 +229,7 @@ export const EnhancedDashboardHeader = ({
             </DropdownMenu>
 
             {/* Job Status Badge */}
-            <Badge className={job.status === 'active' ? "bg-green-100 text-green-800" : job.status === 'paused' ? "bg-yellow-100 text-yellow-800" : job.status === 'closed' ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"}>
+            <Badge className={job.status === 'active' ? "bg-blue-100 text-blue-800" : job.status === 'paused' ? "bg-yellow-100 text-yellow-800" : job.status === 'closed' ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"}>
               {job.status}
             </Badge>
           </div>
