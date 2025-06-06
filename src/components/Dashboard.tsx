@@ -5,8 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { DashboardHeader } from "./dashboard/DashboardHeader";
-import { DashboardStats } from "./dashboard/DashboardStats";
+import { EnhancedDashboardHeader } from "./dashboard/EnhancedDashboardHeader";
+import { EnhancedDashboardStats } from "./dashboard/EnhancedDashboardStats";
+import { ApplicationTrendsChart } from "./dashboard/ApplicationTrendsChart";
+import { PerformanceMetrics } from "./dashboard/PerformanceMetrics";
 import { ApplicationsList } from "./dashboard/ApplicationsList";
 import { ApplicationDetail } from "./dashboard/ApplicationDetail";
 
@@ -141,32 +143,50 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardHeader job={job} getTimeAgo={getTimeAgo} />
+      <EnhancedDashboardHeader 
+        job={job} 
+        applications={applications}
+        getTimeAgo={getTimeAgo}
+        onJobUpdate={() => {
+          // Refetch job data
+          window.location.reload();
+        }}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <DashboardStats applications={applications} />
+        <div className="space-y-8">
+          {/* Enhanced Stats Section */}
+          <EnhancedDashboardStats applications={applications} job={job} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <ApplicationsList 
-              applications={applications}
-              selectedApplication={selectedApplication}
-              onSelectApplication={setSelectedApplication}
-              getStatusColor={getStatusColor}
-              getRatingStars={getRatingStars}
-              getTimeAgo={getTimeAgo}
-            />
+          {/* Analytics Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ApplicationTrendsChart applications={applications} />
+            <PerformanceMetrics applications={applications} job={job} />
           </div>
 
-          <div className="lg:col-span-2">
-            <ApplicationDetail 
-              selectedApplication={selectedApplication}
-              applications={applications}
-              job={job}
-              getStatusColor={getStatusColor}
-              getRatingStars={getRatingStars}
-              getTimeAgo={getTimeAgo}
-            />
+          {/* Applications Management Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <ApplicationsList 
+                applications={applications}
+                selectedApplication={selectedApplication}
+                onSelectApplication={setSelectedApplication}
+                getStatusColor={getStatusColor}
+                getRatingStars={getRatingStars}
+                getTimeAgo={getTimeAgo}
+              />
+            </div>
+
+            <div className="lg:col-span-2">
+              <ApplicationDetail 
+                selectedApplication={selectedApplication}
+                applications={applications}
+                job={job}
+                getStatusColor={getStatusColor}
+                getRatingStars={getRatingStars}
+                getTimeAgo={getTimeAgo}
+              />
+            </div>
           </div>
         </div>
       </div>
