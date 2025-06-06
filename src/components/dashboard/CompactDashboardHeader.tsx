@@ -118,13 +118,13 @@ export const CompactDashboardHeader = ({
           <div className="flex items-center gap-4">
             <Button variant="outline" size="sm" asChild>
               <Link to="/jobs">
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 text-gray-600" />
               </Link>
             </Button>
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-lg font-semibold text-gray-900">{job.title}</h1>
-                <Badge className={job.status === 'active' ? "bg-green-100 text-green-800" : job.status === 'paused' ? "bg-yellow-100 text-yellow-800" : job.status === 'closed' ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"}>
+                <Badge className={job.status === 'active' ? "bg-purple-100 text-purple-800" : job.status === 'paused' ? "bg-gray-100 text-gray-800" : job.status === 'closed' ? "bg-gray-100 text-gray-600" : "bg-gray-100 text-gray-800"}>
                   {job.status}
                 </Badge>
               </div>
@@ -138,7 +138,7 @@ export const CompactDashboardHeader = ({
                 <span>{applications.length} applications</span>
                 <span>•</span>
                 <div className="flex items-center gap-1">
-                  <Eye className="w-3 h-3" />
+                  <Eye className="w-3 h-3 text-gray-400" />
                   <span>342 views</span>
                 </div>
               </div>
@@ -153,19 +153,19 @@ export const CompactDashboardHeader = ({
             />
 
             <Button variant="outline" size="sm" onClick={handleShareJob}>
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4 text-gray-600" />
             </Button>
 
             <Button variant="outline" size="sm" asChild>
               <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4 text-gray-600" />
               </a>
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <MoreHorizontal className="w-4 h-4" />
+                  <MoreHorizontal className="w-4 h-4 text-gray-600" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

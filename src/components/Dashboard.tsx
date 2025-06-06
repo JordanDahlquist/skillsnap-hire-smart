@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -165,9 +164,6 @@ export const Dashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
-          {/* Compact Stats Section */}
-          <CompactDashboardStats applications={applications} job={job} />
-
           {/* Analytics Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ApplicationTrendsChart applications={applications} />
