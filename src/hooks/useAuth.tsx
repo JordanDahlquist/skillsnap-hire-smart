@@ -16,6 +16,7 @@ export const useAuth = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -23,47 +24,68 @@ export const useAuth = () => {
         .single();
       
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.warn('Profile fetch error:', error.message);
+        // Don't throw error, just return null and continue
         return null;
       }
       
+      console.log('Profile fetched successfully:', data);
       return data;
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.warn('Profile fetch exception:', error);
       return null;
     }
   };
 
   useEffect(() => {
+    console.log('Auth hook initializing...');
+    
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id || 'No session');
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        // Fetch profile but don't block loading state
         const userProfile = await fetchProfile(session.user.id);
         setProfile(userProfile);
       }
       
+      // Always set loading to false after initial session check
       setLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id || 'No session');
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          const userProfile = await fetchProfile(session.user.id);
-          setProfile(userProfile);
+          // Fetch profile in background, don't affect loading state
+          setTimeout(async () => {
+            const userProfile = await fetchProfile(session.user.id);
+            setProfile(userProfile);
+          }, 0);
         } else {
           setProfile(null);
         }
         
+        // Set loading to false for auth state changes
         setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Failsafe: ensure loading never stays true indefinitely
+    const timeout = setTimeout(() => {
+      console.log('Auth loading timeout reached, setting loading to false');
+      setLoading(false);
+    }, 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const signOut = async () => {

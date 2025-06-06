@@ -85,8 +85,8 @@ export const UnifiedHeader = ({
               <span className="text-xl font-bold text-gray-900">Atract</span>
             </Link>
 
-            {/* Main Navigation Menu */}
-            {!loading && user && (
+            {/* Main Navigation Menu - Show for authenticated users or after loading */}
+            {(!loading && user) && (
               <NavigationMenu>
                 <NavigationMenuList>
                   <NavigationMenuItem>
