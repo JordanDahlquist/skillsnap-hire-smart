@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,10 +32,11 @@ const MyJobs = () => {
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const { toast } = useToast();
 
-  // Get user's display name
+  // Get user's display name (first name only)
   const getUserDisplayName = () => {
     if (profile?.full_name) {
-      return profile.full_name;
+      // Extract first name from full name
+      return profile.full_name.split(' ')[0];
     }
     // Fallback to email username
     return user?.email?.split('@')[0] || 'there';
