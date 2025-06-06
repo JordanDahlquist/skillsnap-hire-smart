@@ -8,12 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, FileText, Users, MapPin, Info, Edit3, Save, X, Check } from "lucide-react";
+import { Loader2, Sparkles, FileText, Users, MapPin, Info, Edit3, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LocationSelector } from "./LocationSelector";
 import { PdfUpload } from "./PdfUpload";
 import { AiGenerationLoader } from "./AiGenerationLoader";
+import { RichTextEditor } from "./RichTextEditor";
 
 interface CreateRoleModalProps {
   open: boolean;
@@ -565,41 +566,21 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 {isGenerating ? (
                   <AiGenerationLoader />
                 ) : isEditingJobPost ? (
-                  <div className="space-y-4">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-sm text-blue-800">
-                        <strong>Formatting tips:</strong> Use markdown-style links: [link text](url) • Use **bold** for emphasis • Use bullet points with - or *
-                      </p>
-                    </div>
-                    <Textarea
-                      value={editedJobPost}
-                      onChange={(e) => setEditedJobPost(e.target.value)}
-                      className="min-h-[400px] font-mono text-sm"
-                      placeholder="Edit your job post content..."
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleSaveJobPost}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                      >
-                        <Save className="w-4 h-4" />
-                        Save Changes
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={handleCancelJobPostEdit}
-                        className="flex items-center gap-2"
-                      >
-                        <X className="w-4 h-4" />
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
+                  <RichTextEditor
+                    value={editedJobPost}
+                    onChange={setEditedJobPost}
+                    onSave={handleSaveJobPost}
+                    onCancel={handleCancelJobPostEdit}
+                    placeholder="Edit your job post content..."
+                  />
                 ) : (
                   <div className="prose max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                      {hasEditedJobPost ? editedJobPost : generatedJob}
-                    </pre>
+                    <div 
+                      className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg"
+                      dangerouslySetInnerHTML={{ 
+                        __html: hasEditedJobPost ? editedJobPost : generatedJob 
+                      }}
+                    />
                   </div>
                 )}
               </CardContent>
@@ -635,41 +616,21 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
               </CardHeader>
               <CardContent>
                 {isEditingSkillsTest ? (
-                  <div className="space-y-4">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-sm text-blue-800">
-                        <strong>Formatting tips:</strong> Use markdown-style links: [link text](url) • Use **bold** for emphasis • Use bullet points with - or *
-                      </p>
-                    </div>
-                    <Textarea
-                      value={editedSkillsTest}
-                      onChange={(e) => setEditedSkillsTest(e.target.value)}
-                      className="min-h-[400px] font-mono text-sm"
-                      placeholder="Edit your skills test content..."
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleSaveSkillsTest}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                      >
-                        <Save className="w-4 h-4" />
-                        Save Changes
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={handleCancelSkillsTestEdit}
-                        className="flex items-center gap-2"
-                      >
-                        <X className="w-4 h-4" />
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
+                  <RichTextEditor
+                    value={editedSkillsTest}
+                    onChange={setEditedSkillsTest}
+                    onSave={handleSaveSkillsTest}
+                    onCancel={handleCancelSkillsTestEdit}
+                    placeholder="Edit your skills test content..."
+                  />
                 ) : (
                   <div className="prose max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                      {hasEditedSkillsTest ? editedSkillsTest : generatedTest}
-                    </pre>
+                    <div 
+                      className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg"
+                      dangerouslySetInnerHTML={{ 
+                        __html: hasEditedSkillsTest ? editedSkillsTest : generatedTest 
+                      }}
+                    />
                   </div>
                 )}
               </CardContent>
