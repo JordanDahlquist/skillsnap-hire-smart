@@ -1,5 +1,5 @@
 
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -69,15 +69,46 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
       .replace(/\n/g, '<br>');
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (editorRef.current && value) {
       const htmlContent = value.startsWith('<') ? value : convertToHtml(value);
       editorRef.current.innerHTML = htmlContent;
     }
   }, [value]);
 
+  // Add custom CSS styles directly to the component
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      .rich-text-editor [contenteditable][data-placeholder]:empty::before {
+        content: attr(data-placeholder);
+        color: #9ca3af;
+        font-style: italic;
+      }
+      .rich-text-editor [contenteditable] a {
+        color: #3b82f6;
+        text-decoration: underline;
+      }
+      .rich-text-editor [contenteditable] strong {
+        font-weight: bold;
+      }
+      .rich-text-editor [contenteditable] em {
+        font-style: italic;
+      }
+      .rich-text-editor [contenteditable] ul {
+        list-style-type: disc;
+        margin-left: 20px;
+      }
+    `;
+    document.head.appendChild(styleElement);
+
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+
   return (
-    <div className="space-y-4">
+    <div className="rich-text-editor space-y-4">
       {/* Toolbar */}
       <div className="flex items-center gap-2 p-2 border rounded-lg bg-gray-50">
         <Button
@@ -187,28 +218,6 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <style jsx>{`
-        [contenteditable][data-placeholder]:empty::before {
-          content: attr(data-placeholder);
-          color: #9ca3af;
-          font-style: italic;
-        }
-        [contenteditable] a {
-          color: #3b82f6;
-          text-decoration: underline;
-        }
-        [contenteditable] strong {
-          font-weight: bold;
-        }
-        [contenteditable] em {
-          font-style: italic;
-        }
-        [contenteditable] ul {
-          list-style-type: disc;
-          margin-left: 20px;
-        }
-      `}</style>
     </div>
   );
 };
