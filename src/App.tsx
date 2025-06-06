@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { ProfileSettings } from "./pages/ProfileSettings";
 import { Dashboard } from "./components/Dashboard";
+import { JobApplicationPage } from "./pages/JobApplicationPage";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/jobs" element={<MyJobs />} />
             <Route path="/jobs/public" element={<PublicJobs />} />
             <Route path="/dashboard/:jobId" element={<Dashboard />} />
+            <Route path="/apply/:jobId" element={<JobApplicationPage />} />
             <Route path="/profile" element={<ProfileSettings />} />
             <Route path="/linkedin/callback" element={<LinkedInCallback />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
