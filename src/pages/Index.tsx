@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Clock, Users, Target, Zap, User, LogOut, BarChart3 } from "lucide-react";
@@ -31,7 +30,7 @@ const Index = () => {
               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">SkillSnap</span>
+              <span className="text-xl font-bold text-gray-900">Atract</span>
             </div>
             <div className="flex items-center gap-4">
               {loading ? null : user ? (
@@ -153,7 +152,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              How SkillSnap solves it
+              How Atract solves it
             </h2>
             <p className="text-xl text-gray-600">
               One simple workflow. Five powerful features. Zero time wasted.

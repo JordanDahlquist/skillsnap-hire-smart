@@ -91,7 +91,7 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-purple-600" />
-            Welcome to SkillSnap
+            Welcome to Atract
           </DialogTitle>
         </DialogHeader>
 
