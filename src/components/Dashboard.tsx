@@ -2,13 +2,13 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Star, Clock, Eye, ThumbsUp, ThumbsDown, ExternalLink } from "lucide-react";
+import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { DashboardHeader } from "./dashboard/DashboardHeader";
+import { DashboardStats } from "./dashboard/DashboardStats";
+import { ApplicationsList } from "./dashboard/ApplicationsList";
+import { ApplicationDetail } from "./dashboard/ApplicationDetail";
 
 interface Application {
   id: string;
@@ -117,13 +117,6 @@ export const Dashboard = () => {
     return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
   };
 
-  // Calculate stats
-  const pendingCount = applications.filter(app => app.status === 'pending').length;
-  const approvedCount = applications.filter(app => app.status === 'approved').length;
-  const avgRating = applications.length > 0 
-    ? applications.reduce((sum, app) => sum + (app.ai_rating || 0), 0) / applications.length 
-    : 0;
-
   if (jobLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -148,258 +141,32 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
-              <p className="text-gray-600">Job posted {getTimeAgo(job.created_at)}</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" asChild>
-                <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  View Public Page
-                </a>
-              </Button>
-              <Badge className={job.status === 'active' ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                {job.status}
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DashboardHeader job={job} getTimeAgo={getTimeAgo} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="w-8 h-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Applications</p>
-                  <p className="text-2xl font-bold text-gray-900">{applications.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <DashboardStats applications={applications} />
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Clock className="w-8 h-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Pending Review</p>
-                  <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <ThumbsUp className="w-8 h-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Approved</p>
-                  <p className="text-2xl font-bold text-gray-900">{approvedCount}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Star className="w-8 h-8 text-yellow-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Avg. Rating</p>
-                  <p className="text-2xl font-bold text-gray-900">{avgRating.toFixed(1)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Applications List */}
           <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Applications</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {applications.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">
-                    <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>No applications yet</p>
-                    <p className="text-sm">Applications will appear here when candidates apply</p>
-                  </div>
-                ) : (
-                  <div className="space-y-0">
-                    {applications.map((app) => (
-                      <div
-                        key={app.id}
-                        className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                          selectedApplication?.id === app.id ? "bg-purple-50 border-l-4 border-l-purple-600" : ""
-                        }`}
-                        onClick={() => setSelectedApplication(app)}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-medium text-gray-900">{app.name}</h3>
-                          <Badge className={getStatusColor(app.status)}>
-                            {app.status}
-                          </Badge>
-                        </div>
-                        {app.ai_rating && (
-                          <div className="flex items-center gap-1 mb-1">
-                            {getRatingStars(app.ai_rating)}
-                            <span className="text-sm text-gray-600 ml-1">{app.ai_rating.toFixed(1)}/5</span>
-                          </div>
-                        )}
-                        <p className="text-sm text-gray-600">{getTimeAgo(app.created_at)}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ApplicationsList 
+              applications={applications}
+              selectedApplication={selectedApplication}
+              onSelectApplication={setSelectedApplication}
+              getStatusColor={getStatusColor}
+              getRatingStars={getRatingStars}
+              getTimeAgo={getTimeAgo}
+            />
           </div>
 
-          {/* Application Detail */}
           <div className="lg:col-span-2">
-            {selectedApplication ? (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle>{selectedApplication.name}</CardTitle>
-                      <p className="text-gray-600">{selectedApplication.email}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <ThumbsDown className="w-4 h-4 mr-2" />
-                        Reject
-                      </Button>
-                      <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                        <ThumbsUp className="w-4 h-4 mr-2" />
-                        Approve
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="summary" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="summary">AI Summary</TabsTrigger>
-                      <TabsTrigger value="answers">Test Answers</TabsTrigger>
-                      <TabsTrigger value="profile">Profile</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="summary" className="space-y-4">
-                      <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                        {selectedApplication.ai_rating && (
-                          <div className="flex items-center gap-1">
-                            {getRatingStars(selectedApplication.ai_rating)}
-                            <span className="text-lg font-semibold ml-2">{selectedApplication.ai_rating.toFixed(1)}/5</span>
-                          </div>
-                        )}
-                        <Badge className={getStatusColor(selectedApplication.status)}>
-                          {selectedApplication.status}
-                        </Badge>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">AI Assessment Summary</h4>
-                        <p className="text-gray-700 leading-relaxed">
-                          {selectedApplication.ai_summary || "AI analysis is being processed..."}
-                        </p>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="answers" className="space-y-6">
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Answer 1</h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {selectedApplication.answer_1 || "No answer provided"}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Answer 2</h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {selectedApplication.answer_2 || "No answer provided"}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Answer 3</h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">
-                          {selectedApplication.answer_3 || "No answer provided"}
-                        </p>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="profile" className="space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Contact Information</h4>
-                        <p className="text-gray-700">{selectedApplication.email}</p>
-                      </div>
-                      
-                      {selectedApplication.portfolio && (
-                        <div>
-                          <h4 className="font-semibold text-gray-900 mb-2">Portfolio</h4>
-                          <a 
-                            href={selectedApplication.portfolio} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-purple-600 hover:text-purple-700 underline"
-                          >
-                            {selectedApplication.portfolio}
-                          </a>
-                        </div>
-                      )}
-                      
-                      {selectedApplication.experience && (
-                        <div>
-                          <h4 className="font-semibold text-gray-900 mb-2">Experience</h4>
-                          <p className="text-gray-700">{selectedApplication.experience}</p>
-                        </div>
-                      )}
-                      
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Submitted</h4>
-                        <p className="text-gray-700">{getTimeAgo(selectedApplication.created_at)}</p>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            ) : applications.length > 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  <Eye className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>Select an application to view details</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-8 text-center text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg font-medium mb-2">No Applications Yet</p>
-                  <p>Share your job posting link to start receiving applications!</p>
-                  <Button className="mt-4" variant="outline" asChild>
-                    <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Job Application Page
-                    </a>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            <ApplicationDetail 
+              selectedApplication={selectedApplication}
+              applications={applications}
+              job={job}
+              getStatusColor={getStatusColor}
+              getRatingStars={getRatingStars}
+              getTimeAgo={getTimeAgo}
+            />
           </div>
         </div>
       </div>
