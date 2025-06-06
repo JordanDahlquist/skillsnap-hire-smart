@@ -68,6 +68,7 @@ export const JobApplication = () => {
   const [parsedData, setParsedData] = useState<ParsedResumeData | null>(null);
   const [linkedInProfile, setLinkedInProfile] = useState<any>(null);
   const [applicationMethod, setApplicationMethod] = useState<'resume' | 'linkedin' | 'manual'>('manual');
+  const [linkedInDataLoading, setLinkedInDataLoading] = useState(false);
   const [applicationData, setApplicationData] = useState({
     name: "",
     email: "",
@@ -113,32 +114,69 @@ export const JobApplication = () => {
     fetchJob();
   }, [jobId, toast]);
 
-  // Check for LinkedIn connection on component mount
+  // Enhanced LinkedIn connection check with retry logic
   useEffect(() => {
     const linkedInConnected = searchParams.get('linkedin');
+    console.log('LinkedIn connected param:', linkedInConnected);
+    
     if (linkedInConnected === 'connected') {
-      // Get the stored LinkedIn profile data
-      const storedProfileData = sessionStorage.getItem('linkedin_profile_data');
-      if (storedProfileData) {
-        try {
-          const profileData = JSON.parse(storedProfileData);
-          handleLinkedInData(profileData);
-          // Clean up
-          sessionStorage.removeItem('linkedin_profile_data');
-          
+      setLinkedInDataLoading(true);
+      
+      const checkForLinkedInData = (attempt = 1, maxAttempts = 5) => {
+        console.log(`Checking for LinkedIn data, attempt ${attempt}`);
+        
+        const storedProfileData = sessionStorage.getItem('linkedin_profile_data');
+        const linkedInConnectedFlag = sessionStorage.getItem('linkedin_connected');
+        
+        console.log('Stored profile data:', storedProfileData);
+        console.log('LinkedIn connected flag:', linkedInConnectedFlag);
+        
+        if (storedProfileData) {
+          try {
+            const profileData = JSON.parse(storedProfileData);
+            console.log('Parsed LinkedIn profile data:', profileData);
+            
+            handleLinkedInData(profileData);
+            
+            // Clean up
+            sessionStorage.removeItem('linkedin_profile_data');
+            sessionStorage.removeItem('linkedin_connected');
+            
+            setLinkedInDataLoading(false);
+            
+            toast({
+              title: "LinkedIn connected!",
+              description: "Your profile information has been imported successfully.",
+            });
+          } catch (error) {
+            console.error('Error parsing LinkedIn profile data:', error);
+            setLinkedInDataLoading(false);
+            toast({
+              title: "Profile import failed",
+              description: "Unable to parse your LinkedIn profile data.",
+              variant: "destructive"
+            });
+          }
+        } else if (attempt < maxAttempts) {
+          console.log(`LinkedIn data not found, retrying in 500ms (attempt ${attempt}/${maxAttempts})`);
+          setTimeout(() => {
+            checkForLinkedInData(attempt + 1, maxAttempts);
+          }, 500);
+        } else {
+          console.error('LinkedIn data not found after maximum attempts');
+          setLinkedInDataLoading(false);
           toast({
-            title: "LinkedIn connected!",
-            description: "Your profile information has been imported successfully.",
-          });
-        } catch (error) {
-          console.error('Error parsing LinkedIn profile data:', error);
-          toast({
-            title: "Profile import failed",
-            description: "Unable to parse your LinkedIn profile data.",
+            title: "LinkedIn connection issue",
+            description: "We couldn't retrieve your LinkedIn profile data. Please try connecting again.",
             variant: "destructive"
           });
         }
-      }
+      };
+      
+      // Start checking for LinkedIn data with a small initial delay
+      setTimeout(() => {
+        checkForLinkedInData();
+      }, 200);
     }
   }, [searchParams]);
 
@@ -179,6 +217,7 @@ export const JobApplication = () => {
   };
 
   const handleLinkedInData = (data: ParsedResumeData) => {
+    console.log('Handling LinkedIn data:', data);
     setParsedData(data);
     setLinkedInProfile(data);
     setApplicationMethod('linkedin');
@@ -454,6 +493,21 @@ export const JobApplication = () => {
           </CardHeader>
         </Card>
 
+        {/* LinkedIn Data Loading State */}
+        {linkedInDataLoading && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                <div>
+                  <p className="text-blue-800 font-medium">Processing LinkedIn data...</p>
+                  <p className="text-blue-600 text-sm">Please wait while we import your profile information.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Application Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Quick Apply Options */}
@@ -491,7 +545,7 @@ export const JobApplication = () => {
               </div>
 
               {/* Manual Entry Notice */}
-              {applicationMethod === 'manual' && (
+              {applicationMethod === 'manual' && !linkedInDataLoading && (
                 <div className="text-center py-4 text-gray-600">
                   <p className="text-sm">
                     No file uploaded or LinkedIn connected. Please fill out the form manually below.

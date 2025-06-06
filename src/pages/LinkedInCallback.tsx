@@ -18,13 +18,13 @@ export const LinkedInCallback = () => {
       try {
         console.log('Starting LinkedIn callback handling...');
 
-        // Wait a bit longer for the OAuth flow to complete
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Wait longer for the OAuth flow to complete and session to be established
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Get the session after OAuth redirect
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        console.log('Session data:', session);
+        console.log('Session data after LinkedIn OAuth:', session);
         console.log('Session error:', sessionError);
         
         if (sessionError) {
@@ -56,20 +56,32 @@ export const LinkedInCallback = () => {
 
           console.log('Transformed LinkedIn data:', transformedData);
 
-          // Store the transformed data temporarily
-          sessionStorage.setItem('linkedin_profile_data', JSON.stringify(transformedData));
-          console.log('Stored LinkedIn profile data in sessionStorage');
+          // Store the transformed data with a timestamp for debugging
+          const dataWithTimestamp = {
+            ...transformedData,
+            _timestamp: Date.now(),
+            _source: 'linkedin_oauth'
+          };
+          
+          sessionStorage.setItem('linkedin_profile_data', JSON.stringify(dataWithTimestamp));
+          console.log('Stored LinkedIn profile data in sessionStorage with timestamp:', dataWithTimestamp._timestamp);
+          
+          // Also store a flag to indicate successful LinkedIn connection
+          sessionStorage.setItem('linkedin_connected', 'true');
           
           // Get the original job ID from localStorage
           const jobId = localStorage.getItem('linkedin_job_id');
           console.log('Retrieved job ID from localStorage:', jobId);
+          
+          // Add another small delay to ensure sessionStorage write completes
+          await new Promise(resolve => setTimeout(resolve, 200));
           
           if (jobId) {
             localStorage.removeItem('linkedin_job_id');
             console.log('Navigating to application page with job ID:', jobId);
             
             // Use replace to avoid back button issues
-            window.location.replace(`/apply/${jobId}?linkedin=connected`);
+            window.location.replace(`/apply/${jobId}?linkedin=connected&t=${Date.now()}`);
           } else {
             console.log('No job ID found, navigating to public jobs');
             window.location.replace('/jobs/public');
@@ -120,7 +132,7 @@ export const LinkedInCallback = () => {
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Connecting LinkedIn...</h2>
         <p className="text-gray-600 mb-4">Please wait while we import your profile information.</p>
         <div className="text-sm text-gray-500">
-          <p>If this takes too long, you may need to check your Supabase authentication settings.</p>
+          <p>Processing your LinkedIn profile data...</p>
         </div>
       </div>
     </div>
