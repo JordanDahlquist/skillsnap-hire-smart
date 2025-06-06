@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,7 +33,9 @@ export const LinkedInCallback = () => {
         // Retrieve job context from sessionStorage
         console.log('Retrieving job context from sessionStorage...');
         const storedContext = sessionStorage.getItem('linkedin_job_context');
+        const storedRedirectUrl = sessionStorage.getItem('auth_redirect_url');
         console.log('Stored context raw:', storedContext);
+        console.log('Stored redirect URL:', storedRedirectUrl);
 
         let jobId = null;
         let originRoute = null;
@@ -116,15 +117,21 @@ export const LinkedInCallback = () => {
           // Add another small delay to ensure sessionStorage write completes
           await new Promise(resolve => setTimeout(resolve, 200));
           
-          // Determine the correct redirect URL based on retrieved job context
+          // Determine the correct redirect URL based on retrieved job context or stored redirect URL
           let redirectUrl;
           
-          if (jobId) {
-            // Always redirect to the application page with the job ID
+          if (storedRedirectUrl) {
+            // Use the stored redirect URL if available (preferred method)
+            redirectUrl = `${storedRedirectUrl}?linkedin=connected&t=${Date.now()}`;
+            console.log('Using stored redirect URL:', redirectUrl);
+            // Clean up the stored redirect URL
+            sessionStorage.removeItem('auth_redirect_url');
+          } else if (jobId) {
+            // Fallback to job context if no stored redirect URL
             redirectUrl = `/apply/${jobId}?linkedin=connected&t=${Date.now()}`;
             console.log('Job ID found from context, redirecting to application page:', redirectUrl);
           } else {
-            console.log('No job ID found in context, checking for fallback options');
+            console.log('No job ID or redirect URL found, checking for fallback options');
             
             // If we have origin route but no job ID, try to extract job ID from origin route
             if (originRoute && originRoute.includes('/apply/')) {
@@ -163,6 +170,14 @@ export const LinkedInCallback = () => {
         // Try to extract job ID from stored context for error redirect
         let jobId = null;
         const storedContext = sessionStorage.getItem('linkedin_job_context');
+        const storedRedirectUrl = sessionStorage.getItem('auth_redirect_url');
+        
+        if (storedRedirectUrl) {
+          console.log('Error redirect using stored URL:', storedRedirectUrl);
+          sessionStorage.removeItem('auth_redirect_url');
+          window.location.replace(storedRedirectUrl);
+          return;
+        }
         
         if (storedContext) {
           try {

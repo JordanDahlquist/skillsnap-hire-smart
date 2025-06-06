@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +23,20 @@ const Auth = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
-      navigate("/");
+      console.log('User authenticated, checking for stored redirect URL...');
+      
+      // Check for stored redirect URL from LinkedIn flow
+      const storedRedirectUrl = sessionStorage.getItem('auth_redirect_url');
+      console.log('Stored redirect URL:', storedRedirectUrl);
+      
+      if (storedRedirectUrl) {
+        console.log('Redirecting to stored URL:', storedRedirectUrl);
+        sessionStorage.removeItem('auth_redirect_url');
+        navigate(storedRedirectUrl);
+      } else {
+        console.log('No stored redirect URL, going to home page');
+        navigate("/");
+      }
     }
   }, [user, navigate]);
 
@@ -45,7 +57,15 @@ const Auth = () => {
         description: "You've been signed in successfully.",
       });
 
-      navigate("/");
+      // Check for stored redirect URL
+      const storedRedirectUrl = sessionStorage.getItem('auth_redirect_url');
+      if (storedRedirectUrl) {
+        console.log('Sign in successful, redirecting to stored URL:', storedRedirectUrl);
+        sessionStorage.removeItem('auth_redirect_url');
+        navigate(storedRedirectUrl);
+      } else {
+        navigate("/");
+      }
     } catch (error: any) {
       toast({
         title: "Sign in failed",

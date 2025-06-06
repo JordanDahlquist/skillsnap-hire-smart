@@ -53,13 +53,22 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
       console.log('Storing job context in sessionStorage:', jobContext);
       sessionStorage.setItem('linkedin_job_context', JSON.stringify(jobContext));
       
+      // Store the intended redirect URL for after authentication
+      if (jobId) {
+        const redirectUrl = `/apply/${jobId}`;
+        sessionStorage.setItem('auth_redirect_url', redirectUrl);
+        console.log('Stored auth redirect URL:', redirectUrl);
+      }
+      
       // Verify storage worked
       const storedContext = sessionStorage.getItem('linkedin_job_context');
+      const storedRedirect = sessionStorage.getItem('auth_redirect_url');
       console.log('Verified stored context:', storedContext);
+      console.log('Verified stored redirect:', storedRedirect);
 
       // Create the redirect URL
-      const redirectUrl = `https://atract.ai/linkedin-callback`;
-      console.log('Redirect URL:', redirectUrl);
+      const callbackUrl = `https://atract.ai/linkedin-callback`;
+      console.log('Callback URL:', callbackUrl);
 
       // Use Supabase Auth's LinkedIn OIDC provider WITHOUT custom state parameter
       console.log('Initiating LinkedIn OAuth with Supabase (no custom state)...');
@@ -67,7 +76,7 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         provider: 'linkedin_oidc',
         options: {
           scopes: 'openid profile email',
-          redirectTo: redirectUrl
+          redirectTo: callbackUrl
         }
       });
 
@@ -85,6 +94,7 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
       
       // Clean up stored context on error
       sessionStorage.removeItem('linkedin_job_context');
+      sessionStorage.removeItem('auth_redirect_url');
       
       toast({
         title: "Connection failed",
