@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -241,7 +240,10 @@ export const LinkedInConnect = ({ onLinkedInData, onRemove, connectedProfile }: 
           )}
         </Button>
         <p className="text-xs text-gray-500 mt-3">
-          We'll only access your basic profile information and work experience.
+          We'll only access your basic profile information and work experience.{" "}
+          <a href="/privacy-policy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+            View our Privacy Policy
+          </a>
         </p>
       </CardContent>
     </Card>

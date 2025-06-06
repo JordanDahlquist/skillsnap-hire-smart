@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +8,7 @@ import Index from "./pages/Index";
 import MyJobs from "./pages/MyJobs";
 import PublicJobs from "./pages/PublicJobs";
 import Auth from "./pages/Auth";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { JobApplication } from "./components/JobApplication";
 import { Dashboard } from "./components/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -30,6 +32,7 @@ function App() {
               <Route path="/apply/:jobId" element={<JobApplication />} />
               <Route path="/dashboard/:jobId" element={<Dashboard />} />
               <Route path="/linkedin-callback" element={<LinkedInCallback />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
