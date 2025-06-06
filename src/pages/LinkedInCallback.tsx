@@ -19,16 +19,35 @@ export const LinkedInCallback = () => {
           throw error;
         }
 
-        if (session?.provider_token) {
-          // Store the LinkedIn access token temporarily
-          sessionStorage.setItem('linkedin_access_token', session.provider_token);
+        if (session?.user) {
+          // Extract basic profile information from the user metadata
+          const userMetadata = session.user.user_metadata;
+          console.log('LinkedIn user metadata:', userMetadata);
+          
+          // Transform the basic available data
+          const transformedData = {
+            personalInfo: {
+              name: userMetadata.full_name || userMetadata.name || "",
+              email: session.user.email || "",
+              phone: "",
+              location: "", // Not available in basic scope
+            },
+            workExperience: [], // Not available in basic scope
+            education: [], // Not available in basic scope
+            skills: [], // Not available in basic scope
+            summary: userMetadata.headline || "", // May not be available
+            totalExperience: "0 years",
+          };
+
+          // Store the transformed data temporarily
+          sessionStorage.setItem('linkedin_profile_data', JSON.stringify(transformedData));
           
           toast({
             title: "LinkedIn connected!",
-            description: "Redirecting back to application...",
+            description: "Basic profile information imported successfully.",
           });
 
-          // Get the original job ID from localStorage or URL params
+          // Get the original job ID from localStorage
           const jobId = localStorage.getItem('linkedin_job_id');
           if (jobId) {
             localStorage.removeItem('linkedin_job_id');
@@ -37,7 +56,7 @@ export const LinkedInCallback = () => {
             navigate('/jobs/public');
           }
         } else {
-          throw new Error('No access token received from LinkedIn');
+          throw new Error('No user session found after LinkedIn authentication');
         }
       } catch (error) {
         console.error('LinkedIn callback error:', error);

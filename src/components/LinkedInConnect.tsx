@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,16 +42,12 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         localStorage.setItem('linkedin_job_id', jobId);
       }
 
-      // Use Supabase Auth's LinkedIn OIDC provider
+      // Use Supabase Auth's LinkedIn OIDC provider with basic scopes
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           scopes: 'openid profile email',
           redirectTo: `${window.location.origin}/linkedin-callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
         }
       });
 
@@ -60,7 +55,6 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         throw error;
       }
 
-      // The actual profile fetching will happen in the callback
       console.log('LinkedIn OAuth initiated:', data);
     } catch (error) {
       console.error('LinkedIn connection error:', error);
@@ -227,7 +221,7 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Connect with LinkedIn</h3>
         <p className="text-gray-600 mb-6 max-w-sm mx-auto">
-          Import your professional information directly from your LinkedIn profile to quickly fill out your application.
+          Import your basic profile information from LinkedIn to quickly fill out your application.
         </p>
         <Button 
           onClick={handleLinkedInConnect}
@@ -247,7 +241,7 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
           )}
         </Button>
         <p className="text-xs text-gray-500 mt-3">
-          We'll only access your basic profile information and work experience.{" "}
+          We'll only access your basic profile information.{" "}
           <a href="/privacy-policy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
             View our Privacy Policy
           </a>
