@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ResumeUpload } from "./ResumeUpload";
 import { LinkedInConnect } from "./LinkedInConnect";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 interface Job {
   id: string;
@@ -86,6 +87,21 @@ export const JobApplication = () => {
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
 
+  // Add comprehensive debugging at component mount
+  useEffect(() => {
+    console.log('=== JobApplication Component Mounted ===');
+    console.log('Job ID from params:', jobId);
+    console.log('Current URL:', window.location.href);
+    console.log('Search params:', Object.fromEntries(searchParams.entries()));
+    console.log('Component state:', {
+      jobLoading,
+      jobError,
+      linkedInDataLoading,
+      applicationMethod,
+      submitted
+    });
+  }, []);
+
   useEffect(() => {
     const fetchJob = async () => {
       if (!jobId) {
@@ -130,6 +146,7 @@ export const JobApplication = () => {
           variant: "destructive"
         });
       } finally {
+        console.log('Setting jobLoading to false');
         setJobLoading(false);
       }
     };
@@ -140,6 +157,7 @@ export const JobApplication = () => {
   // Enhanced LinkedIn connection check with more robust error handling
   useEffect(() => {
     const linkedInConnected = searchParams.get('linkedin');
+    console.log('=== LinkedIn Effect Running ===');
     console.log('LinkedIn connected param:', linkedInConnected);
     console.log('Current URL:', window.location.href);
     console.log('Job loading state:', jobLoading);
@@ -407,13 +425,15 @@ export const JobApplication = () => {
     }
   };
 
-  // Show loading state
+  // Show loading state - ADD DEBUGGING
   if (jobLoading && !linkedInDataLoading) {
+    console.log('Rendering loading state - jobLoading:', jobLoading, 'linkedInDataLoading:', linkedInDataLoading);
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading job details...</p>
+          <p className="text-xs text-gray-500 mt-2">Job ID: {jobId}</p>
         </div>
       </div>
     );
@@ -421,6 +441,7 @@ export const JobApplication = () => {
 
   // Show success state
   if (submitted) {
+    console.log('Rendering success state');
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-3xl mx-auto px-4">
@@ -443,335 +464,366 @@ export const JobApplication = () => {
     );
   }
 
+  console.log('Rendering main application form');
+  console.log('Current state:', {
+    job: !!job,
+    jobError,
+    linkedInDataLoading,
+    applicationMethod,
+    linkedInProfile: !!linkedInProfile
+  });
+
   // Main application form - show even if there's a job error, but with a warning
   const skills = job?.required_skills?.split(',').map(skill => skill.trim()) || [];
   const daysSincePosted = job ? Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Show job error warning if exists but don't block the form */}
-        {jobError && (
-          <Card className="mb-6 border-amber-200 bg-amber-50">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold text-amber-800 mb-2">Job Details Unavailable</h2>
-              <p className="text-amber-700 mb-2">{jobError}</p>
-              <p className="text-gray-600 text-sm">
-                You can still submit your application below. Job ID: {jobId}
-              </p>
-            </CardContent>
-          </Card>
-        )}
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          {/* Debug info panel - only in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <Card className="mb-4 border-orange-200 bg-orange-50">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-orange-800 mb-2">Debug Info</h3>
+                <div className="text-sm text-orange-700 space-y-1">
+                  <p>Job ID: {jobId}</p>
+                  <p>Job Loading: {jobLoading.toString()}</p>
+                  <p>Job Error: {jobError || 'none'}</p>
+                  <p>LinkedIn Loading: {linkedInDataLoading.toString()}</p>
+                  <p>Application Method: {applicationMethod}</p>
+                  <p>LinkedIn Profile: {linkedInProfile ? 'loaded' : 'none'}</p>
+                  <p>URL: {window.location.href}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Job Header - only show if job data is available */}
-        {job && (
-          <Card className="mb-8">
-            <CardHeader>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-3">{job.title}</h1>
-                  
-                  <div className="flex flex-wrap items-center gap-4 mb-4">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      <Briefcase className="w-3 h-3 mr-1" />
-                      {job.role_type}
-                    </Badge>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      {job.experience_level}
-                    </Badge>
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                      {job.employment_type}
-                    </Badge>
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm">{getLocationDisplay()}</span>
-                    </div>
-                  </div>
+          {/* Show job error warning if exists but don't block the form */}
+          {jobError && (
+            <Card className="mb-6 border-amber-200 bg-amber-50">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold text-amber-800 mb-2">Job Details Unavailable</h2>
+                <p className="text-amber-700 mb-2">{jobError}</p>
+                <p className="text-gray-600 text-sm">
+                  You can still submit your application below. Job ID: {jobId}
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
-                  <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-6">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{job.duration}</span>
+          {/* Job Header - only show if job data is available */}
+          {job && (
+            <Card className="mb-8">
+              <CardHeader>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-3">{job.title}</h1>
+                    
+                    <div className="flex flex-wrap items-center gap-4 mb-4">
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                        <Briefcase className="w-3 h-3 mr-1" />
+                        {job.role_type}
+                      </Badge>
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        {job.experience_level}
+                      </Badge>
+                      <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                        {job.employment_type}
+                      </Badge>
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <MapPin className="w-4 h-4" />
+                        <span className="text-sm">{getLocationDisplay()}</span>
+                      </div>
                     </div>
-                    {job.budget && (
-                      <div className="flex items-center gap-1 text-green-600 font-medium">
-                        <DollarSign className="w-4 h-4" />
-                        <span>{job.budget}</span>
+
+                    <div className="flex flex-wrap gap-6 text-sm text-gray-600 mb-6">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        <span>{job.duration}</span>
+                      </div>
+                      {job.budget && (
+                        <div className="flex items-center gap-1 text-green-600 font-medium">
+                          <DollarSign className="w-4 h-4" />
+                          <span>{job.budget}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>Posted {daysSincePosted} {daysSincePosted === 1 ? 'day' : 'days'} ago</span>
+                      </div>
+                    </div>
+
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Role</h3>
+                      <div className="prose max-w-none">
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
+                      </div>
+                    </div>
+
+                    {skills.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Required Skills</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {skills.map((skill, index) => (
+                            <Badge key={index} variant="outline" className="bg-gray-50">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     )}
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>Posted {daysSincePosted} {daysSincePosted === 1 ? 'day' : 'days'} ago</span>
-                    </div>
                   </div>
+                </div>
+              </CardHeader>
+            </Card>
+          )}
 
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Role</h3>
-                    <div className="prose max-w-none">
-                      <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
-                    </div>
-                  </div>
-
-                  {skills.length > 0 && (
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Required Skills</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {skills.map((skill, index) => (
-                          <Badge key={index} variant="outline" className="bg-gray-50">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-        )}
-
-        {/* LinkedIn Data Loading State */}
-        {linkedInDataLoading && (
-          <Card className="mb-6 border-blue-200 bg-blue-50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                <div>
-                  <p className="text-blue-800 font-medium">Processing LinkedIn data...</p>
-                  <p className="text-blue-600 text-sm">Please wait while we import your profile information.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Application Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Quick Apply Options */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Quick Apply
-              </CardTitle>
-              <p className="text-sm text-gray-600">
-                Choose how you'd like to apply - upload your resume, connect with LinkedIn, or fill out manually.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Application Method Tabs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Resume Upload Option */}
-                <div className={`p-1 rounded-lg ${applicationMethod === 'resume' ? 'bg-purple-50 border border-purple-200' : ''}`}>
-                  <ResumeUpload 
-                    onResumeData={handleResumeData}
-                    onRemove={handleRemoveResume}
-                    uploadedFile={resumeFile}
-                  />
-                </div>
-
-                {/* LinkedIn Connect Option */}
-                <div className={`p-1 rounded-lg ${applicationMethod === 'linkedin' ? 'bg-blue-50 border border-blue-200' : ''}`}>
-                  <LinkedInConnect
-                    jobId={jobId}
-                    onLinkedInData={handleLinkedInData}
-                    onRemove={handleRemoveLinkedIn}
-                    connectedProfile={linkedInProfile}
-                  />
-                </div>
-              </div>
-
-              {/* Manual Entry Notice */}
-              {applicationMethod === 'manual' && !linkedInDataLoading && (
-                <div className="text-center py-4 text-gray-600">
-                  <p className="text-sm">
-                    No file uploaded or LinkedIn connected. Please fill out the form manually below.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Personal Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Personal Information
-                {applicationMethod !== 'manual' && (
-                  <Badge variant="secondary" className="ml-2">
-                    {applicationMethod === 'resume' ? 'From Resume' : 'From LinkedIn'}
-                  </Badge>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Full Name *</Label>
-                  <Input
-                    id="name"
-                    required
-                    value={applicationData.name}
-                    onChange={(e) => setApplicationData(prev => ({ ...prev, name: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email Address *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={applicationData.email}
-                    onChange={(e) => setApplicationData(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={applicationData.phone}
-                    onChange={(e) => setApplicationData(prev => ({ ...prev, phone: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="location">Current Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="City, State/Country"
-                    value={applicationData.location}
-                    onChange={(e) => setApplicationData(prev => ({ ...prev, location: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="start_date">Available Start Date</Label>
-                  <Input
-                    id="start_date"
-                    type="date"
-                    value={applicationData.available_start_date}
-                    onChange={(e) => setApplicationData(prev => ({ ...prev, available_start_date: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="portfolio">Portfolio/Website URL</Label>
-                  <Input
-                    id="portfolio"
-                    type="url"
-                    placeholder="https://yourportfolio.com"
-                    value={applicationData.portfolio_url}
-                    onChange={(e) => setApplicationData(prev => ({ ...prev, portfolio_url: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="linkedin">LinkedIn Profile</Label>
-                  <Input
-                    id="linkedin"
-                    type="url"
-                    placeholder="https://linkedin.com/in/yourprofile"
-                    value={applicationData.linkedin_url}
-                    onChange={(e) => setApplicationData(prev => ({ ...prev, linkedin_url: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="github">GitHub Profile</Label>
-                  <Input
-                    id="github"
-                    type="url"
-                    placeholder="https://github.com/yourusername"
-                    value={applicationData.github_url}
-                    onChange={(e) => setApplicationData(prev => ({ ...prev, github_url: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="cover_letter">Cover Letter (Optional)</Label>
-                <Textarea
-                  id="cover_letter"
-                  placeholder="Tell us why you're interested in this role..."
-                  value={applicationData.cover_letter}
-                  onChange={(e) => setApplicationData(prev => ({ ...prev, cover_letter: e.target.value }))}
-                  rows={4}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Assessment */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Quick Assessment
-                <Badge variant="secondary" className="ml-auto">2 Questions</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <div 
-                  className="text-gray-700 prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: parseMarkdown(job.generated_test) 
-                  }}
-                />
-              </div>
-              
-              <div>
-                <Label className="text-base font-semibold">Your Responses</Label>
-                <div className="space-y-4 mt-3">
+          {/* LinkedIn Data Loading State */}
+          {linkedInDataLoading && (
+            <Card className="mb-6 border-blue-200 bg-blue-50">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                   <div>
-                    <Label htmlFor="answer1">Response 1 *</Label>
-                    <Textarea
-                      id="answer1"
-                      placeholder="Your response to the first question..."
-                      value={applicationData.answer1}
-                      onChange={(e) => setApplicationData(prev => ({ ...prev, answer1: e.target.value }))}
-                      rows={4}
+                    <p className="text-blue-800 font-medium">Processing LinkedIn data...</p>
+                    <p className="text-blue-600 text-sm">Please wait while we import your profile information.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Application Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Quick Apply Options */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Quick Apply
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Choose how you'd like to apply - upload your resume, connect with LinkedIn, or fill out manually.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Application Method Tabs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Resume Upload Option */}
+                  <div className={`p-1 rounded-lg ${applicationMethod === 'resume' ? 'bg-purple-50 border border-purple-200' : ''}`}>
+                    <ResumeUpload 
+                      onResumeData={handleResumeData}
+                      onRemove={handleRemoveResume}
+                      uploadedFile={resumeFile}
+                    />
+                  </div>
+
+                  {/* LinkedIn Connect Option */}
+                  <div className={`p-1 rounded-lg ${applicationMethod === 'linkedin' ? 'bg-blue-50 border border-blue-200' : ''}`}>
+                    <LinkedInConnect
+                      jobId={jobId}
+                      onLinkedInData={handleLinkedInData}
+                      onRemove={handleRemoveLinkedIn}
+                      connectedProfile={linkedInProfile}
+                    />
+                  </div>
+                </div>
+
+                {/* Manual Entry Notice */}
+                {applicationMethod === 'manual' && !linkedInDataLoading && (
+                  <div className="text-center py-4 text-gray-600">
+                    <p className="text-sm">
+                      No file uploaded or LinkedIn connected. Please fill out the form manually below.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Personal Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Personal Information
+                  {applicationMethod !== 'manual' && (
+                    <Badge variant="secondary" className="ml-2">
+                      {applicationMethod === 'resume' ? 'From Resume' : 'From LinkedIn'}
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
                       required
+                      value={applicationData.name}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      value={applicationData.email}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, email: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={applicationData.phone}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="location">Current Location</Label>
+                    <Input
+                      id="location"
+                      placeholder="City, State/Country"
+                      value={applicationData.location}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, location: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="start_date">Available Start Date</Label>
+                    <Input
+                      id="start_date"
+                      type="date"
+                      value={applicationData.available_start_date}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, available_start_date: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="portfolio">Portfolio/Website URL</Label>
+                    <Input
+                      id="portfolio"
+                      type="url"
+                      placeholder="https://yourportfolio.com"
+                      value={applicationData.portfolio_url}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, portfolio_url: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="linkedin">LinkedIn Profile</Label>
+                    <Input
+                      id="linkedin"
+                      type="url"
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      value={applicationData.linkedin_url}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="github">GitHub Profile</Label>
+                    <Input
+                      id="github"
+                      type="url"
+                      placeholder="https://github.com/yourusername"
+                      value={applicationData.github_url}
+                      onChange={(e) => setApplicationData(prev => ({ ...prev, github_url: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="cover_letter">Cover Letter (Optional)</Label>
+                  <Textarea
+                    id="cover_letter"
+                    placeholder="Tell us why you're interested in this role..."
+                    value={applicationData.cover_letter}
+                    onChange={(e) => setApplicationData(prev => ({ ...prev, cover_letter: e.target.value }))}
+                    rows={4}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Assessment */}
+            {job && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    Quick Assessment
+                    <Badge variant="secondary" className="ml-auto">2 Questions</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <div 
+                      className="text-gray-700 prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: parseMarkdown(job.generated_test) 
+                      }}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="answer2">Response 2 *</Label>
-                    <Textarea
-                      id="answer2"
-                      placeholder="Your response to the second question..."
-                      value={applicationData.answer2}
-                      onChange={(e) => setApplicationData(prev => ({ ...prev, answer2: e.target.value }))}
-                      rows={4}
-                      required
-                    />
+                    <Label className="text-base font-semibold">Your Responses</Label>
+                    <div className="space-y-4 mt-3">
+                      <div>
+                        <Label htmlFor="answer1">Response 1 *</Label>
+                        <Textarea
+                          id="answer1"
+                          placeholder="Your response to the first question..."
+                          value={applicationData.answer1}
+                          onChange={(e) => setApplicationData(prev => ({ ...prev, answer1: e.target.value }))}
+                          rows={4}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="answer2">Response 2 *</Label>
+                        <Textarea
+                          id="answer2"
+                          placeholder="Your response to the second question..."
+                          value={applicationData.answer2}
+                          onChange={(e) => setApplicationData(prev => ({ ...prev, answer2: e.target.value }))}
+                          rows={4}
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
 
-          <div className="flex justify-center">
-            <Button 
-              type="submit" 
-              size="lg" 
-              className="bg-purple-600 hover:bg-purple-700 text-white px-8"
-              disabled={submitting}
-            >
-              {submitting ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : null}
-              Submit Application
-            </Button>
-          </div>
-        </form>
+            <div className="flex justify-center">
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                Submit Application
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
