@@ -54,7 +54,6 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
     locationType: "remote",
     country: "",
     state: "",
-    region: "",
     city: "",
   });
   const [generatedJob, setGeneratedJob] = useState("");
@@ -76,7 +75,6 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
         locationType: job.location_type || "remote",
         country: job.country || "",
         state: job.state || "",
-        region: job.region || "",
         city: job.city || "",
       });
       setGeneratedJob(job.generated_job_post || "");
@@ -137,7 +135,6 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
             location_type: formData.locationType,
             country: formData.country || null,
             state: formData.state || null,
-            region: formData.region || null,
             city: formData.city || null,
             generated_job_post: generatedJob,
             generated_test: generatedTest,
@@ -169,7 +166,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
   };
 
   const canProceed = step === 1 ? 
-    formData.title && formData.description && formData.roleType && formData.employmentType && formData.experience :
+    formData.title && formData.description && formData.employmentType && formData.experience :
     true;
 
   const isProjectBased = formData.employmentType === 'project' || formData.employmentType === 'contract-to-hire';
@@ -273,22 +270,6 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
                 </div>
 
                 <div>
-                  <Label htmlFor="roleType">Role Type</Label>
-                  <Select value={formData.roleType} onValueChange={(value) => handleInputChange("roleType", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select role type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="developer">Developer</SelectItem>
-                      <SelectItem value="designer">Designer</SelectItem>
-                      <SelectItem value="marketer">Marketer</SelectItem>
-                      <SelectItem value="writer">Writer</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
                   <Label htmlFor="employmentType">Employment Type</Label>
                   <Select value={formData.employmentType} onValueChange={(value) => handleInputChange("employmentType", value)}>
                     <SelectTrigger>
@@ -317,6 +298,16 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div>
+                  <Label htmlFor="skills">Required Skills (comma separated)</Label>
+                  <Input
+                    id="skills"
+                    placeholder="e.g. React, TypeScript, Node.js"
+                    value={formData.skills}
+                    onChange={(e) => handleInputChange("skills", e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -338,28 +329,20 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
                   </div>
                 )}
 
-                <div>
-                  <Label htmlFor="budget">{getBudgetLabel()}</Label>
-                  <Input
-                    id="budget"
-                    placeholder={getBudgetPlaceholder()}
-                    value={formData.budget}
-                    onChange={(e) => handleInputChange("budget", e.target.value)}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Leave empty if you don't want to show compensation details
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="skills">Required Skills (comma separated)</Label>
-                  <Input
-                    id="skills"
-                    placeholder="e.g. React, TypeScript, Node.js"
-                    value={formData.skills}
-                    onChange={(e) => handleInputChange("skills", e.target.value)}
-                  />
-                </div>
+                {formData.employmentType && (
+                  <div>
+                    <Label htmlFor="budget">{getBudgetLabel()}</Label>
+                    <Input
+                      id="budget"
+                      placeholder={getBudgetPlaceholder()}
+                      value={formData.budget}
+                      onChange={(e) => handleInputChange("budget", e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave empty if you don't want to show compensation details
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -388,7 +371,6 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
                   locationType={formData.locationType}
                   country={formData.country}
                   state={formData.state}
-                  region={formData.region}
                   city={formData.city}
                   onLocationChange={handleInputChange}
                 />
