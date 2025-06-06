@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { Plus, Users, ExternalLink, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
+import { CreateRoleModal } from "@/components/CreateRoleModal";
 
 interface Job {
   id: string;
@@ -21,6 +23,7 @@ interface Job {
 
 const MyJobs = () => {
   const { user } = useAuth();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['user-jobs', user?.id],
@@ -83,11 +86,12 @@ const MyJobs = () => {
               <h1 className="text-2xl font-bold text-gray-900">My Jobs</h1>
               <p className="text-gray-600">Manage your job postings and applications</p>
             </div>
-            <Button asChild className="bg-purple-600 hover:bg-purple-700">
-              <Link to="/">
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Job
-              </Link>
+            <Button 
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Job
             </Button>
           </div>
         </div>
@@ -100,8 +104,11 @@ const MyJobs = () => {
               <Plus className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p className="text-lg font-medium mb-2">No jobs yet</p>
               <p className="mb-4">Create your first job posting to start receiving applications</p>
-              <Button asChild className="bg-purple-600 hover:bg-purple-700">
-                <Link to="/">Create Your First Job</Link>
+              <Button 
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                Create Your First Job
               </Button>
             </CardContent>
           </Card>
@@ -112,7 +119,14 @@ const MyJobs = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-xl mb-2">{job.title}</CardTitle>
+                      <CardTitle className="text-xl mb-2">
+                        <Link 
+                          to={`/dashboard/${job.id}`}
+                          className="hover:text-purple-600 transition-colors cursor-pointer"
+                        >
+                          {job.title}
+                        </Link>
+                      </CardTitle>
                       <p className="text-gray-600 text-sm mb-2">{job.role_type} • {job.experience_level}</p>
                       <p className="text-gray-700 line-clamp-2">{job.description}</p>
                     </div>
@@ -151,6 +165,11 @@ const MyJobs = () => {
           </div>
         )}
       </div>
+
+      <CreateRoleModal 
+        open={isCreateModalOpen} 
+        onOpenChange={setIsCreateModalOpen} 
+      />
     </div>
   );
 };
