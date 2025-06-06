@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ResumeUpload } from "./ResumeUpload";
+import { LinkedInConnect } from "./LinkedInConnect";
 
 interface Job {
   id: string;
@@ -65,6 +65,8 @@ export const JobApplication = () => {
   const [submitting, setSubmitting] = useState(false);
   const [resumeFile, setResumeFile] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<ParsedResumeData | null>(null);
+  const [linkedInProfile, setLinkedInProfile] = useState<any>(null);
+  const [applicationMethod, setApplicationMethod] = useState<'resume' | 'linkedin' | 'manual'>('manual');
   const [applicationData, setApplicationData] = useState({
     name: "",
     email: "",
@@ -113,8 +115,26 @@ export const JobApplication = () => {
   const handleResumeData = (data: ParsedResumeData, filePath: string) => {
     setParsedData(data);
     setResumeFile(filePath);
+    setApplicationMethod('resume');
+    setLinkedInProfile(null); // Clear LinkedIn data if resume is uploaded
     
     // Auto-fill form with parsed data
+    setApplicationData(prev => ({
+      ...prev,
+      name: data.personalInfo?.name || "",
+      email: data.personalInfo?.email || "",
+      phone: data.personalInfo?.phone || "",
+      location: data.personalInfo?.location || "",
+    }));
+  };
+
+  const handleLinkedInData = (data: ParsedResumeData) => {
+    setParsedData(data);
+    setLinkedInProfile(data);
+    setApplicationMethod('linkedin');
+    setResumeFile(null); // Clear resume if LinkedIn is connected
+    
+    // Auto-fill form with LinkedIn data
     setApplicationData(prev => ({
       ...prev,
       name: data.personalInfo?.name || "",
@@ -127,6 +147,27 @@ export const JobApplication = () => {
   const handleRemoveResume = () => {
     setResumeFile(null);
     setParsedData(null);
+    setApplicationMethod('manual');
+    // Reset form to empty state
+    setApplicationData({
+      name: "",
+      email: "",
+      phone: "",
+      location: "",
+      available_start_date: "",
+      portfolio_url: "",
+      linkedin_url: "",
+      github_url: "",
+      cover_letter: "",
+      answer1: "",
+      answer2: "",
+    });
+  };
+
+  const handleRemoveLinkedIn = () => {
+    setLinkedInProfile(null);
+    setParsedData(null);
+    setApplicationMethod('manual');
     // Reset form to empty state
     setApplicationData({
       name: "",
@@ -365,20 +406,47 @@ export const JobApplication = () => {
 
         {/* Application Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Resume Upload */}
+          {/* Quick Apply Options */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="w-5 h-5" />
-                Quick Apply with Resume
+                Quick Apply
               </CardTitle>
+              <p className="text-sm text-gray-600">
+                Choose how you'd like to apply - upload your resume, connect with LinkedIn, or fill out manually.
+              </p>
             </CardHeader>
-            <CardContent>
-              <ResumeUpload 
-                onResumeData={handleResumeData}
-                onRemove={handleRemoveResume}
-                uploadedFile={resumeFile}
-              />
+            <CardContent className="space-y-6">
+              {/* Application Method Tabs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Resume Upload Option */}
+                <div className={`p-1 rounded-lg ${applicationMethod === 'resume' ? 'bg-purple-50 border border-purple-200' : ''}`}>
+                  <ResumeUpload 
+                    onResumeData={handleResumeData}
+                    onRemove={handleRemoveResume}
+                    uploadedFile={resumeFile}
+                  />
+                </div>
+
+                {/* LinkedIn Connect Option */}
+                <div className={`p-1 rounded-lg ${applicationMethod === 'linkedin' ? 'bg-blue-50 border border-blue-200' : ''}`}>
+                  <LinkedInConnect
+                    onLinkedInData={handleLinkedInData}
+                    onRemove={handleRemoveLinkedIn}
+                    connectedProfile={linkedInProfile}
+                  />
+                </div>
+              </div>
+
+              {/* Manual Entry Notice */}
+              {applicationMethod === 'manual' && (
+                <div className="text-center py-4 text-gray-600">
+                  <p className="text-sm">
+                    No file uploaded or LinkedIn connected. Please fill out the form manually below.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -388,6 +456,11 @@ export const JobApplication = () => {
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
                 Personal Information
+                {applicationMethod !== 'manual' && (
+                  <Badge variant="secondary" className="ml-2">
+                    {applicationMethod === 'resume' ? 'From Resume' : 'From LinkedIn'}
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
