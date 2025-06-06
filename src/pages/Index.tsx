@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Clock, Users, Target, User, LogOut, BarChart3 } from "lucide-react";
+import { ArrowRight, Clock, Users, Target, User, LogOut, BarChart3, LogIn } from "lucide-react";
 import { useState } from "react";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
 import { AuthModal } from "@/components/AuthModal";
@@ -64,7 +63,7 @@ const Index = () => {
                   </Button>
                   <Button 
                     onClick={handleCreateRole}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                    className="bg-[#007af6] hover:bg-[#0056b3] text-white"
                   >
                     Create a Role
                   </Button>
@@ -79,7 +78,7 @@ const Index = () => {
                   </Button>
                   <Button 
                     onClick={handleCreateRole}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                    className="bg-[#007af6] hover:bg-[#0056b3] text-white"
                   >
                     Create a Role
                   </Button>
@@ -95,19 +94,32 @@ const Index = () => {
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
             Stop wasting time on
-            <span className="text-purple-600"> bad hires</span>
+            <span className="text-[#007af6]"> bad hires</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
             Test, filter, and hire the best freelancers and contractors in minutes, not hours. 
             Skip the noise, skip the interviews, get straight to the talent.
           </p>
-          <Button 
-            onClick={handleCreateRole}
-            size="lg" 
-            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg"
-          >
-            Create a Role <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              onClick={handleCreateRole}
+              size="lg" 
+              className="bg-[#007af6] hover:bg-[#0056b3] text-white px-8 py-4 text-lg"
+            >
+              Create a Role <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+            {!user && (
+              <Button 
+                variant="outline"
+                onClick={() => setShowAuthModal(true)}
+                size="lg" 
+                className="px-8 py-4 text-lg border-[#007af6] text-[#007af6] hover:bg-[#007af6] hover:text-white"
+              >
+                <LogIn className="mr-2 w-5 h-5" />
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
       </section>
 
@@ -176,7 +188,7 @@ const Index = () => {
                 <div className="space-y-3">
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                   <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-4 bg-purple-200 rounded w-2/3"></div>
+                  <div className="h-4 bg-[#007af6] rounded w-2/3"></div>
                 </div>
               </div>
             </div>
@@ -185,7 +197,7 @@ const Index = () => {
               <div className="order-2 md:order-1">
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                   <div className="space-y-3">
-                    <div className="h-4 bg-purple-200 rounded w-full"></div>
+                    <div className="h-4 bg-[#007af6] rounded w-full"></div>
                     <div className="h-4 bg-gray-200 rounded w-4/5"></div>
                     <div className="h-4 bg-gray-200 rounded w-3/5"></div>
                   </div>
@@ -220,20 +232,33 @@ const Index = () => {
 
       {/* CTA Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center bg-purple-50 rounded-2xl p-12">
+        <div className="text-center bg-blue-50 rounded-2xl p-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Ready to hire smarter?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
             Create your first role and start getting quality applicants in minutes.
           </p>
-          <Button 
-            onClick={handleCreateRole}
-            size="lg" 
-            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg"
-          >
-            Create a Role <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              onClick={handleCreateRole}
+              size="lg" 
+              className="bg-[#007af6] hover:bg-[#0056b3] text-white px-8 py-4 text-lg"
+            >
+              Create a Role <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+            {!user && (
+              <Button 
+                variant="outline"
+                onClick={() => setShowAuthModal(true)}
+                size="lg" 
+                className="px-8 py-4 text-lg border-[#007af6] text-[#007af6] hover:bg-[#007af6] hover:text-white"
+              >
+                <LogIn className="mr-2 w-5 h-5" />
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
       </section>
 
