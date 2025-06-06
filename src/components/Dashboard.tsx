@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { AtractHeader } from "./AtractHeader";
 import { CompactDashboardHeader } from "./dashboard/CompactDashboardHeader";
 import { CompactDashboardStats } from "./dashboard/CompactDashboardStats";
 import { ApplicationTrendsChart } from "./dashboard/ApplicationTrendsChart";
@@ -141,8 +142,17 @@ export const Dashboard = () => {
     );
   }
 
+  // Define breadcrumbs for the dashboard
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "My Jobs", href: "/jobs" },
+    { label: job.title, isCurrentPage: true },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <AtractHeader breadcrumbs={breadcrumbs} showMyJobsButton={false} />
+      
       <CompactDashboardHeader 
         job={job} 
         applications={applications}
