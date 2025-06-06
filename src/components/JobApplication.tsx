@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, DollarSign, Calendar, FileText, Send, Loader2, MapPin, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface Job {
   id: string;
@@ -355,10 +355,13 @@ export const JobApplication = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-                  {job.generated_test}
-                </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div 
+                  className="text-gray-700 prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ 
+                    __html: parseMarkdown(job.generated_test) 
+                  }}
+                />
               </div>
               
               <div>
