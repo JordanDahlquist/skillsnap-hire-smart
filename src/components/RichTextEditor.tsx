@@ -1,4 +1,3 @@
-
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +18,7 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
+  const [savedRange, setSavedRange] = useState<Range | null>(null);
 
   const handleCommand = useCallback((command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -31,27 +31,104 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
   const handleItalic = () => handleCommand('italic');
   const handleList = () => handleCommand('insertUnorderedList');
 
-  const handleLinkClick = () => {
+  const saveSelection = () => {
     const selection = window.getSelection();
-    if (selection && selection.toString()) {
-      setLinkText(selection.toString());
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      setSavedRange(range.cloneRange());
+      return range;
     }
+    return null;
+  };
+
+  const restoreSelection = () => {
+    if (savedRange && editorRef.current) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+        editorRef.current.focus();
+      }
+    }
+  };
+
+  const handleLinkClick = () => {
+    if (!editorRef.current) return;
+    
+    // Focus the editor first
+    editorRef.current.focus();
+    
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = saveSelection();
+      if (range && !range.collapsed) {
+        // Text is selected
+        setLinkText(range.toString());
+      } else {
+        // No text selected
+        setLinkText('');
+      }
+    }
+    
     setShowLinkDialog(true);
   };
 
   const insertLink = () => {
-    if (linkUrl) {
-      if (linkText) {
-        // If we have link text, create the full link
-        handleCommand('insertHTML', `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${linkText}</a>`);
+    if (!linkUrl || !editorRef.current) return;
+
+    // Focus the editor and restore selection
+    editorRef.current.focus();
+    restoreSelection();
+
+    const selection = window.getSelection();
+    if (selection && savedRange) {
+      // Remove any existing ranges and add our saved range
+      selection.removeAllRanges();
+      selection.addRange(savedRange);
+
+      const finalLinkText = linkText || linkUrl;
+      const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${finalLinkText}</a>`;
+
+      if (savedRange.collapsed) {
+        // No text was selected, insert the link at cursor position
+        const linkElement = document.createElement('div');
+        linkElement.innerHTML = linkHtml;
+        const linkNode = linkElement.firstChild;
+        
+        if (linkNode) {
+          savedRange.insertNode(linkNode);
+          // Move cursor after the inserted link
+          savedRange.setStartAfter(linkNode);
+          savedRange.setEndAfter(linkNode);
+          selection.removeAllRanges();
+          selection.addRange(savedRange);
+        }
       } else {
-        // If no text selected, just insert the URL as both text and link
-        handleCommand('insertHTML', `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${linkUrl}</a>`);
+        // Replace selected text with link
+        savedRange.deleteContents();
+        const linkElement = document.createElement('div');
+        linkElement.innerHTML = linkHtml;
+        const linkNode = linkElement.firstChild;
+        
+        if (linkNode) {
+          savedRange.insertNode(linkNode);
+          // Move cursor after the inserted link
+          savedRange.setStartAfter(linkNode);
+          savedRange.setEndAfter(linkNode);
+          selection.removeAllRanges();
+          selection.addRange(savedRange);
+        }
       }
+
+      // Update the content
+      onChange(editorRef.current.innerHTML);
     }
+
+    // Close dialog and reset state
     setShowLinkDialog(false);
     setLinkUrl('');
     setLinkText('');
+    setSavedRange(null);
   };
 
   const handleInput = () => {
@@ -67,6 +144,17 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
       .replace(/\n/g, '<br>');
+  };
+
+  const handleDialogClose = () => {
+    setShowLinkDialog(false);
+    setLinkUrl('');
+    setLinkText('');
+    setSavedRange(null);
+    // Return focus to editor
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
   };
 
   useEffect(() => {
@@ -183,7 +271,7 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
       </div>
 
       {/* Link Dialog */}
-      <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
+      <Dialog open={showLinkDialog} onOpenChange={handleDialogClose}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Link</DialogTitle>
@@ -205,14 +293,15 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder="https://example.com"
+                autoFocus
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowLinkDialog(false)}>
+            <Button variant="outline" onClick={handleDialogClose}>
               Cancel
             </Button>
-            <Button onClick={insertLink}>
+            <Button onClick={insertLink} disabled={!linkUrl}>
               Add Link
             </Button>
           </DialogFooter>
