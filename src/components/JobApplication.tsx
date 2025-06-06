@@ -113,11 +113,11 @@ export const JobApplication = () => {
       
       try {
         console.log('Fetching job with ID:', jobId);
+        // Remove the status filter to allow fetching jobs with any status
         const { data, error } = await supabase
           .from('jobs')
           .select('*')
           .eq('id', jobId)
-          .eq('status', 'active')
           .single();
 
         console.log('Job fetch result:', { data, error });
