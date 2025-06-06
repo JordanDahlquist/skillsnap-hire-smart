@@ -1,14 +1,16 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Users, ExternalLink, BarChart3 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
+import { EnhancedJobCard } from "@/components/EnhancedJobCard";
+import { JobManagementToolbar } from "@/components/JobManagementToolbar";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Job {
   id: string;
@@ -24,8 +26,13 @@ interface Job {
 const MyJobs = () => {
   const { user } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("created_desc");
+  const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
+  const { toast } = useToast();
 
-  const { data: jobs = [], isLoading } = useQuery({
+  const { data: jobs = [], isLoading, refetch } = useQuery({
     queryKey: ['user-jobs', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -45,6 +52,46 @@ const MyJobs = () => {
     enabled: !!user?.id,
   });
 
+  const filteredAndSortedJobs = useMemo(() => {
+    let filtered = jobs;
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(job =>
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.role_type.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(job => job.status === statusFilter);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'created_asc':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'created_desc':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'applications_desc':
+          return (b.applications?.[0]?.count || 0) - (a.applications?.[0]?.count || 0);
+        case 'applications_asc':
+          return (a.applications?.[0]?.count || 0) - (b.applications?.[0]?.count || 0);
+        case 'title_asc':
+          return a.title.localeCompare(b.title);
+        case 'title_desc':
+          return b.title.localeCompare(a.title);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [jobs, searchTerm, statusFilter, sortBy]);
+
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -57,12 +104,83 @@ const MyJobs = () => {
     return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active": return "bg-green-100 text-green-800";
-      case "draft": return "bg-yellow-100 text-yellow-800";
-      case "closed": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+  const handleJobSelection = (jobId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedJobs(prev => [...prev, jobId]);
+    } else {
+      setSelectedJobs(prev => prev.filter(id => id !== jobId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedJobs(filteredAndSortedJobs.map(job => job.id));
+    } else {
+      setSelectedJobs([]);
+    }
+  };
+
+  const handleBulkAction = async (action: string) => {
+    if (selectedJobs.length === 0) return;
+
+    try {
+      switch (action) {
+        case 'activate':
+        case 'pause':
+        case 'archive':
+          const status = action === 'activate' ? 'active' : action === 'pause' ? 'paused' : 'closed';
+          const { error } = await supabase
+            .from('jobs')
+            .update({ status, updated_at: new Date().toISOString() })
+            .in('id', selectedJobs);
+
+          if (error) throw error;
+
+          toast({
+            title: "Bulk action completed",
+            description: `${selectedJobs.length} job(s) ${action}d successfully`,
+          });
+          break;
+
+        case 'export':
+          // Simple CSV export
+          const selectedJobsData = jobs.filter(job => selectedJobs.includes(job.id));
+          const csvContent = [
+            ['Title', 'Status', 'Applications', 'Created', 'Type', 'Experience'].join(','),
+            ...selectedJobsData.map(job => [
+              job.title,
+              job.status,
+              job.applications?.[0]?.count || 0,
+              new Date(job.created_at).toLocaleDateString(),
+              job.role_type,
+              job.experience_level
+            ].join(','))
+          ].join('\n');
+
+          const blob = new Blob([csvContent], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'jobs-export.csv';
+          a.click();
+          window.URL.revokeObjectURL(url);
+
+          toast({
+            title: "Export completed",
+            description: "Job data exported to CSV file",
+          });
+          break;
+      }
+
+      setSelectedJobs([]);
+      refetch();
+    } catch (error) {
+      console.error('Error performing bulk action:', error);
+      toast({
+        title: "Error",
+        description: "Failed to perform bulk action",
+        variant: "destructive",
+      });
     }
   };
 
@@ -97,8 +215,21 @@ const MyJobs = () => {
         </div>
       </div>
 
+      <JobManagementToolbar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        totalJobs={jobs.length}
+        selectedJobs={selectedJobs}
+        onBulkAction={handleBulkAction}
+        onRefresh={refetch}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {jobs.length === 0 ? (
+        {filteredAndSortedJobs.length === 0 && jobs.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-gray-500">
               <Plus className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -112,56 +243,57 @@ const MyJobs = () => {
               </Button>
             </CardContent>
           </Card>
+        ) : filteredAndSortedJobs.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center text-gray-500">
+              <p className="text-lg font-medium mb-2">No jobs match your filters</p>
+              <p className="mb-4">Try adjusting your search or filter criteria</p>
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("all");
+                }}
+              >
+                Clear Filters
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="grid gap-6">
-            {jobs.map((job) => (
-              <Card key={job.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-xl mb-2">
-                        <Link 
-                          to={`/dashboard/${job.id}`}
-                          className="hover:text-purple-600 transition-colors cursor-pointer"
-                        >
-                          {job.title}
-                        </Link>
-                      </CardTitle>
-                      <p className="text-gray-600 text-sm mb-2">{job.role_type} • {job.experience_level}</p>
-                      <p className="text-gray-700 line-clamp-2">{job.description}</p>
-                    </div>
-                    <Badge className={getStatusColor(job.status)}>
-                      {job.status}
-                    </Badge>
+          <div className="space-y-4">
+            {/* Bulk selection header */}
+            {filteredAndSortedJobs.length > 0 && (
+              <div className="flex items-center gap-3 p-4 bg-white rounded-lg border">
+                <Checkbox
+                  checked={selectedJobs.length === filteredAndSortedJobs.length}
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-sm text-gray-600">
+                  Select all {filteredAndSortedJobs.length} job(s)
+                </span>
+              </div>
+            )}
+
+            {/* Job cards */}
+            <div className="space-y-6">
+              {filteredAndSortedJobs.map((job) => (
+                <div key={job.id} className="flex gap-4">
+                  <div className="flex items-start pt-6">
+                    <Checkbox
+                      checked={selectedJobs.includes(job.id)}
+                      onCheckedChange={(checked) => handleJobSelection(job.id, checked as boolean)}
+                    />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        <span>{job.applications?.[0]?.count || 0} applications</span>
-                      </div>
-                      <span>Created {getTimeAgo(job.created_at)}</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          View Public Page
-                        </a>
-                      </Button>
-                      <Button size="sm" asChild className="bg-purple-600 hover:bg-purple-700">
-                        <Link to={`/dashboard/${job.id}`}>
-                          <BarChart3 className="w-4 h-4 mr-2" />
-                          View Dashboard
-                        </Link>
-                      </Button>
-                    </div>
+                  <div className="flex-1">
+                    <EnhancedJobCard
+                      job={job}
+                      onJobUpdate={refetch}
+                      getTimeAgo={getTimeAgo}
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
