@@ -24,7 +24,8 @@ interface CreateRoleModalProps {
 export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingJobPost, setIsGeneratingJobPost] = useState(false);
+  const [isGeneratingSkillsTest, setIsGeneratingSkillsTest] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -94,7 +95,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     setFormData(prev => ({ ...prev, description: "" }));
   };
 
-  const generateJobContent = async () => {
+  const generateJobPost = async () => {
     setLoading(true);
     try {
       const jobData = {
@@ -105,25 +106,56 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       };
 
       const { data, error } = await supabase.functions.invoke('generate-job-content', {
-        body: { jobData }
+        body: { 
+          jobData,
+          type: 'job-post'
+        }
       });
 
       if (error) throw error;
 
       setGeneratedJob(data.jobPost);
-      setGeneratedTest(data.test);
-      // Initialize edited content with generated content
       setEditedJobPost(data.jobPost);
-      setEditedSkillsTest(data.test);
-      setIsGenerating(false);
+      setIsGeneratingJobPost(false);
     } catch (error) {
-      console.error('Error generating job content:', error);
+      console.error('Error generating job post:', error);
       toast({
-        title: "Error generating content",
+        title: "Error generating job post",
         description: "Please try again or contact support if the problem persists.",
         variant: "destructive"
       });
-      setIsGenerating(false);
+      setIsGeneratingJobPost(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateSkillsTest = async () => {
+    setLoading(true);
+    try {
+      // Use the final job post content (edited version if available, otherwise generated)
+      const finalJobPost = hasEditedJobPost ? editedJobPost : generatedJob;
+
+      const { data, error } = await supabase.functions.invoke('generate-job-content', {
+        body: { 
+          type: 'skills-test',
+          existingJobPost: finalJobPost
+        }
+      });
+
+      if (error) throw error;
+
+      setGeneratedTest(data.test);
+      setEditedSkillsTest(data.test);
+      setIsGeneratingSkillsTest(false);
+    } catch (error) {
+      console.error('Error generating skills test:', error);
+      toast({
+        title: "Error generating skills test",
+        description: "Please try again or contact support if the problem persists.",
+        variant: "destructive"
+      });
+      setIsGeneratingSkillsTest(false);
     } finally {
       setLoading(false);
     }
@@ -171,12 +203,15 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     if (step === 1) {
       setStep(2);
     } else if (step === 2) {
-      setIsGenerating(true);
+      setIsGeneratingJobPost(true);
       setStep(3);
-      // Start generation in the background
-      await generateJobContent();
+      // Generate only the job post
+      await generateJobPost();
     } else if (step === 3) {
+      setIsGeneratingSkillsTest(true);
       setStep(4);
+      // Generate the skills test using the final job post
+      await generateSkillsTest();
     } else {
       // Create the role in database
       setLoading(true);
@@ -569,7 +604,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                       </span>
                     )}
                   </div>
-                  {!isGenerating && !isEditingJobPost && (
+                  {!isGeneratingJobPost && !isEditingJobPost && generatedJob && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -583,7 +618,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {isGenerating ? (
+                {isGeneratingJobPost ? (
                   <AiGenerationLoader />
                 ) : isEditingJobPost ? (
                   <RichTextEditor
@@ -601,6 +636,19 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                         __html: formatContentForDisplay(hasEditedJobPost ? editedJobPost : generatedJob)
                       }}
                     />
+                  </div>
+                )}
+                {step === 3 && !isGeneratingJobPost && !generatedJob && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-medium text-blue-900 mb-1">Next: Generate Your Job Post</h4>
+                        <p className="text-sm text-blue-800">
+                          Click "Next Step" to generate a professional job posting based on your requirements. You'll be able to review and edit it before creating the skills test.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -621,7 +669,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                       </span>
                     )}
                   </div>
-                  {!isEditingSkillsTest && (
+                  {!isGeneratingSkillsTest && !isEditingSkillsTest && generatedTest && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -635,7 +683,9 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {isEditingSkillsTest ? (
+                {isGeneratingSkillsTest ? (
+                  <AiGenerationLoader />
+                ) : isEditingSkillsTest ? (
                   <RichTextEditor
                     value={editedSkillsTest}
                     onChange={setEditedSkillsTest}
@@ -653,6 +703,19 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                     />
                   </div>
                 )}
+                {step === 4 && !isGeneratingSkillsTest && !generatedTest && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <Info className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-medium text-green-900 mb-1">Skills Test Based on Your Job Post</h4>
+                        <p className="text-sm text-green-800">
+                          Your skills test will be generated based on the final job post content (including any edits you made). This ensures perfect alignment between what you're looking for and how you assess candidates.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -662,13 +725,13 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           <Button
             variant="outline"
             onClick={() => setStep(Math.max(1, step - 1))}
-            disabled={step === 1 || isGenerating}
+            disabled={step === 1 || isGeneratingJobPost || isGeneratingSkillsTest}
           >
             Back
           </Button>
           <Button
             onClick={handleNext}
-            disabled={!canProceed || loading || isGenerating}
+            disabled={!canProceed || loading || isGeneratingJobPost || isGeneratingSkillsTest}
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
             {loading ? (
