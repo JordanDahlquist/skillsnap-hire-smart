@@ -62,15 +62,21 @@ export const parseMarkdown = (text: string): string => {
       inList = false;
     }
     
-    // Handle headers (lines starting with # or ##)
-    if (line.match(/^#{1,3}\s+/)) {
+    // Handle headers (lines starting with 1-6 hash symbols)
+    if (line.match(/^#{1,6}\s+/)) {
       const level = (line.match(/^#+/) || [''])[0].length;
       const content = line.replace(/^#+\s+/, '');
       const formattedContent = formatInlineMarkdown(content);
+      
+      // Define header classes for all 6 levels
       const headerClass = level === 1 ? 'text-xl font-bold mb-3 mt-4' : 
                          level === 2 ? 'text-lg font-semibold mb-2 mt-3' : 
-                         'text-base font-medium mb-2 mt-2';
-      result += `<h${level} class="${headerClass}">${formattedContent}</h${level}>`;
+                         level === 3 ? 'text-base font-medium mb-2 mt-2' :
+                         level === 4 ? 'text-sm font-medium mb-2 mt-2' :
+                         level === 5 ? 'text-sm font-normal mb-1 mt-1' :
+                         'text-xs font-normal mb-1 mt-1';
+      
+      result += `<h${Math.min(level, 6)} class="${headerClass}">${formattedContent}</h${Math.min(level, 6)}>`;
       continue;
     }
     
