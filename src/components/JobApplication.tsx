@@ -539,7 +539,16 @@ export const JobApplication = () => {
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Role</h3>
                       <div className="prose max-w-none">
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
+                        {job.generated_job_post ? (
+                          <div 
+                            className="text-gray-700 leading-relaxed"
+                            dangerouslySetInnerHTML={{ 
+                              __html: parseMarkdown(job.generated_job_post) 
+                            }}
+                          />
+                        ) : (
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
+                        )}
                       </div>
                     </div>
 
