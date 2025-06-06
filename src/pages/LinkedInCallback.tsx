@@ -10,16 +10,28 @@ export const LinkedInCallback = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('LinkedInCallback component mounted');
+    console.log('Current URL:', window.location.href);
+    console.log('URL search params:', window.location.search);
+
     const handleCallback = async () => {
       try {
+        console.log('Starting LinkedIn callback handling...');
+
         // Get the session after OAuth redirect
         const { data: { session }, error } = await supabase.auth.getSession();
         
+        console.log('Session data:', session);
+        console.log('Session error:', error);
+        
         if (error) {
+          console.error('Session error:', error);
           throw error;
         }
 
         if (session?.user) {
+          console.log('User found in session:', session.user.id);
+          
           // Extract basic profile information from the user metadata
           const userMetadata = session.user.user_metadata;
           console.log('LinkedIn user metadata:', userMetadata);
@@ -39,8 +51,11 @@ export const LinkedInCallback = () => {
             totalExperience: "0 years",
           };
 
+          console.log('Transformed LinkedIn data:', transformedData);
+
           // Store the transformed data temporarily
           sessionStorage.setItem('linkedin_profile_data', JSON.stringify(transformedData));
+          console.log('Stored LinkedIn profile data in sessionStorage');
           
           toast({
             title: "LinkedIn connected!",
@@ -49,13 +64,18 @@ export const LinkedInCallback = () => {
 
           // Get the original job ID from localStorage
           const jobId = localStorage.getItem('linkedin_job_id');
+          console.log('Retrieved job ID from localStorage:', jobId);
+          
           if (jobId) {
             localStorage.removeItem('linkedin_job_id');
+            console.log('Navigating to application page with job ID:', jobId);
             navigate(`/apply/${jobId}?linkedin=connected`);
           } else {
+            console.log('No job ID found, navigating to public jobs');
             navigate('/jobs/public');
           }
         } else {
+          console.error('No user session found after LinkedIn authentication');
           throw new Error('No user session found after LinkedIn authentication');
         }
       } catch (error) {
@@ -69,7 +89,12 @@ export const LinkedInCallback = () => {
       }
     };
 
-    handleCallback();
+    // Add a small delay to ensure the OAuth flow completes
+    const timeoutId = setTimeout(() => {
+      handleCallback();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [navigate, toast]);
 
   return (

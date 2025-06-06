@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,20 +43,29 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         localStorage.setItem('linkedin_job_id', jobId);
       }
 
+      console.log('Starting LinkedIn OAuth flow...');
+      console.log('Current origin:', window.location.origin);
+      console.log('Job ID being stored:', jobId);
+
+      // Create a more explicit redirect URL
+      const redirectUrl = `${window.location.origin}/linkedin-callback`;
+      console.log('Redirect URL:', redirectUrl);
+
       // Use Supabase Auth's LinkedIn OIDC provider with basic scopes
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           scopes: 'openid profile email',
-          redirectTo: `${window.location.origin}/linkedin-callback`,
+          redirectTo: redirectUrl,
         }
       });
 
       if (error) {
+        console.error('LinkedIn OAuth error:', error);
         throw error;
       }
 
-      console.log('LinkedIn OAuth initiated:', data);
+      console.log('LinkedIn OAuth initiated successfully:', data);
     } catch (error) {
       console.error('LinkedIn connection error:', error);
       toast({
