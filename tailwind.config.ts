@@ -1,5 +1,3 @@
-
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -87,18 +85,18 @@ export default {
 						height: '0'
 					}
 				},
-				'star-shimmer': {
+				'star-heartbeat': {
 					'0%': {
 						filter: 'drop-shadow(0 0 0px rgba(59, 130, 246, 0))'
 					},
-					'30%': {
-						filter: 'drop-shadow(0 0 2px rgba(59, 130, 246, 0.2))'
+					'15%': {
+						filter: 'drop-shadow(0 0 3px rgba(59, 130, 246, 0.2))'
 					},
-					'60%': {
-						filter: 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.4))'
+					'25%': {
+						filter: 'drop-shadow(0 0 3px rgba(59, 130, 246, 0.2))'
 					},
-					'80%': {
-						filter: 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.4))'
+					'35%': {
+						filter: 'drop-shadow(0 0 0px rgba(59, 130, 246, 0))'
 					},
 					'100%': {
 						filter: 'drop-shadow(0 0 0px rgba(59, 130, 246, 0))'
@@ -108,12 +106,9 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'star-shimmer-1': 'star-shimmer 6s ease-in-out infinite',
-				'star-shimmer-2': 'star-shimmer 6s ease-in-out infinite 2s',
-				'star-shimmer-3': 'star-shimmer 6s ease-in-out infinite 4s'
+				'star-heartbeat': 'star-heartbeat 5s ease-in-out infinite'
 			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-
