@@ -1,7 +1,7 @@
 
 import { useMemo } from "react";
 import { useJobs } from "./useJobs";
-import { useApplications } from "./useApplications";
+import { useAllApplications } from "./useAllApplications";
 import { getStartOfWeek, getStartOfMonth } from "@/utils/dateUtils";
 
 export interface HiringMetrics {
@@ -40,18 +40,8 @@ export interface JobPerformance {
 }
 
 export const useHiringAnalytics = () => {
-  const { data: jobs = [] } = useJobs();
-  const allJobIds = jobs.map(job => job.id);
-  
-  // Get applications for all jobs
-  const applicationsQueries = allJobIds.map(jobId => {
-    const { data: applications = [] } = useApplications(jobId);
-    return { jobId, applications };
-  });
-
-  const allApplications = applicationsQueries.flatMap(query => 
-    query.applications.map(app => ({ ...app, jobId: query.jobId }))
-  );
+  const { data: jobs = [], isLoading: jobsLoading } = useJobs();
+  const { data: allApplications = [], isLoading: applicationsLoading } = useAllApplications();
 
   const metrics = useMemo((): HiringMetrics => {
     const totalJobs = jobs.length;
@@ -75,7 +65,7 @@ export const useHiringAnalytics = () => {
 
     // Find top performing job (highest approval rate with min 5 applications)
     const jobPerformance = jobs.map(job => {
-      const jobApps = allApplications.filter(app => app.jobId === job.id);
+      const jobApps = allApplications.filter(app => app.job_id === job.id);
       const jobApprovals = jobApps.filter(app => app.status === 'approved').length;
       const jobApprovalRate = jobApps.length >= 5 ? (jobApprovals / jobApps.length) * 100 : 0;
       return { job, approvalRate: jobApprovalRate, applications: jobApps.length };
@@ -149,7 +139,7 @@ export const useHiringAnalytics = () => {
 
   const jobPerformanceData = useMemo((): JobPerformance[] => {
     return jobs.map(job => {
-      const jobApps = allApplications.filter(app => app.jobId === job.id);
+      const jobApps = allApplications.filter(app => app.job_id === job.id);
       const approvals = jobApps.filter(app => app.status === 'approved').length;
       const approvalRate = jobApps.length > 0 ? (approvals / jobApps.length) * 100 : 0;
       
@@ -172,6 +162,6 @@ export const useHiringAnalytics = () => {
     pipelineData,
     trendData,
     jobPerformanceData,
-    isLoading: false // Would be true if any queries are loading
+    isLoading: jobsLoading || applicationsLoading
   };
 };

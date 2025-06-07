@@ -46,29 +46,43 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
-  // Fetch job details
+  // Fetch job details with error handling
   const { data: job, isLoading: jobLoading, error: jobError } = useQuery({
     queryKey: ['job', jobId],
     queryFn: async () => {
       if (!jobId) throw new Error('No job ID provided');
       
+      console.log('Fetching job details for ID:', jobId);
+      
       const { data, error } = await supabase
         .from('jobs')
         .select('*')
         .eq('id', jobId)
-        .single();
+        .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Job fetch error:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.log('No job found with ID:', jobId);
+        throw new Error('Job not found');
+      }
+      
       return data as Job;
     },
     enabled: !!jobId,
+    retry: 1,
   });
 
-  // Fetch applications for this job
-  const { data: applications = [], isLoading: applicationsLoading } = useQuery({
+  // Fetch applications for this job with error handling
+  const { data: applications = [], isLoading: applicationsLoading, error: applicationsError } = useQuery({
     queryKey: ['applications', jobId],
     queryFn: async () => {
       if (!jobId) return [];
+      
+      console.log('Fetching applications for job ID:', jobId);
       
       const { data, error } = await supabase
         .from('applications')
@@ -76,10 +90,16 @@ export const Dashboard = () => {
         .eq('job_id', jobId)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Applications fetch error:', error);
+        throw error;
+      }
+      
+      console.log('Applications fetched:', data?.length || 0);
       return data as Application[];
     },
     enabled: !!jobId,
+    retry: 1,
   });
 
   // Set first application as selected when applications load
@@ -89,6 +109,7 @@ export const Dashboard = () => {
     }
   }, [applications, selectedApplication]);
 
+  // Helper functions
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending": return "bg-yellow-100 text-yellow-800";
@@ -120,7 +141,8 @@ export const Dashboard = () => {
     return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
   };
 
-  if (jobLoading) {
+  // Loading state
+  if (jobLoading || applicationsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -131,7 +153,28 @@ export const Dashboard = () => {
     );
   }
 
-  if (jobError || !job) {
+  // Error states
+  if (jobError || applicationsError) {
+    console.error('Dashboard errors:', { jobError, applicationsError });
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h1>
+          <p className="text-gray-600 mb-4">
+            {jobError ? 'Failed to load job details.' : 'Failed to load applications.'}
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!job) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -142,7 +185,7 @@ export const Dashboard = () => {
     );
   }
 
-  // Updated breadcrumbs - remove the confusing "My Jobs" breadcrumb
+  // Breadcrumbs
   const breadcrumbs = [
     { label: "Dashboard", href: "/jobs" },
     { label: job.title, isCurrentPage: true },
@@ -157,7 +200,6 @@ export const Dashboard = () => {
         applications={applications}
         getTimeAgo={getTimeAgo}
         onJobUpdate={() => {
-          // Refetch job data
           window.location.reload();
         }}
       />
