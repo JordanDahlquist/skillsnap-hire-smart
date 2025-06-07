@@ -16,6 +16,7 @@ import { useJobSelection } from "@/hooks/useJobSelection";
 import { useJobFiltering } from "@/hooks/useJobFiltering";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { AIDailyBriefing } from "@/components/jobs/AIDailyBriefing";
+import { JobsStats } from "@/components/jobs/JobsStats";
 
 const MyJobs = () => {
   const { user, profile } = useAuth();
@@ -124,8 +125,11 @@ const MyJobs = () => {
           <AIDailyBriefing 
             userDisplayName={getUserDisplayName()}
             onCreateJob={() => setIsCreateModalOpen(true)}
-            stats={stats}
+          />
+          <JobsStats 
+            stats={stats} 
             onNeedsAttentionClick={handleNeedsAttentionClick}
+            needsAttentionActive={needsAttentionFilter}
           />
         </div>
       </div>
