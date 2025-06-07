@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +26,7 @@ interface Application {
   answer_2: string | null;
   answer_3: string | null;
   manual_rating: number | null;
+  rejection_reason: string | null;
 }
 
 interface Job {
