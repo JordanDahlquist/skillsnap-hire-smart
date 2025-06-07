@@ -21,9 +21,9 @@ export const useOrganizationMembership = (userId: string | undefined) => {
       logDebug('Loading organization membership for user:', id);
       const response = await authService.fetchOrganizationMembership(id);
       
-      if (response?.data) {
-        setOrganizationMembership(response.data as OrganizationMembership);
-        logInfo('Organization membership loaded successfully:', response.data.role || 'No role');
+      if (response) {
+        setOrganizationMembership(response as OrganizationMembership);
+        logInfo('Organization membership loaded successfully:', response.role || 'No role');
       } else {
         logWarn('No organization membership found for user');
         setOrganizationMembership(null);
@@ -73,7 +73,7 @@ export const useCurrentOrganization = () => {
       if (!session?.user?.id) return null;
       
       const response = await authService.fetchOrganizationMembership(session.user.id);
-      return response?.data;
+      return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

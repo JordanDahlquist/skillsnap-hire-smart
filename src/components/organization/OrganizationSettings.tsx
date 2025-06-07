@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,12 +18,12 @@ export const OrganizationSettings = () => {
   const [slug, setSlug] = useState(currentOrg?.slug || "");
 
   // Update local state when org data loads
-  useState(() => {
+  useEffect(() => {
     if (currentOrg) {
       setName(currentOrg.name);
       setSlug(currentOrg.slug || "");
     }
-  });
+  }, [currentOrg]);
 
   const handleSave = async () => {
     if (!currentOrg?.id) return;
@@ -58,7 +58,7 @@ export const OrganizationSettings = () => {
         <Alert className="border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
-            <strong>Organization Error:</strong> {error}
+            <strong>Organization Error:</strong> {error instanceof Error ? error.message : String(error)}
           </AlertDescription>
         </Alert>
       </div>
