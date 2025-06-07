@@ -1,4 +1,5 @@
 
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -90,8 +91,14 @@ export default {
 					'0%': {
 						filter: 'drop-shadow(0 0 0px rgba(59, 130, 246, 0))'
 					},
-					'50%': {
-						filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.8))'
+					'30%': {
+						filter: 'drop-shadow(0 0 2px rgba(59, 130, 246, 0.2))'
+					},
+					'60%': {
+						filter: 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.4))'
+					},
+					'80%': {
+						filter: 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.4))'
 					},
 					'100%': {
 						filter: 'drop-shadow(0 0 0px rgba(59, 130, 246, 0))'
@@ -101,11 +108,12 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'star-shimmer-1': 'star-shimmer 2.4s ease-in-out infinite',
-				'star-shimmer-2': 'star-shimmer 2.4s ease-in-out infinite 0.8s',
-				'star-shimmer-3': 'star-shimmer 2.4s ease-in-out infinite 1.6s'
+				'star-shimmer-1': 'star-shimmer 6s ease-in-out infinite',
+				'star-shimmer-2': 'star-shimmer 6s ease-in-out infinite 2s',
+				'star-shimmer-3': 'star-shimmer 6s ease-in-out infinite 4s'
 			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
