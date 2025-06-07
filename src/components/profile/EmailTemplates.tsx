@@ -102,6 +102,191 @@ Thank you again for your interest in joining our team!
 Best regards,
 {company} Team`,
     category: "followup"
+  },
+  // New rejection templates for each specific reason
+  {
+    name: "Rejection - Insufficient Experience",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+After careful review of your application, we've determined that we're looking for a candidate with more extensive experience in the specific areas required for this position.
+
+While your background shows promise, we believe this particular role requires additional years of hands-on experience that would better match our current project needs.
+
+We encourage you to continue developing your skills and consider applying for future opportunities that align with your experience level. We'll keep your information on file for roles that may be a better fit.
+
+We wish you the best of luck in your job search!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Skills Mismatch",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+After reviewing your application, we found that while you have impressive qualifications, your skill set doesn't closely align with the specific technical requirements we're looking for in this position.
+
+We're seeking someone with more specialized experience in the particular technologies and methodologies that are central to this role.
+
+We encourage you to apply for future opportunities where your skills might be a better match. We'll keep your information on file and reach out if a suitable position becomes available.
+
+We appreciate your interest in our company and wish you success in your job search!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Unsuccessful Assessment",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for completing our assessment process.
+
+After reviewing your assessment results, we've decided to move forward with other candidates whose performance more closely aligned with our requirements for this position.
+
+We appreciate the time and effort you put into the assessment and encourage you to continue honing your skills in these areas.
+
+We'll keep your information on file and encourage you to apply for future opportunities that may be a better fit for your background.
+
+We wish you the best of luck in your job search!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Unsuccessful Interview",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for taking the time to interview with us for the {position} role at {company}. We enjoyed our conversation and learning more about your background.
+
+After careful consideration of all candidates, we've decided to move forward with someone whose experience and interview responses more closely matched what we're looking for in this position.
+
+We appreciate your professionalism throughout the interview process and encourage you to apply for future roles that might be a better fit.
+
+We'll keep your information on file and wish you continued success in your career!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Overqualified",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+After reviewing your impressive background and qualifications, we feel that you may be overqualified for this particular position. We're concerned that the role might not provide the level of challenge and growth opportunities that someone with your experience would be seeking.
+
+We believe you would be better suited for more senior positions that could fully utilize your expertise and provide appropriate career advancement.
+
+We encourage you to keep an eye on our career page for senior-level opportunities that might be a better match for your qualifications.
+
+Thank you for considering {company}, and we wish you success in finding a role that matches your experience level!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Location Requirements",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+After reviewing your application, we found that while your qualifications are impressive, your location doesn't align with our requirements for this particular position.
+
+This role requires someone who can work from our specific location or within a certain geographic area for collaboration and operational needs that we cannot accommodate remotely.
+
+We encourage you to apply for future remote opportunities or positions in locations that work better for your situation. We'll keep your information on file for roles that might be a better geographic fit.
+
+We appreciate your interest in our company and wish you success in your job search!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Salary Expectations",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+After reviewing your application and discussing compensation expectations, we found that there's a significant gap between what you're seeking and our budget for this position.
+
+While we recognize the value of your experience, we're unable to meet your salary requirements within our current budget constraints for this role.
+
+We encourage you to apply for future opportunities where compensation might be more aligned with your expectations. We'll keep your information on file for senior positions that may offer compensation packages more in line with what you're seeking.
+
+We appreciate your understanding and wish you success in finding a role that meets your financial goals!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Poor Application Quality",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+After reviewing your application, we found that it didn't meet the standards we're looking for in terms of completeness and attention to detail.
+
+We encourage you to take more time with future applications to ensure they fully showcase your qualifications and demonstrate your attention to detail and communication skills.
+
+We appreciate your interest in our company and encourage you to apply again in the future with a more comprehensive application.
+
+We wish you success in your job search!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Position Filled",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+We wanted to let you know that we have filled this position with another candidate. The decision was difficult as we received many qualified applications, including yours.
+
+We were impressed with your background and encourage you to apply for future opportunities that match your skills and interests. We'll keep your information on file and reach out if a suitable position becomes available.
+
+Thank you for your interest in joining our team, and we wish you the best of luck in your job search!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Rejection - Other",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+After careful consideration, we've decided to move forward with other candidates for this position.
+
+We appreciate the time you invested in the application process and encourage you to apply for future opportunities that may be a better fit.
+
+We'll keep your information on file and wish you continued success in your career search!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
   }
 ];
 
