@@ -1,8 +1,11 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, Eye, Users, ExternalLink } from "lucide-react";
+import { ThumbsDown, Eye, Users, ExternalLink, Star, UserCheck } from "lucide-react";
 import { ApplicationTabs } from "./ApplicationTabs";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Application {
   id: string;
@@ -17,6 +20,7 @@ interface Application {
   answer_1: string | null;
   answer_2: string | null;
   answer_3: string | null;
+  manual_rating: number | null;
 }
 
 interface Job {
@@ -30,6 +34,7 @@ interface ApplicationDetailProps {
   getStatusColor: (status: string) => string;
   getRatingStars: (rating: number | null) => JSX.Element[];
   getTimeAgo: (dateString: string) => string;
+  onApplicationUpdate?: () => void;
 }
 
 export const ApplicationDetail = ({ 
@@ -38,8 +43,104 @@ export const ApplicationDetail = ({
   job,
   getStatusColor,
   getRatingStars,
-  getTimeAgo 
+  getTimeAgo,
+  onApplicationUpdate 
 }: ApplicationDetailProps) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+
+  const handleManualRating = async (rating: number) => {
+    if (!selectedApplication || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          manual_rating: rating,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedApplication.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Rating updated",
+        description: `Candidate rated ${rating} star${rating > 1 ? 's' : ''}`,
+      });
+      
+      if (onApplicationUpdate) {
+        onApplicationUpdate();
+      }
+    } catch (error) {
+      console.error('Error updating manual rating:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update rating",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!selectedApplication || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          status: 'rejected',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedApplication.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Application rejected",
+        description: `${selectedApplication.name}'s application has been rejected`,
+      });
+      
+      if (onApplicationUpdate) {
+        onApplicationUpdate();
+      }
+    } catch (error) {
+      console.error('Error rejecting application:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reject application",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const renderManualRatingStars = (currentRating: number | null) => {
+    return Array.from({ length: 3 }, (_, i) => {
+      const starValue = i + 1;
+      const isActive = currentRating && starValue <= currentRating;
+      
+      return (
+        <button
+          key={i}
+          onClick={() => handleManualRating(starValue)}
+          disabled={isUpdating}
+          className={`transition-all duration-200 hover:scale-110 disabled:opacity-50 ${
+            isActive ? 'text-blue-500' : 'text-gray-300 hover:text-blue-400'
+          }`}
+        >
+          <Star 
+            className={`w-6 h-6 ${isActive ? 'fill-current' : ''}`}
+          />
+        </button>
+      );
+    });
+  };
+
   if (selectedApplication) {
     return (
       <Card>
@@ -49,15 +150,41 @@ export const ApplicationDetail = ({
               <CardTitle>{selectedApplication.name}</CardTitle>
               <p className="text-gray-600">{selectedApplication.email}</p>
             </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline">
-                <ThumbsDown className="w-4 h-4 mr-2" />
-                Reject
-              </Button>
-              <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                <ThumbsUp className="w-4 h-4 mr-2" />
-                Approve
-              </Button>
+            <div className="flex flex-col gap-3">
+              {/* Manual Rating Section */}
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-sm font-medium text-gray-700">Your Rating:</span>
+                <div className="flex gap-1">
+                  {renderManualRatingStars(selectedApplication.manual_rating)}
+                </div>
+                {selectedApplication.manual_rating && (
+                  <span className="text-xs text-gray-500">
+                    {selectedApplication.manual_rating} star{selectedApplication.manual_rating > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={handleReject}
+                  disabled={isUpdating || selectedApplication.status === 'rejected'}
+                  className="border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  <ThumbsDown className="w-4 h-4 mr-2" />
+                  Reject
+                </Button>
+                <Button 
+                  size="sm" 
+                  disabled={true}
+                  className="bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed"
+                >
+                  <UserCheck className="w-4 h-4 mr-2" />
+                  Hire (Coming Soon)
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>

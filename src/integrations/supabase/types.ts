@@ -27,6 +27,7 @@ export type Database = {
           job_id: string
           linkedin_url: string | null
           location: string | null
+          manual_rating: number | null
           name: string
           parsed_resume_data: Json | null
           phone: string | null
@@ -55,6 +56,7 @@ export type Database = {
           job_id: string
           linkedin_url?: string | null
           location?: string | null
+          manual_rating?: number | null
           name: string
           parsed_resume_data?: Json | null
           phone?: string | null
@@ -83,6 +85,7 @@ export type Database = {
           job_id?: string
           linkedin_url?: string | null
           location?: string | null
+          manual_rating?: number | null
           name?: string
           parsed_resume_data?: Json | null
           phone?: string | null

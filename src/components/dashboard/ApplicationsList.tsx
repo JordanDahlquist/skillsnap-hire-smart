@@ -16,6 +16,7 @@ interface Application {
   answer_1: string | null;
   answer_2: string | null;
   answer_3: string | null;
+  manual_rating: number | null;
 }
 
 interface ApplicationsListProps {
@@ -35,6 +36,23 @@ export const ApplicationsList = ({
   getRatingStars,
   getTimeAgo 
 }: ApplicationsListProps) => {
+  
+  const renderManualRating = (rating: number | null) => {
+    return Array.from({ length: 3 }, (_, i) => {
+      const starValue = i + 1;
+      const isActive = rating && starValue <= rating;
+      
+      return (
+        <Star
+          key={i}
+          className={`w-3 h-3 ${
+            isActive ? 'text-blue-500 fill-current' : 'text-gray-300'
+          }`}
+        />
+      );
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -63,12 +81,34 @@ export const ApplicationsList = ({
                     {app.status}
                   </Badge>
                 </div>
-                {app.ai_rating && (
-                  <div className="flex items-center gap-1 mb-1">
-                    {getRatingStars(app.ai_rating)}
-                    <span className="text-sm text-gray-600 ml-1">{app.ai_rating.toFixed(1)}/5</span>
+                
+                {/* Ratings Section */}
+                <div className="space-y-1 mb-2">
+                  {/* AI Rating */}
+                  {app.ai_rating && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-500">AI:</span>
+                      {getRatingStars(app.ai_rating)}
+                      <span className="text-xs text-gray-600 ml-1">{app.ai_rating.toFixed(1)}/5</span>
+                    </div>
+                  )}
+                  
+                  {/* Manual Rating */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-500">You:</span>
+                    <div className="flex gap-0.5">
+                      {renderManualRating(app.manual_rating)}
+                    </div>
+                    {app.manual_rating ? (
+                      <span className="text-xs text-blue-600 ml-1 font-medium">
+                        {app.manual_rating}/3
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400 ml-1">Not rated</span>
+                    )}
                   </div>
-                )}
+                </div>
+                
                 <p className="text-sm text-gray-600">{getTimeAgo(app.created_at)}</p>
               </div>
             ))}

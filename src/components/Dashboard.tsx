@@ -26,6 +26,7 @@ interface Application {
   answer_1: string | null;
   answer_2: string | null;
   answer_3: string | null;
+  manual_rating: number | null;
 }
 
 interface Job {
@@ -77,7 +78,7 @@ export const Dashboard = () => {
   });
 
   // Fetch applications for this job with error handling
-  const { data: applications = [], isLoading: applicationsLoading, error: applicationsError } = useQuery({
+  const { data: applications = [], isLoading: applicationsLoading, error: applicationsError, refetch: refetchApplications } = useQuery({
     queryKey: ['applications', jobId],
     queryFn: async () => {
       if (!jobId) return [];
@@ -106,6 +107,16 @@ export const Dashboard = () => {
   useEffect(() => {
     if (applications.length > 0 && !selectedApplication) {
       setSelectedApplication(applications[0]);
+    }
+  }, [applications, selectedApplication]);
+
+  // Update selected application when applications refetch
+  useEffect(() => {
+    if (selectedApplication && applications.length > 0) {
+      const updatedApplication = applications.find(app => app.id === selectedApplication.id);
+      if (updatedApplication) {
+        setSelectedApplication(updatedApplication);
+      }
     }
   }, [applications, selectedApplication]);
 
@@ -139,6 +150,10 @@ export const Dashboard = () => {
     
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  };
+
+  const handleApplicationUpdate = () => {
+    refetchApplications();
   };
 
   // Loading state
@@ -233,6 +248,7 @@ export const Dashboard = () => {
                 getStatusColor={getStatusColor}
                 getRatingStars={getRatingStars}
                 getTimeAgo={getTimeAgo}
+                onApplicationUpdate={handleApplicationUpdate}
               />
             </div>
           </div>
