@@ -14,6 +14,8 @@ interface UserProfile {
   company_website: string | null;
   default_location: string | null;
   industry: string | null;
+  daily_briefing_regenerations: number | null;
+  last_regeneration_date: string | null;
 }
 
 export const useAuth = () => {
