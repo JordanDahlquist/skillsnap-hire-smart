@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit2, Plus, Save, X } from 'lucide-react';
+import { Trash2, Edit2, Plus, Save, X, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface EmailTemplate {
@@ -24,12 +23,95 @@ interface EmailTemplate {
   updated_at: string;
 }
 
+const PRESET_TEMPLATES = [
+  {
+    name: "Interview Request",
+    subject: "Interview Invitation - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company}. We were impressed with your application and would like to invite you for an interview.
+
+We'd like to schedule a conversation to learn more about your experience and discuss how you might contribute to our team.
+
+Please let us know your availability for the coming week, and we'll coordinate a time that works for both of us.
+
+Looking forward to speaking with you soon!
+
+Best regards,
+{company} Team`,
+    category: "interview"
+  },
+  {
+    name: "Application Received",
+    subject: "Application Received - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for applying for the {position} role at {company}. We've received your application and wanted to confirm it's in our system.
+
+Our team will review your application carefully, and we'll be in touch within the next few days with an update on next steps.
+
+We appreciate your interest in joining our team!
+
+Best regards,
+{company} Team`,
+    category: "status"
+  },
+  {
+    name: "Application Under Review",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+I wanted to provide you with a quick update on your application for the {position} role at {company}.
+
+Your application is currently under review by our team. We're taking the time to carefully evaluate all candidates to ensure we make the best decision for both the role and our team.
+
+We expect to have an update for you within the next week. Thank you for your patience during this process.
+
+Best regards,
+{company} Team`,
+    category: "status"
+  },
+  {
+    name: "Application Rejection",
+    subject: "Update on Your Application - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for your interest in the {position} role at {company} and for taking the time to apply.
+
+After careful consideration, we've decided to move forward with other candidates whose experience more closely aligns with our current needs.
+
+We were impressed by your background and encourage you to apply for future opportunities that match your skills and interests. We'll keep your information on file and reach out if a suitable position becomes available.
+
+We wish you the best of luck in your job search!
+
+Best regards,
+{company} Team`,
+    category: "rejection"
+  },
+  {
+    name: "Follow-up After Interview",
+    subject: "Thank you for interviewing - {position} at {company}",
+    content: `Hi {name},
+
+Thank you for taking the time to interview for the {position} role at {company}. It was great getting to know you and learning about your experience.
+
+We're currently reviewing all candidates and will have a decision within the next few days. We'll be in touch soon with an update on next steps.
+
+Thank you again for your interest in joining our team!
+
+Best regards,
+{company} Team`,
+    category: "followup"
+  }
+];
+
 export const EmailTemplates = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isLoadingPresets, setIsLoadingPresets] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     subject: '',
@@ -50,6 +132,50 @@ export const EmailTemplates = () => {
       return data as EmailTemplate[];
     },
     enabled: !!user,
+  });
+
+  // Load preset templates mutation
+  const loadPresetsMutation = useMutation({
+    mutationFn: async () => {
+      const existingTemplateNames = templates.map(t => t.name);
+      const newPresets = PRESET_TEMPLATES.filter(preset => 
+        !existingTemplateNames.includes(preset.name)
+      );
+
+      if (newPresets.length === 0) {
+        throw new Error('All preset templates already exist');
+      }
+
+      const presetsToInsert = newPresets.map(preset => ({
+        ...preset,
+        user_id: user?.id,
+        variables: extractVariables(preset.content)
+      }));
+
+      const { data, error } = await supabase
+        .from('email_templates')
+        .insert(presetsToInsert)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['email-templates'] });
+      toast({
+        title: "Preset Templates Loaded",
+        description: `Successfully added ${data.length} preset email template${data.length > 1 ? 's' : ''}.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message === 'All preset templates already exist' 
+          ? "All preset templates have already been loaded." 
+          : "Failed to load preset templates.",
+        variant: error.message === 'All preset templates already exist' ? "default" : "destructive",
+      });
+    }
   });
 
   // Create template mutation
@@ -172,6 +298,12 @@ export const EmailTemplates = () => {
     resetForm();
   };
 
+  const handleLoadPresets = () => {
+    setIsLoadingPresets(true);
+    loadPresetsMutation.mutate();
+    setIsLoadingPresets(false);
+  };
+
   if (isLoading) {
     return <div className="text-center py-4">Loading templates...</div>;
   }
@@ -185,10 +317,22 @@ export const EmailTemplates = () => {
             Create reusable email templates for candidate outreach. Use variables like {"{name}"}, {"{position}"}, {"{company}"} for personalization.
           </p>
         </div>
-        <Button onClick={() => setIsCreating(true)} disabled={isCreating || !!editingTemplate}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Template
-        </Button>
+        <div className="flex gap-2">
+          {templates.length === 0 && (
+            <Button 
+              variant="outline" 
+              onClick={handleLoadPresets}
+              disabled={isLoadingPresets || loadPresetsMutation.isPending}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Load Preset Templates
+            </Button>
+          )}
+          <Button onClick={() => setIsCreating(true)} disabled={isCreating || !!editingTemplate}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Template
+          </Button>
+        </div>
       </div>
 
       {(isCreating || editingTemplate) && (
@@ -308,10 +452,22 @@ export const EmailTemplates = () => {
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-gray-500 mb-4">No email templates created yet.</p>
-            <Button onClick={() => setIsCreating(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Your First Template
-            </Button>
+            <p className="text-sm text-gray-400 mb-6">
+              Get started quickly with our preset templates or create your own from scratch.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={handleLoadPresets} disabled={isLoadingPresets || loadPresetsMutation.isPending}>
+                <Download className="w-4 h-4 mr-2" />
+                Load Preset Templates
+              </Button>
+              <Button variant="outline" onClick={() => setIsCreating(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Custom Template
+              </Button>
+            </div>
+            <div className="mt-4 text-xs text-gray-500">
+              Preset templates include: Interview Request, Application Received, Under Review, Rejection, and Follow-up
+            </div>
           </CardContent>
         </Card>
       )}
