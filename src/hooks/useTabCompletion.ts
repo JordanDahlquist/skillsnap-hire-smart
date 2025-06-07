@@ -45,7 +45,7 @@ export const useTabCompletion = (
       tab4Skipped
     });
     
-    // Tab 1: Role Details - check required fields
+    // Tab 1: Role Details - check required fields (removed status)
     const tab1Complete = !!(
       title &&
       description &&

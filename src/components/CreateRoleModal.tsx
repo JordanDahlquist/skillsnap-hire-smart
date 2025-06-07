@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -10,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Plus, Sparkles, FileText, ClipboardList, MapPin, Loader2, Wand2, CheckCircle, AlertCircle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +20,7 @@ import { useGenerateMiniDescription } from "@/hooks/useGenerateMiniDescription";
 import { useTabCompletion } from "@/hooks/useTabCompletion";
 import { LocationSelector } from "./LocationSelector";
 import { RichTextEditor } from "./RichTextEditor";
+import { PdfUpload } from "./PdfUpload";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { logger } from "@/services/loggerService";
 
@@ -32,7 +35,6 @@ const formSchema = z.object({
   required_skills: z.string(),
   budget: z.string().optional(),
   duration: z.string().optional(),
-  status: z.string().optional(),
   employment_type: z.string(),
   location_type: z.string().optional(),
   country: z.string().optional(),
@@ -60,6 +62,9 @@ export const CreateRoleModal = ({
   const [editingJobPost, setEditingJobPost] = useState(false);
   const [editingSkillsTest, setEditingSkillsTest] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadedPdfContent, setUploadedPdfContent] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [rewriteWithAI, setRewriteWithAI] = useState(true);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,7 +75,6 @@ export const CreateRoleModal = ({
       required_skills: "",
       budget: "",
       duration: "",
-      status: "draft",
       employment_type: "full-time",
       location_type: "remote",
       country: "United States",
@@ -90,7 +94,6 @@ export const CreateRoleModal = ({
     getIncompleteTabsMessage
   } = useTabCompletion(form, generatedJobPost, generatedSkillsTest);
 
-  // Debug logging for auth state
   logger.debug('CreateRoleModal auth state:', {
     user: !!user,
     userId: user?.id,
@@ -112,6 +115,37 @@ export const CreateRoleModal = ({
       {!isComplete && <AlertCircle className="w-4 h-4 text-orange-500" />}
     </TabsTrigger>;
 
+  const handlePdfUpload = (content: string, fileName: string) => {
+    setUploadedPdfContent(content);
+    setUploadedFileName(fileName);
+    
+    if (!rewriteWithAI) {
+      form.setValue("description", content);
+    }
+  };
+
+  const handlePdfRemove = () => {
+    setUploadedPdfContent(null);
+    setUploadedFileName(null);
+    if (!rewriteWithAI) {
+      form.setValue("description", "");
+    }
+  };
+
+  const handleRewriteToggle = (checked: boolean) => {
+    setRewriteWithAI(checked);
+    
+    if (uploadedPdfContent) {
+      if (!checked) {
+        // Use PDF content as-is
+        form.setValue("description", uploadedPdfContent);
+      } else {
+        // Clear description to let AI rewrite
+        form.setValue("description", "");
+      }
+    }
+  };
+
   const handleGenerateJobPost = async () => {
     const formData = form.getValues();
     if (!formData.title || !formData.description) {
@@ -122,6 +156,14 @@ export const CreateRoleModal = ({
       });
       return;
     }
+
+    let descriptionToUse = formData.description;
+    
+    // If we have uploaded PDF content and want AI to rewrite it
+    if (uploadedPdfContent && rewriteWithAI) {
+      descriptionToUse = uploadedPdfContent;
+    }
+
     setIsGeneratingJobPost(true);
     try {
       const {
@@ -137,7 +179,7 @@ export const CreateRoleModal = ({
             duration: formData.duration,
             budget: formData.budget,
             skills: formData.required_skills,
-            description: formData.description
+            description: descriptionToUse
           }
         }
       });
@@ -289,6 +331,9 @@ export const CreateRoleModal = ({
       setGeneratedSkillsTest("");
       setTab3Skipped(false);
       setTab4Skipped(false);
+      setUploadedPdfContent(null);
+      setUploadedFileName(null);
+      setRewriteWithAI(true);
       setActiveTab("1");
       onOpenChange(false);
     } catch (error) {
@@ -390,13 +435,6 @@ export const CreateRoleModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        {!allTabsComplete && <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-orange-800">
-              <AlertCircle className="w-5 h-5" />
-              <span className="font-medium">{getIncompleteTabsMessage()}</span>
-            </div>
-          </div>}
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabTriggerWithStatus value="1" isComplete={tabCompletion.tab1Complete}>
@@ -425,7 +463,10 @@ export const CreateRoleModal = ({
                     <FormField control={form.control} name="title" render={({
                     field
                   }) => <FormItem>
-                          <FormLabel>Job Title</FormLabel>
+                          <FormLabel>
+                            Job Title
+                            <span className="text-red-500 ml-1">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="Software Engineer" {...field} />
                           </FormControl>
@@ -435,7 +476,10 @@ export const CreateRoleModal = ({
                     <FormField control={form.control} name="employment_type" render={({
                     field
                   }) => <FormItem>
-                          <FormLabel>Employment Type</FormLabel>
+                          <FormLabel>
+                            Employment Type
+                            <span className="text-red-500 ml-1">*</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -457,7 +501,10 @@ export const CreateRoleModal = ({
                     <FormField control={form.control} name="experience_level" render={({
                     field
                   }) => <FormItem>
-                          <FormLabel>Experience Level</FormLabel>
+                          <FormLabel>
+                            Experience Level
+                            <span className="text-red-500 ml-1">*</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -478,7 +525,10 @@ export const CreateRoleModal = ({
                     <FormField control={form.control} name="required_skills" render={({
                     field
                   }) => <FormItem>
-                          <FormLabel>Required Skills</FormLabel>
+                          <FormLabel>
+                            Required Skills
+                            <span className="text-red-500 ml-1">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="JavaScript, React, Node.js" {...field} />
                           </FormControl>
@@ -507,37 +557,55 @@ export const CreateRoleModal = ({
                           </FormControl>
                           <FormMessage />
                         </FormItem>} />
-
-                    <FormField control={form.control} name="status" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select job status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="draft">Draft</SelectItem>
-                              <SelectItem value="active">Active</SelectItem>
-                              <SelectItem value="paused">Paused</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>} />
                   </div>
                 </div>
 
-                <FormField control={form.control} name="description" render={({
-                field
-              }) => <FormItem>
-                      <FormLabel>Job Description</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Write a detailed job description here." className="resize-none" rows={4} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>} />
+                <div className="space-y-4">
+                  <div>
+                    <FormLabel>
+                      Job Requirements & Description (AI Input)
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <FormDescription className="mt-1 mb-4">
+                      Provide general requirements and description. The AI will use this to generate a polished job posting.
+                    </FormDescription>
+                    
+                    <div className="space-y-4">
+                      <PdfUpload 
+                        onFileUpload={handlePdfUpload}
+                        onRemove={handlePdfRemove}
+                        uploadedFile={uploadedFileName}
+                      />
+                      
+                      {uploadedPdfContent && (
+                        <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
+                          <Switch
+                            id="rewrite-toggle"
+                            checked={rewriteWithAI}
+                            onCheckedChange={handleRewriteToggle}
+                          />
+                          <label htmlFor="rewrite-toggle" className="text-sm font-medium">
+                            Let AI rewrite the uploaded content
+                          </label>
+                        </div>
+                      )}
+
+                      <FormField control={form.control} name="description" render={({
+                      field
+                    }) => <FormItem>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Write job requirements and description here. This will guide the AI in generating your job posting." 
+                                className="resize-none" 
+                                rows={6} 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>} />
+                    </div>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="2" className="space-y-6">
