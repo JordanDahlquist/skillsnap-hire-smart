@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ import { useJobStats } from "@/hooks/useJobStats";
 import { useJobSelection } from "@/hooks/useJobSelection";
 import { useJobFiltering } from "@/hooks/useJobFiltering";
 import { getTimeAgo } from "@/utils/dateUtils";
-import { JobsHeader } from "@/components/jobs/JobsHeader";
+import { AIDailyBriefing } from "@/components/jobs/AIDailyBriefing";
 import { JobsStats } from "@/components/jobs/JobsStats";
 
 const MyJobs = () => {
@@ -112,7 +111,7 @@ const MyJobs = () => {
         showCreateButton={true}
       />
 
-      {/* Enhanced Header Section with Sophisticated Background */}
+      {/* Enhanced Header Section with AI Briefing */}
       <div className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 border-b border-gray-100 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-40">
@@ -123,7 +122,7 @@ const MyJobs = () => {
         
         {/* Content */}
         <div className="relative z-10">
-          <JobsHeader 
+          <AIDailyBriefing 
             userDisplayName={getUserDisplayName()}
             onCreateJob={() => setIsCreateModalOpen(true)}
           />

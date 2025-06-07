@@ -104,6 +104,33 @@ export type Database = {
           },
         ]
       }
+      daily_briefings: {
+        Row: {
+          briefing_content: string
+          briefing_data: Json
+          created_at: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          briefing_content: string
+          briefing_data: Json
+          created_at?: string
+          expires_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          briefing_content?: string
+          briefing_data?: Json
+          created_at?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           ai_mini_description: string | null
