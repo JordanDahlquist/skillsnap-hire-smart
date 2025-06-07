@@ -72,19 +72,34 @@ serve(async (req) => {
     }
 
     // Start deletion process - delete related data first
-    console.log('Deleting user applications...');
-    const { error: applicationsError } = await supabaseAdmin
-      .from('applications')
-      .delete()
-      .in('job_id', 
-        supabaseAdmin
-          .from('jobs')
-          .select('id')
-          .eq('user_id', user.id)
-      );
+    console.log('Fetching user jobs to find related applications...');
+    const { data: userJobs, error: jobsFetchError } = await supabaseAdmin
+      .from('jobs')
+      .select('id')
+      .eq('user_id', user.id);
 
-    if (applicationsError) {
-      console.error('Error deleting applications:', applicationsError);
+    if (jobsFetchError) {
+      console.error('Error fetching user jobs:', jobsFetchError);
+    }
+
+    const jobIds = userJobs?.map(job => job.id) || [];
+    console.log(`Found ${jobIds.length} jobs for user`);
+
+    // Delete applications related to user's jobs
+    if (jobIds.length > 0) {
+      console.log('Deleting user applications...');
+      const { error: applicationsError } = await supabaseAdmin
+        .from('applications')
+        .delete()
+        .in('job_id', jobIds);
+
+      if (applicationsError) {
+        console.error('Error deleting applications:', applicationsError);
+      } else {
+        console.log('Applications deleted successfully');
+      }
+    } else {
+      console.log('No jobs found, skipping applications deletion');
     }
 
     console.log('Deleting user jobs...');
@@ -95,6 +110,8 @@ serve(async (req) => {
 
     if (jobsError) {
       console.error('Error deleting jobs:', jobsError);
+    } else {
+      console.log('Jobs deleted successfully');
     }
 
     console.log('Deleting email logs...');
@@ -105,6 +122,8 @@ serve(async (req) => {
 
     if (emailLogsError) {
       console.error('Error deleting email logs:', emailLogsError);
+    } else {
+      console.log('Email logs deleted successfully');
     }
 
     console.log('Deleting email templates...');
@@ -115,6 +134,8 @@ serve(async (req) => {
 
     if (emailTemplatesError) {
       console.error('Error deleting email templates:', emailTemplatesError);
+    } else {
+      console.log('Email templates deleted successfully');
     }
 
     console.log('Deleting daily briefings...');
@@ -125,6 +146,8 @@ serve(async (req) => {
 
     if (briefingsError) {
       console.error('Error deleting daily briefings:', briefingsError);
+    } else {
+      console.log('Daily briefings deleted successfully');
     }
 
     console.log('Deleting organization memberships...');
@@ -135,6 +158,8 @@ serve(async (req) => {
 
     if (membershipsError) {
       console.error('Error deleting organization memberships:', membershipsError);
+    } else {
+      console.log('Organization memberships deleted successfully');
     }
 
     console.log('Deleting invitations...');
@@ -145,6 +170,8 @@ serve(async (req) => {
 
     if (invitationsError) {
       console.error('Error deleting invitations:', invitationsError);
+    } else {
+      console.log('Invitations deleted successfully');
     }
 
     console.log('Deleting user profile...');
@@ -155,6 +182,8 @@ serve(async (req) => {
 
     if (profileError) {
       console.error('Error deleting profile:', profileError);
+    } else {
+      console.log('Profile deleted successfully');
     }
 
     // Finally, delete the user from auth
