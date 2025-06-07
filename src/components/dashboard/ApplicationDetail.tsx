@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,18 +51,21 @@ export const ApplicationDetail = ({
   const handleManualRating = async (rating: number) => {
     if (!selectedApplication || isUpdating) return;
     
+    // If clicking the same 1-star rating, unselect it (set to null)
+    const newRating = selectedApplication.manual_rating === rating && rating === 1 ? null : rating;
+    
     setIsUpdating(true);
     try {
       // Determine the new status based on current status and rating
       let newStatus = selectedApplication.status;
-      if (selectedApplication.status === 'pending' && rating > 0) {
+      if (selectedApplication.status === 'pending' && newRating && newRating > 0) {
         newStatus = 'reviewed';
       }
 
       const { error } = await supabase
         .from('applications')
         .update({ 
-          manual_rating: rating,
+          manual_rating: newRating,
           status: newStatus,
           updated_at: new Date().toISOString()
         })
@@ -71,13 +73,17 @@ export const ApplicationDetail = ({
 
       if (error) throw error;
 
+      const ratingMessage = newRating 
+        ? `Candidate rated ${newRating} star${newRating > 1 ? 's' : ''}`
+        : 'Rating cleared';
+      
       const statusMessage = newStatus !== selectedApplication.status 
         ? ` and marked as reviewed`
         : '';
 
       toast({
         title: "Rating updated",
-        description: `Candidate rated ${rating} star${rating > 1 ? 's' : ''}${statusMessage}`,
+        description: `${ratingMessage}${statusMessage}`,
       });
       
       if (onApplicationUpdate) {
@@ -186,33 +192,40 @@ export const ApplicationDetail = ({
               <CardTitle>{selectedApplication.name}</CardTitle>
               <p className="text-gray-600">{selectedApplication.email}</p>
             </div>
-            <div className="flex flex-col gap-3">
-              {/* Rating Sections - Side by Side */}
-              <div className="flex justify-between gap-8">
-                {/* Manual Rating Section - Left */}
-                <div className="flex flex-col items-start gap-2">
-                  <span className="text-sm font-medium text-gray-700">Your Rating:</span>
-                  <div className="flex gap-1">
-                    {renderManualRatingStars(selectedApplication.manual_rating)}
-                  </div>
-                  {selectedApplication.manual_rating && (
-                    <span className="text-xs text-gray-500">
-                      {selectedApplication.manual_rating} star{selectedApplication.manual_rating > 1 ? 's' : ''}
+            <div className="flex flex-col gap-4">
+              {/* Rating Sections - Compact Design */}
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="flex justify-between items-start gap-6">
+                  {/* Manual Rating Section - Left */}
+                  <div className="flex flex-col items-start gap-2">
+                    <span className="text-sm font-semibold text-gray-800">Your Rating</span>
+                    <div className="flex gap-1">
+                      {renderManualRatingStars(selectedApplication.manual_rating)}
+                    </div>
+                    <span className="text-xs text-gray-500 min-h-[16px]">
+                      {selectedApplication.manual_rating 
+                        ? `${selectedApplication.manual_rating} star${selectedApplication.manual_rating > 1 ? 's' : ''}`
+                        : 'Not rated'
+                      }
                     </span>
-                  )}
-                </div>
+                  </div>
 
-                {/* AI Review Section - Right */}
-                <div className="flex flex-col items-end gap-2">
-                  <span className="text-sm font-medium text-gray-700">AI Review:</span>
-                  <div className="flex gap-1">
-                    {renderAIRating(selectedApplication.ai_rating)}
-                  </div>
-                  {selectedApplication.ai_rating && (
-                    <span className="text-xs text-green-600 font-medium">
-                      {Math.round((selectedApplication.ai_rating / 5) * 3)}/3
+                  {/* Visual Divider */}
+                  <div className="w-px h-16 bg-gray-300"></div>
+
+                  {/* AI Rating Section - Right */}
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-sm font-semibold text-gray-800">AI Rating</span>
+                    <div className="flex gap-1">
+                      {renderAIRating(selectedApplication.ai_rating)}
+                    </div>
+                    <span className="text-xs text-green-600 font-medium min-h-[16px]">
+                      {selectedApplication.ai_rating 
+                        ? `${Math.round((selectedApplication.ai_rating / 5) * 3)}/3`
+                        : 'Not rated'
+                      }
                     </span>
-                  )}
+                  </div>
                 </div>
               </div>
               
