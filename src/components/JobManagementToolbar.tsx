@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -126,7 +125,7 @@ export const JobManagementToolbar = ({
           <div className="flex gap-2 items-center">
             <Select value={sortBy || 'created_desc'} onValueChange={onSortChange}>
               <SelectTrigger className="w-40">
-                <SelectValue />
+                <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
                 {sortOptions.map((option) => (
