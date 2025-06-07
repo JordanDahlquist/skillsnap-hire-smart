@@ -40,7 +40,7 @@ export const useOrganizationMembers = (organizationId: string | undefined) => {
         .from('organization_memberships')
         .select(`
           *,
-          profiles (
+          profiles!organization_memberships_user_id_fkey (
             id,
             full_name,
             email
