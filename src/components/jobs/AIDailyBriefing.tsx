@@ -254,7 +254,8 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
 
       <AnalyticsModal 
         open={showAnalytics} 
-        onOpenChange={setShowAnalytics} 
+        onOpenChange={setShowAnalytics}
+        userDisplayName={userDisplayName}
       />
     </div>
   );

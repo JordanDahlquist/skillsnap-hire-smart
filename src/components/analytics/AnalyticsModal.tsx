@@ -10,20 +10,52 @@ import { TrendsTab } from "./TrendsTab";
 import { InsightsTab } from "./InsightsTab";
 import { useHiringAnalytics } from "@/hooks/useHiringAnalytics";
 import { useToast } from "@/hooks/use-toast";
+import { generateAnalyticsReport } from "@/utils/analyticsReportGenerator";
 
 interface AnalyticsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  userDisplayName?: string;
 }
 
-export const AnalyticsModal = ({ open, onOpenChange }: AnalyticsModalProps) => {
+export const AnalyticsModal = ({ open, onOpenChange, userDisplayName = "User" }: AnalyticsModalProps) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [isExporting, setIsExporting] = useState(false);
   const analytics = useHiringAnalytics();
   const { toast } = useToast();
 
-  const handleExport = () => {
-    // Mock export functionality
-    console.log("Exporting analytics data...");
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      toast({
+        title: "Generating Report",
+        description: "Creating your comprehensive analytics report with visual charts...",
+      });
+
+      const reportData = {
+        metrics: analytics.metrics,
+        pipelineData: analytics.pipelineData,
+        trendData: analytics.trendData,
+        jobPerformanceData: analytics.jobPerformanceData,
+        userDisplayName
+      };
+
+      await generateAnalyticsReport(reportData, activeTab, setActiveTab);
+      
+      toast({
+        title: "Report Generated",
+        description: "Your visual analytics report has been downloaded as a PDF.",
+      });
+    } catch (error) {
+      console.error("Export error:", error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error generating your report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleRefresh = async () => {
@@ -66,10 +98,15 @@ export const AnalyticsModal = ({ open, onOpenChange }: AnalyticsModalProps) => {
                 variant="outline"
                 size="sm"
                 onClick={handleExport}
+                disabled={isExporting || analytics.isLoading}
                 className="text-xs"
               >
-                <Download className="w-4 h-4 mr-1" />
-                Export
+                {isExporting ? (
+                  <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-1" />
+                )}
+                {isExporting ? 'Generating...' : 'Export'}
               </Button>
             </div>
           </div>
@@ -93,28 +130,30 @@ export const AnalyticsModal = ({ open, onOpenChange }: AnalyticsModalProps) => {
             </TabsList>
 
             <div className="h-[calc(90vh-200px)] overflow-y-auto relative">
-              {analytics.isRefreshing && (
+              {(analytics.isRefreshing || isExporting) && (
                 <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex items-center justify-center">
                   <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-lg">
                     <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
-                    <span className="text-sm text-gray-600">Updating analytics...</span>
+                    <span className="text-sm text-gray-600">
+                      {isExporting ? 'Generating PDF report...' : 'Updating analytics...'}
+                    </span>
                   </div>
                 </div>
               )}
               
-              <TabsContent value="overview" className="mt-0">
+              <TabsContent value="overview" data-value="overview" className="mt-0">
                 <OverviewTab analytics={analytics} />
               </TabsContent>
               
-              <TabsContent value="pipeline" className="mt-0">
+              <TabsContent value="pipeline" data-value="pipeline" className="mt-0">
                 <PipelineTab analytics={analytics} />
               </TabsContent>
               
-              <TabsContent value="trends" className="mt-0">
+              <TabsContent value="trends" data-value="trends" className="mt-0">
                 <TrendsTab analytics={analytics} />
               </TabsContent>
               
-              <TabsContent value="insights" className="mt-0">
+              <TabsContent value="insights" data-value="insights" className="mt-0">
                 <InsightsTab analytics={analytics} />
               </TabsContent>
             </div>
