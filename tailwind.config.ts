@@ -85,29 +85,11 @@ export default {
 					to: {
 						height: '0'
 					}
-				},
-				'star-heartbeat': {
-					'0%': {
-						filter: 'drop-shadow(0 0 0px rgba(59, 130, 246, 0))'
-					},
-					'15%': {
-						filter: 'drop-shadow(0 0 3px rgba(59, 130, 246, 0.2))'
-					},
-					'25%': {
-						filter: 'drop-shadow(0 0 3px rgba(59, 130, 246, 0.2))'
-					},
-					'35%': {
-						filter: 'drop-shadow(0 0 0px rgba(59, 130, 246, 0))'
-					},
-					'100%': {
-						filter: 'drop-shadow(0 0 0px rgba(59, 130, 246, 0))'
-					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'star-heartbeat': 'star-heartbeat 50s ease-in-out infinite'
+				'accordion-up': 'accordion-up 0.2s ease-out'
 			}
 		}
 	},
