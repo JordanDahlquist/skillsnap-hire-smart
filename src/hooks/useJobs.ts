@@ -59,7 +59,6 @@ export const useJobs = () => {
       }
     },
     enabled: !!organizationId,
-    // Add retry and stale time to prevent excessive requests
     retry: 2,
     staleTime: 30000, // 30 seconds
   });

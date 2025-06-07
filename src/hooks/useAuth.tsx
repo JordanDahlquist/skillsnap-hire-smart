@@ -64,10 +64,13 @@ export const useAuth = () => {
     try {
       console.log('Fetching organization membership for user:', userId);
       
-      // First, try to get user's memberships directly
+      // Get user's membership with organization details
       const { data: memberships, error: membershipsError } = await supabase
         .from('organization_memberships')
-        .select('*')
+        .select(`
+          *,
+          organization:organizations(*)
+        `)
         .eq('user_id', userId)
         .limit(1);
       
@@ -82,35 +85,8 @@ export const useAuth = () => {
       }
 
       const membership = memberships[0];
-      console.log('Found membership:', membership);
-
-      // Now get the organization details
-      const { data: organization, error: orgError } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', membership.organization_id)
-        .single();
-
-      if (orgError) {
-        console.error('Organization fetch error:', orgError);
-        // Return membership without organization details
-        return {
-          ...membership,
-          organization: {
-            id: membership.organization_id,
-            name: 'Unknown Organization',
-            slug: null
-          }
-        };
-      }
-
-      const result = {
-        ...membership,
-        organization
-      };
-      
-      console.log('Organization membership fetched successfully:', result);
-      return result;
+      console.log('Organization membership fetched successfully:', membership);
+      return membership;
     } catch (error) {
       console.error('Organization membership fetch exception:', error);
       return null;

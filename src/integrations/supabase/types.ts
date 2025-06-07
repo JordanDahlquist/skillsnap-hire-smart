@@ -489,6 +489,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_organization_id: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
       get_user_organization_membership: {
         Args: { user_uuid: string }
         Returns: {
@@ -503,6 +507,14 @@ export type Database = {
       get_user_organization_role: {
         Args: { user_uuid: string; org_id: string }
         Returns: string
+      }
+      get_user_role_in_organization: {
+        Args: { user_uuid: string; org_uuid: string }
+        Returns: string
+      }
+      is_organization_member: {
+        Args: { user_uuid: string; org_uuid: string }
+        Returns: boolean
       }
       user_has_organization_access: {
         Args: { user_uuid: string }
