@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
@@ -26,12 +25,10 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
-  // Fallback content
   const getFallbackContent = () => {
     return `Good morning, ${userDisplayName}! Ready to find your next great hire? Your hiring dashboard is waiting for you.`;
   };
 
-  // Format the briefing content for better readability
   const formatBriefingContent = (content: string) => {
     // Split into sentences and format intelligently
     const sentences = content.split(/(?<=[.!?])\s+/);

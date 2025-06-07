@@ -1,5 +1,4 @@
-
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useJobs } from "./useJobs";
 import { useAllApplications } from "./useAllApplications";
 import { getStartOfWeek, getStartOfMonth } from "@/utils/dateUtils";
@@ -40,8 +39,9 @@ export interface JobPerformance {
 }
 
 export const useHiringAnalytics = () => {
-  const { data: jobs = [], isLoading: jobsLoading } = useJobs();
-  const { data: allApplications = [], isLoading: applicationsLoading } = useAllApplications();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { data: jobs = [], isLoading: jobsLoading, refetch: refetchJobs } = useJobs();
+  const { data: allApplications = [], isLoading: applicationsLoading, refetch: refetchApplications } = useAllApplications();
 
   const metrics = useMemo((): HiringMetrics => {
     const totalJobs = jobs.length;
@@ -157,11 +157,25 @@ export const useHiringAnalytics = () => {
     }).sort((a, b) => b.applications - a.applications);
   }, [jobs, allApplications]);
 
+  const refreshAnalytics = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchJobs(),
+        refetchApplications()
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return {
     metrics,
     pipelineData,
     trendData,
     jobPerformanceData,
-    isLoading: jobsLoading || applicationsLoading
+    isLoading: jobsLoading || applicationsLoading,
+    isRefreshing,
+    refreshAnalytics
   };
 };
