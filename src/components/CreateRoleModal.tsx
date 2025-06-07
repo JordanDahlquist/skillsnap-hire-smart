@@ -19,6 +19,8 @@ import { useTabCompletion } from "@/hooks/useTabCompletion";
 import { LocationSelector } from "./LocationSelector";
 import { RichTextEditor } from "./RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
+import { logger } from "@/services/loggerService";
+
 const formSchema = z.object({
   title: z.string().min(2, {
     message: "Job title must be at least 2 characters."
@@ -90,7 +92,7 @@ export const CreateRoleModal = ({
   } = useTabCompletion(form, generatedJobPost, generatedSkillsTest);
 
   // Debug logging for auth state
-  console.log('CreateRoleModal auth state:', {
+  logger.debug('CreateRoleModal auth state:', {
     user: !!user,
     userId: user?.id,
     organizationMembership: !!organizationMembership,
@@ -147,7 +149,7 @@ export const CreateRoleModal = ({
         description: "Your AI-powered job posting is ready for review."
       });
     } catch (error) {
-      console.error('Error generating job post:', error);
+      logger.error('Error generating job post:', error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate job post. Please try again.",
@@ -184,7 +186,7 @@ export const CreateRoleModal = ({
         description: "Your AI-powered skills assessment is ready for review."
       });
     } catch (error) {
-      console.error('Error generating skills test:', error);
+      logger.error('Error generating skills test:', error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate skills test. Please try again.",
@@ -209,18 +211,18 @@ export const CreateRoleModal = ({
     });
   };
   const submitJob = async (values: z.infer<typeof formSchema>, status: 'draft' | 'active') => {
-    console.log('submitJob called with:', {
+    logger.debug('submitJob called with:', {
       values,
       status
     });
-    console.log('Auth state at submit:', {
+    logger.debug('Auth state at submit:', {
       user: !!user,
       userId: user?.id,
       organizationMembership: !!organizationMembership,
       organizationId: organizationMembership?.organization_id
     });
     if (!user?.id) {
-      console.error('No user ID available');
+      logger.error('No user ID available');
       toast({
         title: "Authentication Error",
         description: "You must be logged in to create a job.",
@@ -229,7 +231,7 @@ export const CreateRoleModal = ({
       return;
     }
     if (!organizationMembership?.organization_id) {
-      console.error('No organization ID available');
+      logger.error('No organization ID available');
       toast({
         title: "Organization Error",
         description: "You must be part of an organization to create a job.",
@@ -259,16 +261,16 @@ export const CreateRoleModal = ({
         generated_job_post: generatedJobPost || null,
         generated_test: generatedSkillsTest || null
       };
-      console.log('Submitting job data:', jobData);
+      logger.debug('Submitting job data:', jobData);
       const {
         data,
         error
       } = await supabase.from('jobs').insert([jobData]).select().single();
       if (error) {
-        console.error('Error creating job:', error);
+        logger.error('Error creating job:', error);
         throw error;
       }
-      console.log('Job created successfully:', data);
+      logger.debug('Job created successfully:', data);
       toast({
         title: status === 'active' ? "Job Published!" : "Draft Saved!",
         description: status === 'active' ? "Your job is now live and accepting applications!" : "Job saved as draft successfully!"
@@ -291,7 +293,7 @@ export const CreateRoleModal = ({
       setActiveTab("1");
       onOpenChange(false);
     } catch (error) {
-      console.error('Error in job creation:', error);
+      logger.error('Error in job creation:', error);
       toast({
         title: "Error",
         description: "Failed to create job. Please try again.",
@@ -302,14 +304,14 @@ export const CreateRoleModal = ({
     }
   };
   const onSubmitAsDraft = async () => {
-    console.log('Draft button clicked');
+    logger.debug('Draft button clicked');
     const isValid = await form.trigger();
-    console.log('Form validation result for draft:', isValid);
+    logger.debug('Form validation result for draft:', isValid);
     if (isValid) {
       const values = form.getValues();
       await submitJob(values, 'draft');
     } else {
-      console.log('Form validation failed for draft');
+      logger.debug('Form validation failed for draft');
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",
@@ -318,8 +320,8 @@ export const CreateRoleModal = ({
     }
   };
   const onSubmitAsPublished = async () => {
-    console.log('Publish button clicked');
-    console.log('All tabs complete:', allTabsComplete);
+    logger.debug('Publish button clicked');
+    logger.debug('All tabs complete:', allTabsComplete);
     if (!allTabsComplete) {
       toast({
         title: "Incomplete Form",
@@ -329,12 +331,12 @@ export const CreateRoleModal = ({
       return;
     }
     const isValid = await form.trigger();
-    console.log('Form validation result for publish:', isValid);
+    logger.debug('Form validation result for publish:', isValid);
     if (isValid) {
       const values = form.getValues();
       await submitJob(values, 'active');
     } else {
-      console.log('Form validation failed for publish');
+      logger.debug('Form validation failed for publish');
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",

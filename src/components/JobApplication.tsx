@@ -13,6 +13,7 @@ import { parseMarkdown } from "@/utils/markdownParser";
 import { ResumeUpload } from "./ResumeUpload";
 import { LinkedInConnect } from "./LinkedInConnect";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { logger } from "@/services/loggerService";
 
 interface Job {
   id: string;
@@ -104,11 +105,11 @@ export const JobApplication = () => {
 
   // Add comprehensive debugging at component mount
   useEffect(() => {
-    console.log('=== JobApplication Component Mounted ===');
-    console.log('Job ID from params:', jobId);
-    console.log('Current URL:', window.location.href);
-    console.log('Search params:', Object.fromEntries(searchParams.entries()));
-    console.log('Component state:', {
+    logger.debug('=== JobApplication Component Mounted ===');
+    logger.debug('Job ID from params:', jobId);
+    logger.debug('Current URL:', window.location.href);
+    logger.debug('Search params:', Object.fromEntries(searchParams.entries()));
+    logger.debug('Component state:', {
       jobLoading,
       jobError,
       linkedInDataLoading,
@@ -120,14 +121,14 @@ export const JobApplication = () => {
   useEffect(() => {
     const fetchJob = async () => {
       if (!jobId) {
-        console.error('No job ID provided');
+        logger.error('No job ID provided');
         setJobError('No job ID provided');
         setJobLoading(false);
         return;
       }
       
       try {
-        console.log('Fetching job with ID:', jobId);
+        logger.debug('Fetching job with ID:', jobId);
         // Remove the status filter to allow fetching jobs with any status
         const { data, error } = await supabase
           .from('jobs')
@@ -135,25 +136,25 @@ export const JobApplication = () => {
           .eq('id', jobId)
           .single();
 
-        console.log('Job fetch result:', { data, error });
+        logger.debug('Job fetch result:', { data, error });
 
         if (error) {
-          console.error('Job fetch error:', error);
+          logger.error('Job fetch error:', error);
           setJobError(`Job fetch failed: ${error.message}`);
           throw error;
         }
         
         if (!data) {
-          console.error('No job data returned');
+          logger.error('No job data returned');
           setJobError('Job not found');
           return;
         }
         
-        console.log('Job fetched successfully:', data.title);
+        logger.debug('Job fetched successfully:', data.title);
         setJob(data);
         setJobError(null);
       } catch (error) {
-        console.error('Error fetching job:', error);
+        logger.error('Error fetching job:', error);
         setJobError(error instanceof Error ? error.message : 'Failed to fetch job');
         toast({
           title: "Job fetch error",
@@ -161,7 +162,7 @@ export const JobApplication = () => {
           variant: "destructive"
         });
       } finally {
-        console.log('Setting jobLoading to false');
+        logger.debug('Setting jobLoading to false');
         setJobLoading(false);
       }
     };
@@ -172,26 +173,26 @@ export const JobApplication = () => {
   // Enhanced LinkedIn connection check with more robust error handling
   useEffect(() => {
     const linkedInConnected = searchParams.get('linkedin');
-    console.log('=== LinkedIn Effect Running ===');
-    console.log('LinkedIn connected param:', linkedInConnected);
-    console.log('Current URL:', window.location.href);
-    console.log('Job loading state:', jobLoading);
+    logger.debug('=== LinkedIn Effect Running ===');
+    logger.debug('LinkedIn connected param:', linkedInConnected);
+    logger.debug('Current URL:', window.location.href);
+    logger.debug('Job loading state:', jobLoading);
     
     if (linkedInConnected === 'connected') {
-      console.log('LinkedIn connection detected, starting data retrieval...');
+      logger.debug('LinkedIn connection detected, starting data retrieval...');
       setLinkedInDataLoading(true);
       
       // Check immediately first
       const storedProfileData = sessionStorage.getItem('linkedin_profile_data');
       const linkedInConnectedFlag = sessionStorage.getItem('linkedin_connected');
       
-      console.log('Stored profile data exists:', !!storedProfileData);
-      console.log('LinkedIn connected flag:', linkedInConnectedFlag);
+      logger.debug('Stored profile data exists:', !!storedProfileData);
+      logger.debug('LinkedIn connected flag:', linkedInConnectedFlag);
       
       if (storedProfileData) {
         try {
           const profileData = JSON.parse(storedProfileData);
-          console.log('Successfully parsed LinkedIn profile data:', profileData);
+          logger.debug('Successfully parsed LinkedIn profile data:', profileData);
           
           handleLinkedInData(profileData);
           
@@ -208,7 +209,7 @@ export const JobApplication = () => {
           
           return;
         } catch (error) {
-          console.error('Error parsing LinkedIn profile data:', error);
+          logger.error('Error parsing LinkedIn profile data:', error);
           setLinkedInDataLoading(false);
           toast({
             title: "Profile import failed",
@@ -218,7 +219,7 @@ export const JobApplication = () => {
           return;
         }
       } else {
-        console.log('No LinkedIn data found in session storage');
+        logger.debug('No LinkedIn data found in session storage');
         setLinkedInDataLoading(false);
         toast({
           title: "No profile data found",
@@ -250,7 +251,7 @@ export const JobApplication = () => {
   };
 
   const handleResumeData = (data: ParsedResumeData, filePath: string) => {
-    console.log('Handling resume data:', data);
+    logger.debug('Handling resume data:', data);
     setParsedData(data);
     setResumeFile(filePath);
     setApplicationMethod('resume');
@@ -267,7 +268,7 @@ export const JobApplication = () => {
   };
 
   const handleLinkedInData = (data: ParsedResumeData) => {
-    console.log('Handling LinkedIn data in JobApplication:', data);
+    logger.debug('Handling LinkedIn data in JobApplication:', data);
     setParsedData(data);
     
     // Set LinkedIn profile if it exists in the data
@@ -297,8 +298,8 @@ export const JobApplication = () => {
       location: data.personalInfo?.location || "",
     }));
 
-    console.log('LinkedIn data processed, application method set to:', 'linkedin');
-    console.log('Form data updated:', {
+    logger.debug('LinkedIn data processed, application method set to:', 'linkedin');
+    logger.debug('Form data updated:', {
       name: data.personalInfo?.name,
       email: data.personalInfo?.email,
       phone: data.personalInfo?.phone,
@@ -431,7 +432,7 @@ export const JobApplication = () => {
             .eq('id', application.id);
         }
       } catch (analysisError) {
-        console.error('Error analyzing application:', analysisError);
+        logger.error('Error analyzing application:', analysisError);
       }
 
       setSubmitted(true);
@@ -440,7 +441,7 @@ export const JobApplication = () => {
         description: "Thank you for your application. We'll review it and get back to you soon.",
       });
     } catch (error) {
-      console.error('Error submitting application:', error);
+      logger.error('Error submitting application:', error);
       toast({
         title: "Error submitting application",
         description: "Please try again or contact support if the problem persists.",
@@ -453,7 +454,7 @@ export const JobApplication = () => {
 
   // Show loading state
   if (jobLoading && !linkedInDataLoading) {
-    console.log('Rendering loading state - jobLoading:', jobLoading, 'linkedInDataLoading:', linkedInDataLoading);
+    logger.debug('Rendering loading state - jobLoading:', jobLoading, 'linkedInDataLoading:', linkedInDataLoading);
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -467,7 +468,7 @@ export const JobApplication = () => {
 
   // Show success state
   if (submitted) {
-    console.log('Rendering success state');
+    logger.debug('Rendering success state');
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-3xl mx-auto px-4">
@@ -490,8 +491,8 @@ export const JobApplication = () => {
     );
   }
 
-  console.log('Rendering main application form');
-  console.log('Current state:', {
+  logger.debug('Rendering main application form');
+  logger.debug('Current state:', {
     job: !!job,
     jobError,
     linkedInDataLoading,

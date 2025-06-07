@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Linkedin, Loader2, User, Briefcase, MapPin, Mail, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/services/loggerService";
 
 interface LinkedInProfile {
   name: string;
@@ -36,9 +36,9 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
   const { toast } = useToast();
 
   const handleLinkedInConnect = async () => {
-    console.log('=== LinkedIn Connect Button Clicked ===');
-    console.log('Job ID:', jobId);
-    console.log('Current URL:', window.location.href);
+    logger.debug('=== LinkedIn Connect Button Clicked ===');
+    logger.debug('Job ID:', jobId);
+    logger.debug('Current URL:', window.location.href);
     
     setConnecting(true);
     
@@ -51,23 +51,23 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         timestamp: Date.now()
       };
       
-      console.log('Storing job context:', jobContext);
+      logger.debug('Storing job context:', jobContext);
       sessionStorage.setItem('linkedin_job_context', JSON.stringify(jobContext));
       
       // Store the intended redirect URL for after authentication
       if (jobId) {
         const redirectUrl = `/apply/${jobId}`;
         sessionStorage.setItem('auth_redirect_url', redirectUrl);
-        console.log('Stored auth redirect URL:', redirectUrl);
+        logger.debug('Stored auth redirect URL:', redirectUrl);
       }
       
       // Verify storage worked
       const storedContext = sessionStorage.getItem('linkedin_job_context');
       const storedRedirect = sessionStorage.getItem('auth_redirect_url');
-      console.log('Verified stored context:', storedContext);
-      console.log('Verified stored redirect:', storedRedirect);
+      logger.debug('Verified stored context:', storedContext);
+      logger.debug('Verified stored redirect:', storedRedirect);
 
-      console.log('Initiating LinkedIn OAuth with Supabase...');
+      logger.debug('Initiating LinkedIn OAuth with Supabase...');
       
       // Use Supabase Auth's LinkedIn OIDC provider
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -79,14 +79,14 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
       });
 
       if (error) {
-        console.error('LinkedIn OAuth error:', error);
+        logger.error('LinkedIn OAuth error:', error);
         throw error;
       }
 
-      console.log('LinkedIn OAuth initiated successfully:', data);
+      logger.debug('LinkedIn OAuth initiated successfully:', data);
       
     } catch (error) {
-      console.error('LinkedIn connection error:', error);
+      logger.error('LinkedIn connection error:', error);
       setConnecting(false);
       
       // Clean up stored context on error
@@ -140,7 +140,7 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         description: "Your profile information has been imported successfully.",
       });
     } catch (error) {
-      console.error('Error fetching LinkedIn profile:', error);
+      logger.error('Error fetching LinkedIn profile:', error);
       toast({
         title: "Profile import failed",
         description: "Unable to import your LinkedIn profile. Please try uploading a resume instead.",

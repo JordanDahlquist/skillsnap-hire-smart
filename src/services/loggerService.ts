@@ -41,6 +41,29 @@ class LoggerService {
   error(message: string, ...args: any[]) {
     this.log('error', message, ...args);
   }
+
+  // Utility method for logging component lifecycle events
+  componentMount(componentName: string, props?: any) {
+    this.debug(`${componentName} mounted`, props);
+  }
+
+  componentUnmount(componentName: string) {
+    this.debug(`${componentName} unmounted`);
+  }
+
+  // Utility method for logging API calls
+  apiCall(method: string, endpoint: string, data?: any) {
+    this.debug(`API ${method} ${endpoint}`, data);
+  }
+
+  apiResponse(method: string, endpoint: string, response: any) {
+    this.debug(`API ${method} ${endpoint} response:`, response);
+  }
+
+  // Utility method for logging user actions
+  userAction(action: string, details?: any) {
+    this.info(`User action: ${action}`, details);
+  }
 }
 
 export const logger = new LoggerService();
