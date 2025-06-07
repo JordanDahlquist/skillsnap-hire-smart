@@ -15,6 +15,7 @@ import { JobsHeaderSection } from "./JobsHeaderSection";
 import { JobsToolbar } from "./JobsToolbar";
 import { JobsContent } from "./JobsContent";
 import { logger } from "@/services/loggerService";
+import { LOADING_MESSAGES, SUCCESS_MESSAGES } from "@/constants/messages";
 
 export const JobsPage = () => {
   const { user, profile } = useAuth();
@@ -72,7 +73,7 @@ export const JobsPage = () => {
         onSuccess: () => {
           toast({
             title: "Refreshed",
-            description: "Job data has been updated",
+            description: SUCCESS_MESSAGES.UPDATED,
           });
         }
       }
@@ -126,7 +127,7 @@ export const JobsPage = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007af6] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your jobs...</p>
+          <p className="mt-4 text-gray-600">{LOADING_MESSAGES.LOADING}</p>
         </div>
       </div>
     );

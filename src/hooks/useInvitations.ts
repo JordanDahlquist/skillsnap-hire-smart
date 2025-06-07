@@ -1,19 +1,10 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-
-export interface Invitation {
-  id: string;
-  organization_id: string;
-  email: string;
-  role: 'owner' | 'admin' | 'editor' | 'viewer';
-  invited_by: string;
-  token: string;
-  expires_at: string;
-  accepted_at: string | null;
-  created_at: string;
-}
+import { invitationService, type Invitation } from "@/services/invitationService";
+import { logger } from "@/services/loggerService";
 
 export interface OrganizationMember {
   id: string;
@@ -34,6 +25,8 @@ export const useOrganizationMembers = (organizationId: string | undefined) => {
     queryKey: ['organization-members', organizationId],
     queryFn: async () => {
       if (!organizationId) return [];
+      
+      logger.debug('Fetching organization members for:', organizationId);
       
       // First get the memberships
       const { data: memberships, error: membershipsError } = await supabase
@@ -62,6 +55,7 @@ export const useOrganizationMembers = (organizationId: string | undefined) => {
         profiles: profiles?.find(profile => profile.id === membership.user_id) || null
       }));
       
+      logger.debug('Fetched organization members:', result.length);
       return result as OrganizationMember[];
     },
     enabled: !!organizationId,
@@ -74,6 +68,8 @@ export const useInvitations = (organizationId: string | undefined) => {
     queryFn: async () => {
       if (!organizationId) return [];
       
+      logger.debug('Fetching invitations for organization:', organizationId);
+      
       const { data, error } = await supabase
         .from('invitations')
         .select('*')
@@ -83,6 +79,8 @@ export const useInvitations = (organizationId: string | undefined) => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
+      
+      logger.debug('Fetched invitations:', data?.length || 0);
       return data as Invitation[];
     },
     enabled: !!organizationId,
@@ -108,27 +106,7 @@ export const useSendInvitation = () => {
         throw new Error('User must be logged in to send invitations');
       }
 
-      // Generate a secure random token
-      const token = crypto.randomUUID();
-      
-      const { data, error } = await supabase
-        .from('invitations')
-        .insert({
-          organization_id: organizationId,
-          email: email.toLowerCase(),
-          role,
-          invited_by: user.id,
-          token,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      
-      // TODO: Send invitation email
-      // For now, we'll just create the invitation record
-      
-      return data;
+      return await invitationService.sendInvitation(organizationId, email, role, user.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invitations'] });
@@ -138,6 +116,7 @@ export const useSendInvitation = () => {
       });
     },
     onError: (error: any) => {
+      logger.error('Failed to send invitation:', error);
       let message = "Failed to send invitation. Please try again.";
       if (error.code === '23505') {
         message = "This email has already been invited to this organization.";
@@ -163,6 +142,8 @@ export const useUpdateMemberRole = () => {
       membershipId: string; 
       role: 'admin' | 'editor' | 'viewer';
     }) => {
+      logger.debug('Updating member role:', { membershipId, role });
+      
       const { data, error } = await supabase
         .from('organization_memberships')
         .update({ role, updated_at: new Date().toISOString() })
@@ -180,7 +161,8 @@ export const useUpdateMemberRole = () => {
         description: "Member role has been updated successfully.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      logger.error('Failed to update member role:', error);
       toast({
         title: "Error",
         description: "Failed to update member role. Please try again.",
@@ -196,6 +178,8 @@ export const useRemoveMember = () => {
 
   return useMutation({
     mutationFn: async (membershipId: string) => {
+      logger.debug('Removing member:', membershipId);
+      
       const { error } = await supabase
         .from('organization_memberships')
         .delete()
@@ -210,7 +194,8 @@ export const useRemoveMember = () => {
         description: "Team member has been removed successfully.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      logger.error('Failed to remove team member:', error);
       toast({
         title: "Error",
         description: "Failed to remove team member. Please try again.",

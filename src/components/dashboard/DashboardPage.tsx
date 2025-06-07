@@ -10,6 +10,7 @@ import { DashboardAnalytics } from "./DashboardAnalytics";
 import { ApplicationsManager } from "./ApplicationsManager";
 import { EmailComposerModal } from "./EmailComposerModal";
 import { DashboardSkeleton } from "./DashboardSkeleton";
+import { logger } from "@/services/loggerService";
 
 interface Application {
   id: string;
@@ -54,7 +55,7 @@ export const DashboardPage = () => {
     queryFn: async () => {
       if (!jobId) throw new Error('No job ID provided');
       
-      console.log('Fetching job details for ID:', jobId);
+      logger.debug('Fetching job details for ID:', jobId);
       
       const { data, error } = await supabase
         .from('jobs')
@@ -63,12 +64,12 @@ export const DashboardPage = () => {
         .maybeSingle();
       
       if (error) {
-        console.error('Job fetch error:', error);
+        logger.error('Job fetch error:', error);
         throw error;
       }
       
       if (!data) {
-        console.log('No job found with ID:', jobId);
+        logger.warn('No job found with ID:', jobId);
         throw new Error('Job not found');
       }
       
@@ -84,7 +85,7 @@ export const DashboardPage = () => {
     queryFn: async () => {
       if (!jobId) return [];
       
-      console.log('Fetching applications for job ID:', jobId);
+      logger.debug('Fetching applications for job ID:', jobId);
       
       const { data, error } = await supabase
         .from('applications')
@@ -93,11 +94,11 @@ export const DashboardPage = () => {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Applications fetch error:', error);
+        logger.error('Applications fetch error:', error);
         throw error;
       }
       
-      console.log('Applications fetched:', data?.length || 0);
+      logger.debug('Applications fetched:', data?.length || 0);
       return data as Application[];
     },
     enabled: !!jobId,
@@ -137,7 +138,7 @@ export const DashboardPage = () => {
 
   // Error states
   if (jobError || applicationsError) {
-    console.error('Dashboard errors:', { jobError, applicationsError });
+    logger.error('Dashboard errors:', { jobError, applicationsError });
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
