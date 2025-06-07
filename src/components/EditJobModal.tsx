@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -266,7 +267,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-600" />
+            <Sparkles className="w-5 h-5 text-blue-600" />
             Edit Job: {job.title}
           </DialogTitle>
         </DialogHeader>
@@ -408,7 +409,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <MapPin className="w-5 h-5 text-blue-600" />
                   Location & Work Type
                 </CardTitle>
               </CardHeader>
@@ -429,7 +430,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-purple-600" />
+                    <FileText className="w-5 h-5 text-blue-600" />
                     Job Post
                   </div>
                   {!editingJobPost && (
@@ -469,7 +470,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <ClipboardList className="w-5 h-5 text-purple-600" />
+                    <ClipboardList className="w-5 h-5 text-blue-600" />
                     Skills Test
                   </div>
                   {!editingSkillsTest && (
@@ -509,7 +510,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
           <Button
             onClick={handleSaveChanges}
             disabled={loading}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
