@@ -213,16 +213,8 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
               </div>
             )}
 
-            {/* Action Bar */}
+            {/* Action Bar - Removed Create New Job button */}
             <div className="flex flex-wrap items-center gap-3">
-              <Button 
-                onClick={onCreateJob}
-                className="bg-[#007af6] hover:bg-[#0056b3] text-white px-4 py-2 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Create New Job
-              </Button>
-              
               <Button 
                 variant="outline"
                 size="sm"
