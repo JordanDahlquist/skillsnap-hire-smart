@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
+import { useJobs } from "@/hooks/useJobs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { AnalyticsModal } from "@/components/analytics/AnalyticsModal";
+import { exportJobsToCSV } from "@/utils/exportUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface AIDailyBriefingProps {
   userDisplayName: string;
@@ -15,7 +18,10 @@ interface AIDailyBriefingProps {
 export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefingProps) => {
   const { data: briefing, isLoading, error } = useDailyBriefing();
   const { regenerate, isRegenerating, remainingRegenerations, canRegenerate } = useRegenerateBriefing();
+  const { data: jobs = [] } = useJobs();
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
 
   // Fallback content
   const getFallbackContent = () => {
@@ -122,6 +128,30 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
 
   const insights = getInsightIcons();
 
+  const handleExportReport = async () => {
+    setIsExporting(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const filename = `daily-hiring-report-${today}.csv`;
+      
+      exportJobsToCSV(jobs, filename);
+      
+      toast({
+        title: "Report Exported",
+        description: `Daily hiring report downloaded as ${filename}`,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error exporting your report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="py-4 px-8">
       <div className="max-w-7xl mx-auto">
@@ -196,8 +226,14 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 variant="outline"
                 size="sm"
                 className="text-sm"
+                onClick={handleExportReport}
+                disabled={isExporting || jobs.length === 0}
               >
-                <FileText className="w-4 h-4 mr-2" />
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4 mr-2" />
+                )}
                 Export Report
               </Button>
             </div>
