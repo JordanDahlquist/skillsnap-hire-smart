@@ -75,10 +75,8 @@ export const ApplicationsList = ({
             <div className="flex items-center gap-2">
               <Checkbox
                 checked={isAllSelected}
-                ref={(ref) => {
-                  if (ref) ref.indeterminate = isSomeSelected;
-                }}
                 onCheckedChange={handleSelectAll}
+                className={isSomeSelected ? "data-[state=checked]:bg-blue-600" : ""}
               />
               <span className="text-sm text-gray-600">Select All</span>
             </div>

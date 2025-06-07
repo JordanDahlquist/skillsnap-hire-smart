@@ -185,7 +185,7 @@ export const EmailTemplates = () => {
             Create reusable email templates for candidate outreach. Use variables like {"{name}"}, {"{position}"}, {"{company}"} for personalization.
           </p>
         </div>
-        <Button onClick={() => setIsCreating(true)} disabled={isCreating || editingTemplate}>
+        <Button onClick={() => setIsCreating(true)} disabled={isCreating || !!editingTemplate}>
           <Plus className="w-4 h-4 mr-2" />
           New Template
         </Button>
