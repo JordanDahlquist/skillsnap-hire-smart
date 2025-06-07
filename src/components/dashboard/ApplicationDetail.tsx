@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ThumbsDown, Eye, Users, ExternalLink, Star, UserCheck } from "lucide-react";
+import { ThumbsDown, Eye, Users, ExternalLink, Star, UserCheck, RotateCcw } from "lucide-react";
 import { ApplicationTabs } from "./ApplicationTabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -128,6 +128,45 @@ export const ApplicationDetail = ({
     setShowRejectDialog(true);
   };
 
+  const handleUnreject = async () => {
+    if (!selectedApplication || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      // Determine the new status - if they had a manual rating, set to 'reviewed', otherwise 'pending'
+      const newStatus = selectedApplication.manual_rating ? 'reviewed' : 'pending';
+      
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          status: newStatus,
+          rejection_reason: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedApplication.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Application unrejected",
+        description: `${selectedApplication.name}'s application has been restored to ${newStatus} status`,
+      });
+      
+      if (onApplicationUpdate) {
+        onApplicationUpdate();
+      }
+    } catch (error) {
+      console.error('Error unrejecting application:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unreject application",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const handleConfirmRejection = async () => {
     if (!selectedApplication || isUpdating || !selectedRejectionReason) return;
     
@@ -244,16 +283,29 @@ export const ApplicationDetail = ({
                 
                 {/* Action Buttons - moved under candidate info */}
                 <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={handleReject}
-                    disabled={isUpdating || selectedApplication.status === 'rejected'}
-                    className="border-red-200 text-red-600 hover:bg-red-50"
-                  >
-                    <ThumbsDown className="w-4 h-4 mr-2" />
-                    Reject
-                  </Button>
+                  {selectedApplication.status === 'rejected' ? (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={handleUnreject}
+                      disabled={isUpdating}
+                      className="border-green-200 text-green-600 hover:bg-green-50"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Unreject
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={handleReject}
+                      disabled={isUpdating}
+                      className="border-red-200 text-red-600 hover:bg-red-50"
+                    >
+                      <ThumbsDown className="w-4 h-4 mr-2" />
+                      Reject
+                    </Button>
+                  )}
                   <Button 
                     size="sm" 
                     disabled={true}
