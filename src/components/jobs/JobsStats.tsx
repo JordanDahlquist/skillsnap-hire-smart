@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Bell, Users, TrendingUp, BarChart3 } from "lucide-react";
+import { Bell, Users, TrendingUp, BarChart3 } from "lucide-react";
 import { JobStats } from "@/hooks/useJobStats";
 
 interface JobsStatsProps {
@@ -12,82 +12,106 @@ interface JobsStatsProps {
 
 export const JobsStats = ({ stats, onNeedsAttentionClick, needsAttentionActive }: JobsStatsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <Card 
-        className={`border-0 shadow-sm bg-white/80 backdrop-blur-sm transition-all duration-200 ${
-          onNeedsAttentionClick ? 'cursor-pointer hover:shadow-md hover:scale-105' : ''
-        } ${needsAttentionActive ? 'ring-2 ring-orange-500 bg-orange-50/80' : ''}`}
-        onClick={onNeedsAttentionClick}
-      >
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Jobs Needing Attention</p>
-              <p className="text-2xl font-bold text-orange-600">{stats.jobsNeedingAttention}</p>
-              {stats.jobsNeedingAttention > 0 && (
-                <Badge className="mt-1 bg-orange-100 text-orange-600">
-                  Needs Review
-                </Badge>
-              )}
-              {needsAttentionActive && (
-                <Badge className="mt-1 bg-orange-200 text-orange-700">
-                  Filtered
-                </Badge>
-              )}
-            </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Bell className="w-6 h-6 text-orange-600" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="px-8 pb-12">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card 
+            className={`group relative overflow-hidden border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 ${
+              onNeedsAttentionClick ? 'cursor-pointer hover:scale-105 hover:-translate-y-1' : ''
+            } ${needsAttentionActive ? 'ring-2 ring-orange-500 shadow-orange-100' : ''}`}
+            onClick={onNeedsAttentionClick}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-orange-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <CardContent className="relative p-8">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Bell className="w-7 h-7 text-orange-600" />
+                </div>
+                {stats.jobsNeedingAttention > 0 && (
+                  <Badge className="bg-orange-500 text-white border-0 px-3 py-1 text-xs font-semibold">
+                    Urgent
+                  </Badge>
+                )}
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                  Needs Attention
+                </p>
+                <p className="text-3xl font-bold text-orange-600">
+                  {stats.jobsNeedingAttention}
+                </p>
+                {needsAttentionActive && (
+                  <Badge className="bg-orange-200 text-orange-800 border-0">
+                    Filtered
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Active Jobs</p>
-              <p className="text-2xl font-bold text-[#007af6]">{stats.activeJobs}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-[#007af6]" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          <Card className="group relative overflow-hidden border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <CardContent className="relative p-8">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="w-7 h-7 text-[#007af6]" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                  Active Jobs
+                </p>
+                <p className="text-3xl font-bold text-[#007af6]">
+                  {stats.activeJobs}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Applications</p>
-              <p className="text-2xl font-bold text-[#007af6]">{stats.totalApplications}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-[#007af6]" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          <Card className="group relative overflow-hidden border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-purple-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <CardContent className="relative p-8">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Users className="w-7 h-7 text-purple-600" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                  Total Applications
+                </p>
+                <p className="text-3xl font-bold text-purple-600">
+                  {stats.totalApplications}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Applications This Week</p>
-              <p className="text-2xl font-bold text-[#007af6]">{stats.applicationsThisWeek}</p>
-              {stats.applicationsThisWeek > 0 && (
-                <Badge className="mt-1 bg-blue-100 text-[#007af6]">
-                  Applications this week
-                </Badge>
-              )}
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-[#007af6]" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          <Card className="group relative overflow-hidden border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-green-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <CardContent className="relative p-8">
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <BarChart3 className="w-7 h-7 text-green-600" />
+                </div>
+                {stats.applicationsThisWeek > 0 && (
+                  <Badge className="bg-green-500 text-white border-0 px-3 py-1 text-xs font-semibold">
+                    Active
+                  </Badge>
+                )}
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                  This Week
+                </p>
+                <p className="text-3xl font-bold text-green-600">
+                  {stats.applicationsThisWeek}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

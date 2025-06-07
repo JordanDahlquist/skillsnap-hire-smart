@@ -10,24 +10,28 @@ interface JobsHeaderProps {
 
 export const JobsHeader = ({ userDisplayName, onCreateJob }: JobsHeaderProps) => {
   return (
-    <div className="py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {getWelcomeMessage(userDisplayName)}
-          </h1>
-          <p className="text-lg text-gray-600">
-            {getWelcomeSubtitle()}
-          </p>
+    <div className="py-12 px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          <div className="space-y-4">
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+              {getWelcomeMessage(userDisplayName)}
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl leading-relaxed">
+              {getWelcomeSubtitle()}
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <Button 
+              onClick={onCreateJob}
+              className="bg-[#007af6] hover:bg-[#0056b3] text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              size="lg"
+            >
+              <Plus className="w-6 h-6 mr-3" />
+              Create New Job
+            </Button>
+          </div>
         </div>
-        <Button 
-          onClick={onCreateJob}
-          className="bg-[#007af6] hover:bg-[#0056b3] px-6 py-3 text-lg"
-          size="lg"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Create New Job
-        </Button>
       </div>
     </div>
   );
