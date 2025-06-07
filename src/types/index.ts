@@ -59,7 +59,7 @@ export interface Job {
   state?: string;
   region?: string;
   city?: string;
-  required_skills?: string;
+  required_skills: string;
   user_id: string;
   organization_id: string;
 }

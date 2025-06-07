@@ -1,6 +1,6 @@
 
 import { useMemo } from "react";
-import { Job } from "@/hooks/useJobs";
+import { Job } from "@/types";
 import { getStartOfWeek } from "@/utils/dateUtils";
 
 export interface JobStats {

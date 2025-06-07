@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "./apiClient";
-import { Job } from "@/hooks/useJobs";
+import { Job } from "@/types";
 
 export const jobService = {
   async fetchJobs(organizationId: string): Promise<Job[]> {

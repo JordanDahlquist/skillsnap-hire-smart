@@ -3,9 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
-import { EnhancedJobCard } from "@/components/EnhancedJobCard";
+import { RefactoredJobCard } from "@/components/RefactoredJobCard";
 import { getTimeAgo } from "@/utils/dateUtils";
-import { Job } from "@/hooks/useJobs";
+import { Job } from "@/types";
 
 interface JobsContentProps {
   jobs: Job[];
@@ -124,7 +124,7 @@ export const JobsContent = ({
                 />
               </div>
               <div className="flex-1">
-                <EnhancedJobCard
+                <RefactoredJobCard
                   job={job}
                   onJobUpdate={onRefetch}
                   getTimeAgo={getTimeAgo}

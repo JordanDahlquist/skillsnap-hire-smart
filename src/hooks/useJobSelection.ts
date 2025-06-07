@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { exportJobsToCSV } from "@/utils/exportUtils";
-import { Job } from "@/hooks/useJobs";
+import { Job } from "@/types";
 import { useSelection } from "./useSelection";
 
 export const useJobSelection = (jobs: Job[], onUpdate: () => void) => {
