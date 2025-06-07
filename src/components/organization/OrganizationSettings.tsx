@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCurrentOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
 import { TeamManagement } from "./TeamManagement";
+import { OrganizationOverview } from "./OrganizationOverview";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 export const OrganizationSettings = () => {
-  const { data: currentOrg, isLoading } = useCurrentOrganization();
+  const { data: currentOrg, isLoading, error } = useCurrentOrganization();
   const updateOrganization = useUpdateOrganization();
   
   const [name, setName] = useState(currentOrg?.name || "");
@@ -42,26 +45,44 @@ export const OrganizationSettings = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <strong>Organization Error:</strong> {error}
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
 
   if (!currentOrg) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-500">No organization found.</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Alert className="border-amber-200 bg-amber-50">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800">
+            <strong>No Organization Found:</strong> You don't appear to be part of an organization. 
+            This might be a data sync issue. Try refreshing the page or contact support if the problem persists.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <OrganizationOverview />
+      
       <Card>
         <CardHeader>
           <CardTitle>Organization Settings</CardTitle>

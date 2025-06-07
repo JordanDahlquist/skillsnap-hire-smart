@@ -2,17 +2,19 @@
 import { useAuthState } from "./useAuthState";
 import { useProfile } from "./useProfile";
 import { useOrganizationMembership } from "./useOrganization";
+import { useLogger } from "./useLogger";
 
 export const useAuth = () => {
+  const { logDebug } = useLogger('useAuth');
   const { user, session, loading: authLoading, isAuthenticated, signOut } = useAuthState();
   const { profile, loading: profileLoading, refreshProfile } = useProfile(user?.id);
-  const { organizationMembership, loading: orgLoading, refreshOrganization } = useOrganizationMembership(user?.id);
+  const { organizationMembership, loading: orgLoading, error: orgError, refreshOrganization } = useOrganizationMembership(user?.id);
 
   const dataLoading = profileLoading || orgLoading;
   const loading = authLoading;
 
   const refreshAll = async () => {
-    console.log('Refreshing all user data...');
+    logDebug('Refreshing all user data...');
     refreshProfile();
     refreshOrganization();
   };
@@ -22,6 +24,7 @@ export const useAuth = () => {
     session,
     profile,
     organizationMembership,
+    organizationError: orgError,
     loading,
     dataLoading,
     signOut,

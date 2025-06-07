@@ -10,10 +10,10 @@ import { OrganizationSettings } from "@/components/organization/OrganizationSett
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 
 const ProfileSettings = () => {
-  const { user, organizationMembership, refreshProfile, loading, dataLoading } = useAuth();
+  const { user, organizationMembership, organizationError, refreshProfile, loading, dataLoading } = useAuth();
   const canManageOrganization = organizationMembership?.role === 'owner' || organizationMembership?.role === 'admin';
 
   const breadcrumbs = [
@@ -22,7 +22,6 @@ const ProfileSettings = () => {
   ];
 
   const handleRefreshData = async () => {
-    console.log('Refreshing profile data...');
     await refreshProfile();
   };
 
@@ -59,7 +58,10 @@ const ProfileSettings = () => {
                   Refreshing...
                 </>
               ) : (
-                'Refresh Data'
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh Data
+                </>
               )}
             </Button>
           </div>
@@ -75,13 +77,19 @@ const ProfileSettings = () => {
           </Alert>
         )}
 
-        {/* Show error only if data loading is complete and no organization is found */}
-        {!organizationMembership && !dataLoading && (
-          <Alert className="mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Unable to load organization information. You may need to be invited to an organization or create one. 
-              Try refreshing the data using the button above.
+        {/* Show organization error if there's an issue */}
+        {organizationError && !dataLoading && (
+          <Alert className="mb-6 border-amber-200 bg-amber-50">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <strong>Organization Issue:</strong> {organizationError}
+              <Button 
+                variant="link" 
+                className="p-0 h-auto ml-2 text-amber-700 underline"
+                onClick={handleRefreshData}
+              >
+                Try refreshing your data
+              </Button>
             </AlertDescription>
           </Alert>
         )}
@@ -92,9 +100,14 @@ const ProfileSettings = () => {
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
-            {canManageOrganization && (
-              <TabsTrigger value="organization">Organization</TabsTrigger>
-            )}
+            <TabsTrigger value="organization">
+              Organization
+              {organizationMembership && (
+                <span className="ml-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                  {organizationMembership.role}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-6">
@@ -113,11 +126,9 @@ const ProfileSettings = () => {
             <EmailTemplates />
           </TabsContent>
 
-          {canManageOrganization && (
-            <TabsContent value="organization" className="space-y-6">
-              <OrganizationSettings />
-            </TabsContent>
-          )}
+          <TabsContent value="organization" className="space-y-6">
+            <OrganizationSettings />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
