@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -30,11 +31,16 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles, FileText, ClipboardList, MapPin, Loader2, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGenerateMiniDescription } from "@/hooks/useGenerateMiniDescription";
+import { LocationSelector } from "./LocationSelector";
+import { RichTextEditor } from "./RichTextEditor";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -65,6 +71,14 @@ interface CreateRoleModalProps {
 export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) => {
   const { user, organizationMembership } = useAuth();
   const { generateMiniDescription } = useGenerateMiniDescription();
+  const [activeTab, setActiveTab] = useState("1");
+  const [generatedJobPost, setGeneratedJobPost] = useState("");
+  const [generatedSkillsTest, setGeneratedSkillsTest] = useState("");
+  const [isGeneratingJobPost, setIsGeneratingJobPost] = useState(false);
+  const [isGeneratingSkillsTest, setIsGeneratingSkillsTest] = useState(false);
+  const [editingJobPost, setEditingJobPost] = useState(false);
+  const [editingSkillsTest, setEditingSkillsTest] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,6 +100,92 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     },
   });
 
+  const handleGenerateJobPost = async () => {
+    const formData = form.getValues();
+    
+    if (!formData.title || !formData.description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in the job title and description first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingJobPost(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-job-content', {
+        body: {
+          type: 'job-post',
+          jobData: {
+            title: formData.title,
+            roleType: formData.role_type,
+            experience: formData.experience_level,
+            duration: formData.duration,
+            budget: formData.budget,
+            skills: formData.required_skills,
+            description: formData.description
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      setGeneratedJobPost(data.jobPost);
+      toast({
+        title: "Job Post Generated!",
+        description: "Your AI-powered job posting is ready for review.",
+      });
+    } catch (error) {
+      console.error('Error generating job post:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate job post. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingJobPost(false);
+    }
+  };
+
+  const handleGenerateSkillsTest = async () => {
+    if (!generatedJobPost) {
+      toast({
+        title: "Generate Job Post First",
+        description: "Please generate the job post before creating the skills test.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingSkillsTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-job-content', {
+        body: {
+          type: 'skills-test',
+          existingJobPost: generatedJobPost
+        }
+      });
+
+      if (error) throw error;
+
+      setGeneratedSkillsTest(data.test);
+      toast({
+        title: "Skills Test Generated!",
+        description: "Your AI-powered skills assessment is ready for review.",
+      });
+    } catch (error) {
+      console.error('Error generating skills test:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate skills test. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingSkillsTest(false);
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user?.id || !organizationMembership?.organization_id) {
       toast({
@@ -96,7 +196,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       return;
     }
 
-    console.log('Creating job with data:', values);
+    setIsSaving(true);
     
     try {
       const jobData = {
@@ -116,6 +216,8 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         state: values.state,
         region: values.region,
         city: values.city,
+        generated_job_post: generatedJobPost || null,
+        generated_test: generatedSkillsTest || null,
       };
 
       const { data, error } = await supabase
@@ -129,11 +231,9 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         throw error;
       }
 
-      console.log('Job created successfully:', data);
-
       toast({
         title: "Success",
-        description: "Job created successfully!",
+        description: "Job created successfully with AI-generated content!",
       });
 
       // Generate mini description after job creation
@@ -146,7 +246,11 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         });
       }
 
+      // Reset form and state
       form.reset();
+      setGeneratedJobPost("");
+      setGeneratedSkillsTest("");
+      setActiveTab("1");
       onOpenChange(false);
     } catch (error) {
       console.error('Error in job creation:', error);
@@ -155,7 +259,37 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         description: "Failed to create job. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleLocationChange = (field: string, value: string) => {
+    form.setValue(field as any, value);
+  };
+
+  const handleJobPostSave = () => {
+    setEditingJobPost(false);
+    toast({
+      title: "Job Post Updated",
+      description: "Your changes have been saved.",
+    });
+  };
+
+  const handleJobPostCancel = () => {
+    setEditingJobPost(false);
+  };
+
+  const handleSkillsTestSave = () => {
+    setEditingSkillsTest(false);
+    toast({
+      title: "Skills Test Updated", 
+      description: "Your changes have been saved.",
+    });
+  };
+
+  const handleSkillsTestCancel = () => {
+    setEditingSkillsTest(false);
   };
 
   return (
@@ -166,287 +300,473 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           Create Job
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[725px]">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Job</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-blue-600" />
+            Create AI-Powered Job
+          </DialogTitle>
           <DialogDescription>
-            Create a new job posting to start receiving applications.
+            Create a professional job posting with AI-generated content and skills assessments.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Job Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Software Engineer" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={form.control}
-                name="role_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="full-time">Full-time</SelectItem>
-                        <SelectItem value="part-time">Part-time</SelectItem>
-                        <SelectItem value="contract">Contract</SelectItem>
-                        <SelectItem value="temporary">Temporary</SelectItem>
-                        <SelectItem value="internship">Internship</SelectItem>
-                        <SelectItem value="volunteer">Volunteer</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="1" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Role Details
+            </TabsTrigger>
+            <TabsTrigger value="2" className="flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              Location
+            </TabsTrigger>
+            <TabsTrigger value="3" className="flex items-center gap-2">
+              <Wand2 className="w-4 h-4" />
+              AI Job Post
+            </TabsTrigger>
+            <TabsTrigger value="4" className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4" />
+              Skills Test
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="experience_level"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Experience Level</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select experience level" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="entry-level">Entry Level</SelectItem>
-                        <SelectItem value="mid-level">Mid Level</SelectItem>
-                        <SelectItem value="senior-level">Senior Level</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="employment_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employment Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select employment type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="full-time">Full-time</SelectItem>
-                        <SelectItem value="part-time">Part-time</SelectItem>
-                        <SelectItem value="contract">Contract</SelectItem>
-                        <SelectItem value="temporary">Temporary</SelectItem>
-                        <SelectItem value="internship">Internship</SelectItem>
-                        <SelectItem value="volunteer">Volunteer</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="required_skills"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Required Skills</FormLabel>
-                  <FormControl>
-                    <Input placeholder="JavaScript, React, Node.js" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Separate skills with commas.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="budget"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Budget</FormLabel>
-                    <FormControl>
-                      <Input placeholder="$80,000 - $120,000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duration</FormLabel>
-                    <FormControl>
-                      <Input placeholder="3 months" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Job Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Write a detailed job description here."
-                      className="resize-none"
-                      {...field}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <TabsContent value="1" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Job Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Software Engineer" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="location_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Location Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormField
+                      control={form.control}
+                      name="role_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Role Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a role type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="full-time">Full-time</SelectItem>
+                              <SelectItem value="part-time">Part-time</SelectItem>
+                              <SelectItem value="contract">Contract</SelectItem>
+                              <SelectItem value="temporary">Temporary</SelectItem>
+                              <SelectItem value="internship">Internship</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="experience_level"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Experience Level</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select experience level" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="entry-level">Entry Level</SelectItem>
+                              <SelectItem value="mid-level">Mid Level</SelectItem>
+                              <SelectItem value="senior-level">Senior Level</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="employment_type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Employment Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select employment type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="project">Project</SelectItem>
+                              <SelectItem value="full-time">Full-time</SelectItem>
+                              <SelectItem value="part-time">Part-time</SelectItem>
+                              <SelectItem value="contract">Contract</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="required_skills"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Required Skills</FormLabel>
+                          <FormControl>
+                            <Input placeholder="JavaScript, React, Node.js" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Separate skills with commas.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="budget"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Budget (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="$80,000 - $120,000" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="duration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Duration (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="3 months" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Status</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select job status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="draft">Draft</SelectItem>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="paused">Paused</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Description</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select location type" />
-                        </SelectTrigger>
+                        <Textarea
+                          placeholder="Write a detailed job description here."
+                          className="resize-none"
+                          rows={4}
+                          {...field}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="remote">Remote</SelectItem>
-                        <SelectItem value="on-site">On-site</SelectItem>
-                        <SelectItem value="hybrid">Hybrid</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </TabsContent>
 
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select job status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="draft">Draft</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="paused">Paused</SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              <TabsContent value="2" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-blue-600" />
+                      Location & Work Type
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <LocationSelector
+                      locationType={form.watch("location_type") || "remote"}
+                      country={form.watch("country") || ""}
+                      state={form.watch("state") || ""}
+                      city={form.watch("city") || ""}
+                      onLocationChange={handleLocationChange}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Country</FormLabel>
-                    <FormControl>
-                      <Input placeholder="United States" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <TabsContent value="3" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Wand2 className="w-5 h-5 text-purple-600" />
+                        AI-Generated Job Post
+                      </div>
+                      <div className="flex gap-2">
+                        {!generatedJobPost && (
+                          <Button 
+                            type="button"
+                            onClick={handleGenerateJobPost}
+                            disabled={isGeneratingJobPost}
+                            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                          >
+                            {isGeneratingJobPost ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <Sparkles className="w-4 h-4 mr-2" />
+                            )}
+                            Generate Job Post
+                          </Button>
+                        )}
+                        {generatedJobPost && !editingJobPost && (
+                          <Button 
+                            type="button"
+                            onClick={() => setEditingJobPost(true)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Edit Content
+                          </Button>
+                        )}
+                        {generatedJobPost && !editingJobPost && (
+                          <Button 
+                            type="button"
+                            onClick={handleGenerateJobPost}
+                            disabled={isGeneratingJobPost}
+                            variant="outline"
+                            size="sm"
+                          >
+                            {isGeneratingJobPost ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <Sparkles className="w-4 h-4 mr-2" />
+                            )}
+                            Regenerate
+                          </Button>
+                        )}
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {!generatedJobPost && !isGeneratingJobPost && (
+                      <div className="text-center py-12 text-gray-500">
+                        <Wand2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-lg mb-2">Ready to create magic?</p>
+                        <p className="text-sm">Fill in the role details and generate an AI-powered job posting.</p>
+                      </div>
+                    )}
+                    
+                    {isGeneratingJobPost && (
+                      <div className="text-center py-12">
+                        <div className="animate-pulse flex flex-col items-center">
+                          <Sparkles className="w-12 h-12 text-purple-600 animate-spin mb-4" />
+                          <p className="text-lg font-medium">AI is crafting your job post...</p>
+                          <p className="text-sm text-gray-500 mt-2">This may take a few seconds</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {generatedJobPost && !editingJobPost && (
+                      <div 
+                        className="min-h-[300px] p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 prose max-w-none"
+                        dangerouslySetInnerHTML={{ 
+                          __html: parseMarkdown(generatedJobPost) 
+                        }}
+                      />
+                    )}
+                    
+                    {generatedJobPost && editingJobPost && (
+                      <RichTextEditor
+                        value={generatedJobPost}
+                        onChange={setGeneratedJobPost}
+                        onSave={handleJobPostSave}
+                        onCancel={handleJobPostCancel}
+                        placeholder="Edit your job posting content here..."
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <FormControl>
-                      <Input placeholder="California" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              <TabsContent value="4" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ClipboardList className="w-5 h-5 text-green-600" />
+                        AI-Generated Skills Test
+                      </div>
+                      <div className="flex gap-2">
+                        {generatedJobPost && !generatedSkillsTest && (
+                          <Button 
+                            type="button"
+                            onClick={handleGenerateSkillsTest}
+                            disabled={isGeneratingSkillsTest}
+                            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                          >
+                            {isGeneratingSkillsTest ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <Sparkles className="w-4 h-4 mr-2" />
+                            )}
+                            Generate Skills Test
+                          </Button>
+                        )}
+                        {generatedSkillsTest && !editingSkillsTest && (
+                          <Button 
+                            type="button"
+                            onClick={() => setEditingSkillsTest(true)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Edit Test
+                          </Button>
+                        )}
+                        {generatedSkillsTest && !editingSkillsTest && (
+                          <Button 
+                            type="button"
+                            onClick={handleGenerateSkillsTest}
+                            disabled={isGeneratingSkillsTest}
+                            variant="outline"
+                            size="sm"
+                          >
+                            {isGeneratingSkillsTest ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <Sparkles className="w-4 h-4 mr-2" />
+                            )}
+                            Regenerate
+                          </Button>
+                        )}
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {!generatedJobPost && (
+                      <div className="text-center py-12 text-gray-500">
+                        <ClipboardList className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-lg mb-2">Job Post Required</p>
+                        <p className="text-sm">Generate the job post first to create a relevant skills test.</p>
+                      </div>
+                    )}
+                    
+                    {generatedJobPost && !generatedSkillsTest && !isGeneratingSkillsTest && (
+                      <div className="text-center py-12 text-gray-500">
+                        <ClipboardList className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-lg mb-2">Ready for Skills Assessment</p>
+                        <p className="text-sm">Generate AI-powered assessment questions based on your job post.</p>
+                      </div>
+                    )}
+                    
+                    {isGeneratingSkillsTest && (
+                      <div className="text-center py-12">
+                        <div className="animate-pulse flex flex-col items-center">
+                          <Sparkles className="w-12 h-12 text-green-600 animate-spin mb-4" />
+                          <p className="text-lg font-medium">AI is creating your skills test...</p>
+                          <p className="text-sm text-gray-500 mt-2">Crafting relevant assessment questions</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {generatedSkillsTest && !editingSkillsTest && (
+                      <div 
+                        className="min-h-[300px] p-4 border rounded-lg bg-gradient-to-br from-green-50 to-teal-50 prose max-w-none"
+                        dangerouslySetInnerHTML={{ 
+                          __html: parseMarkdown(generatedSkillsTest) 
+                        }}
+                      />
+                    )}
+                    
+                    {generatedSkillsTest && editingSkillsTest && (
+                      <RichTextEditor
+                        value={generatedSkillsTest}
+                        onChange={setGeneratedSkillsTest}
+                        onSave={handleSkillsTestSave}
+                        onCancel={handleSkillsTestCancel}
+                        placeholder="Edit your skills test questions here..."
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="region"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Region</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Bay Area" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <Input placeholder="San Francisco" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <DialogFooter>
-              <Button type="submit">Create Job</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              <DialogFooter className="flex justify-between">
+                <div className="flex gap-2">
+                  {activeTab !== "1" && (
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => setActiveTab((parseInt(activeTab) - 1).toString())}
+                    >
+                      Previous
+                    </Button>
+                  )}
+                  {activeTab !== "4" && (
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => setActiveTab((parseInt(activeTab) + 1).toString())}
+                    >
+                      Next
+                    </Button>
+                  )}
+                </div>
+                <Button 
+                  type="submit" 
+                  disabled={isSaving}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 mr-2" />
+                  )}
+                  Create AI-Powered Job
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
