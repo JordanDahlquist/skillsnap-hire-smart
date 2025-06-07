@@ -1,13 +1,15 @@
+
 import { useState } from "react";
 import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
 import { useJobs } from "@/hooks/useJobs";
+import { useHiringAnalytics } from "@/hooks/useHiringAnalytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { AnalyticsModal } from "@/components/analytics/AnalyticsModal";
-import { exportJobsToCSV } from "@/utils/exportUtils";
+import { generatePDFReport } from "@/utils/pdfReportGenerator";
 import { useToast } from "@/hooks/use-toast";
 
 interface AIDailyBriefingProps {
@@ -19,6 +21,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const { data: briefing, isLoading, error } = useDailyBriefing();
   const { regenerate, isRegenerating, remainingRegenerations, canRegenerate } = useRegenerateBriefing();
   const { data: jobs = [] } = useJobs();
+  const analytics = useHiringAnalytics();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
@@ -131,26 +134,39 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const handleExportReport = async () => {
     setIsExporting(true);
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const filename = `daily-hiring-report-${today}.csv`;
-      
-      exportJobsToCSV(jobs, filename);
+      toast({
+        title: "Generating Report",
+        description: "Creating your comprehensive PDF report with analytics...",
+      });
+
+      const reportData = {
+        metrics: analytics.metrics,
+        pipelineData: analytics.pipelineData,
+        trendData: analytics.trendData,
+        jobPerformanceData: analytics.jobPerformanceData,
+        jobs,
+        userDisplayName
+      };
+
+      await generatePDFReport(reportData);
       
       toast({
-        title: "Report Exported",
-        description: `Daily hiring report downloaded as ${filename}`,
+        title: "Report Generated",
+        description: "Your comprehensive hiring analytics report has been downloaded as a PDF.",
       });
     } catch (error) {
       console.error('Export error:', error);
       toast({
         title: "Export Failed",
-        description: "There was an error exporting your report. Please try again.",
+        description: "There was an error generating your report. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsExporting(false);
     }
   };
+
+  const insights = getInsightIcons();
 
   return (
     <div className="py-4 px-8">
@@ -227,14 +243,14 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 size="sm"
                 className="text-sm"
                 onClick={handleExportReport}
-                disabled={isExporting || jobs.length === 0}
+                disabled={isExporting || analytics.isLoading}
               >
                 {isExporting ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                   <FileText className="w-4 h-4 mr-2" />
                 )}
-                Export Report
+                Export PDF Report
               </Button>
             </div>
           </CardContent>
