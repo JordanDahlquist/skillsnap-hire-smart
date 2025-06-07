@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ThumbsDown, Eye, Users, ExternalLink, Star, UserCheck } from "lucide-react";
 import { ApplicationTabs } from "./ApplicationTabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -188,48 +189,16 @@ export const ApplicationDetail = ({
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
-            <div>
-              <CardTitle>{selectedApplication.name}</CardTitle>
-              <p className="text-gray-600">{selectedApplication.email}</p>
-            </div>
-            <div className="flex flex-col gap-4">
-              {/* Rating Sections - Compact Design */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex justify-between items-start gap-6">
-                  {/* Manual Rating Section - Left */}
-                  <div className="flex flex-col items-start gap-2">
-                    <span className="text-sm font-semibold text-gray-800">Your Rating</span>
-                    <div className="flex gap-1">
-                      {renderManualRatingStars(selectedApplication.manual_rating)}
-                    </div>
-                    <span className="text-xs text-gray-500 min-h-[16px]">
-                      {selectedApplication.manual_rating 
-                        ? `${selectedApplication.manual_rating} star${selectedApplication.manual_rating > 1 ? 's' : ''}`
-                        : 'Not rated'
-                      }
-                    </span>
-                  </div>
-
-                  {/* Visual Divider */}
-                  <div className="w-px h-16 bg-gray-300"></div>
-
-                  {/* AI Rating Section - Right */}
-                  <div className="flex flex-col items-end gap-2">
-                    <span className="text-sm font-semibold text-gray-800">AI Rating</span>
-                    <div className="flex gap-1">
-                      {renderAIRating(selectedApplication.ai_rating)}
-                    </div>
-                    <span className="text-xs text-green-600 font-medium min-h-[16px]">
-                      {selectedApplication.ai_rating 
-                        ? `${Math.round((selectedApplication.ai_rating / 5) * 3)}/3`
-                        : 'Not rated'
-                      }
-                    </span>
-                  </div>
-                </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <CardTitle>{selectedApplication.name}</CardTitle>
+                <Badge className={getStatusColor(selectedApplication.status)}>
+                  {selectedApplication.status}
+                </Badge>
               </div>
+              <p className="text-gray-600 mb-4">{selectedApplication.email}</p>
               
-              {/* Action Buttons */}
+              {/* Action Buttons - moved under candidate info */}
               <div className="flex gap-2">
                 <Button 
                   size="sm" 
@@ -249,6 +218,42 @@ export const ApplicationDetail = ({
                   <UserCheck className="w-4 h-4 mr-2" />
                   Hire (Coming Soon)
                 </Button>
+              </div>
+            </div>
+            
+            {/* Rating Sections - Compact Design */}
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="flex justify-between items-start gap-6">
+                {/* Manual Rating Section - Left */}
+                <div className="flex flex-col items-start gap-2">
+                  <span className="text-sm font-semibold text-gray-800">Your Rating</span>
+                  <div className="flex gap-1">
+                    {renderManualRatingStars(selectedApplication.manual_rating)}
+                  </div>
+                  <span className="text-xs text-gray-500 min-h-[16px]">
+                    {selectedApplication.manual_rating 
+                      ? `${selectedApplication.manual_rating} star${selectedApplication.manual_rating > 1 ? 's' : ''}`
+                      : 'Not rated'
+                    }
+                  </span>
+                </div>
+
+                {/* Visual Divider */}
+                <div className="w-px h-16 bg-gray-300"></div>
+
+                {/* AI Rating Section - Right */}
+                <div className="flex flex-col items-end gap-2">
+                  <span className="text-sm font-semibold text-gray-800">AI Rating</span>
+                  <div className="flex gap-1">
+                    {renderAIRating(selectedApplication.ai_rating)}
+                  </div>
+                  <span className="text-xs text-green-600 font-medium min-h-[16px]">
+                    {selectedApplication.ai_rating 
+                      ? `${Math.round((selectedApplication.ai_rating / 5) * 3)}/3`
+                      : 'Not rated'
+                    }
+                  </span>
+                </div>
               </div>
             </div>
           </div>

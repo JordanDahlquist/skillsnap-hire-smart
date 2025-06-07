@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
@@ -39,12 +38,6 @@ export const ApplicationTabs = ({
       </TabsList>
 
       <TabsContent value="summary" className="space-y-4">
-        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-          <Badge className={getStatusColor(application.status)}>
-            {application.status}
-          </Badge>
-        </div>
-        
         <div>
           <h4 className="font-semibold text-gray-900 mb-2">AI Assessment Summary</h4>
           <p className="text-gray-700 leading-relaxed">
