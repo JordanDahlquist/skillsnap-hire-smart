@@ -19,23 +19,46 @@ export const useTabCompletion = (
   const [tab3Skipped, setTab3Skipped] = useState(false);
   const [tab4Skipped, setTab4Skipped] = useState(false);
 
+  // Watch specific form fields instead of the watch function
+  const title = form.watch("title");
+  const description = form.watch("description");
+  const employment_type = form.watch("employment_type");
+  const experience_level = form.watch("experience_level");
+  const required_skills = form.watch("required_skills");
+  const location_type = form.watch("location_type");
+  const country = form.watch("country");
+  const city = form.watch("city");
+
   const tabCompletion = useMemo((): TabCompletionState => {
-    const values = form.getValues();
+    console.log('Tab completion recalculating with:', {
+      title,
+      description,
+      employment_type,
+      experience_level,
+      required_skills,
+      location_type,
+      country,
+      city,
+      generatedJobPost: !!generatedJobPost,
+      generatedSkillsTest: !!generatedSkillsTest,
+      tab3Skipped,
+      tab4Skipped
+    });
     
     // Tab 1: Role Details - check required fields
     const tab1Complete = !!(
-      values.title &&
-      values.description &&
-      values.employment_type &&
-      values.experience_level &&
-      values.required_skills
+      title &&
+      description &&
+      employment_type &&
+      experience_level &&
+      required_skills
     );
 
     // Tab 2: Location - check location fields
     const tab2Complete = !!(
-      values.location_type &&
-      (values.location_type === 'remote' || 
-       (values.country && (values.location_type === 'onsite' ? values.city : true)))
+      location_type &&
+      (location_type === 'remote' || 
+       (country && (location_type === 'onsite' ? city : true)))
     );
 
     // Tab 3: AI Job Post - either generated or skipped
@@ -44,7 +67,7 @@ export const useTabCompletion = (
     // Tab 4: Skills Test - either generated or skipped
     const tab4Complete = !!(generatedSkillsTest || tab4Skipped);
 
-    return {
+    const result = {
       tab1Complete,
       tab2Complete,
       tab3Complete,
@@ -52,13 +75,31 @@ export const useTabCompletion = (
       tab3Skipped,
       tab4Skipped
     };
-  }, [form.watch(), generatedJobPost, generatedSkillsTest, tab3Skipped, tab4Skipped]);
+
+    console.log('Tab completion result:', result);
+    return result;
+  }, [
+    title,
+    description,
+    employment_type,
+    experience_level,
+    required_skills,
+    location_type,
+    country,
+    city,
+    generatedJobPost,
+    generatedSkillsTest,
+    tab3Skipped,
+    tab4Skipped
+  ]);
 
   const allTabsComplete = useMemo(() => {
-    return tabCompletion.tab1Complete && 
-           tabCompletion.tab2Complete && 
-           tabCompletion.tab3Complete && 
-           tabCompletion.tab4Complete;
+    const result = tabCompletion.tab1Complete && 
+                   tabCompletion.tab2Complete && 
+                   tabCompletion.tab3Complete && 
+                   tabCompletion.tab4Complete;
+    console.log('All tabs complete:', result);
+    return result;
   }, [tabCompletion]);
 
   const getIncompleteTabsMessage = () => {

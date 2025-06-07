@@ -108,6 +108,16 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     getIncompleteTabsMessage
   } = useTabCompletion(form, generatedJobPost, generatedSkillsTest);
 
+  // Debug logging for auth state
+  console.log('CreateRoleModal auth state:', {
+    user: !!user,
+    userId: user?.id,
+    organizationMembership: !!organizationMembership,
+    organizationId: organizationMembership?.organization_id,
+    allTabsComplete,
+    tabCompletion
+  });
+
   const TabTriggerWithStatus = ({ value, children, isComplete }: { 
     value: string; 
     children: React.ReactNode; 
@@ -223,10 +233,29 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
   };
 
   const submitJob = async (values: z.infer<typeof formSchema>, status: 'draft' | 'active') => {
-    if (!user?.id || !organizationMembership?.organization_id) {
+    console.log('submitJob called with:', { values, status });
+    console.log('Auth state at submit:', {
+      user: !!user,
+      userId: user?.id,
+      organizationMembership: !!organizationMembership,
+      organizationId: organizationMembership?.organization_id
+    });
+
+    if (!user?.id) {
+      console.error('No user ID available');
       toast({
-        title: "Error",
-        description: "You must be logged in and part of an organization to create a job.",
+        title: "Authentication Error",
+        description: "You must be logged in to create a job.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!organizationMembership?.organization_id) {
+      console.error('No organization ID available');
+      toast({
+        title: "Organization Error",
+        description: "You must be part of an organization to create a job.",
         variant: "destructive",
       });
       return;
@@ -256,6 +285,8 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         generated_test: generatedSkillsTest || null,
       };
 
+      console.log('Submitting job data:', jobData);
+
       const { data, error } = await supabase
         .from('jobs')
         .insert([jobData])
@@ -266,6 +297,8 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         console.error('Error creating job:', error);
         throw error;
       }
+
+      console.log('Job created successfully:', data);
 
       toast({
         title: status === 'active' ? "Job Published!" : "Draft Saved!",
@@ -303,12 +336,51 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     }
   };
 
-  const onSubmitAsDraft = (values: z.infer<typeof formSchema>) => {
-    submitJob(values, 'draft');
+  const onSubmitAsDraft = async () => {
+    console.log('Draft button clicked');
+    const isValid = await form.trigger();
+    console.log('Form validation result for draft:', isValid);
+    
+    if (isValid) {
+      const values = form.getValues();
+      await submitJob(values, 'draft');
+    } else {
+      console.log('Form validation failed for draft');
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const onSubmitAsPublished = (values: z.infer<typeof formSchema>) => {
-    submitJob(values, 'active');
+  const onSubmitAsPublished = async () => {
+    console.log('Publish button clicked');
+    console.log('All tabs complete:', allTabsComplete);
+    
+    if (!allTabsComplete) {
+      toast({
+        title: "Incomplete Form",
+        description: getIncompleteTabsMessage(),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const isValid = await form.trigger();
+    console.log('Form validation result for publish:', isValid);
+    
+    if (isValid) {
+      const values = form.getValues();
+      await submitJob(values, 'active');
+    } else {
+      console.log('Form validation failed for publish');
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLocationChange = (field: string, value: string) => {
@@ -855,7 +927,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                     type="button" 
                     variant="outline"
                     disabled={isSaving}
-                    onClick={form.handleSubmit(onSubmitAsDraft)}
+                    onClick={onSubmitAsDraft}
                   >
                     {isSaving ? (
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -867,7 +939,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                   <Button 
                     type="button"
                     disabled={isSaving || !allTabsComplete}
-                    onClick={form.handleSubmit(onSubmitAsPublished)}
+                    onClick={onSubmitAsPublished}
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   >
                     {isSaving ? (

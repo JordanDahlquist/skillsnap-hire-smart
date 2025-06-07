@@ -68,8 +68,14 @@ export const useAuth = () => {
       const { data: memberships, error: membershipsError } = await supabase
         .from('organization_memberships')
         .select(`
-          *,
-          organization:organizations(*)
+          id,
+          organization_id,
+          role,
+          organization:organizations(
+            id,
+            name,
+            slug
+          )
         `)
         .eq('user_id', userId)
         .limit(1);
@@ -84,9 +90,23 @@ export const useAuth = () => {
         return null;
       }
 
-      const membership = memberships[0];
-      console.log('Organization membership fetched successfully:', membership);
-      return membership;
+      const membership = memberships[0] as any;
+      console.log('Raw membership data:', membership);
+      
+      // Transform the data to match our interface
+      const transformedMembership: OrganizationMembership = {
+        id: membership.id,
+        organization_id: membership.organization_id,
+        role: membership.role,
+        organization: {
+          id: membership.organization.id,
+          name: membership.organization.name,
+          slug: membership.organization.slug
+        }
+      };
+      
+      console.log('Transformed organization membership:', transformedMembership);
+      return transformedMembership;
     } catch (error) {
       console.error('Organization membership fetch exception:', error);
       return null;
@@ -115,6 +135,7 @@ export const useAuth = () => {
       if (orgMembership.status === 'fulfilled') {
         setOrganizationMembership(orgMembership.value);
         console.log('Organization membership loaded:', orgMembership.value?.role || 'No membership');
+        console.log('Organization ID:', orgMembership.value?.organization_id);
       } else {
         console.warn('Failed to load organization membership:', orgMembership.reason);
         setOrganizationMembership(null);
