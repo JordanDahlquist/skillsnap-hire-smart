@@ -33,6 +33,7 @@ export type Database = {
           phone: string | null
           portfolio: string | null
           portfolio_url: string | null
+          rejection_reason: string | null
           resume_file_path: string | null
           skills: Json | null
           status: string
@@ -62,6 +63,7 @@ export type Database = {
           phone?: string | null
           portfolio?: string | null
           portfolio_url?: string | null
+          rejection_reason?: string | null
           resume_file_path?: string | null
           skills?: Json | null
           status?: string
@@ -91,6 +93,7 @@ export type Database = {
           phone?: string | null
           portfolio?: string | null
           portfolio_url?: string | null
+          rejection_reason?: string | null
           resume_file_path?: string | null
           skills?: Json | null
           status?: string
