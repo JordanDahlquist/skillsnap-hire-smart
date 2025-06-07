@@ -12,6 +12,7 @@ import { Loader2, Sparkles, FileText, ClipboardList, MapPin } from "lucide-react
 import { supabase } from "@/integrations/supabase/client";
 import { LocationSelector } from "./LocationSelector";
 import { RichTextEditor } from "./RichTextEditor";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface Job {
   id: string;
@@ -446,7 +447,9 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
                 {!editingJobPost ? (
                   <div 
                     className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: generatedJob || "No job post content available. Click edit to add content." }}
+                    dangerouslySetInnerHTML={{ 
+                      __html: generatedJob ? parseMarkdown(generatedJob) : "No job post content available. Click edit to add content." 
+                    }}
                   />
                 ) : (
                   <RichTextEditor
@@ -484,7 +487,9 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
                 {!editingSkillsTest ? (
                   <div 
                     className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: generatedTest || "No skills test content available. Click edit to add content." }}
+                    dangerouslySetInnerHTML={{ 
+                      __html: generatedTest ? parseMarkdown(generatedTest) : "No skills test content available. Click edit to add content." 
+                    }}
                   />
                 ) : (
                   <RichTextEditor
