@@ -57,6 +57,21 @@ interface ParsedResumeData {
   skills: string[];
   summary: string;
   totalExperience: string;
+  linkedInProfile?: {
+    name: string;
+    email: string;
+    headline: string;
+    location: string;
+    pictureUrl?: string;
+    positions: Array<{
+      title: string;
+      company: string;
+      startDate: string;
+      endDate?: string;
+      description?: string;
+    }>;
+    skills: string[];
+  };
 }
 
 export const JobApplication = () => {
