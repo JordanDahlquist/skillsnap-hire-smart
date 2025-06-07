@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Star } from "lucide-react";
@@ -17,6 +16,7 @@ interface Application {
   answer_2: string | null;
   answer_3: string | null;
   manual_rating: number | null;
+  rejection_reason: string | null;
 }
 
 interface ApplicationsListProps {
