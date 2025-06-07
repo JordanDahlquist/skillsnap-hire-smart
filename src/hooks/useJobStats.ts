@@ -2,6 +2,7 @@
 import { useMemo } from "react";
 import { Job } from "@/types";
 import { getStartOfWeek } from "@/utils/dateUtils";
+import { logger } from "@/services/loggerService";
 
 export interface JobStats {
   jobsNeedingAttention: number;
@@ -16,19 +17,14 @@ export const useJobStats = (jobs: Job[], recentApplications: any[] = []) => {
     const totalApplications = jobs.reduce((acc, job) => acc + (job.applications?.[0]?.count || 0), 0);
     const applicationsThisWeek = recentApplications.length;
     
-    // Calculate jobs needing attention (jobs with 10+ pending applications)
     const jobsNeedingAttention = jobs.filter(job => 
       (job.applicationStatusCounts?.pending || 0) >= 10
     ).length;
 
-    console.log('Calculated stats:', { 
-      jobsNeedingAttention, 
-      activeJobs, 
-      totalApplications, 
-      applicationsThisWeek 
-    });
+    const stats = { jobsNeedingAttention, activeJobs, totalApplications, applicationsThisWeek };
+    logger.debug('Calculated job stats:', stats);
 
-    return { jobsNeedingAttention, activeJobs, totalApplications, applicationsThisWeek };
+    return stats;
   }, [jobs, recentApplications]);
 };
 

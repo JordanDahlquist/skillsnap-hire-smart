@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface ToolbarStatsProps {
@@ -8,7 +9,7 @@ interface ToolbarStatsProps {
   needsAttentionFilter: boolean;
 }
 
-export const ToolbarStats = ({ 
+export const ToolbarStats = memo(({ 
   totalJobs, 
   selectedCount, 
   activeFiltersCount, 
@@ -34,4 +35,6 @@ export const ToolbarStats = ({
       )}
     </div>
   );
-};
+});
+
+ToolbarStats.displayName = 'ToolbarStats';

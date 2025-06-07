@@ -1,47 +1,42 @@
 
-import { useState, useMemo } from "react";
-import { JobFilters, defaultFilters } from "./job-filtering/types";
+import { useMemo } from "react";
+import { JobFilters } from "./job-filtering/types";
 import { findBestMatch } from "./job-filtering/jobMatching";
-import { applyJobFilters, sortJobs } from "./job-filtering/filterUtils";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
+import { useSearchFilter } from "./filtering/useSearchFilter";
+import { useJobFilters } from "./filtering/useJobFilters";
+import { useJobSorting } from "./filtering/useJobSorting";
+import { useSpecialFilters } from "./filtering/useSpecialFilters";
+import { useFilteredJobs } from "./filtering/useFilteredJobs";
 
 export type { JobFilters } from "./job-filtering/types";
 
 export const useJobFiltering = (jobs: any[]) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<JobFilters>(defaultFilters);
-  const [sortBy, setSortBy] = useState("updated_at");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [needsAttentionFilter, setNeedsAttentionFilter] = useState(false);
-  const [activeJobsFilter, setActiveJobsFilter] = useState(false);
+  const { searchTerm, setSearchTerm, clearSearch } = useSearchFilter();
+  const { filters, setFilters, updateFilter, clearFilters } = useJobFilters();
+  const { sortBy, setSortBy, sortOrder, setSortOrder } = useJobSorting();
+  const { 
+    needsAttentionFilter, 
+    setNeedsAttentionFilter, 
+    activeJobsFilter, 
+    setActiveJobsFilter,
+    clearSpecialFilters 
+  } = useSpecialFilters();
 
-  // Extract available options from jobs data
   const availableOptions = useMemo(() => {
     return extractAvailableOptions(jobs);
   }, [jobs]);
 
-  // Enhanced filtering with flexible matching and fallback logic
-  const filteredJobs = useMemo(() => {
-    let filtered = applyJobFilters(jobs, searchTerm, filters);
-    
-    // Apply needs attention filter if enabled
-    if (needsAttentionFilter) {
-      filtered = filtered.filter(job => 
-        (job.applicationStatusCounts?.pending || 0) >= 10
-      );
-    }
-    
-    // Apply active jobs filter if enabled
-    if (activeJobsFilter) {
-      filtered = filtered.filter(job => 
-        job.status === 'active'
-      );
-    }
-    
-    return sortJobs(filtered, sortBy, sortOrder);
-  }, [jobs, searchTerm, filters, sortBy, sortOrder, needsAttentionFilter, activeJobsFilter]);
+  const filteredJobs = useFilteredJobs(
+    jobs, 
+    searchTerm, 
+    filters, 
+    sortBy, 
+    sortOrder, 
+    needsAttentionFilter, 
+    activeJobsFilter
+  );
 
-  // Count active filters
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (filters.locationType !== "all") count++;
@@ -56,32 +51,20 @@ export const useJobFiltering = (jobs: any[]) => {
     return count;
   }, [filters, needsAttentionFilter, activeJobsFilter]);
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setFilters(defaultFilters);
-    setNeedsAttentionFilter(false);
-    setActiveJobsFilter(false);
+  const clearAllFilters = () => {
+    clearSearch();
+    clearFilters();
+    clearSpecialFilters();
   };
 
-  // Enhanced AI search apply function with flexible matching
   const applyAiSearchResults = (aiSearchTerm: string, aiFilters: JobFilters) => {
-    console.log("AI Search Results:", { aiSearchTerm, aiFilters });
-    console.log("Available Options:", availableOptions);
+    clearAllFilters();
     
-    // Clear existing filters first
-    setFilters(defaultFilters);
-    setSearchTerm("");
-    setNeedsAttentionFilter(false);
-    setActiveJobsFilter(false);
-    
-    // Fix budget range if AI returned [0, 0]
     let budgetRange = aiFilters.budgetRange || [0, 200000];
     if (budgetRange[0] === 0 && budgetRange[1] === 0) {
       budgetRange = [0, 200000];
-      console.log("Fixed budget range from [0, 0] to [0, 200000]");
     }
     
-    // Apply smart matching for filters with enhanced flexibility
     const smartFilters: JobFilters = {
       locationType: findBestMatch(aiFilters.locationType, availableOptions.locationTypes),
       experienceLevel: findBestMatch(aiFilters.experienceLevel, availableOptions.experienceLevels),
@@ -92,9 +75,6 @@ export const useJobFiltering = (jobs: any[]) => {
       budgetRange
     };
     
-    console.log("Smart Filters Applied:", smartFilters);
-    
-    // Set the search term and filters
     setSearchTerm(aiSearchTerm);
     setFilters(smartFilters);
   };
@@ -104,6 +84,7 @@ export const useJobFiltering = (jobs: any[]) => {
     setSearchTerm,
     filters,
     setFilters,
+    updateFilter,
     sortBy,
     setSortBy,
     sortOrder,
@@ -111,7 +92,7 @@ export const useJobFiltering = (jobs: any[]) => {
     filteredJobs,
     availableOptions,
     activeFiltersCount,
-    clearFilters,
+    clearFilters: clearAllFilters,
     applyAiSearchResults,
     needsAttentionFilter,
     setNeedsAttentionFilter,

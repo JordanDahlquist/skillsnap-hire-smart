@@ -12,6 +12,7 @@ import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { JobsHeaderSection } from "./JobsHeaderSection";
 import { JobsToolbar } from "./JobsToolbar";
 import { JobsContent } from "./JobsContent";
+import { logger } from "@/services/loggerService";
 
 export const JobsPage = () => {
   const { user, profile } = useAuth();
@@ -50,7 +51,6 @@ export const JobsPage = () => {
     handleBulkAction
   } = useJobSelection(jobs, refetch);
 
-  // Get user's display name (first name only)
   const getUserDisplayName = () => {
     if (profile?.full_name) {
       return profile.full_name.split(' ')[0];
@@ -58,9 +58,8 @@ export const JobsPage = () => {
     return user?.email?.split('@')[0] || 'there';
   };
 
-  // Enhanced refetch function with cache invalidation
   const handleRefresh = async () => {
-    console.log('Manual refresh triggered');
+    logger.info('Manual refresh triggered');
     await refetch();
     toast({
       title: "Refreshed",
@@ -68,7 +67,6 @@ export const JobsPage = () => {
     });
   };
 
-  // Handle needs attention filter toggle
   const handleNeedsAttentionClick = () => {
     setNeedsAttentionFilter(!needsAttentionFilter);
     setActiveJobsFilter(false);
@@ -86,7 +84,6 @@ export const JobsPage = () => {
     }
   };
 
-  // Handle active jobs filter toggle
   const handleActiveJobsClick = () => {
     setActiveJobsFilter(!activeJobsFilter);
     setNeedsAttentionFilter(false);

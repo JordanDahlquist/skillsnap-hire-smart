@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { EditJobModal } from "./EditJobModal";
@@ -17,7 +17,7 @@ interface RefactoredJobCardProps {
   getTimeAgo: (dateString: string) => string;
 }
 
-export const RefactoredJobCard = ({ job, onJobUpdate, getTimeAgo }: RefactoredJobCardProps) => {
+export const RefactoredJobCard = memo(({ job, onJobUpdate, getTimeAgo }: RefactoredJobCardProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   const needsAttention = (job.applicationStatusCounts?.pending || 0) >= 10;
@@ -100,4 +100,6 @@ export const RefactoredJobCard = ({ job, onJobUpdate, getTimeAgo }: RefactoredJo
       />
     </>
   );
-};
+});
+
+RefactoredJobCard.displayName = 'RefactoredJobCard';

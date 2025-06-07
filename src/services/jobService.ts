@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "./apiClient";
+import { logger } from "./loggerService";
 import { Job } from "@/types";
 
 export const jobService = {
@@ -10,7 +11,7 @@ export const jobService = {
     }
 
     return apiClient.query(async () => {
-      console.log('Fetching jobs for organization:', organizationId);
+      logger.debug('Fetching jobs for organization:', organizationId);
       
       const { data, error } = await supabase
         .from('jobs')
@@ -22,11 +23,11 @@ export const jobService = {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching jobs:', error);
+        logger.error('Error fetching jobs:', error);
         return { data: [], error: null };
       }
       
-      console.log('Fetched jobs:', data?.length || 0);
+      logger.debug('Fetched jobs:', data?.length || 0);
       return { data: data || [], error: null };
     });
   },
