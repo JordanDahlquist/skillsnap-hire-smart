@@ -42,14 +42,17 @@ export const authService = {
     return apiClient.query(async () => {
       logger.debug('Fetching organization membership for user:', userId);
       
+      // Use the safe function that works with the new RLS policies
       const { data: memberships, error: membershipError } = await supabase
         .rpc('get_user_organization_membership_safe', { user_uuid: userId });
       
       if (membershipError) {
+        logger.error('Error fetching organization membership:', membershipError);
         throw membershipError;
       }
       
       if (!memberships || memberships.length === 0) {
+        logger.debug('No organization membership found for user');
         return { data: null, error: null };
       }
 
@@ -63,6 +66,7 @@ export const authService = {
         .single();
       
       if (orgError) {
+        logger.error('Error fetching organization details:', orgError);
         throw orgError;
       }
       
@@ -77,6 +81,7 @@ export const authService = {
         }
       };
       
+      logger.debug('Successfully fetched organization membership');
       return { data: result, error: null };
     });
   }

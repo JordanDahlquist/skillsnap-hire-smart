@@ -81,7 +81,7 @@ export const invitationService = {
         throw new Error('Invalid or expired invitation');
       }
 
-      // Create membership
+      // Create membership - this now works with the new RLS policies
       const { error: membershipError } = await supabase
         .from('organization_memberships')
         .insert({
@@ -90,7 +90,10 @@ export const invitationService = {
           role: invitation.role
         });
 
-      if (membershipError) throw membershipError;
+      if (membershipError) {
+        logger.error('Failed to create membership:', membershipError);
+        throw membershipError;
+      }
 
       // Mark invitation as accepted
       const { error: updateError } = await supabase
@@ -98,8 +101,12 @@ export const invitationService = {
         .update({ accepted_at: new Date().toISOString() })
         .eq('id', invitation.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        logger.error('Failed to mark invitation as accepted:', updateError);
+        throw updateError;
+      }
 
+      logger.info('Invitation accepted successfully');
       return { data: invitation, error: null };
     });
   }
