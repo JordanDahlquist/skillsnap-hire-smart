@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 import { RefactoredJobCard } from "@/components/RefactoredJobCard";
+import { VirtualList } from "@/components/ui/virtual-list";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Job } from "@/types";
+import { logger } from "@/services/loggerService";
+import { memo, useCallback } from "react";
 
 interface JobsContentProps {
   jobs: Job[];
@@ -20,7 +23,44 @@ interface JobsContentProps {
   activeJobsFilter: boolean;
 }
 
-export const JobsContent = ({
+const JobItem = memo(({ 
+  job, 
+  selectedJobs, 
+  onJobSelection, 
+  onRefetch 
+}: { 
+  job: Job; 
+  selectedJobs: string[]; 
+  onJobSelection: (jobId: string, checked: boolean) => void; 
+  onRefetch: () => void; 
+}) => {
+  const handleJobSelection = useCallback((checked: boolean) => {
+    onJobSelection(job.id, checked);
+    logger.debug('Job selection changed', { jobId: job.id, selected: checked });
+  }, [job.id, onJobSelection]);
+
+  return (
+    <div className="flex gap-6 mb-6">
+      <div className="flex items-start pt-6">
+        <Checkbox
+          checked={selectedJobs.includes(job.id)}
+          onCheckedChange={handleJobSelection}
+        />
+      </div>
+      <div className="flex-1">
+        <RefactoredJobCard
+          job={job}
+          onJobUpdate={onRefetch}
+          getTimeAgo={getTimeAgo}
+        />
+      </div>
+    </div>
+  );
+});
+
+JobItem.displayName = 'JobItem';
+
+export const JobsContent = memo(({
   jobs,
   filteredJobs,
   selectedJobs,
@@ -32,6 +72,31 @@ export const JobsContent = ({
   needsAttentionFilter,
   activeJobsFilter
 }: JobsContentProps) => {
+  const handleSelectAll = useCallback((checked: boolean) => {
+    onSelectAll(checked, filteredJobs);
+    logger.info(`${checked ? 'Selected' : 'Deselected'} all jobs`, { count: filteredJobs.length });
+  }, [onSelectAll, filteredJobs]);
+
+  const handleCreateJob = useCallback(() => {
+    logger.info('Create job action triggered');
+    onCreateJob();
+  }, [onCreateJob]);
+
+  const handleClearFilters = useCallback(() => {
+    logger.info('Clear filters action triggered');
+    clearFilters();
+  }, [clearFilters]);
+
+  const renderJobItem = useCallback((job: Job, index: number) => (
+    <JobItem
+      key={job.id}
+      job={job}
+      selectedJobs={selectedJobs}
+      onJobSelection={onJobSelection}
+      onRefetch={onRefetch}
+    />
+  ), [selectedJobs, onJobSelection, onRefetch]);
+
   if (filteredJobs.length === 0 && jobs.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-8 py-8">
@@ -45,7 +110,7 @@ export const JobsContent = ({
               Create your first job posting to start receiving applications and building your talent pipeline
             </p>
             <Button 
-              onClick={onCreateJob}
+              onClick={handleCreateJob}
               className="bg-[#007af6] hover:bg-[#0056b3] px-8 py-3 text-lg font-semibold"
               size="lg"
             >
@@ -69,7 +134,7 @@ export const JobsContent = ({
               <p className="text-sm text-gray-600">
                 Showing {filteredJobs.length} of {jobs.length} total jobs
               </p>
-              <Button variant="outline" onClick={clearFilters} size="lg">
+              <Button variant="outline" onClick={handleClearFilters} size="lg">
                 Clear All Filters
               </Button>
             </div>
@@ -78,6 +143,8 @@ export const JobsContent = ({
       </div>
     );
   }
+
+  const useVirtualScrolling = filteredJobs.length > 50;
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-8">
@@ -104,7 +171,7 @@ export const JobsContent = ({
               <div className="flex items-center gap-4">
                 <Checkbox
                   checked={selectedJobs.length === filteredJobs.length}
-                  onCheckedChange={(checked) => onSelectAll(checked as boolean, filteredJobs)}
+                  onCheckedChange={handleSelectAll}
                 />
                 <span className="text-sm font-medium text-gray-700">
                   Select all {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
@@ -115,25 +182,28 @@ export const JobsContent = ({
         )}
 
         <div className="space-y-6">
-          {filteredJobs.map((job) => (
-            <div key={job.id} className="flex gap-6">
-              <div className="flex items-start pt-6">
-                <Checkbox
-                  checked={selectedJobs.includes(job.id)}
-                  onCheckedChange={(checked) => onJobSelection(job.id, checked as boolean)}
-                />
-              </div>
-              <div className="flex-1">
-                <RefactoredJobCard
-                  job={job}
-                  onJobUpdate={onRefetch}
-                  getTimeAgo={getTimeAgo}
-                />
-              </div>
-            </div>
-          ))}
+          {useVirtualScrolling ? (
+            <VirtualList
+              items={filteredJobs}
+              itemHeight={200}
+              containerHeight={800}
+              renderItem={renderJobItem}
+            />
+          ) : (
+            filteredJobs.map((job) => (
+              <JobItem
+                key={job.id}
+                job={job}
+                selectedJobs={selectedJobs}
+                onJobSelection={onJobSelection}
+                onRefetch={onRefetch}
+              />
+            ))
+          )}
         </div>
       </div>
     </div>
   );
-};
+});
+
+JobsContent.displayName = 'JobsContent';

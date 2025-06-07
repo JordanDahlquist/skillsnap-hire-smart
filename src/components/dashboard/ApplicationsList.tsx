@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail, MoreHorizontal } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import { logger } from '@/services/loggerService';
 
 interface Application {
   id: string;
@@ -34,7 +35,100 @@ interface ApplicationsListProps {
   onSendEmail?: () => void;
 }
 
-export const ApplicationsList = ({
+const ApplicationItem = memo(({ 
+  application, 
+  selectedApplication, 
+  onSelectApplication, 
+  getStatusColor, 
+  getRatingStars, 
+  getTimeAgo,
+  selectedApplications = [],
+  onSelectApplications
+}: {
+  application: Application;
+  selectedApplication: Application | null;
+  onSelectApplication: (application: Application) => void;
+  getStatusColor: (status: string) => string;
+  getRatingStars: (rating: number | null) => React.ReactNode;
+  getTimeAgo: (dateString: string) => string;
+  selectedApplications?: string[];
+  onSelectApplications?: (ids: string[]) => void;
+}) => {
+  const handleSelectApplication = useCallback((applicationId: string, checked: boolean) => {
+    if (onSelectApplications) {
+      if (checked) {
+        onSelectApplications([...selectedApplications, applicationId]);
+        logger.debug('Application selected', { applicationId });
+      } else {
+        onSelectApplications(selectedApplications.filter(id => id !== applicationId));
+        logger.debug('Application deselected', { applicationId });
+      }
+    }
+  }, [onSelectApplications, selectedApplications]);
+
+  const handleApplicationClick = useCallback(() => {
+    onSelectApplication(application);
+    logger.debug('Application clicked for detail view', { applicationId: application.id });
+  }, [onSelectApplication, application]);
+
+  return (
+    <div
+      className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+        selectedApplication?.id === application.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+      }`}
+      onClick={handleApplicationClick}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-3 flex-1">
+          {onSelectApplications && (
+            <Checkbox
+              checked={selectedApplications.includes(application.id)}
+              onCheckedChange={(checked) => handleSelectApplication(application.id, checked as boolean)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-medium text-gray-900 truncate">
+                {application.name}
+              </h3>
+              <span className="text-xs text-gray-500">
+                {getTimeAgo(application.created_at)}
+              </span>
+            </div>
+            
+            <p className="text-sm text-gray-600 truncate mb-2">
+              {application.email}
+            </p>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Badge className={getStatusColor(application.status)}>
+                  {application.status}
+                </Badge>
+                {application.ai_rating && (
+                  <div className="flex items-center">
+                    {getRatingStars(application.ai_rating)}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {application.ai_summary && (
+              <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                {application.ai_summary}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+ApplicationItem.displayName = 'ApplicationItem';
+
+export const ApplicationsList = memo(({
   applications,
   selectedApplication,
   onSelectApplication,
@@ -45,21 +139,20 @@ export const ApplicationsList = ({
   onSelectApplications,
   onSendEmail
 }: ApplicationsListProps) => {
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAll = useCallback((checked: boolean) => {
     if (onSelectApplications) {
-      onSelectApplications(checked ? applications.map(app => app.id) : []);
+      const newSelection = checked ? applications.map(app => app.id) : [];
+      onSelectApplications(newSelection);
+      logger.info(`${checked ? 'Selected' : 'Deselected'} all applications`, { count: applications.length });
     }
-  };
+  }, [onSelectApplications, applications]);
 
-  const handleSelectApplication = (applicationId: string, checked: boolean) => {
-    if (onSelectApplications) {
-      if (checked) {
-        onSelectApplications([...selectedApplications, applicationId]);
-      } else {
-        onSelectApplications(selectedApplications.filter(id => id !== applicationId));
-      }
+  const handleSendEmail = useCallback(() => {
+    if (onSendEmail) {
+      logger.info('Bulk email action triggered', { selectedCount: selectedApplications.length });
+      onSendEmail();
     }
-  };
+  }, [onSendEmail, selectedApplications.length]);
 
   const isAllSelected = applications.length > 0 && selectedApplications.length === applications.length;
   const isSomeSelected = selectedApplications.length > 0 && selectedApplications.length < applications.length;
@@ -88,7 +181,7 @@ export const ApplicationsList = ({
             <span className="text-sm text-blue-700">
               {selectedApplications.length} candidate{selectedApplications.length > 1 ? 's' : ''} selected
             </span>
-            <Button size="sm" onClick={onSendEmail}>
+            <Button size="sm" onClick={handleSendEmail}>
               <Mail className="w-4 h-4 mr-1" />
               Send Email
             </Button>
@@ -103,61 +196,22 @@ export const ApplicationsList = ({
           </div>
         ) : (
           applications.map((application) => (
-            <div
+            <ApplicationItem
               key={application.id}
-              className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                selectedApplication?.id === application.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-              }`}
-              onClick={() => onSelectApplication(application)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3 flex-1">
-                  {onSelectApplications && (
-                    <Checkbox
-                      checked={selectedApplications.includes(application.id)}
-                      onCheckedChange={(checked) => handleSelectApplication(application.id, checked as boolean)}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
-                        {application.name}
-                      </h3>
-                      <span className="text-xs text-gray-500">
-                        {getTimeAgo(application.created_at)}
-                      </span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 truncate mb-2">
-                      {application.email}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Badge className={getStatusColor(application.status)}>
-                          {application.status}
-                        </Badge>
-                        {application.ai_rating && (
-                          <div className="flex items-center">
-                            {getRatingStars(application.ai_rating)}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {application.ai_summary && (
-                      <p className="text-xs text-gray-500 mt-2 line-clamp-2">
-                        {application.ai_summary}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+              application={application}
+              selectedApplication={selectedApplication}
+              onSelectApplication={onSelectApplication}
+              getStatusColor={getStatusColor}
+              getRatingStars={getRatingStars}
+              getTimeAgo={getTimeAgo}
+              selectedApplications={selectedApplications}
+              onSelectApplications={onSelectApplications}
+            />
           ))
         )}
       </div>
     </div>
   );
-};
+});
+
+ApplicationsList.displayName = 'ApplicationsList';

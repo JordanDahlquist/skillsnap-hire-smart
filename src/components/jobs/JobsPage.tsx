@@ -7,8 +7,10 @@ import { useRecentApplications } from "@/hooks/useApplications";
 import { useJobStats } from "@/hooks/useJobStats";
 import { useJobSelection } from "@/hooks/useJobSelection";
 import { useJobFiltering } from "@/hooks/useJobFiltering";
+import { useAsyncOperation } from "@/hooks/useAsyncOperation";
 import { CreateRoleModal } from "@/components/CreateRoleModal";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { JobsHeaderSection } from "./JobsHeaderSection";
 import { JobsToolbar } from "./JobsToolbar";
 import { JobsContent } from "./JobsContent";
@@ -18,6 +20,7 @@ export const JobsPage = () => {
   const { user, profile } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { toast } = useToast();
+  const { execute: executeAsync } = useAsyncOperation();
 
   // Data fetching
   const { data: jobs = [], isLoading, refetch } = useJobs();
@@ -59,45 +62,62 @@ export const JobsPage = () => {
   };
 
   const handleRefresh = async () => {
-    logger.info('Manual refresh triggered');
-    await refetch();
-    toast({
-      title: "Refreshed",
-      description: "Job data has been updated",
-    });
+    await executeAsync(
+      async () => {
+        await refetch();
+        return true;
+      },
+      {
+        logOperation: 'Manual refresh triggered',
+        onSuccess: () => {
+          toast({
+            title: "Refreshed",
+            description: "Job data has been updated",
+          });
+        }
+      }
+    );
   };
 
   const handleNeedsAttentionClick = () => {
-    setNeedsAttentionFilter(!needsAttentionFilter);
+    const newValue = !needsAttentionFilter;
+    setNeedsAttentionFilter(newValue);
     setActiveJobsFilter(false);
-    if (!needsAttentionFilter) {
+    
+    if (newValue) {
       setSortBy("needs_attention");
       toast({
         title: "Filtered by Attention",
         description: "Showing jobs with 10+ pending applications",
       });
+      logger.info('Needs attention filter activated');
     } else {
       toast({
         title: "Filter Cleared",
         description: "Showing all jobs",
       });
+      logger.info('Needs attention filter cleared');
     }
   };
 
   const handleActiveJobsClick = () => {
-    setActiveJobsFilter(!activeJobsFilter);
+    const newValue = !activeJobsFilter;
+    setActiveJobsFilter(newValue);
     setNeedsAttentionFilter(false);
-    if (!activeJobsFilter) {
+    
+    if (newValue) {
       setSortBy("updated_at");
       toast({
         title: "Filtered by Active Jobs",
         description: "Showing only active job postings",
       });
+      logger.info('Active jobs filter activated');
     } else {
       toast({
         title: "Filter Cleared",
         description: "Showing all jobs",
       });
+      logger.info('Active jobs filter cleared');
     }
   };
 
@@ -117,57 +137,65 @@ export const JobsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UnifiedHeader 
-        breadcrumbs={breadcrumbs}
-        onCreateRole={() => setIsCreateModalOpen(true)}
-        showCreateButton={true}
-      />
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <UnifiedHeader 
+          breadcrumbs={breadcrumbs}
+          onCreateRole={() => setIsCreateModalOpen(true)}
+          showCreateButton={true}
+        />
 
-      <JobsHeaderSection
-        userDisplayName={getUserDisplayName()}
-        onCreateJob={() => setIsCreateModalOpen(true)}
-        stats={stats}
-        onNeedsAttentionClick={handleNeedsAttentionClick}
-        needsAttentionActive={needsAttentionFilter}
-        onActiveJobsClick={handleActiveJobsClick}
-        activeJobsFilterActive={activeJobsFilter}
-      />
+        <ErrorBoundary>
+          <JobsHeaderSection
+            userDisplayName={getUserDisplayName()}
+            onCreateJob={() => setIsCreateModalOpen(true)}
+            stats={stats}
+            onNeedsAttentionClick={handleNeedsAttentionClick}
+            needsAttentionActive={needsAttentionFilter}
+            onActiveJobsClick={handleActiveJobsClick}
+            activeJobsFilterActive={activeJobsFilter}
+          />
+        </ErrorBoundary>
 
-      <JobsToolbar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        statusFilter={filters.employmentType}
-        onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
-        workTypeFilter={filters.locationType}
-        onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        totalJobs={jobs.length}
-        selectedJobs={selectedJobs}
-        onBulkAction={handleBulkAction}
-        onRefresh={handleRefresh}
-        needsAttentionFilter={needsAttentionFilter}
-        activeFiltersCount={activeFiltersCount}
-      />
+        <ErrorBoundary>
+          <JobsToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            statusFilter={filters.employmentType}
+            onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
+            workTypeFilter={filters.locationType}
+            onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            totalJobs={jobs.length}
+            selectedJobs={selectedJobs}
+            onBulkAction={handleBulkAction}
+            onRefresh={handleRefresh}
+            needsAttentionFilter={needsAttentionFilter}
+            activeFiltersCount={activeFiltersCount}
+          />
+        </ErrorBoundary>
 
-      <JobsContent
-        jobs={jobs}
-        filteredJobs={filteredJobs}
-        selectedJobs={selectedJobs}
-        onJobSelection={handleJobSelection}
-        onSelectAll={handleSelectAll}
-        onCreateJob={() => setIsCreateModalOpen(true)}
-        onRefetch={refetch}
-        clearFilters={clearFilters}
-        needsAttentionFilter={needsAttentionFilter}
-        activeJobsFilter={activeJobsFilter}
-      />
+        <ErrorBoundary>
+          <JobsContent
+            jobs={jobs}
+            filteredJobs={filteredJobs}
+            selectedJobs={selectedJobs}
+            onJobSelection={handleJobSelection}
+            onSelectAll={handleSelectAll}
+            onCreateJob={() => setIsCreateModalOpen(true)}
+            onRefetch={refetch}
+            clearFilters={clearFilters}
+            needsAttentionFilter={needsAttentionFilter}
+            activeJobsFilter={activeJobsFilter}
+          />
+        </ErrorBoundary>
 
-      <CreateRoleModal 
-        open={isCreateModalOpen} 
-        onOpenChange={setIsCreateModalOpen} 
-      />
-    </div>
+        <CreateRoleModal 
+          open={isCreateModalOpen} 
+          onOpenChange={setIsCreateModalOpen} 
+        />
+      </div>
+    </ErrorBoundary>
   );
 };

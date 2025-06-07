@@ -1,7 +1,9 @@
+
 import { useMemo, useState } from "react";
 import { useJobs } from "./useJobs";
 import { useAllApplications } from "./useAllApplications";
 import { getStartOfWeek, getStartOfMonth } from "@/utils/dateUtils";
+import { logger } from "@/services/loggerService";
 
 export interface HiringMetrics {
   totalJobs: number;
@@ -43,7 +45,8 @@ export const useHiringAnalytics = () => {
   const { data: jobs = [], isLoading: jobsLoading, refetch: refetchJobs } = useJobs();
   const { data: allApplications = [], isLoading: applicationsLoading, refetch: refetchApplications } = useAllApplications();
 
-  const metrics = useMemo((): HiringMetrics => {
+  // Memoize basic calculations
+  const basicStats = useMemo(() => {
     const totalJobs = jobs.length;
     const totalApplications = allApplications.length;
     const approvedApps = allApplications.filter(app => app.status === 'approved');
@@ -52,6 +55,13 @@ export const useHiringAnalytics = () => {
     const ratingsSum = allApplications.reduce((sum, app) => sum + (app.ai_rating || 0), 0);
     const avgRating = totalApplications > 0 ? ratingsSum / totalApplications : 0;
 
+    logger.debug('Basic stats calculated', { totalJobs, totalApplications, approvalRate, avgRating });
+
+    return { totalJobs, totalApplications, approvalRate, avgRating, approvedCount: approvedApps.length };
+  }, [jobs.length, allApplications]);
+
+  // Memoize time-based calculations
+  const timeBasedStats = useMemo(() => {
     const oneWeekAgo = getStartOfWeek();
     const oneMonthAgo = getStartOfMonth();
     
@@ -63,7 +73,13 @@ export const useHiringAnalytics = () => {
       app => new Date(app.created_at) >= oneMonthAgo
     ).length;
 
-    // Find top performing job (highest approval rate with min 5 applications)
+    logger.debug('Time-based stats calculated', { applicationsThisWeek, applicationsThisMonth });
+
+    return { applicationsThisWeek, applicationsThisMonth };
+  }, [allApplications]);
+
+  // Memoize job performance calculations
+  const jobPerformanceStats = useMemo(() => {
     const jobPerformance = jobs.map(job => {
       const jobApps = allApplications.filter(app => app.job_id === job.id);
       const jobApprovals = jobApps.filter(app => app.status === 'approved').length;
@@ -76,20 +92,21 @@ export const useHiringAnalytics = () => {
       .sort((a, b) => b.approvalRate - a.approvalRate)[0];
 
     const topPerformingJob = topJob?.job.title || null;
-    const conversionRate = approvalRate; // Same as approval rate for now
 
+    logger.debug('Job performance stats calculated', { topPerformingJob, jobCount: jobPerformance.length });
+
+    return { topPerformingJob, jobPerformance };
+  }, [jobs, allApplications]);
+
+  const metrics = useMemo((): HiringMetrics => {
     return {
-      totalJobs,
-      totalApplications,
-      approvalRate,
-      avgRating,
-      applicationsThisWeek,
-      applicationsThisMonth,
-      topPerformingJob,
-      conversionRate,
+      ...basicStats,
+      ...timeBasedStats,
+      topPerformingJob: jobPerformanceStats.topPerformingJob,
+      conversionRate: basicStats.approvalRate,
       avgTimeToResponse: 2.5 // Mock data - would need actual response time tracking
     };
-  }, [jobs, allApplications]);
+  }, [basicStats, timeBasedStats, jobPerformanceStats.topPerformingJob]);
 
   const pipelineData = useMemo((): PipelineData => {
     const pending = allApplications.filter(app => app.status === 'pending').length;
@@ -160,10 +177,14 @@ export const useHiringAnalytics = () => {
   const refreshAnalytics = async () => {
     setIsRefreshing(true);
     try {
+      logger.info('Refreshing analytics data');
       await Promise.all([
         refetchJobs(),
         refetchApplications()
       ]);
+      logger.info('Analytics data refreshed successfully');
+    } catch (error) {
+      logger.error('Failed to refresh analytics data', error);
     } finally {
       setIsRefreshing(false);
     }
