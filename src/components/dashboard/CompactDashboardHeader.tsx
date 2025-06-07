@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
@@ -10,7 +11,8 @@ import {
   Download,
   Pencil,
   Archive,
-  ArchiveRestore
+  ArchiveRestore,
+  Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -228,6 +230,16 @@ export const CompactDashboardHeader = ({
 
   return (
     <>
+      {/* Loading overlay */}
+      {isUpdating && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 flex items-center gap-3">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span>Updating job status...</span>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
@@ -268,11 +280,11 @@ export const CompactDashboardHeader = ({
                 disabled={isUpdating}
               />
 
-              <Button variant="outline" size="sm" onClick={handleShareJob}>
+              <Button variant="outline" size="sm" onClick={handleShareJob} disabled={isUpdating}>
                 <Share2 className="w-4 h-4 text-gray-600" />
               </Button>
 
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" asChild disabled={isUpdating}>
                 <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="w-4 h-4 text-gray-600" />
                 </a>
@@ -281,7 +293,11 @@ export const CompactDashboardHeader = ({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" disabled={isUpdating}>
-                    <MoreHorizontal className="w-4 h-4 text-gray-600" />
+                    {isUpdating ? (
+                      <Loader2 className="w-4 h-4 text-gray-600 animate-spin" />
+                    ) : (
+                      <MoreHorizontal className="w-4 h-4 text-gray-600" />
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

@@ -11,6 +11,7 @@ import { ApplicationTrendsChart } from "./dashboard/ApplicationTrendsChart";
 import { PerformanceMetrics } from "./dashboard/PerformanceMetrics";
 import { ApplicationsList } from "./dashboard/ApplicationsList";
 import { ApplicationDetail } from "./dashboard/ApplicationDetail";
+import { DashboardSkeleton } from "./dashboard/DashboardSkeleton";
 
 interface Application {
   id: string;
@@ -48,7 +49,7 @@ export const Dashboard = () => {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
   // Fetch job details with error handling
-  const { data: job, isLoading: jobLoading, error: jobError } = useQuery({
+  const { data: job, isLoading: jobLoading, error: jobError, refetch: refetchJob } = useQuery({
     queryKey: ['job', jobId],
     queryFn: async () => {
       if (!jobId) throw new Error('No job ID provided');
@@ -156,16 +157,14 @@ export const Dashboard = () => {
     refetchApplications();
   };
 
-  // Loading state
+  const handleJobUpdate = () => {
+    refetchJob();
+    refetchApplications();
+  };
+
+  // Loading state with skeleton
   if (jobLoading || applicationsLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading job details...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   // Error states
@@ -214,9 +213,7 @@ export const Dashboard = () => {
         job={job} 
         applications={applications}
         getTimeAgo={getTimeAgo}
-        onJobUpdate={() => {
-          window.location.reload();
-        }}
+        onJobUpdate={handleJobUpdate}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
