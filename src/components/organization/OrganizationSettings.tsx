@@ -1,26 +1,26 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCurrentOrganization, useUpdateOrganization } from "@/hooks/useOrganization";
-import { TeamManagement } from "./TeamManagement";
+import { Building2, Save } from "lucide-react";
 
 export const OrganizationSettings = () => {
   const { data: currentOrg, isLoading } = useCurrentOrganization();
   const updateOrganization = useUpdateOrganization();
   
-  const [name, setName] = useState(currentOrg?.name || "");
-  const [slug, setSlug] = useState(currentOrg?.slug || "");
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
 
   // Update local state when org data loads
-  useState(() => {
+  useEffect(() => {
     if (currentOrg) {
       setName(currentOrg.name);
       setSlug(currentOrg.slug || "");
     }
-  });
+  }, [currentOrg]);
 
   const handleSave = async () => {
     if (!currentOrg?.id) return;
@@ -60,16 +60,21 @@ export const OrganizationSettings = () => {
     );
   }
 
+  const hasChanges = name !== currentOrg.name || slug !== (currentOrg.slug || "");
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Organization Settings</CardTitle>
-          <CardDescription>
-            Manage your organization's basic information
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Building2 className="w-5 h-5" />
+          Organization Settings
+        </CardTitle>
+        <CardDescription>
+          Manage your organization's basic information and settings
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="org-name">Organization Name</Label>
             <Input
@@ -77,9 +82,12 @@ export const OrganizationSettings = () => {
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
-                setSlug(generateSlug(e.target.value));
+                if (!slug || slug === generateSlug(currentOrg.name)) {
+                  setSlug(generateSlug(e.target.value));
+                }
               }}
               placeholder="Enter organization name"
+              className="mt-1"
             />
           </div>
           <div>
@@ -89,21 +97,25 @@ export const OrganizationSettings = () => {
               value={slug}
               onChange={(e) => setSlug(generateSlug(e.target.value))}
               placeholder="organization-slug"
+              className="mt-1"
             />
             <p className="text-sm text-gray-500 mt-1">
               This will be used in URLs and must be unique
             </p>
           </div>
+        </div>
+        
+        <div className="flex justify-end">
           <Button 
             onClick={handleSave}
-            disabled={updateOrganization.isPending || !name.trim()}
+            disabled={updateOrganization.isPending || !name.trim() || !hasChanges}
+            className="flex items-center gap-2"
           >
+            <Save className="w-4 h-4" />
             {updateOrganization.isPending ? 'Saving...' : 'Save Changes'}
           </Button>
-        </CardContent>
-      </Card>
-
-      <TeamManagement />
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
