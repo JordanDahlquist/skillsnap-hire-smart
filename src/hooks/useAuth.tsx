@@ -64,17 +64,15 @@ export const useAuth = () => {
     try {
       console.log('Fetching organization membership for user:', userId);
       
+      // First, try to get user's memberships directly
       const { data: memberships, error: membershipsError } = await supabase
         .from('organization_memberships')
-        .select(`
-          *,
-          organization:organizations(*)
-        `)
+        .select('*')
         .eq('user_id', userId)
         .limit(1);
       
       if (membershipsError) {
-        console.warn('Organization membership fetch error:', membershipsError.message);
+        console.error('Organization membership fetch error:', membershipsError);
         return null;
       }
 
@@ -84,10 +82,37 @@ export const useAuth = () => {
       }
 
       const membership = memberships[0];
-      console.log('Organization membership fetched successfully:', membership);
-      return membership;
+      console.log('Found membership:', membership);
+
+      // Now get the organization details
+      const { data: organization, error: orgError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', membership.organization_id)
+        .single();
+
+      if (orgError) {
+        console.error('Organization fetch error:', orgError);
+        // Return membership without organization details
+        return {
+          ...membership,
+          organization: {
+            id: membership.organization_id,
+            name: 'Unknown Organization',
+            slug: null
+          }
+        };
+      }
+
+      const result = {
+        ...membership,
+        organization
+      };
+      
+      console.log('Organization membership fetched successfully:', result);
+      return result;
     } catch (error) {
-      console.warn('Organization membership fetch exception:', error);
+      console.error('Organization membership fetch exception:', error);
       return null;
     }
   };
@@ -95,7 +120,9 @@ export const useAuth = () => {
   const loadUserData = async (userId: string) => {
     setDataLoading(true);
     try {
-      // Load profile and organization data in parallel, but don't block auth on failures
+      console.log('Loading user data for:', userId);
+      
+      // Load profile and organization data in parallel
       const [userProfile, orgMembership] = await Promise.allSettled([
         fetchProfile(userId),
         fetchOrganizationMembership(userId)
@@ -103,6 +130,7 @@ export const useAuth = () => {
       
       if (userProfile.status === 'fulfilled') {
         setProfile(userProfile.value);
+        console.log('Profile loaded:', userProfile.value?.full_name || 'No name');
       } else {
         console.warn('Failed to load profile:', userProfile.reason);
         setProfile(null);
@@ -110,6 +138,7 @@ export const useAuth = () => {
       
       if (orgMembership.status === 'fulfilled') {
         setOrganizationMembership(orgMembership.value);
+        console.log('Organization membership loaded:', orgMembership.value?.role || 'No membership');
       } else {
         console.warn('Failed to load organization membership:', orgMembership.reason);
         setOrganizationMembership(null);

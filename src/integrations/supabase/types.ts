@@ -500,6 +500,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_organization_role: {
+        Args: { user_uuid: string; org_id: string }
+        Returns: string
+      }
+      user_has_organization_access: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       organization_role: "owner" | "admin" | "editor" | "viewer"
