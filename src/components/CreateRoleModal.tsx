@@ -40,21 +40,18 @@ const formSchema = z.object({
   region: z.string().optional(),
   city: z.string().optional()
 });
+
 interface CreateRoleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
 export const CreateRoleModal = ({
   open,
   onOpenChange
 }: CreateRoleModalProps) => {
-  const {
-    user,
-    organizationMembership
-  } = useAuth();
-  const {
-    generateMiniDescription
-  } = useGenerateMiniDescription();
+  const { user } = useAuth();
+  const { generateMiniDescription } = useGenerateMiniDescription();
   const [activeTab, setActiveTab] = useState("1");
   const [generatedJobPost, setGeneratedJobPost] = useState("");
   const [generatedSkillsTest, setGeneratedSkillsTest] = useState("");
@@ -63,6 +60,7 @@ export const CreateRoleModal = ({
   const [editingJobPost, setEditingJobPost] = useState(false);
   const [editingSkillsTest, setEditingSkillsTest] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -81,6 +79,7 @@ export const CreateRoleModal = ({
       city: "San Francisco"
     }
   });
+
   const {
     tabCompletion,
     allTabsComplete,
@@ -95,11 +94,10 @@ export const CreateRoleModal = ({
   logger.debug('CreateRoleModal auth state:', {
     user: !!user,
     userId: user?.id,
-    organizationMembership: !!organizationMembership,
-    organizationId: organizationMembership?.organization_id,
     allTabsComplete,
     tabCompletion
   });
+
   const TabTriggerWithStatus = ({
     value,
     children,
@@ -113,6 +111,7 @@ export const CreateRoleModal = ({
       {isComplete && <CheckCircle className="w-4 h-4 text-green-500" />}
       {!isComplete && <AlertCircle className="w-4 h-4 text-orange-500" />}
     </TabsTrigger>;
+
   const handleGenerateJobPost = async () => {
     const formData = form.getValues();
     if (!formData.title || !formData.description) {
@@ -159,6 +158,7 @@ export const CreateRoleModal = ({
       setIsGeneratingJobPost(false);
     }
   };
+
   const handleGenerateSkillsTest = async () => {
     if (!generatedJobPost) {
       toast({
@@ -196,6 +196,7 @@ export const CreateRoleModal = ({
       setIsGeneratingSkillsTest(false);
     }
   };
+
   const handleSkipJobPost = () => {
     setTab3Skipped(true);
     toast({
@@ -203,6 +204,7 @@ export const CreateRoleModal = ({
       description: "You can publish without AI-generated job post content."
     });
   };
+
   const handleSkipSkillsTest = () => {
     setTab4Skipped(true);
     toast({
@@ -210,6 +212,7 @@ export const CreateRoleModal = ({
       description: "You can publish without AI-generated skills test."
     });
   };
+
   const submitJob = async (values: z.infer<typeof formSchema>, status: 'draft' | 'active') => {
     logger.debug('submitJob called with:', {
       values,
@@ -217,10 +220,9 @@ export const CreateRoleModal = ({
     });
     logger.debug('Auth state at submit:', {
       user: !!user,
-      userId: user?.id,
-      organizationMembership: !!organizationMembership,
-      organizationId: organizationMembership?.organization_id
+      userId: user?.id
     });
+
     if (!user?.id) {
       logger.error('No user ID available');
       toast({
@@ -230,15 +232,7 @@ export const CreateRoleModal = ({
       });
       return;
     }
-    if (!organizationMembership?.organization_id) {
-      logger.error('No organization ID available');
-      toast({
-        title: "Organization Error",
-        description: "You must be part of an organization to create a job.",
-        variant: "destructive"
-      });
-      return;
-    }
+
     setIsSaving(true);
     try {
       const jobData = {
@@ -250,7 +244,6 @@ export const CreateRoleModal = ({
         budget: values.budget,
         duration: values.duration,
         user_id: user.id,
-        organization_id: organizationMembership.organization_id,
         status: status,
         employment_type: values.employment_type,
         location_type: values.location_type,
@@ -261,20 +254,26 @@ export const CreateRoleModal = ({
         generated_job_post: generatedJobPost || null,
         generated_test: generatedSkillsTest || null
       };
+
       logger.debug('Submitting job data:', jobData);
+
       const {
         data,
         error
       } = await supabase.from('jobs').insert([jobData]).select().single();
+
       if (error) {
         logger.error('Error creating job:', error);
         throw error;
       }
+
       logger.debug('Job created successfully:', data);
+
       toast({
         title: status === 'active' ? "Job Published!" : "Draft Saved!",
         description: status === 'active' ? "Your job is now live and accepting applications!" : "Job saved as draft successfully!"
       });
+
       if (data.id) {
         await generateMiniDescription({
           id: data.id,
@@ -303,6 +302,7 @@ export const CreateRoleModal = ({
       setIsSaving(false);
     }
   };
+
   const onSubmitAsDraft = async () => {
     logger.debug('Draft button clicked');
     const isValid = await form.trigger();
@@ -319,6 +319,7 @@ export const CreateRoleModal = ({
       });
     }
   };
+
   const onSubmitAsPublished = async () => {
     logger.debug('Publish button clicked');
     logger.debug('All tabs complete:', allTabsComplete);
@@ -344,9 +345,11 @@ export const CreateRoleModal = ({
       });
     }
   };
+
   const handleLocationChange = (field: string, value: string) => {
     form.setValue(field as any, value);
   };
+
   const handleJobPostSave = () => {
     setEditingJobPost(false);
     toast({
@@ -354,9 +357,11 @@ export const CreateRoleModal = ({
       description: "Your changes have been saved."
     });
   };
+
   const handleJobPostCancel = () => {
     setEditingJobPost(false);
   };
+
   const handleSkillsTestSave = () => {
     setEditingSkillsTest(false);
     toast({
@@ -364,10 +369,13 @@ export const CreateRoleModal = ({
       description: "Your changes have been saved."
     });
   };
+
   const handleSkillsTestCancel = () => {
     setEditingSkillsTest(false);
   };
-  return <Dialog open={open} onOpenChange={onOpenChange}>
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         
       </DialogTrigger>
@@ -706,5 +714,6 @@ export const CreateRoleModal = ({
           </Form>
         </Tabs>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };

@@ -5,13 +5,13 @@ import { logger } from "./loggerService";
 import { Job } from "@/types";
 
 export const jobService = {
-  async fetchJobs(organizationId: string): Promise<Job[]> {
-    if (!organizationId) {
+  async fetchJobs(userId: string): Promise<Job[]> {
+    if (!userId) {
       return [];
     }
 
     return apiClient.query(async () => {
-      logger.debug('Fetching jobs for organization:', organizationId);
+      logger.debug('Fetching jobs for user:', userId);
       
       const { data, error } = await supabase
         .from('jobs')
@@ -19,7 +19,7 @@ export const jobService = {
           *,
           applications!inner(count)
         `)
-        .eq('organization_id', organizationId)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) {

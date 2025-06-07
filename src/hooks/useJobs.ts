@@ -5,19 +5,15 @@ import { jobService } from "@/services/jobService";
 import { logger } from "@/services/loggerService";
 
 export const useJobs = () => {
-  const { profile, organizationMembership, dataLoading } = useAuth();
+  const { user, loading } = useAuth();
   
-  const organizationId = organizationMembership?.organization_id || profile?.default_organization_id;
-  
-  logger.debug('useJobs - Using organization ID:', organizationId);
-  logger.debug('useJobs - From membership:', organizationMembership?.organization_id);
-  logger.debug('useJobs - From profile:', profile?.default_organization_id);
-  logger.debug('useJobs - Data loading:', dataLoading);
+  logger.debug('useJobs - Using user ID:', user?.id);
+  logger.debug('useJobs - Auth loading:', loading);
 
   return useQuery({
-    queryKey: ['jobs', organizationId],
-    queryFn: () => jobService.fetchJobs(organizationId || ''),
-    enabled: !!organizationId && !dataLoading,
+    queryKey: ['jobs', user?.id],
+    queryFn: () => jobService.fetchJobs(user?.id || ''),
+    enabled: !!user?.id && !loading,
     retry: 2,
     staleTime: 30000,
   });
