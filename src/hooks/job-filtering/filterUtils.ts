@@ -1,4 +1,3 @@
-
 import { JobFilters } from "./types";
 import { matchesSearchTerm } from "./jobMatching";
 
@@ -32,25 +31,27 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
     // Enhanced text search with more weight
     const matchesSearch = matchesSearchTerm(job, searchTerm);
     
+    // Use employment_type preferentially, fall back to role_type for backward compatibility
+    const jobEmploymentType = job.employment_type || job.role_type;
+    
     // Flexible filter checks
-    const matchesRoleType = filters.roleType === "all" || job.role_type === filters.roleType;
+    const matchesEmploymentType = filters.employmentType === "all" || jobEmploymentType === filters.employmentType;
     const matchesLocationType = filters.locationType === "all" || job.location_type === filters.locationType;
     const matchesExperienceLevel = filters.experienceLevel === "all" || job.experience_level === filters.experienceLevel;
-    const matchesEmploymentType = filters.employmentType === "all" || job.employment_type === filters.employmentType;
     const matchesCountry = filters.country === "all" || job.country === filters.country;
     const matchesState = filters.state === "all" || job.state === filters.state;
     const matchesDuration = filters.duration === "all" || job.duration === filters.duration;
     
     // More flexible budget matching
-    const jobBudget = parseBudget(job.budget, job.employment_type);
+    const jobBudget = parseBudget(job.budget, jobEmploymentType);
     const [minBudget, maxBudget] = filters.budgetRange;
     // Include jobs with no budget if budget filter is at default
     const matchesBudget = (minBudget === 0 && maxBudget >= 200000) || 
                          (jobBudget === 0) || // Include jobs without budget data
                          (jobBudget >= minBudget && (maxBudget >= 200000 || jobBudget <= maxBudget));
     
-    return matchesSearch && matchesRoleType && matchesLocationType && 
-           matchesExperienceLevel && matchesEmploymentType && matchesCountry && 
+    return matchesSearch && matchesEmploymentType && matchesLocationType && 
+           matchesExperienceLevel && matchesCountry && 
            matchesState && matchesDuration && matchesBudget;
   });
 
@@ -58,9 +59,9 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
   
   // Enhanced fallback logic - if too few results, progressively relax filters
   if (filtered.length < 5 && searchTerm && (
-    filters.roleType !== "all" || filters.locationType !== "all" || 
-    filters.experienceLevel !== "all" || filters.employmentType !== "all" ||
-    filters.country !== "all" || filters.state !== "all" || filters.duration !== "all" ||
+    filters.employmentType !== "all" || filters.locationType !== "all" || 
+    filters.experienceLevel !== "all" || filters.country !== "all" || 
+    filters.state !== "all" || filters.duration !== "all" ||
     filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000
   )) {
     console.log('Too few results, applying fallback with relaxed filters');
@@ -68,15 +69,15 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
     // First fallback: Remove budget and duration constraints
     let relaxedFiltered = jobs.filter(job => {
       const matchesSearch = matchesSearchTerm(job, searchTerm);
-      const matchesRoleType = filters.roleType === "all" || job.role_type === filters.roleType;
+      const jobEmploymentType = job.employment_type || job.role_type;
+      const matchesEmploymentType = filters.employmentType === "all" || jobEmploymentType === filters.employmentType;
       const matchesLocationType = filters.locationType === "all" || job.location_type === filters.locationType;
       const matchesExperienceLevel = filters.experienceLevel === "all" || job.experience_level === filters.experienceLevel;
-      const matchesEmploymentType = filters.employmentType === "all" || job.employment_type === filters.employmentType;
       const matchesCountry = filters.country === "all" || job.country === filters.country;
       const matchesState = filters.state === "all" || job.state === filters.state;
       
-      return matchesSearch && matchesRoleType && matchesLocationType && 
-             matchesExperienceLevel && matchesEmploymentType && matchesCountry && matchesState;
+      return matchesSearch && matchesEmploymentType && matchesLocationType && 
+             matchesExperienceLevel && matchesCountry && matchesState;
     });
 
     if (relaxedFiltered.length > filtered.length) {
@@ -84,19 +85,19 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
       console.log(`Relaxed filtering (removed budget/duration): ${filtered.length} jobs`);
     }
     
-    // Second fallback: Keep only essential filters (role, employment type) + text search
+    // Second fallback: Keep only essential filters (employment type) + text search
     if (filtered.length < 3) {
       relaxedFiltered = jobs.filter(job => {
         const matchesSearch = matchesSearchTerm(job, searchTerm);
-        const matchesRoleType = filters.roleType === "all" || job.role_type === filters.roleType;
-        const matchesEmploymentType = filters.employmentType === "all" || job.employment_type === filters.employmentType;
+        const jobEmploymentType = job.employment_type || job.role_type;
+        const matchesEmploymentType = filters.employmentType === "all" || jobEmploymentType === filters.employmentType;
         
-        return matchesSearch && matchesRoleType && matchesEmploymentType;
+        return matchesSearch && matchesEmploymentType;
       });
       
       if (relaxedFiltered.length > filtered.length) {
         filtered = relaxedFiltered;
-        console.log(`Highly relaxed filtering (role + employment + search): ${filtered.length} jobs`);
+        console.log(`Highly relaxed filtering (employment + search): ${filtered.length} jobs`);
       }
     }
     
@@ -120,8 +121,10 @@ export const sortJobs = (jobs: any[], sortBy: string, sortOrder: "asc" | "desc")
     
     switch (sortBy) {
       case "budget":
-        aValue = parseBudget(a.budget, a.employment_type);
-        bValue = parseBudget(b.budget, b.employment_type);
+        const aEmploymentType = a.employment_type || a.role_type;
+        const bEmploymentType = b.employment_type || b.role_type;
+        aValue = parseBudget(a.budget, aEmploymentType);
+        bValue = parseBudget(b.budget, bEmploymentType);
         break;
       case "applications":
         aValue = a.applications?.[0]?.count || 0;

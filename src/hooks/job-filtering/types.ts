@@ -1,9 +1,8 @@
 
 export interface JobFilters {
-  roleType: string;
+  employmentType: string;
   locationType: string;
   experienceLevel: string;
-  employmentType: string;
   country: string;
   state: string;
   budgetRange: number[];
@@ -11,10 +10,9 @@ export interface JobFilters {
 }
 
 export const defaultFilters: JobFilters = {
-  roleType: "all",
+  employmentType: "all",
   locationType: "all",
   experienceLevel: "all",
-  employmentType: "all",
   country: "all",
   state: "all",
   budgetRange: [0, 200000],
@@ -22,10 +20,9 @@ export const defaultFilters: JobFilters = {
 };
 
 export interface AvailableOptions {
-  roleTypes: string[];
+  employmentTypes: string[];
   locationTypes: string[];
   experienceLevels: string[];
-  employmentTypes: string[];
   countries: string[];
   states: string[];
   durations: string[];

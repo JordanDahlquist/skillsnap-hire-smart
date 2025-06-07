@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +46,6 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    roleType: "",
     employmentType: "",
     experience: "",
     duration: "",
@@ -97,11 +95,13 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
   useEffect(() => {
     if (open && job) {
       const { min, max } = parseBudgetRange(job.budget || "");
+      // Use employment_type if available, otherwise fall back to role_type
+      const employmentType = job.employment_type || job.role_type || "full-time";
+      
       setFormData({
         title: job.title,
         description: job.description,
-        roleType: job.role_type,
-        employmentType: job.employment_type || "project",
+        employmentType: employmentType,
         experience: job.experience_level,
         duration: job.duration || "",
         budgetMin: min,
@@ -168,7 +168,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
         .update({
           title: formData.title,
           description: formData.description,
-          role_type: formData.roleType,
+          role_type: formData.employmentType, // Keep for backward compatibility
           employment_type: formData.employmentType,
           experience_level: formData.experience,
           duration: formData.duration || null,
@@ -205,17 +205,19 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
     }
   };
 
-  const isProjectBased = formData.employmentType === 'project' || formData.employmentType === 'contract-to-hire';
+  const isProjectBased = formData.employmentType === 'project' || formData.employmentType === 'contract';
 
   const getEmploymentTypes = () => [
-    { value: 'project', label: 'Project-based' },
     { value: 'full-time', label: 'Full-time' },
     { value: 'part-time', label: 'Part-time' },
-    { value: 'contract-to-hire', label: 'Contract-to-hire' }
+    { value: 'contract', label: 'Contract' },
+    { value: 'temporary', label: 'Temporary' },
+    { value: 'internship', label: 'Internship' },
+    { value: 'project', label: 'Project' }
   ];
 
   const getDurationOptions = () => {
-    if (formData.employmentType === 'contract-to-hire') {
+    if (formData.employmentType === 'contract') {
       return [
         { value: '3 months', label: '3 months' },
         { value: '6 months', label: '6 months' },
@@ -238,7 +240,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
         return { min: 'e.g., $70,000', max: 'e.g., $90,000' };
       case 'part-time':
         return { min: 'e.g., $40/hour', max: 'e.g., $60/hour' };
-      case 'contract-to-hire':
+      case 'contract':
         return { min: 'e.g., $4,000/month', max: 'e.g., $6,000/month' };
       default:
         return { min: 'e.g., $2,000', max: 'e.g., $5,000' };
@@ -251,7 +253,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
         return 'Salary Range (Optional)';
       case 'part-time':
         return 'Hourly Rate Range (Optional)';
-      case 'contract-to-hire':
+      case 'contract':
         return 'Contract Budget Range (Optional)';
       default:
         return 'Project Budget Range (Optional)';
@@ -259,7 +261,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
   };
 
   const getDurationLabel = () => {
-    return formData.employmentType === 'contract-to-hire' ? 'Contract Duration' : 'Project Duration';
+    return formData.employmentType === 'contract' ? 'Contract Duration' : 'Project Duration';
   };
 
   return (
@@ -296,7 +298,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="title">Role Title</Label>
+                  <Label htmlFor="title">Job Title</Label>
                   <Input
                     id="title"
                     placeholder="e.g. Senior React Developer"
@@ -394,7 +396,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
             </div>
 
             <div>
-              <Label htmlFor="description">Role Description</Label>
+              <Label htmlFor="description">Job Description</Label>
               <Textarea
                 id="description"
                 placeholder="Describe what the person will be working on, key responsibilities, and any specific requirements..."

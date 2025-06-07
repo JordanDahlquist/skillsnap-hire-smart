@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -49,13 +48,12 @@ const formSchema = z.object({
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  role_type: z.string().optional(),
   experience_level: z.string(),
   required_skills: z.string(),
   budget: z.string().optional(),
   duration: z.string().optional(),
   status: z.string().optional(),
-  employment_type: z.string().optional(),
+  employment_type: z.string(),
   location_type: z.string().optional(),
   country: z.string().optional(),
   state: z.string().optional(),
@@ -85,13 +83,12 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     defaultValues: {
       title: "",
       description: "",
-      role_type: "full-time",
       experience_level: "mid-level",
       required_skills: "",
       budget: "",
       duration: "",
       status: "draft",
-      employment_type: "project",
+      employment_type: "full-time",
       location_type: "remote",
       country: "United States",
       state: "California",
@@ -119,7 +116,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           type: 'job-post',
           jobData: {
             title: formData.title,
-            roleType: formData.role_type,
+            employmentType: formData.employment_type,
             experience: formData.experience_level,
             duration: formData.duration,
             budget: formData.budget,
@@ -202,7 +199,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       const jobData = {
         title: values.title,
         description: values.description,
-        role_type: values.role_type || 'full-time',
+        role_type: values.employment_type, // Keep for backward compatibility
         experience_level: values.experience_level,
         required_skills: values.required_skills,
         budget: values.budget,
@@ -210,7 +207,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         user_id: user.id,
         organization_id: organizationMembership.organization_id,
         status: values.status || 'draft',
-        employment_type: values.employment_type || 'project',
+        employment_type: values.employment_type,
         location_type: values.location_type,
         country: values.country,
         state: values.state,
@@ -242,7 +239,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           id: data.id,
           title: values.title,
           description: values.description,
-          role_type: values.role_type || 'full-time'
+          role_type: values.employment_type
         });
       }
 
@@ -352,14 +349,14 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
 
                     <FormField
                       control={form.control}
-                      name="role_type"
+                      name="employment_type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Role Type</FormLabel>
+                          <FormLabel>Employment Type</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select a role type" />
+                                <SelectValue placeholder="Select employment type" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -368,6 +365,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                               <SelectItem value="contract">Contract</SelectItem>
                               <SelectItem value="temporary">Temporary</SelectItem>
                               <SelectItem value="internship">Internship</SelectItem>
+                              <SelectItem value="project">Project</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -391,30 +389,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                               <SelectItem value="entry-level">Entry Level</SelectItem>
                               <SelectItem value="mid-level">Mid Level</SelectItem>
                               <SelectItem value="senior-level">Senior Level</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="employment_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Employment Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select employment type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="project">Project</SelectItem>
-                              <SelectItem value="full-time">Full-time</SelectItem>
-                              <SelectItem value="part-time">Part-time</SelectItem>
-                              <SelectItem value="contract">Contract</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
