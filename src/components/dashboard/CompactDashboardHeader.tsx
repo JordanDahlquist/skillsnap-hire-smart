@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
@@ -7,7 +6,8 @@ import {
   ArrowLeft, 
   Share2, 
   MoreHorizontal,
-  Eye
+  Eye,
+  Download
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -99,6 +99,40 @@ export const CompactDashboardHeader = ({
     }
   };
 
+  const handleExportApplications = () => {
+    if (applications.length === 0) {
+      toast({
+        title: "No data to export",
+        description: "This job has no applications yet",
+      });
+      return;
+    }
+
+    const csvContent = [
+      ['Name', 'Email', 'Applied Date', 'AI Rating', 'Status'].join(','),
+      ...applications.map(app => [
+        app.name,
+        app.email,
+        new Date(app.created_at).toLocaleDateString(),
+        app.ai_rating || 'N/A',
+        app.status
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${job.title.replace(/[^a-zA-Z0-9]/g, '_')}_applications.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export completed",
+      description: "Applications data exported to CSV file",
+    });
+  };
+
   // Calculate days running
   const startDate = new Date(job.created_at);
   const today = new Date();
@@ -170,7 +204,10 @@ export const CompactDashboardHeader = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>Edit Job</DropdownMenuItem>
-                <DropdownMenuItem>Export Data</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportApplications}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Data
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-red-600">Archive Job</DropdownMenuItem>
               </DropdownMenuContent>
