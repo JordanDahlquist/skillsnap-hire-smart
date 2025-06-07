@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText } from "lucide-react";
+import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText, Plus } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
 import { useJobs } from "@/hooks/useJobs";
@@ -213,8 +214,17 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
               </div>
             )}
 
-            {/* Action Bar - Removed Create New Job button */}
+            {/* Action Bar */}
             <div className="flex flex-wrap items-center gap-3">
+              <Button 
+                onClick={onCreateJob}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Job
+              </Button>
+              
               <Button 
                 variant="outline"
                 size="sm"
