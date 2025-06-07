@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Briefcase, Users, TrendingUp, BarChart3 } from "lucide-react";
+import { Plus, bell, Users, TrendingUp, BarChart3 } from "lucide-react";
 import { JobStats } from "@/hooks/useJobStats";
 
 interface JobsStatsProps {
@@ -15,11 +15,16 @@ export const JobsStats = ({ stats }: JobsStatsProps) => {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Jobs</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalJobs}</p>
+              <p className="text-sm font-medium text-gray-600">Jobs Needing Attention</p>
+              <p className="text-2xl font-bold text-orange-600">{stats.jobsNeedingAttention}</p>
+              {stats.jobsNeedingAttention > 0 && (
+                <Badge className="mt-1 bg-orange-100 text-orange-600">
+                  Needs Review
+                </Badge>
+              )}
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Briefcase className="w-6 h-6 text-[#007af6]" />
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <bell className="w-6 h-6 text-orange-600" />
             </div>
           </div>
         </CardContent>

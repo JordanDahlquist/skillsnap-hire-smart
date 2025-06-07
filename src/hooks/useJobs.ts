@@ -8,6 +8,11 @@ type JobRow = Database['public']['Tables']['jobs']['Row'];
 
 export interface Job extends JobRow {
   applications?: { count: number }[];
+  applicationStatusCounts?: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
 }
 
 export const useJobs = () => {
@@ -32,19 +37,45 @@ export const useJobs = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      console.log('Jobs query result:', {
-        data: data || [],
-        error,
-        totalJobs: data?.length || 0,
-        jobStatuses: data?.map(job => ({ id: job.id, title: job.title, status: job.status })) || []
-      });
-      
       if (error) {
         console.error('Error fetching jobs:', error);
         throw error;
       }
+
+      // Fetch application status counts for each job
+      const jobsWithStatusCounts = await Promise.all(
+        (data || []).map(async (job) => {
+          const { data: statusCounts } = await supabase
+            .from('applications')
+            .select('status')
+            .eq('job_id', job.id);
+
+          const applicationStatusCounts = {
+            pending: statusCounts?.filter(app => app.status === 'pending').length || 0,
+            approved: statusCounts?.filter(app => app.status === 'approved').length || 0,
+            rejected: statusCounts?.filter(app => app.status === 'rejected').length || 0,
+          };
+
+          return {
+            ...job,
+            applicationStatusCounts
+          };
+        })
+      );
       
-      return data as Job[];
+      console.log('Jobs query result:', {
+        data: jobsWithStatusCounts || [],
+        error,
+        totalJobs: jobsWithStatusCounts?.length || 0,
+        jobStatuses: jobsWithStatusCounts?.map(job => ({ 
+          id: job.id, 
+          title: job.title, 
+          status: job.status,
+          pendingApplications: job.applicationStatusCounts?.pending || 0
+        })) || []
+      });
+      
+      return jobsWithStatusCounts as Job[];
     },
     enabled: !!user?.id,
     staleTime: 0,

@@ -4,7 +4,7 @@ import { Job } from "@/hooks/useJobs";
 import { getStartOfWeek } from "@/utils/dateUtils";
 
 export interface JobStats {
-  totalJobs: number;
+  jobsNeedingAttention: number;
   activeJobs: number;
   totalApplications: number;
   applicationsThisWeek: number;
@@ -12,14 +12,23 @@ export interface JobStats {
 
 export const useJobStats = (jobs: Job[], recentApplications: any[] = []) => {
   return useMemo(() => {
-    const totalJobs = jobs.length;
     const activeJobs = jobs.filter(job => job.status === 'active').length;
     const totalApplications = jobs.reduce((acc, job) => acc + (job.applications?.[0]?.count || 0), 0);
     const applicationsThisWeek = recentApplications.length;
+    
+    // Calculate jobs needing attention (jobs with 10+ pending applications)
+    const jobsNeedingAttention = jobs.filter(job => 
+      (job.applicationStatusCounts?.pending || 0) >= 10
+    ).length;
 
-    console.log('Calculated stats:', { totalJobs, activeJobs, totalApplications, applicationsThisWeek });
+    console.log('Calculated stats:', { 
+      jobsNeedingAttention, 
+      activeJobs, 
+      totalApplications, 
+      applicationsThisWeek 
+    });
 
-    return { totalJobs, activeJobs, totalApplications, applicationsThisWeek };
+    return { jobsNeedingAttention, activeJobs, totalApplications, applicationsThisWeek };
   }, [jobs, recentApplications]);
 };
 
