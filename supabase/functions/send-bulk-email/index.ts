@@ -27,6 +27,127 @@ interface BulkEmailRequest {
   company_name: string;
 }
 
+const createEmailTemplate = (content: string, companyName: string) => {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Message from ${companyName}</title>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          line-height: 1.6;
+          color: #333333;
+          margin: 0;
+          padding: 0;
+          background-color: #f8fafc;
+        }
+        .email-container {
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .email-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 30px 40px;
+          text-align: center;
+        }
+        .company-name {
+          font-size: 24px;
+          font-weight: 700;
+          margin: 0;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+        }
+        .email-body {
+          padding: 40px;
+        }
+        .content {
+          white-space: pre-wrap;
+          font-size: 16px;
+          line-height: 1.8;
+          color: #374151;
+          margin-bottom: 30px;
+        }
+        .divider {
+          height: 1px;
+          background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+          margin: 30px 0;
+        }
+        .email-footer {
+          background-color: #f9fafb;
+          padding: 30px 40px;
+          text-align: center;
+          border-top: 1px solid #e5e7eb;
+        }
+        .footer-text {
+          color: #6b7280;
+          font-size: 14px;
+          margin: 0 0 15px 0;
+        }
+        .unsubscribe-text {
+          color: #9ca3af;
+          font-size: 12px;
+          margin: 0;
+        }
+        .professional-signature {
+          margin-top: 20px;
+          padding-top: 20px;
+          border-top: 2px solid #e5e7eb;
+          color: #6b7280;
+          font-size: 14px;
+        }
+        @media only screen and (max-width: 600px) {
+          .email-header, .email-body, .email-footer {
+            padding: 20px;
+          }
+          .company-name {
+            font-size: 20px;
+            letter-spacing: 1px;
+          }
+          .content {
+            font-size: 15px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="email-header">
+          <h1 class="company-name">${companyName}</h1>
+        </div>
+        
+        <div class="email-body">
+          <div class="content">${content}</div>
+          
+          <div class="divider"></div>
+          
+          <div class="professional-signature">
+            <strong>Best regards,</strong><br>
+            The ${companyName} Hiring Team
+          </div>
+        </div>
+        
+        <div class="email-footer">
+          <p class="footer-text">
+            This email was sent from <strong>${companyName}</strong> regarding your job application.
+          </p>
+          <p class="unsubscribe-text">
+            If you no longer wish to receive emails about this application, please contact us directly.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -72,22 +193,14 @@ const handler = async (req: Request): Promise<Response> => {
       try {
         const personalizedSubject = processTemplate(subject, application);
         const personalizedContent = processTemplate(content, application);
+        const htmlContent = createEmailTemplate(personalizedContent, company_name);
 
         // Send email via Resend
         const emailResponse = await resend.emails.send({
-          from: "hiring@resend.dev", // Replace with your verified domain
+          from: `${company_name} <onboarding@resend.dev>`, // You can update this to your verified domain
           to: [application.email],
           subject: personalizedSubject,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <div style="white-space: pre-wrap; line-height: 1.6;">${personalizedContent}</div>
-              <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-              <p style="color: #666; font-size: 12px;">
-                This email was sent from ${company_name}. 
-                If you no longer wish to receive emails, please contact us.
-              </p>
-            </div>
-          `,
+          html: htmlContent,
         });
 
         // Log the email in the database
