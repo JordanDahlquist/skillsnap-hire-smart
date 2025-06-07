@@ -33,10 +33,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { Plus, Sparkles, FileText, ClipboardList, MapPin, Loader2, Wand2 } from "lucide-react";
+import { Plus, Sparkles, FileText, ClipboardList, MapPin, Loader2, Wand2, CheckCircle, AlertCircle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGenerateMiniDescription } from "@/hooks/useGenerateMiniDescription";
+import { useTabCompletion } from "@/hooks/useTabCompletion";
 import { LocationSelector } from "./LocationSelector";
 import { RichTextEditor } from "./RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
@@ -96,6 +97,28 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       city: "San Francisco",
     },
   });
+
+  const {
+    tabCompletion,
+    allTabsComplete,
+    tab3Skipped,
+    tab4Skipped,
+    setTab3Skipped,
+    setTab4Skipped,
+    getIncompleteTabsMessage
+  } = useTabCompletion(form, generatedJobPost, generatedSkillsTest);
+
+  const TabTriggerWithStatus = ({ value, children, isComplete }: { 
+    value: string; 
+    children: React.ReactNode; 
+    isComplete: boolean;
+  }) => (
+    <TabsTrigger value={value} className="flex items-center gap-2">
+      {children}
+      {isComplete && <CheckCircle className="w-4 h-4 text-green-500" />}
+      {!isComplete && <AlertCircle className="w-4 h-4 text-orange-500" />}
+    </TabsTrigger>
+  );
 
   const handleGenerateJobPost = async () => {
     const formData = form.getValues();
@@ -183,7 +206,23 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     }
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSkipJobPost = () => {
+    setTab3Skipped(true);
+    toast({
+      title: "Job Post Skipped",
+      description: "You can publish without AI-generated job post content.",
+    });
+  };
+
+  const handleSkipSkillsTest = () => {
+    setTab4Skipped(true);
+    toast({
+      title: "Skills Test Skipped",
+      description: "You can publish without AI-generated skills test.",
+    });
+  };
+
+  const submitJob = async (values: z.infer<typeof formSchema>, status: 'draft' | 'active') => {
     if (!user?.id || !organizationMembership?.organization_id) {
       toast({
         title: "Error",
@@ -199,14 +238,14 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       const jobData = {
         title: values.title,
         description: values.description,
-        role_type: values.employment_type, // Keep for backward compatibility
+        role_type: values.employment_type,
         experience_level: values.experience_level,
         required_skills: values.required_skills,
         budget: values.budget,
         duration: values.duration,
         user_id: user.id,
         organization_id: organizationMembership.organization_id,
-        status: values.status || 'draft',
+        status: status,
         employment_type: values.employment_type,
         location_type: values.location_type,
         country: values.country,
@@ -229,11 +268,12 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       }
 
       toast({
-        title: "Success",
-        description: "Job created successfully with AI-generated content!",
+        title: status === 'active' ? "Job Published!" : "Draft Saved!",
+        description: status === 'active' 
+          ? "Your job is now live and accepting applications!" 
+          : "Job saved as draft successfully!",
       });
 
-      // Generate mini description after job creation
       if (data.id) {
         await generateMiniDescription({
           id: data.id,
@@ -247,6 +287,8 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       form.reset();
       setGeneratedJobPost("");
       setGeneratedSkillsTest("");
+      setTab3Skipped(false);
+      setTab4Skipped(false);
       setActiveTab("1");
       onOpenChange(false);
     } catch (error) {
@@ -259,6 +301,14 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const onSubmitAsDraft = (values: z.infer<typeof formSchema>) => {
+    submitJob(values, 'draft');
+  };
+
+  const onSubmitAsPublished = (values: z.infer<typeof formSchema>) => {
+    submitJob(values, 'active');
   };
 
   const handleLocationChange = (field: string, value: string) => {
@@ -308,24 +358,33 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           </DialogDescription>
         </DialogHeader>
 
+        {!allTabsComplete && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-orange-800">
+              <AlertCircle className="w-5 h-5" />
+              <span className="font-medium">{getIncompleteTabsMessage()}</span>
+            </div>
+          </div>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="1" className="flex items-center gap-2">
+            <TabTriggerWithStatus value="1" isComplete={tabCompletion.tab1Complete}>
               <FileText className="w-4 h-4" />
               Role Details
-            </TabsTrigger>
-            <TabsTrigger value="2" className="flex items-center gap-2">
+            </TabTriggerWithStatus>
+            <TabTriggerWithStatus value="2" isComplete={tabCompletion.tab2Complete}>
               <MapPin className="w-4 h-4" />
               Location
-            </TabsTrigger>
-            <TabsTrigger value="3" className="flex items-center gap-2">
+            </TabTriggerWithStatus>
+            <TabTriggerWithStatus value="3" isComplete={tabCompletion.tab3Complete}>
               <Wand2 className="w-4 h-4" />
               AI Job Post
-            </TabsTrigger>
-            <TabsTrigger value="4" className="flex items-center gap-2">
+            </TabTriggerWithStatus>
+            <TabTriggerWithStatus value="4" isComplete={tabCompletion.tab4Complete}>
               <ClipboardList className="w-4 h-4" />
               Skills Test
-            </TabsTrigger>
+            </TabTriggerWithStatus>
           </TabsList>
 
           <Form {...form}>
@@ -515,22 +574,37 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                       <div className="flex items-center gap-2">
                         <Wand2 className="w-5 h-5 text-purple-600" />
                         AI-Generated Job Post
+                        {tab3Skipped && (
+                          <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                            Skipped
+                          </span>
+                        )}
                       </div>
                       <div className="flex gap-2">
-                        {!generatedJobPost && (
-                          <Button 
-                            type="button"
-                            onClick={handleGenerateJobPost}
-                            disabled={isGeneratingJobPost}
-                            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                          >
-                            {isGeneratingJobPost ? (
-                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            ) : (
-                              <Sparkles className="w-4 h-4 mr-2" />
-                            )}
-                            Generate Job Post
-                          </Button>
+                        {!generatedJobPost && !tab3Skipped && (
+                          <>
+                            <Button 
+                              type="button"
+                              onClick={handleGenerateJobPost}
+                              disabled={isGeneratingJobPost}
+                              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                            >
+                              {isGeneratingJobPost ? (
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              ) : (
+                                <Sparkles className="w-4 h-4 mr-2" />
+                              )}
+                              Generate Job Post
+                            </Button>
+                            <Button 
+                              type="button"
+                              onClick={handleSkipJobPost}
+                              variant="outline"
+                            >
+                              <X className="w-4 h-4 mr-2" />
+                              Skip
+                            </Button>
+                          </>
                         )}
                         {generatedJobPost && !editingJobPost && (
                           <Button 
@@ -558,15 +632,33 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                             Regenerate
                           </Button>
                         )}
+                        {tab3Skipped && (
+                          <Button 
+                            type="button"
+                            onClick={() => setTab3Skipped(false)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Undo Skip
+                          </Button>
+                        )}
                       </div>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {!generatedJobPost && !isGeneratingJobPost && (
+                    {!generatedJobPost && !isGeneratingJobPost && !tab3Skipped && (
                       <div className="text-center py-12 text-gray-500">
                         <Wand2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                         <p className="text-lg mb-2">Ready to create magic?</p>
                         <p className="text-sm">Fill in the role details and generate an AI-powered job posting.</p>
+                      </div>
+                    )}
+                    
+                    {tab3Skipped && (
+                      <div className="text-center py-12 text-gray-500">
+                        <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
+                        <p className="text-lg mb-2">Job Post Skipped</p>
+                        <p className="text-sm">You can publish without AI-generated content.</p>
                       </div>
                     )}
                     
@@ -609,22 +701,37 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                       <div className="flex items-center gap-2">
                         <ClipboardList className="w-5 h-5 text-green-600" />
                         AI-Generated Skills Test
+                        {tab4Skipped && (
+                          <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                            Skipped
+                          </span>
+                        )}
                       </div>
                       <div className="flex gap-2">
-                        {generatedJobPost && !generatedSkillsTest && (
-                          <Button 
-                            type="button"
-                            onClick={handleGenerateSkillsTest}
-                            disabled={isGeneratingSkillsTest}
-                            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
-                          >
-                            {isGeneratingSkillsTest ? (
-                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            ) : (
-                              <Sparkles className="w-4 h-4 mr-2" />
-                            )}
-                            Generate Skills Test
-                          </Button>
+                        {generatedJobPost && !generatedSkillsTest && !tab4Skipped && (
+                          <>
+                            <Button 
+                              type="button"
+                              onClick={handleGenerateSkillsTest}
+                              disabled={isGeneratingSkillsTest}
+                              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700"
+                            >
+                              {isGeneratingSkillsTest ? (
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              ) : (
+                                <Sparkles className="w-4 h-4 mr-2" />
+                              )}
+                              Generate Skills Test
+                            </Button>
+                            <Button 
+                              type="button"
+                              onClick={handleSkipSkillsTest}
+                              variant="outline"
+                            >
+                              <X className="w-4 h-4 mr-2" />
+                              Skip
+                            </Button>
+                          </>
                         )}
                         {generatedSkillsTest && !editingSkillsTest && (
                           <Button 
@@ -652,6 +759,16 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                             Regenerate
                           </Button>
                         )}
+                        {tab4Skipped && (
+                          <Button 
+                            type="button"
+                            onClick={() => setTab4Skipped(false)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Undo Skip
+                          </Button>
+                        )}
                       </div>
                     </CardTitle>
                   </CardHeader>
@@ -664,11 +781,19 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                       </div>
                     )}
                     
-                    {generatedJobPost && !generatedSkillsTest && !isGeneratingSkillsTest && (
+                    {generatedJobPost && !generatedSkillsTest && !isGeneratingSkillsTest && !tab4Skipped && (
                       <div className="text-center py-12 text-gray-500">
                         <ClipboardList className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                         <p className="text-lg mb-2">Ready for Skills Assessment</p>
                         <p className="text-sm">Generate AI-powered assessment questions based on your job post.</p>
+                      </div>
+                    )}
+                    
+                    {tab4Skipped && (
+                      <div className="text-center py-12 text-gray-500">
+                        <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
+                        <p className="text-lg mb-2">Skills Test Skipped</p>
+                        <p className="text-sm">You can publish without AI-generated skills test.</p>
                       </div>
                     )}
                     
@@ -725,18 +850,34 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                     </Button>
                   )}
                 </div>
-                <Button 
-                  type="submit" 
-                  disabled={isSaving}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  {isSaving ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <Sparkles className="w-4 h-4 mr-2" />
-                  )}
-                  Create AI-Powered Job
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    disabled={isSaving}
+                    onClick={form.handleSubmit(onSubmitAsDraft)}
+                  >
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <FileText className="w-4 h-4 mr-2" />
+                    )}
+                    Save as Draft
+                  </Button>
+                  <Button 
+                    type="button"
+                    disabled={isSaving || !allTabsComplete}
+                    onClick={form.handleSubmit(onSubmitAsPublished)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 mr-2" />
+                    )}
+                    Publish Job
+                  </Button>
+                </div>
               </DialogFooter>
             </form>
           </Form>
