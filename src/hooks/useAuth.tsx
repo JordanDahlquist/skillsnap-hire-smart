@@ -36,6 +36,7 @@ export const useAuth = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [organizationMembership, setOrganizationMembership] = useState<OrganizationMembership | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -65,7 +66,10 @@ export const useAuth = () => {
       
       const { data: memberships, error: membershipsError } = await supabase
         .from('organization_memberships')
-        .select('*')
+        .select(`
+          *,
+          organization:organizations(*)
+        `)
         .eq('user_id', userId)
         .limit(1);
       
@@ -80,34 +84,47 @@ export const useAuth = () => {
       }
 
       const membership = memberships[0];
-      
-      const { data: organization, error: orgError } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', membership.organization_id)
-        .single();
-      
-      if (orgError) {
-        console.warn('Organization fetch error:', orgError.message);
-        return null;
-      }
-
-      const result = {
-        ...membership,
-        organization
-      };
-      
-      console.log('Organization membership fetched successfully:', result);
-      return result;
+      console.log('Organization membership fetched successfully:', membership);
+      return membership;
     } catch (error) {
       console.warn('Organization membership fetch exception:', error);
       return null;
     }
   };
 
+  const loadUserData = async (userId: string) => {
+    setDataLoading(true);
+    try {
+      // Load profile and organization data in parallel, but don't block auth on failures
+      const [userProfile, orgMembership] = await Promise.allSettled([
+        fetchProfile(userId),
+        fetchOrganizationMembership(userId)
+      ]);
+      
+      if (userProfile.status === 'fulfilled') {
+        setProfile(userProfile.value);
+      } else {
+        console.warn('Failed to load profile:', userProfile.reason);
+        setProfile(null);
+      }
+      
+      if (orgMembership.status === 'fulfilled') {
+        setOrganizationMembership(orgMembership.value);
+      } else {
+        console.warn('Failed to load organization membership:', orgMembership.reason);
+        setOrganizationMembership(null);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
   useEffect(() => {
     console.log('Auth hook initializing...');
     
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id || 'No session');
@@ -116,48 +133,42 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch profile and organization data with error handling
-          try {
-            const userProfile = await fetchProfile(session.user.id);
-            setProfile(userProfile);
-            
-            const orgMembership = await fetchOrganizationMembership(session.user.id);
-            setOrganizationMembership(orgMembership);
-          } catch (error) {
-            console.error('Error fetching user data:', error);
-            // Don't block the auth flow if data fetching fails
-          }
+          // Load additional user data without blocking authentication
+          setTimeout(() => {
+            loadUserData(session.user.id);
+          }, 0);
         } else {
           setProfile(null);
           setOrganizationMembership(null);
+          setDataLoading(false);
         }
         
+        // Authentication loading is complete regardless of data loading
         setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.id || 'No session');
       
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        try {
-          const userProfile = await fetchProfile(session.user.id);
-          setProfile(userProfile);
-          
-          const orgMembership = await fetchOrganizationMembership(session.user.id);
-          setOrganizationMembership(orgMembership);
-        } catch (error) {
-          console.error('Error fetching initial user data:', error);
-        }
+        // Load additional user data without blocking authentication
+        setTimeout(() => {
+          loadUserData(session.user.id);
+        }, 0);
+      } else {
+        setDataLoading(false);
       }
       
+      // Authentication loading is complete
       setLoading(false);
     });
 
-    // Failsafe timeout
+    // Failsafe timeout for auth loading
     const timeout = setTimeout(() => {
       console.log('Auth loading timeout reached, setting loading to false');
       setLoading(false);
@@ -171,35 +182,32 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
+      // Clear local state first
       setUser(null);
       setSession(null);
       setProfile(null);
       setOrganizationMembership(null);
       
+      // Clear browser storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Force page reload for clean state
       window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
+      // Force reload even if signOut fails
+      window.location.href = '/';
     }
   };
 
   const refreshProfile = async () => {
     if (user?.id) {
       console.log('Refreshing profile and organization data...');
-      try {
-        const userProfile = await fetchProfile(user.id);
-        setProfile(userProfile);
-        
-        const orgMembership = await fetchOrganizationMembership(user.id);
-        setOrganizationMembership(orgMembership);
-        
-        console.log('Refreshed profile:', userProfile);
-        console.log('Refreshed organization membership:', orgMembership);
-      } catch (error) {
-        console.error('Error refreshing user data:', error);
-      }
+      await loadUserData(user.id);
     }
   };
 
@@ -209,6 +217,7 @@ export const useAuth = () => {
     profile,
     organizationMembership,
     loading,
+    dataLoading,
     signOut,
     refreshProfile,
     isAuthenticated: !!session && !!user

@@ -9,9 +9,11 @@ import { EmailTemplates } from "@/components/profile/EmailTemplates";
 import { OrganizationSettings } from "@/components/organization/OrganizationSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 const ProfileSettings = () => {
-  const { organizationMembership, refreshProfile, loading } = useAuth();
+  const { organizationMembership, refreshProfile, loading, dataLoading } = useAuth();
   const canManageOrganization = organizationMembership?.role === 'owner' || organizationMembership?.role === 'admin';
 
   const breadcrumbs = [
@@ -46,11 +48,40 @@ const ProfileSettings = () => {
               <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
               <p className="mt-2 text-gray-600">Manage your account, preferences, and organization settings.</p>
             </div>
-            <Button variant="outline" onClick={handleRefreshData}>
-              Refresh Data
+            <Button 
+              variant="outline" 
+              onClick={handleRefreshData}
+              disabled={dataLoading}
+            >
+              {dataLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                'Refresh Data'
+              )}
             </Button>
           </div>
         </div>
+
+        {dataLoading && (
+          <Alert className="mb-6">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <AlertDescription>
+              Loading additional data...
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {!organizationMembership && !dataLoading && (
+          <Alert className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Organization data is temporarily unavailable. Some features may be limited.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className={`grid w-full ${canManageOrganization ? 'grid-cols-5' : 'grid-cols-4'}`}>

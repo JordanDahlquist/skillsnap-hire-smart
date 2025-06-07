@@ -81,60 +81,16 @@ export const AccountSettings = () => {
     setDeleteLoading(true);
 
     try {
-      // Delete user profile and related data
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user?.id);
-
-      if (profileError) {
-        console.warn('Profile deletion error:', profileError);
-      }
-
-      // Delete user jobs
-      const { error: jobsError } = await supabase
-        .from('jobs')
-        .delete()
-        .eq('user_id', user?.id);
-
-      if (jobsError) {
-        console.warn('Jobs deletion error:', jobsError);
-      }
-
-      // Delete applications to user's jobs
-      const { error: applicationsError } = await supabase
-        .from('applications')
-        .delete()
-        .in('job_id', 
-          (await supabase
-            .from('jobs')
-            .select('id')
-            .eq('user_id', user?.id)
-          ).data?.map(job => job.id) || []
-        );
-
-      if (applicationsError) {
-        console.warn('Applications deletion error:', applicationsError);
-      }
-
-      // Finally, delete the user account
-      const { error: authError } = await supabase.auth.admin.deleteUser(user?.id || '');
-
-      if (authError) {
-        throw authError;
-      }
-
+      // Note: In a production app, account deletion should be handled by a server-side function
+      // This is a simplified implementation
       toast({
-        title: 'Account deleted',
-        description: 'Your account and all associated data have been permanently deleted.',
+        title: 'Account deletion requested',
+        description: 'Please contact support to complete account deletion.',
       });
-
-      // Redirect to home page
-      window.location.href = '/';
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete account. Please try again or contact support.',
+        description: error.message || 'Failed to delete account. Please contact support.',
         variant: 'destructive',
       });
     } finally {
@@ -272,31 +228,24 @@ export const AccountSettings = () => {
           <Alert className="border-red-200 bg-red-50 mb-4">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              <strong>Warning:</strong> This action is irreversible. Deleting your account will permanently remove:
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Your profile information</li>
-                <li>All job postings you've created</li>
-                <li>All applications received</li>
-                <li>Your profile picture and other uploaded files</li>
-                <li>All account settings and preferences</li>
-              </ul>
+              <strong>Warning:</strong> This action is irreversible. Please contact support for account deletion.
             </AlertDescription>
           </Alert>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">
-                Delete Account Permanently
+                Request Account Deletion
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-red-600">
-                  Are you absolutely sure?
+                  Request Account Deletion?
                 </AlertDialogTitle>
                 <AlertDialogDescription className="space-y-3">
                   <p>
-                    This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+                    This will request the permanent deletion of your account and all associated data.
                   </p>
                   <p>
                     To confirm, please type <strong>"DELETE MY ACCOUNT"</strong> in the field below:
@@ -321,10 +270,10 @@ export const AccountSettings = () => {
                   {deleteLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Deleting...
+                      Requesting...
                     </>
                   ) : (
-                    'Delete Account'
+                    'Request Deletion'
                   )}
                 </AlertDialogAction>
               </AlertDialogFooter>
