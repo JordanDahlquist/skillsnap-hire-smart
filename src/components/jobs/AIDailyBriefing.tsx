@@ -2,6 +2,7 @@
 import { Loader2, Sparkles, TrendingUp, Users, Bell } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { Button } from "@/components/ui/button";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface AIDailyBriefingProps {
   userDisplayName: string;
@@ -16,21 +17,67 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     return `Good morning, ${userDisplayName}! Ready to find your next great hire? Your hiring dashboard is waiting for you.`;
   };
 
+  // Format the briefing content for better readability
+  const formatBriefingContent = (content: string) => {
+    // Split into sentences and format intelligently
+    const sentences = content.split(/(?<=[.!?])\s+/);
+    
+    if (sentences.length === 0) return content;
+    
+    // First sentence as greeting (usually starts with "Good morning" or similar)
+    const greeting = sentences[0];
+    const restContent = sentences.slice(1).join(' ');
+    
+    // Format the rest of the content with markdown-like parsing
+    const formattedRest = restContent
+      // Bold numbers and metrics
+      .replace(/(\d+\+?\s*(?:job|application|candidate|pending|approved|high-rated)[s]?)/gi, '**$1**')
+      // Bold job titles (assuming they're in quotes or after "job" mentions)
+      .replace(/"([^"]+)"/g, '**"$1"**')
+      // Bold attention indicators
+      .replace(/(need[s]?\s+attention|high[- ]rated|new\s+this\s+week)/gi, '**$1**');
+    
+    return { greeting, content: formattedRest };
+  };
+
   const getDisplayContent = () => {
     if (isLoading) {
       return (
         <div className="flex items-center gap-2">
-          <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-          <span>Generating your daily briefing...</span>
+          <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+          <span className="text-sm text-gray-600">Generating your daily briefing...</span>
         </div>
       );
     }
 
     if (error || !briefing) {
-      return getFallbackContent();
+      const fallback = getFallbackContent();
+      const formatted = formatBriefingContent(fallback);
+      return (
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold text-gray-900">{formatted.greeting}</h2>
+          {formatted.content && (
+            <div 
+              className="text-base text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: parseMarkdown(formatted.content) }}
+            />
+          )}
+        </div>
+      );
     }
 
-    return briefing.briefing_content;
+    const formatted = formatBriefingContent(briefing.briefing_content);
+    return (
+      <div className="space-y-2">
+        <h2 className="text-lg font-semibold text-gray-900">{formatted.greeting}</h2>
+        {formatted.content && (
+          <div 
+            className="text-base text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: parseMarkdown(formatted.content) }}
+          />
+        )}
+      </div>
+    );
   };
 
   const getInsightIcons = () => {
@@ -69,29 +116,29 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const insights = getInsightIcons();
 
   return (
-    <div className="py-8 px-8">
+    <div className="py-6 px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5 text-blue-500" />
-              <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-4 h-4 text-blue-500" />
+              <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">
                 AI Daily Briefing
               </span>
             </div>
             
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
+            <div className="max-w-4xl">
               {getDisplayContent()}
-            </h1>
+            </div>
             
             {insights && insights.length > 0 && (
-              <div className="flex flex-wrap items-center gap-4 text-sm">
+              <div className="flex flex-wrap items-center gap-4 text-sm pt-2">
                 {insights.map((insight, index) => {
                   const IconComponent = insight.icon;
                   return (
-                    <div key={index} className="flex items-center gap-1">
-                      <IconComponent className={`w-4 h-4 ${insight.color}`} />
-                      <span className="text-gray-600">{insight.label}</span>
+                    <div key={index} className="flex items-center gap-1.5">
+                      <IconComponent className={`w-3.5 h-3.5 ${insight.color}`} />
+                      <span className="text-gray-600 text-sm">{insight.label}</span>
                     </div>
                   );
                 })}
@@ -102,10 +149,10 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
           <div className="flex-shrink-0">
             <Button 
               onClick={onCreateJob}
-              className="bg-[#007af6] hover:bg-[#0056b3] text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              className="bg-[#007af6] hover:bg-[#0056b3] text-white px-6 py-3 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
               size="lg"
             >
-              <Users className="w-6 h-6 mr-3" />
+              <Users className="w-5 h-5 mr-2" />
               Create New Job
             </Button>
           </div>
