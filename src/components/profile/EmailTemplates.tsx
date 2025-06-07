@@ -93,7 +93,7 @@ Best regards,
     subject: "Thank you for interviewing - {position} at {company}",
     content: `Hi {name},
 
-Thank you for taking the time to interview for the {position} role at {company}. It was great getting to know you and learning about your experience.
+Thank you for taking the time to interview for the {position} role at {company}. It was great getting to know you and learning more about your background.
 
 We're currently reviewing all candidates and will have a decision within the next few days. We'll be in touch soon with an update on next steps.
 
@@ -115,7 +115,7 @@ After careful review of your application, we've determined that we're looking fo
 
 While your background shows promise, we believe this particular role requires additional years of hands-on experience that would better match our current project needs.
 
-We encourage you to continue developing your skills and consider applying for future opportunities that align with your experience level. We'll keep your information on file for roles that may be a better fit.
+We encourage you to continue developing your skills and consider applying for future opportunities that match your experience level. We'll keep your information on file for roles that may be a better fit.
 
 We wish you the best of luck in your job search!
 
@@ -310,7 +310,7 @@ export const EmailTemplates = () => {
       const { data, error } = await supabase
         .from('email_templates')
         .select('*')
-        .order('created_at', { ascending: true }); // Changed to ascending order for consistent display
+        .order('created_at', { ascending: true });
       
       if (error) throw error;
       return data as EmailTemplate[];
@@ -318,8 +318,73 @@ export const EmailTemplates = () => {
     enabled: !!user,
   });
 
-  // Auto-initialize preset templates for new users
-  const initializePresetsMutation = useMutation({
+  // Initialize missing preset templates
+  const initializeMissingTemplatesMutation = useMutation({
+    mutationFn: async () => {
+      // Get existing template names to compare
+      const existingTemplateNames = templates.map(t => t.name);
+      
+      // Find missing preset templates
+      const missingTemplates = PRESET_TEMPLATES.filter(
+        preset => !existingTemplateNames.includes(preset.name)
+      );
+
+      if (missingTemplates.length === 0) {
+        return [];
+      }
+
+      console.log('Adding missing templates:', missingTemplates.map(t => t.name));
+
+      const templatesToInsert = missingTemplates.map(preset => ({
+        ...preset,
+        user_id: user?.id,
+        variables: extractVariables(preset.content)
+      }));
+
+      const { data, error } = await supabase
+        .from('email_templates')
+        .insert(templatesToInsert)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (newTemplates) => {
+      if (newTemplates && newTemplates.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ['email-templates'] });
+        toast({
+          title: "Templates Added",
+          description: `Added ${newTemplates.length} missing email templates.`,
+        });
+      }
+    },
+    onError: (error) => {
+      console.error('Error adding missing templates:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add missing email templates.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Check for missing templates when user and templates data are available
+  useEffect(() => {
+    if (user && templates.length > 0 && !isLoading && !initializeMissingTemplatesMutation.isPending) {
+      const existingTemplateNames = templates.map(t => t.name);
+      const missingTemplates = PRESET_TEMPLATES.filter(
+        preset => !existingTemplateNames.includes(preset.name)
+      );
+      
+      if (missingTemplates.length > 0) {
+        console.log('Found missing templates, initializing...', missingTemplates.map(t => t.name));
+        initializeMissingTemplatesMutation.mutate();
+      }
+    }
+  }, [user, templates, isLoading]);
+
+  // Auto-initialize preset templates for completely new users (no templates at all)
+  const initializeAllPresetsMutation = useMutation({
     mutationFn: async () => {
       const presetsToInsert = PRESET_TEMPLATES.map(preset => ({
         ...preset,
@@ -340,10 +405,10 @@ export const EmailTemplates = () => {
     }
   });
 
-  // Auto-initialize preset templates when user has none
+  // Auto-initialize preset templates when user has none at all
   useEffect(() => {
     if (user && templates.length === 0 && !isLoading) {
-      initializePresetsMutation.mutate();
+      initializeAllPresetsMutation.mutate();
     }
   }, [user, templates.length, isLoading]);
 
@@ -487,6 +552,16 @@ export const EmailTemplates = () => {
         </Button>
       </div>
 
+      {/* Show loading state when adding missing templates */}
+      {initializeMissingTemplatesMutation.isPending && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <p className="text-gray-500 mb-4">Adding missing email templates...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          </CardContent>
+        </Card>
+      )}
+
       {(isCreating || editingTemplate) && (
         <Card>
           <CardHeader>
@@ -601,7 +676,7 @@ export const EmailTemplates = () => {
         ))}
       </div>
 
-      {templates.length === 0 && !isCreating && !initializePresetsMutation.isPending && (
+      {templates.length === 0 && !isCreating && !initializeAllPresetsMutation.isPending && (
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-gray-500 mb-4">Setting up your email templates...</p>
