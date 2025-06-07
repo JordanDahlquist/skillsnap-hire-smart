@@ -16,12 +16,25 @@ interface UserProfile {
   industry: string | null;
   daily_briefing_regenerations: number | null;
   last_regeneration_date: string | null;
+  default_organization_id: string | null;
+}
+
+interface OrganizationMembership {
+  id: string;
+  organization_id: string;
+  role: 'owner' | 'admin' | 'editor' | 'viewer';
+  organization: {
+    id: string;
+    name: string;
+    slug: string | null;
+  };
 }
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [organizationMembership, setOrganizationMembership] = useState<OrganizationMembership | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -46,6 +59,31 @@ export const useAuth = () => {
     }
   };
 
+  const fetchOrganizationMembership = async (userId: string) => {
+    try {
+      console.log('Fetching organization membership for user:', userId);
+      const { data, error } = await supabase
+        .from('organization_memberships')
+        .select(`
+          *,
+          organization:organizations(*)
+        `)
+        .eq('user_id', userId)
+        .single();
+      
+      if (error) {
+        console.warn('Organization membership fetch error:', error.message);
+        return null;
+      }
+      
+      console.log('Organization membership fetched successfully:', data);
+      return data;
+    } catch (error) {
+      console.warn('Organization membership fetch exception:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     console.log('Auth hook initializing...');
     
@@ -58,13 +96,17 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch profile in background, don't affect loading state
+          // Fetch profile and organization in background, don't affect loading state
           setTimeout(async () => {
             const userProfile = await fetchProfile(session.user.id);
             setProfile(userProfile);
+            
+            const orgMembership = await fetchOrganizationMembership(session.user.id);
+            setOrganizationMembership(orgMembership);
           }, 0);
         } else {
           setProfile(null);
+          setOrganizationMembership(null);
         }
         
         setLoading(false);
@@ -81,6 +123,9 @@ export const useAuth = () => {
       if (session?.user) {
         const userProfile = await fetchProfile(session.user.id);
         setProfile(userProfile);
+        
+        const orgMembership = await fetchOrganizationMembership(session.user.id);
+        setOrganizationMembership(orgMembership);
       }
       
       setLoading(false);
@@ -107,6 +152,7 @@ export const useAuth = () => {
       setUser(null);
       setSession(null);
       setProfile(null);
+      setOrganizationMembership(null);
       
       // Redirect to home page
       window.location.href = '/';
@@ -119,6 +165,9 @@ export const useAuth = () => {
     if (user?.id) {
       const userProfile = await fetchProfile(user.id);
       setProfile(userProfile);
+      
+      const orgMembership = await fetchOrganizationMembership(user.id);
+      setOrganizationMembership(orgMembership);
     }
   };
 
@@ -126,6 +175,7 @@ export const useAuth = () => {
     user,
     session,
     profile,
+    organizationMembership,
     loading,
     signOut,
     refreshProfile,

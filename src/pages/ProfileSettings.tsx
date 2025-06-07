@@ -1,132 +1,69 @@
 
-import React, { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Building, Settings, Camera, Mail } from 'lucide-react';
-import { ProfileForm } from '@/components/profile/ProfileForm';
-import { AccountSettings } from '@/components/profile/AccountSettings';
-import { HiringPreferences } from '@/components/profile/HiringPreferences';
-import { ProfilePictureUpload } from '@/components/profile/ProfilePictureUpload';
-import { EmailTemplates } from '@/components/profile/EmailTemplates';
-import { UnifiedHeader } from '@/components/UnifiedHeader';
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UnifiedHeader } from "@/components/UnifiedHeader";
+import { ProfileForm } from "@/components/profile/ProfileForm";
+import { AccountSettings } from "@/components/profile/AccountSettings";
+import { HiringPreferences } from "@/components/profile/HiringPreferences";
+import { EmailTemplates } from "@/components/profile/EmailTemplates";
+import { OrganizationSettings } from "@/components/organization/OrganizationSettings";
+import { useAuth } from "@/hooks/useAuth";
 
-export const ProfileSettings = () => {
-  const { user, profile, loading } = useAuth();
+const ProfileSettings = () => {
+  const { organizationMembership } = useAuth();
+  const canManageOrganization = organizationMembership?.role === 'owner' || organizationMembership?.role === 'admin';
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <UnifiedHeader 
-          breadcrumbs={[
-            { label: "Home", href: "/" },
-            { label: "Profile Settings", isCurrentPage: true }
-          ]}
-        />
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading profile...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <UnifiedHeader 
-          breadcrumbs={[
-            { label: "Home", href: "/" },
-            { label: "Profile Settings", isCurrentPage: true }
-          ]}
-        />
-        <div className="flex items-center justify-center py-12">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Access Denied</CardTitle>
-              <CardDescription>You must be logged in to access your profile settings.</CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  const breadcrumbs = [
+    { label: "Dashboard", href: "/jobs" },
+    { label: "Profile Settings", isCurrentPage: true },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <UnifiedHeader 
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Profile Settings", isCurrentPage: true }
-        ]}
-      />
+      <UnifiedHeader breadcrumbs={breadcrumbs} showCreateButton={false} />
       
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="text-gray-600 mt-2">Manage your account information and preferences</p>
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <p className="mt-2 text-gray-600">Manage your account, preferences, and organization settings.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Profile Picture Section */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Profile Picture
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ProfilePictureUpload />
-              </CardContent>
-            </Card>
-          </div>
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="account">Account</TabsTrigger>
+            <TabsTrigger value="preferences">Preferences</TabsTrigger>
+            <TabsTrigger value="templates">Templates</TabsTrigger>
+            {canManageOrganization && (
+              <TabsTrigger value="organization">Organization</TabsTrigger>
+            )}
+          </TabsList>
 
-          {/* Main Settings */}
-          <div className="lg:col-span-3">
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="profile" className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Profile
-                </TabsTrigger>
-                <TabsTrigger value="preferences" className="flex items-center gap-2">
-                  <Building className="w-4 h-4" />
-                  Hiring
-                </TabsTrigger>
-                <TabsTrigger value="emails" className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Email Templates
-                </TabsTrigger>
-                <TabsTrigger value="account" className="flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
-                  Account
-                </TabsTrigger>
-              </TabsList>
+          <TabsContent value="profile" className="space-y-6">
+            <ProfileForm />
+          </TabsContent>
 
-              <TabsContent value="profile" className="mt-6">
-                <ProfileForm />
-              </TabsContent>
+          <TabsContent value="account" className="space-y-6">
+            <AccountSettings />
+          </TabsContent>
 
-              <TabsContent value="preferences" className="mt-6">
-                <HiringPreferences />
-              </TabsContent>
+          <TabsContent value="preferences" className="space-y-6">
+            <HiringPreferences />
+          </TabsContent>
 
-              <TabsContent value="emails" className="mt-6">
-                <EmailTemplates />
-              </TabsContent>
+          <TabsContent value="templates" className="space-y-6">
+            <EmailTemplates />
+          </TabsContent>
 
-              <TabsContent value="account" className="mt-6">
-                <AccountSettings />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
+          {canManageOrganization && (
+            <TabsContent value="organization" className="space-y-6">
+              <OrganizationSettings />
+            </TabsContent>
+          )}
+        </Tabs>
       </div>
     </div>
   );
 };
+
+export default ProfileSettings;

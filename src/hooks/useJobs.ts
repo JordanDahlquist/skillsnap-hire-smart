@@ -16,17 +16,17 @@ export interface Job extends JobRow {
 }
 
 export const useJobs = () => {
-  const { user } = useAuth();
+  const { organizationMembership } = useAuth();
 
   return useQuery({
-    queryKey: ['user-jobs', user?.id],
+    queryKey: ['organization-jobs', organizationMembership?.organization_id],
     queryFn: async () => {
-      if (!user?.id) {
-        console.log('No user ID available for jobs query');
+      if (!organizationMembership?.organization_id) {
+        console.log('No organization ID available for jobs query');
         return [];
       }
       
-      console.log('Fetching jobs for user:', user.id);
+      console.log('Fetching jobs for organization:', organizationMembership.organization_id);
       
       const { data, error } = await supabase
         .from('jobs')
@@ -34,7 +34,7 @@ export const useJobs = () => {
           *,
           applications(count)
         `)
-        .eq('user_id', user.id)
+        .eq('organization_id', organizationMembership.organization_id)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -77,7 +77,7 @@ export const useJobs = () => {
       
       return jobsWithStatusCounts as Job[];
     },
-    enabled: !!user?.id,
+    enabled: !!organizationMembership?.organization_id,
     staleTime: 0,
     gcTime: 1000 * 60 * 5,
   });

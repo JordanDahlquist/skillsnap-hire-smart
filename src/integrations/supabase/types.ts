@@ -236,6 +236,50 @@ export type Database = {
         }
         Relationships: []
       }
+      invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_role"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          organization_id: string
+          role?: Database["public"]["Enums"]["organization_role"]
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["organization_role"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           ai_mini_description: string | null
@@ -251,6 +295,7 @@ export type Database = {
           generated_test: string | null
           id: string
           location_type: string | null
+          organization_id: string
           region: string | null
           required_skills: string
           role_type: string
@@ -274,6 +319,7 @@ export type Database = {
           generated_test?: string | null
           id?: string
           location_type?: string | null
+          organization_id: string
           region?: string | null
           required_skills: string
           role_type: string
@@ -297,6 +343,7 @@ export type Database = {
           generated_test?: string | null
           id?: string
           location_type?: string | null
+          organization_id?: string
           region?: string | null
           required_skills?: string
           role_type?: string
@@ -305,6 +352,73 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role?: Database["public"]["Enums"]["organization_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: Database["public"]["Enums"]["organization_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -315,6 +429,7 @@ export type Database = {
           created_at: string
           daily_briefing_regenerations: number | null
           default_location: string | null
+          default_organization_id: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -331,6 +446,7 @@ export type Database = {
           created_at?: string
           daily_briefing_regenerations?: number | null
           default_location?: string | null
+          default_organization_id?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -347,6 +463,7 @@ export type Database = {
           created_at?: string
           daily_briefing_regenerations?: number | null
           default_location?: string | null
+          default_organization_id?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -357,7 +474,15 @@ export type Database = {
           profile_picture_url?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_default_organization_id_fkey"
+            columns: ["default_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -367,7 +492,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      organization_role: "owner" | "admin" | "editor" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -482,6 +607,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      organization_role: ["owner", "admin", "editor", "viewer"],
+    },
   },
 } as const
