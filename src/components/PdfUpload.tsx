@@ -87,74 +87,58 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
 
   if (uploadedFile) {
     return (
-      <Card className="border-green-200 bg-green-50">
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">PDF uploaded successfully</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRemove}
-              className="text-green-600 hover:text-green-800 h-6 w-6 p-0"
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          </div>
-          <p className="text-xs text-green-600 mt-1">
-            The AI will use this as the basis for generating your job post.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded text-sm">
+        <div className="flex items-center gap-2">
+          <FileText className="w-3 h-3 text-green-600" />
+          <span className="text-green-800 font-medium">PDF uploaded successfully</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRemove}
+          className="text-green-600 hover:text-green-800 h-6 w-6 p-0"
+        >
+          <X className="w-3 h-3" />
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card 
-      className={`border-2 border-dashed transition-colors ${
+    <div 
+      className={`border border-dashed rounded p-2 transition-colors text-center ${
         isDragging ? 'border-purple-400 bg-purple-50' : 'border-gray-300 hover:border-gray-400'
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <CardContent className="p-4">
-        <div className="text-center">
-          {isProcessing ? (
-            <div className="flex flex-col items-center gap-2">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-              <p className="text-sm text-gray-600">Processing PDF...</p>
-            </div>
-          ) : (
-            <>
-              <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700 mb-1">
-                Upload existing job description (PDF)
-              </p>
-              <p className="text-xs text-gray-500 mb-3">
-                Drag and drop or click to select a PDF file
-              </p>
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={handleFileSelect}
-                className="hidden"
-                id="pdf-upload"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => document.getElementById('pdf-upload')?.click()}
-                className="h-8 px-3 text-sm"
-              >
-                Choose File
-              </Button>
-            </>
-          )}
+      {isProcessing ? (
+        <div className="flex items-center justify-center gap-2">
+          <div className="animate-spin rounded-full h-3 w-3 border-b border-purple-600"></div>
+          <span className="text-xs text-gray-600">Processing PDF...</span>
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        <div className="flex items-center justify-center gap-2">
+          <Upload className="w-3 h-3 text-gray-400" />
+          <span className="text-xs text-gray-600">Upload existing job description (PDF)</span>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={handleFileSelect}
+            className="hidden"
+            id="pdf-upload"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => document.getElementById('pdf-upload')?.click()}
+            className="h-6 px-2 text-xs"
+          >
+            Choose File
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };

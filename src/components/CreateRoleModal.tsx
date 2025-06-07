@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -570,7 +569,21 @@ export const CreateRoleModal = ({
                       Provide general requirements and description. The AI will use this to generate a polished job posting.
                     </FormDescription>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-3">
+                      <FormField control={form.control} name="description" render={({
+                      field
+                    }) => <FormItem>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Write job requirements and description here. This will guide the AI in generating your job posting." 
+                                className="resize-none" 
+                                rows={6} 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>} />
+                      
                       <PdfUpload 
                         onFileUpload={handlePdfUpload}
                         onRemove={handlePdfRemove}
@@ -589,20 +602,6 @@ export const CreateRoleModal = ({
                           </label>
                         </div>
                       )}
-
-                      <FormField control={form.control} name="description" render={({
-                      field
-                    }) => <FormItem>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Write job requirements and description here. This will guide the AI in generating your job posting." 
-                                className="resize-none" 
-                                rows={6} 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>} />
                     </div>
                   </div>
                 </div>
