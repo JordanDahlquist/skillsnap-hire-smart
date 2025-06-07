@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
 const ProfileSettings = () => {
-  const { organizationMembership, refreshProfile } = useAuth();
+  const { organizationMembership, refreshProfile, loading } = useAuth();
   const canManageOrganization = organizationMembership?.role === 'owner' || organizationMembership?.role === 'admin';
 
   const breadcrumbs = [
@@ -19,14 +19,21 @@ const ProfileSettings = () => {
     { label: "Profile Settings", isCurrentPage: true },
   ];
 
-  // Debug logging to help troubleshoot
-  console.log('ProfileSettings - Organization membership:', organizationMembership);
-  console.log('ProfileSettings - Can manage organization:', canManageOrganization);
-
   const handleRefreshData = async () => {
     console.log('Refreshing profile data...');
     await refreshProfile();
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007af6] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,18 +85,6 @@ const ProfileSettings = () => {
             </TabsContent>
           )}
         </Tabs>
-
-        {/* Debug information - remove this in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs">
-            <h3 className="font-medium mb-2">Debug Info:</h3>
-            <p>Organization Membership: {organizationMembership ? 'Found' : 'Not Found'}</p>
-            <p>Role: {organizationMembership?.role || 'None'}</p>
-            <p>Can Manage: {canManageOrganization ? 'Yes' : 'No'}</p>
-            <p>Organization ID: {organizationMembership?.organization_id || 'None'}</p>
-            <p>Organization Name: {organizationMembership?.organization?.name || 'None'}</p>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -34,39 +34,61 @@ export const useOrganizations = () => {
     queryFn: async () => {
       if (!user?.id) return [];
       
-      const { data, error } = await supabase
-        .from('organization_memberships')
-        .select(`
-          *,
-          organization:organizations(*)
-        `)
-        .eq('user_id', user.id);
-      
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('organization_memberships')
+          .select(`
+            *,
+            organization:organizations(*)
+          `)
+          .eq('user_id', user.id);
+        
+        if (error) {
+          console.error('Error fetching organizations:', error);
+          return [];
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error('Exception fetching organizations:', error);
+        return [];
+      }
     },
     enabled: !!user?.id,
+    retry: 2,
+    staleTime: 30000,
   });
 };
 
 export const useCurrentOrganization = () => {
-  const { profile } = useAuth();
+  const { organizationMembership } = useAuth();
   
   return useQuery({
-    queryKey: ['current-organization', profile?.default_organization_id],
+    queryKey: ['current-organization', organizationMembership?.organization_id],
     queryFn: async () => {
-      if (!profile?.default_organization_id) return null;
+      if (!organizationMembership?.organization_id) return null;
       
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', profile.default_organization_id)
-        .single();
-      
-      if (error) throw error;
-      return data as Organization;
+      try {
+        const { data, error } = await supabase
+          .from('organizations')
+          .select('*')
+          .eq('id', organizationMembership.organization_id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching current organization:', error);
+          return null;
+        }
+        
+        return data as Organization;
+      } catch (error) {
+        console.error('Exception fetching current organization:', error);
+        return null;
+      }
     },
-    enabled: !!profile?.default_organization_id,
+    enabled: !!organizationMembership?.organization_id,
+    retry: 2,
+    staleTime: 30000,
   });
 };
 
@@ -76,19 +98,30 @@ export const useOrganizationMembers = (organizationId: string | undefined) => {
     queryFn: async () => {
       if (!organizationId) return [];
       
-      const { data, error } = await supabase
-        .from('organization_memberships')
-        .select(`
-          *,
-          profiles!inner(full_name, email)
-        `)
-        .eq('organization_id', organizationId)
-        .order('created_at', { ascending: true });
-      
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('organization_memberships')
+          .select(`
+            *,
+            profiles!inner(full_name, email)
+          `)
+          .eq('organization_id', organizationId)
+          .order('created_at', { ascending: true });
+        
+        if (error) {
+          console.error('Error fetching organization members:', error);
+          return [];
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error('Exception fetching organization members:', error);
+        return [];
+      }
     },
     enabled: !!organizationId,
+    retry: 2,
+    staleTime: 30000,
   });
 };
 
@@ -117,6 +150,7 @@ export const useUpdateOrganization = () => {
       });
     },
     onError: (error) => {
+      console.error('Error updating organization:', error);
       toast({
         title: "Error",
         description: "Failed to update organization. Please try again.",

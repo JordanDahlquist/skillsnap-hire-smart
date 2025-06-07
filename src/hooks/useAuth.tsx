@@ -63,11 +63,11 @@ export const useAuth = () => {
     try {
       console.log('Fetching organization membership for user:', userId);
       
-      // First try to get the user's membership
       const { data: memberships, error: membershipsError } = await supabase
         .from('organization_memberships')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .limit(1);
       
       if (membershipsError) {
         console.warn('Organization membership fetch error:', membershipsError.message);
@@ -79,10 +79,8 @@ export const useAuth = () => {
         return null;
       }
 
-      // Get the first membership (users should typically have one primary membership)
       const membership = memberships[0];
       
-      // Fetch the organization details
       const { data: organization, error: orgError } = await supabase
         .from('organizations')
         .select('*')
@@ -110,7 +108,6 @@ export const useAuth = () => {
   useEffect(() => {
     console.log('Auth hook initializing...');
     
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id || 'No session');
@@ -119,19 +116,17 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch profile and organization in background, don't affect loading state
-          setTimeout(async () => {
+          // Fetch profile and organization data with error handling
+          try {
             const userProfile = await fetchProfile(session.user.id);
             setProfile(userProfile);
             
             const orgMembership = await fetchOrganizationMembership(session.user.id);
             setOrganizationMembership(orgMembership);
-            
-            // If no organization membership found, log for debugging
-            if (!orgMembership) {
-              console.log('User has no organization membership - Organization tab will not appear');
-            }
-          }, 0);
+          } catch (error) {
+            console.error('Error fetching user data:', error);
+            // Don't block the auth flow if data fetching fails
+          }
         } else {
           setProfile(null);
           setOrganizationMembership(null);
@@ -141,7 +136,6 @@ export const useAuth = () => {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.id || 'No session');
       
@@ -149,25 +143,25 @@ export const useAuth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const userProfile = await fetchProfile(session.user.id);
-        setProfile(userProfile);
-        
-        const orgMembership = await fetchOrganizationMembership(session.user.id);
-        setOrganizationMembership(orgMembership);
-        
-        // Debug logging
-        console.log('User profile loaded:', userProfile);
-        console.log('Organization membership loaded:', orgMembership);
+        try {
+          const userProfile = await fetchProfile(session.user.id);
+          setProfile(userProfile);
+          
+          const orgMembership = await fetchOrganizationMembership(session.user.id);
+          setOrganizationMembership(orgMembership);
+        } catch (error) {
+          console.error('Error fetching initial user data:', error);
+        }
       }
       
       setLoading(false);
     });
 
-    // Failsafe: ensure loading never stays true indefinitely
+    // Failsafe timeout
     const timeout = setTimeout(() => {
       console.log('Auth loading timeout reached, setting loading to false');
       setLoading(false);
-    }, 5000);
+    }, 3000);
 
     return () => {
       subscription.unsubscribe();
@@ -180,13 +174,11 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear all state
       setUser(null);
       setSession(null);
       setProfile(null);
       setOrganizationMembership(null);
       
-      // Redirect to home page
       window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
@@ -196,14 +188,18 @@ export const useAuth = () => {
   const refreshProfile = async () => {
     if (user?.id) {
       console.log('Refreshing profile and organization data...');
-      const userProfile = await fetchProfile(user.id);
-      setProfile(userProfile);
-      
-      const orgMembership = await fetchOrganizationMembership(user.id);
-      setOrganizationMembership(orgMembership);
-      
-      console.log('Refreshed profile:', userProfile);
-      console.log('Refreshed organization membership:', orgMembership);
+      try {
+        const userProfile = await fetchProfile(user.id);
+        setProfile(userProfile);
+        
+        const orgMembership = await fetchOrganizationMembership(user.id);
+        setOrganizationMembership(orgMembership);
+        
+        console.log('Refreshed profile:', userProfile);
+        console.log('Refreshed organization membership:', orgMembership);
+      } catch (error) {
+        console.error('Error refreshing user data:', error);
+      }
     }
   };
 

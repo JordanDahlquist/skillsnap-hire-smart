@@ -489,7 +489,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_organization_membership: {
+        Args: { user_uuid: string }
+        Returns: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: Database["public"]["Enums"]["organization_role"]
+          updated_at: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       organization_role: "owner" | "admin" | "editor" | "viewer"
