@@ -166,64 +166,51 @@ export const JobApplication = () => {
       console.log('LinkedIn connection detected, starting data retrieval...');
       setLinkedInDataLoading(true);
       
-      const checkForLinkedInData = (attempt = 1, maxAttempts = 10) => {
-        console.log(`Checking for LinkedIn data, attempt ${attempt}/${maxAttempts}`);
-        
-        const storedProfileData = sessionStorage.getItem('linkedin_profile_data');
-        const linkedInConnectedFlag = sessionStorage.getItem('linkedin_connected');
-        
-        console.log('Stored profile data exists:', !!storedProfileData);
-        console.log('LinkedIn connected flag:', linkedInConnectedFlag);
-        
-        if (storedProfileData) {
-          try {
-            const profileData = JSON.parse(storedProfileData);
-            console.log('Successfully parsed LinkedIn profile data:', profileData);
-            
-            handleLinkedInData(profileData);
-            
-            // Clean up session storage
-            sessionStorage.removeItem('linkedin_profile_data');
-            sessionStorage.removeItem('linkedin_connected');
-            
-            setLinkedInDataLoading(false);
-            
-            toast({
-              title: "LinkedIn connected!",
-              description: "Your profile information has been imported successfully.",
-            });
-            
-            return; // Exit the retry loop
-          } catch (error) {
-            console.error('Error parsing LinkedIn profile data:', error);
-            setLinkedInDataLoading(false);
-            toast({
-              title: "Profile import failed",
-              description: "Unable to parse your LinkedIn profile data. You can still fill out the form manually.",
-              variant: "destructive"
-            });
-            return;
-          }
-        } else if (attempt < maxAttempts) {
-          console.log(`LinkedIn data not found, retrying in 500ms (attempt ${attempt}/${maxAttempts})`);
-          setTimeout(() => {
-            checkForLinkedInData(attempt + 1, maxAttempts);
-          }, 500);
-        } else {
-          console.error('LinkedIn data not found after maximum attempts');
+      // Check immediately first
+      const storedProfileData = sessionStorage.getItem('linkedin_profile_data');
+      const linkedInConnectedFlag = sessionStorage.getItem('linkedin_connected');
+      
+      console.log('Stored profile data exists:', !!storedProfileData);
+      console.log('LinkedIn connected flag:', linkedInConnectedFlag);
+      
+      if (storedProfileData) {
+        try {
+          const profileData = JSON.parse(storedProfileData);
+          console.log('Successfully parsed LinkedIn profile data:', profileData);
+          
+          handleLinkedInData(profileData);
+          
+          // Clean up session storage
+          sessionStorage.removeItem('linkedin_profile_data');
+          sessionStorage.removeItem('linkedin_connected');
+          
+          setLinkedInDataLoading(false);
+          
+          toast({
+            title: "LinkedIn connected!",
+            description: "Your profile information has been imported successfully.",
+          });
+          
+          return;
+        } catch (error) {
+          console.error('Error parsing LinkedIn profile data:', error);
           setLinkedInDataLoading(false);
           toast({
-            title: "LinkedIn connection timeout",
-            description: "We couldn't retrieve your LinkedIn profile data in time. You can try connecting again or fill out the form manually.",
+            title: "Profile import failed",
+            description: "Unable to parse your LinkedIn profile data. You can still fill out the form manually.",
             variant: "destructive"
           });
+          return;
         }
-      };
-      
-      // Start checking for LinkedIn data with a small initial delay
-      setTimeout(() => {
-        checkForLinkedInData();
-      }, 200);
+      } else {
+        console.log('No LinkedIn data found in session storage');
+        setLinkedInDataLoading(false);
+        toast({
+          title: "No profile data found",
+          description: "No LinkedIn profile data was retrieved. You can try connecting again or fill out the form manually.",
+          variant: "destructive"
+        });
+      }
     }
   }, [searchParams, toast]);
 
@@ -248,6 +235,7 @@ export const JobApplication = () => {
   };
 
   const handleResumeData = (data: ParsedResumeData, filePath: string) => {
+    console.log('Handling resume data:', data);
     setParsedData(data);
     setResumeFile(filePath);
     setApplicationMethod('resume');
@@ -264,9 +252,24 @@ export const JobApplication = () => {
   };
 
   const handleLinkedInData = (data: ParsedResumeData) => {
-    console.log('Handling LinkedIn data:', data);
+    console.log('Handling LinkedIn data in JobApplication:', data);
     setParsedData(data);
-    setLinkedInProfile(data);
+    
+    // Set LinkedIn profile if it exists in the data
+    if (data.linkedInProfile) {
+      setLinkedInProfile(data.linkedInProfile);
+    } else {
+      // Create a basic LinkedIn profile from the data
+      setLinkedInProfile({
+        name: data.personalInfo?.name || "",
+        email: data.personalInfo?.email || "",
+        headline: data.summary || "",
+        location: data.personalInfo?.location || "",
+        positions: data.workExperience || [],
+        skills: data.skills || []
+      });
+    }
+    
     setApplicationMethod('linkedin');
     setResumeFile(null); // Clear resume if LinkedIn is connected
     
@@ -278,6 +281,14 @@ export const JobApplication = () => {
       phone: data.personalInfo?.phone || "",
       location: data.personalInfo?.location || "",
     }));
+
+    console.log('LinkedIn data processed, application method set to:', 'linkedin');
+    console.log('Form data updated:', {
+      name: data.personalInfo?.name,
+      email: data.personalInfo?.email,
+      phone: data.personalInfo?.phone,
+      location: data.personalInfo?.location
+    });
   };
 
   const handleRemoveResume = () => {

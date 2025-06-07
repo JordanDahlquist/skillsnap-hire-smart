@@ -42,7 +42,6 @@ export const LinkedInCallback = () => {
             const jobContext = JSON.parse(storedContext);
             jobId = jobContext.jobId;
             console.log('Parsed job ID from context:', jobId);
-            sessionStorage.removeItem('linkedin_job_context');
           } catch (error) {
             console.error('Error parsing stored job context:', error);
           }
@@ -50,7 +49,6 @@ export const LinkedInCallback = () => {
 
         if (storedRedirectUrl) {
           redirectUrl = storedRedirectUrl;
-          sessionStorage.removeItem('auth_redirect_url');
           console.log('Using stored redirect URL:', redirectUrl);
         } else if (jobId) {
           redirectUrl = `/apply/${jobId}`;
@@ -59,7 +57,7 @@ export const LinkedInCallback = () => {
 
         // Wait for OAuth session to be established
         console.log('Waiting for OAuth session...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
@@ -70,26 +68,44 @@ export const LinkedInCallback = () => {
 
         if (session?.user) {
           console.log('User authenticated successfully:', session.user.id);
+          console.log('User metadata:', session.user.user_metadata);
           
-          // Create transformed LinkedIn data from user metadata
+          // Create comprehensive LinkedIn data from user metadata
           const userMetadata = session.user.user_metadata;
+          const email = session.user.email || '';
+          
+          // Extract name parts
+          const fullName = userMetadata.full_name || userMetadata.name || email.split('@')[0] || "";
+          const nameParts = fullName.split(' ');
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
+          
           const transformedData = {
             personalInfo: {
-              name: userMetadata.full_name || userMetadata.name || session.user.email?.split('@')[0] || "",
-              email: session.user.email || "",
-              phone: "",
-              location: userMetadata.location || "",
+              name: fullName,
+              email: email,
+              phone: userMetadata.phone || "",
+              location: userMetadata.location || userMetadata.locale || "",
             },
-            workExperience: [],
-            education: [],
-            skills: [],
-            summary: userMetadata.headline || userMetadata.summary || "",
+            workExperience: userMetadata.positions || [],
+            education: userMetadata.education || [],
+            skills: userMetadata.skills || [],
+            summary: userMetadata.headline || userMetadata.summary || userMetadata.description || "",
             totalExperience: "0 years",
+            linkedInProfile: {
+              name: fullName,
+              email: email,
+              headline: userMetadata.headline || "",
+              location: userMetadata.location || "",
+              pictureUrl: userMetadata.avatar_url || userMetadata.picture,
+              positions: userMetadata.positions || [],
+              skills: userMetadata.skills || []
+            }
           };
 
           console.log('Transformed LinkedIn data:', transformedData);
 
-          // Store the data with timestamp
+          // Store the data with timestamp and clear flag
           const dataWithTimestamp = {
             ...transformedData,
             _timestamp: Date.now(),
@@ -98,6 +114,10 @@ export const LinkedInCallback = () => {
           
           sessionStorage.setItem('linkedin_profile_data', JSON.stringify(dataWithTimestamp));
           sessionStorage.setItem('linkedin_connected', 'true');
+          
+          // Clean up job context
+          sessionStorage.removeItem('linkedin_job_context');
+          sessionStorage.removeItem('auth_redirect_url');
           
           console.log('Stored LinkedIn data, redirecting to:', redirectUrl);
           
@@ -127,6 +147,8 @@ export const LinkedInCallback = () => {
         // Clean up stored data
         sessionStorage.removeItem('linkedin_job_context');
         sessionStorage.removeItem('auth_redirect_url');
+        sessionStorage.removeItem('linkedin_profile_data');
+        sessionStorage.removeItem('linkedin_connected');
         
         // Determine error redirect
         const storedContext = sessionStorage.getItem('linkedin_job_context');
