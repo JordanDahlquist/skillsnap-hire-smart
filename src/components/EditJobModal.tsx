@@ -203,10 +203,6 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
     }
   };
 
-  const canProceed = step === 1 ? 
-    formData.title && formData.description && formData.employmentType && formData.experience :
-    true;
-
   const isProjectBased = formData.employmentType === 'project' || formData.employmentType === 'contract-to-hire';
 
   const getEmploymentTypes = () => [
