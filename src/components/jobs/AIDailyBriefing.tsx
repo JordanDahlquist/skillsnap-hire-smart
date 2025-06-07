@@ -1,10 +1,11 @@
-
+import { useState } from "react";
 import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { parseMarkdown } from "@/utils/markdownParser";
+import { AnalyticsModal } from "@/components/analytics/AnalyticsModal";
 
 interface AIDailyBriefingProps {
   userDisplayName: string;
@@ -14,6 +15,7 @@ interface AIDailyBriefingProps {
 export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefingProps) => {
   const { data: briefing, isLoading, error } = useDailyBriefing();
   const { regenerate, isRegenerating, remainingRegenerations, canRegenerate } = useRegenerateBriefing();
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   // Fallback content
   const getFallbackContent = () => {
@@ -184,6 +186,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 variant="outline"
                 size="sm"
                 className="text-sm"
+                onClick={() => setShowAnalytics(true)}
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 View Analytics
@@ -201,6 +204,11 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
           </CardContent>
         </Card>
       </div>
+
+      <AnalyticsModal 
+        open={showAnalytics} 
+        onOpenChange={setShowAnalytics} 
+      />
     </div>
   );
 };
