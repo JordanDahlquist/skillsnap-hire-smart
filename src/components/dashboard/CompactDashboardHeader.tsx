@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
@@ -9,7 +8,9 @@ import {
   MoreHorizontal,
   Eye,
   Download,
-  Pencil
+  Pencil,
+  Archive,
+  ArchiveRestore
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -155,6 +156,62 @@ export const CompactDashboardHeader = ({
     setIsEditModalOpen(true);
   };
 
+  const handleArchiveJob = async () => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .update({ status: 'closed', updated_at: new Date().toISOString() })
+        .eq('id', job.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Job archived",
+        description: "Job has been archived successfully",
+      });
+      
+      onJobUpdate();
+    } catch (error) {
+      console.error('Error archiving job:', error);
+      toast({
+        title: "Error",
+        description: "Failed to archive job",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUnarchiveJob = async () => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .update({ status: 'active', updated_at: new Date().toISOString() })
+        .eq('id', job.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Job unarchived",
+        description: "Job has been unarchived and is now active",
+      });
+      
+      onJobUpdate();
+    } catch (error) {
+      console.error('Error unarchiving job:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unarchive job",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Calculate days running
   const startDate = new Date(job.created_at);
   const today = new Date();
@@ -166,6 +223,8 @@ export const CompactDashboardHeader = ({
     day: 'numeric',
     year: startDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
   });
+
+  const isArchived = job.status === 'closed';
 
   return (
     <>
@@ -221,7 +280,7 @@ export const CompactDashboardHeader = ({
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled={isUpdating}>
                     <MoreHorizontal className="w-4 h-4 text-gray-600" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -235,7 +294,17 @@ export const CompactDashboardHeader = ({
                     Export Data
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600">Archive Job</DropdownMenuItem>
+                  {isArchived ? (
+                    <DropdownMenuItem onClick={handleUnarchiveJob}>
+                      <ArchiveRestore className="w-4 h-4 mr-2" />
+                      Unarchive Job
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={handleArchiveJob} className="text-red-600">
+                      <Archive className="w-4 h-4 mr-2" />
+                      Archive Job
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

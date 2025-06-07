@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
@@ -9,7 +8,9 @@ import {
   Share2, 
   Download, 
   MoreHorizontal,
-  BarChart3
+  BarChart3,
+  Archive,
+  ArchiveRestore
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -135,7 +136,62 @@ export const EnhancedDashboardHeader = ({
     });
   };
 
-  // Mock performance indicator
+  const handleArchiveJob = async () => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .update({ status: 'closed', updated_at: new Date().toISOString() })
+        .eq('id', job.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Job archived",
+        description: "Job has been archived successfully",
+      });
+      
+      onJobUpdate();
+    } catch (error) {
+      console.error('Error archiving job:', error);
+      toast({
+        title: "Error",
+        description: "Failed to archive job",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUnarchiveJob = async () => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .update({ status: 'active', updated_at: new Date().toISOString() })
+        .eq('id', job.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Job unarchived",
+        description: "Job has been unarchived and is now active",
+      });
+      
+      onJobUpdate();
+    } catch (error) {
+      console.error('Error unarchiving job:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unarchive job",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const getPerformanceIndicator = () => {
     if (applications.length === 0) return { text: "New", color: "bg-gray-100 text-gray-800" };
     if (applications.length >= 20) return { text: "High Interest", color: "bg-green-100 text-green-800" };
@@ -144,6 +200,8 @@ export const EnhancedDashboardHeader = ({
   };
 
   const performanceIndicator = getPerformanceIndicator();
+
+  const isArchived = job.status === 'closed';
 
   return (
     <div className="bg-white border-b border-gray-200">
@@ -208,7 +266,7 @@ export const EnhancedDashboardHeader = ({
             {/* More Actions Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" disabled={isUpdating}>
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -222,9 +280,17 @@ export const EnhancedDashboardHeader = ({
                   Export Applications
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  Archive Job
-                </DropdownMenuItem>
+                {isArchived ? (
+                  <DropdownMenuItem onClick={handleUnarchiveJob}>
+                    <ArchiveRestore className="w-4 h-4 mr-2" />
+                    Unarchive Job
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={handleArchiveJob} className="text-red-600">
+                    <Archive className="w-4 h-4 mr-2" />
+                    Archive Job
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
