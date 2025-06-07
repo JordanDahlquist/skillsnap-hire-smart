@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
@@ -7,7 +8,8 @@ import {
   Share2, 
   MoreHorizontal,
   Eye,
-  Download
+  Download,
+  Pencil
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -20,10 +22,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EditJobModal } from "@/components/EditJobModal";
 
 interface Job {
   id: string;
   title: string;
+  description: string;
+  role_type: string;
+  employment_type?: string;
+  experience_level: string;
+  duration?: string;
+  budget: string;
+  required_skills: string;
+  location_type?: string;
+  country?: string;
+  state?: string;
+  region?: string;
+  city?: string;
+  generated_job_post?: string;
+  generated_test?: string;
   created_at: string;
   status: string;
 }
@@ -51,6 +68,7 @@ export const CompactDashboardHeader = ({
   onJobUpdate 
 }: CompactDashboardHeaderProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { toast } = useToast();
 
   const handleStatusChange = async (newStatus: string) => {
@@ -133,6 +151,10 @@ export const CompactDashboardHeader = ({
     });
   };
 
+  const handleEditJob = () => {
+    setIsEditModalOpen(true);
+  };
+
   // Calculate days running
   const startDate = new Date(job.created_at);
   const today = new Date();
@@ -146,75 +168,87 @@ export const CompactDashboardHeader = ({
   });
 
   return (
-    <div className="bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/jobs">
-                <ArrowLeft className="w-4 h-4 text-gray-600" />
-              </Link>
-            </Button>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-lg font-semibold text-gray-900">{job.title}</h1>
-                <Badge className={job.status === 'active' ? "bg-blue-100 text-blue-800" : job.status === 'paused' ? "bg-gray-100 text-gray-800" : job.status === 'closed' ? "bg-gray-100 text-gray-600" : "bg-gray-100 text-gray-800"}>
-                  {job.status}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
-                <span>Posted {getTimeAgo(job.created_at)}</span>
-                <span>•</span>
-                <span>Started {startDateFormatted}</span>
-                <span>•</span>
-                <span>{daysRunning} day{daysRunning !== 1 ? 's' : ''} running</span>
-                <span>•</span>
-                <span>{applications.length} applications</span>
-                <span>•</span>
-                <div className="flex items-center gap-1">
-                  <Eye className="w-3 h-3 text-gray-400" />
-                  <span>342 views</span>
+    <>
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/jobs">
+                  <ArrowLeft className="w-4 h-4 text-gray-600" />
+                </Link>
+              </Button>
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-lg font-semibold text-gray-900">{job.title}</h1>
+                  <Badge className={job.status === 'active' ? "bg-blue-100 text-blue-800" : job.status === 'paused' ? "bg-gray-100 text-gray-800" : job.status === 'closed' ? "bg-gray-100 text-gray-600" : "bg-gray-100 text-gray-800"}>
+                    {job.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+                  <span>Posted {getTimeAgo(job.created_at)}</span>
+                  <span>•</span>
+                  <span>Started {startDateFormatted}</span>
+                  <span>•</span>
+                  <span>{daysRunning} day{daysRunning !== 1 ? 's' : ''} running</span>
+                  <span>•</span>
+                  <span>{applications.length} applications</span>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <Eye className="w-3 h-3 text-gray-400" />
+                    <span>342 views</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <StatusDropdown
-              currentStatus={job.status}
-              onStatusChange={handleStatusChange}
-              disabled={isUpdating}
-            />
+            
+            <div className="flex items-center gap-2">
+              <StatusDropdown
+                currentStatus={job.status}
+                onStatusChange={handleStatusChange}
+                disabled={isUpdating}
+              />
 
-            <Button variant="outline" size="sm" onClick={handleShareJob}>
-              <Share2 className="w-4 h-4 text-gray-600" />
-            </Button>
+              <Button variant="outline" size="sm" onClick={handleShareJob}>
+                <Share2 className="w-4 h-4 text-gray-600" />
+              </Button>
 
-            <Button variant="outline" size="sm" asChild>
-              <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 text-gray-600" />
-              </a>
-            </Button>
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 text-gray-600" />
+                </a>
+              </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <MoreHorizontal className="w-4 h-4 text-gray-600" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>Edit Job</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportApplications}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Data
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">Archive Job</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <MoreHorizontal className="w-4 h-4 text-gray-600" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleEditJob}>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit Job
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportApplications}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Data
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-600">Archive Job</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <EditJobModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        job={job}
+        onJobUpdate={onJobUpdate}
+      />
+    </>
   );
 };
