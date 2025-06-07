@@ -1,7 +1,7 @@
 
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Job } from '@/hooks/useJobs';
+import { Job } from '@/types';
 import { HiringMetrics, PipelineData, TrendData, JobPerformance } from '@/hooks/useHiringAnalytics';
 
 interface ReportData {
