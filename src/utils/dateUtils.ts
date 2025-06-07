@@ -17,6 +17,12 @@ export const getStartOfWeek = (): Date => {
   return oneWeekAgo;
 };
 
+export const getStartOfMonth = (): Date => {
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  return oneMonthAgo;
+};
+
 export const getStartOfDay = (): Date => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
