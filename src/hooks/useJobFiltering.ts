@@ -12,6 +12,7 @@ export const useJobFiltering = (jobs: any[]) => {
   const [filters, setFilters] = useState<JobFilters>(defaultFilters);
   const [sortBy, setSortBy] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [needsAttentionFilter, setNeedsAttentionFilter] = useState(false);
 
   // Extract available options from jobs data
   const availableOptions = useMemo(() => {
@@ -20,9 +21,17 @@ export const useJobFiltering = (jobs: any[]) => {
 
   // Enhanced filtering with flexible matching and fallback logic
   const filteredJobs = useMemo(() => {
-    const filtered = applyJobFilters(jobs, searchTerm, filters);
+    let filtered = applyJobFilters(jobs, searchTerm, filters);
+    
+    // Apply needs attention filter if enabled
+    if (needsAttentionFilter) {
+      filtered = filtered.filter(job => 
+        (job.applicationStatusCounts?.pending || 0) >= 10
+      );
+    }
+    
     return sortJobs(filtered, sortBy, sortOrder);
-  }, [jobs, searchTerm, filters, sortBy, sortOrder]);
+  }, [jobs, searchTerm, filters, sortBy, sortOrder, needsAttentionFilter]);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
@@ -35,12 +44,14 @@ export const useJobFiltering = (jobs: any[]) => {
     if (filters.state !== "all") count++;
     if (filters.duration !== "all") count++;
     if (filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000) count++;
+    if (needsAttentionFilter) count++;
     return count;
-  }, [filters]);
+  }, [filters, needsAttentionFilter]);
 
   const clearFilters = () => {
     setSearchTerm("");
     setFilters(defaultFilters);
+    setNeedsAttentionFilter(false);
   };
 
   // Enhanced AI search apply function with flexible matching
@@ -51,6 +62,7 @@ export const useJobFiltering = (jobs: any[]) => {
     // Clear existing filters first
     setFilters(defaultFilters);
     setSearchTerm("");
+    setNeedsAttentionFilter(false);
     
     // Fix budget range if AI returned [0, 0]
     let budgetRange = aiFilters.budgetRange || [0, 200000];
@@ -91,6 +103,8 @@ export const useJobFiltering = (jobs: any[]) => {
     availableOptions,
     activeFiltersCount,
     clearFilters,
-    applyAiSearchResults
+    applyAiSearchResults,
+    needsAttentionFilter,
+    setNeedsAttentionFilter
   };
 };

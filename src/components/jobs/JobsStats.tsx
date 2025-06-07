@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Bell, Users, TrendingUp, BarChart3 } from "lucide-react";
@@ -5,12 +6,19 @@ import { JobStats } from "@/hooks/useJobStats";
 
 interface JobsStatsProps {
   stats: JobStats;
+  onNeedsAttentionClick?: () => void;
+  needsAttentionActive?: boolean;
 }
 
-export const JobsStats = ({ stats }: JobsStatsProps) => {
+export const JobsStats = ({ stats, onNeedsAttentionClick, needsAttentionActive }: JobsStatsProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <Card className="border-0 shadow-sm bg-white/80 backdrop-blur-sm">
+      <Card 
+        className={`border-0 shadow-sm bg-white/80 backdrop-blur-sm transition-all duration-200 ${
+          onNeedsAttentionClick ? 'cursor-pointer hover:shadow-md hover:scale-105' : ''
+        } ${needsAttentionActive ? 'ring-2 ring-orange-500 bg-orange-50/80' : ''}`}
+        onClick={onNeedsAttentionClick}
+      >
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -19,6 +27,11 @@ export const JobsStats = ({ stats }: JobsStatsProps) => {
               {stats.jobsNeedingAttention > 0 && (
                 <Badge className="mt-1 bg-orange-100 text-orange-600">
                   Needs Review
+                </Badge>
+              )}
+              {needsAttentionActive && (
+                <Badge className="mt-1 bg-orange-200 text-orange-700">
+                  Filtered
                 </Badge>
               )}
             </div>

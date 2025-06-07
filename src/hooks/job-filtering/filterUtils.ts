@@ -1,3 +1,4 @@
+
 import { JobFilters } from "./types";
 import { matchesSearchTerm } from "./jobMatching";
 
@@ -125,6 +126,10 @@ export const sortJobs = (jobs: any[], sortBy: string, sortOrder: "asc" | "desc")
       case "applications":
         aValue = a.applications?.[0]?.count || 0;
         bValue = b.applications?.[0]?.count || 0;
+        break;
+      case "needs_attention":
+        aValue = a.applicationStatusCounts?.pending || 0;
+        bValue = b.applicationStatusCounts?.pending || 0;
         break;
       case "created_at":
       case "updated_at":

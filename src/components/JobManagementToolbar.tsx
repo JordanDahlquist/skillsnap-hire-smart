@@ -31,6 +31,8 @@ interface JobManagementToolbarProps {
   onLocationFilterChange?: (location: string) => void;
   workTypeFilter?: string;
   onWorkTypeFilterChange?: (workType: string) => void;
+  needsAttentionFilter?: boolean;
+  activeFiltersCount?: number;
 }
 
 export const JobManagementToolbar = ({
@@ -47,7 +49,9 @@ export const JobManagementToolbar = ({
   locationFilter = 'all',
   onLocationFilterChange = () => {},
   workTypeFilter = 'all',
-  onWorkTypeFilterChange = () => {}
+  onWorkTypeFilterChange = () => {},
+  needsAttentionFilter = false,
+  activeFiltersCount = 0
 }: JobManagementToolbarProps) => {
   const statusOptions = [
     { value: 'all', label: 'All Status' },
@@ -67,6 +71,7 @@ export const JobManagementToolbar = ({
   const sortOptions = [
     { value: 'created_desc', label: 'Newest first' },
     { value: 'created_asc', label: 'Oldest first' },
+    { value: 'needs_attention', label: 'Needs attention' },
     { value: 'applications_desc', label: 'Most applications' },
     { value: 'applications_asc', label: 'Least applications' },
     { value: 'title_asc', label: 'Title A-Z' },
@@ -145,6 +150,16 @@ export const JobManagementToolbar = ({
             {selectedJobs.length > 0 && (
               <Badge variant="outline">
                 {selectedJobs.length} selected
+              </Badge>
+            )}
+            {activeFiltersCount > 0 && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-600">
+                {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
+              </Badge>
+            )}
+            {needsAttentionFilter && (
+              <Badge className="bg-orange-100 text-orange-600">
+                Showing jobs needing attention
               </Badge>
             )}
           </div>

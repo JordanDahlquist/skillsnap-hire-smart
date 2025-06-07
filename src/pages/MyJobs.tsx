@@ -40,7 +40,10 @@ const MyJobs = () => {
     sortBy,
     setSortBy,
     filteredJobs,
-    clearFilters
+    clearFilters,
+    needsAttentionFilter,
+    setNeedsAttentionFilter,
+    activeFiltersCount
   } = useJobFiltering(jobs);
 
   // Job selection
@@ -67,6 +70,23 @@ const MyJobs = () => {
       title: "Refreshed",
       description: "Job data has been updated",
     });
+  };
+
+  // Handle needs attention filter toggle
+  const handleNeedsAttentionClick = () => {
+    setNeedsAttentionFilter(!needsAttentionFilter);
+    if (!needsAttentionFilter) {
+      setSortBy("needs_attention");
+      toast({
+        title: "Filtered by Attention",
+        description: "Showing jobs with 10+ pending applications",
+      });
+    } else {
+      toast({
+        title: "Filter Cleared",
+        description: "Showing all jobs",
+      });
+    }
   };
 
   if (isLoading) {
@@ -98,7 +118,11 @@ const MyJobs = () => {
             userDisplayName={getUserDisplayName()}
             onCreateJob={() => setIsCreateModalOpen(true)}
           />
-          <JobsStats stats={stats} />
+          <JobsStats 
+            stats={stats} 
+            onNeedsAttentionClick={handleNeedsAttentionClick}
+            needsAttentionActive={needsAttentionFilter}
+          />
         </div>
       </div>
 
@@ -115,6 +139,8 @@ const MyJobs = () => {
         selectedJobs={selectedJobs}
         onBulkAction={handleBulkAction}
         onRefresh={handleRefresh}
+        needsAttentionFilter={needsAttentionFilter}
+        activeFiltersCount={activeFiltersCount}
       />
 
       <div className="max-w-7xl mx-auto px-8 py-8">
@@ -151,6 +177,11 @@ const MyJobs = () => {
           <div className="space-y-4">
             <div className="text-sm text-gray-600 mb-4">
               Showing {filteredJobs.length} of {jobs.length} total jobs
+              {needsAttentionFilter && (
+                <span className="ml-2 text-orange-600 font-medium">
+                  (filtered for jobs needing attention)
+                </span>
+              )}
             </div>
 
             {filteredJobs.length > 0 && (
