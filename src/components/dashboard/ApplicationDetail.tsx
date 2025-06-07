@@ -54,19 +54,30 @@ export const ApplicationDetail = ({
     
     setIsUpdating(true);
     try {
+      // Determine the new status based on current status and rating
+      let newStatus = selectedApplication.status;
+      if (selectedApplication.status === 'pending' && rating > 0) {
+        newStatus = 'reviewed';
+      }
+
       const { error } = await supabase
         .from('applications')
         .update({ 
           manual_rating: rating,
+          status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedApplication.id);
 
       if (error) throw error;
 
+      const statusMessage = newStatus !== selectedApplication.status 
+        ? ` and marked as reviewed`
+        : '';
+
       toast({
         title: "Rating updated",
-        description: `Candidate rated ${rating} star${rating > 1 ? 's' : ''}`,
+        description: `Candidate rated ${rating} star${rating > 1 ? 's' : ''}${statusMessage}`,
       });
       
       if (onApplicationUpdate) {
