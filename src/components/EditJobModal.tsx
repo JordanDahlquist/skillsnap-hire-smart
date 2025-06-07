@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, FileText, Users, MapPin } from "lucide-react";
+import { Loader2, Sparkles, FileText, ClipboardList, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LocationSelector } from "./LocationSelector";
 
@@ -116,39 +116,18 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const generateJobContent = async () => {
-    setLoading(true);
-    try {
-      const jobData = {
-        ...formData,
-        budget: formatBudgetRange(formData.budgetMin, formData.budgetMax)
-      };
+  const handleJobPostChange = (value: string) => {
+    setGeneratedJob(value);
+  };
 
-      const { data, error } = await supabase.functions.invoke('generate-job-content', {
-        body: { jobData }
-      });
-
-      if (error) throw error;
-
-      setGeneratedJob(data.jobPost);
-      setGeneratedTest(data.test);
-    } catch (error) {
-      console.error('Error generating job content:', error);
-      toast({
-        title: "Error generating content",
-        description: "Please try again or contact support if the problem persists.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleSkillsTestChange = (value: string) => {
+    setGeneratedTest(value);
   };
 
   const handleNext = async () => {
     if (step === 1) {
       setStep(2);
     } else if (step === 2) {
-      await generateJobContent();
       setStep(3);
     } else if (step === 3) {
       setStep(4);
@@ -282,11 +261,11 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
               Location
             </TabsTrigger>
             <TabsTrigger value="3" disabled={step < 3}>
-              <Sparkles className="w-4 h-4 mr-2" />
+              <FileText className="w-4 h-4 mr-2" />
               Job Post
             </TabsTrigger>
             <TabsTrigger value="4" disabled={step < 4}>
-              <Users className="w-4 h-4 mr-2" />
+              <ClipboardList className="w-4 h-4 mr-2" />
               Skills Test
             </TabsTrigger>
           </TabsList>
@@ -428,23 +407,25 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-600" />
-                  AI-Generated Job Post
+                  <FileText className="w-5 h-5 text-purple-600" />
+                  Job Post
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
-                    <span className="ml-2 text-gray-600">Regenerating your job post...</span>
-                  </div>
-                ) : (
-                  <div className="prose max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                      {generatedJob}
-                    </pre>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label htmlFor="jobPost">Edit your job posting</Label>
+                  <Textarea
+                    id="jobPost"
+                    placeholder="Enter your job posting content here..."
+                    value={generatedJob}
+                    onChange={(e) => handleJobPostChange(e.target.value)}
+                    rows={15}
+                    className="min-h-[300px] font-mono text-sm"
+                  />
+                  <p className="text-xs text-gray-500">
+                    This is the job posting that will be visible to applicants. Edit as needed.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -453,15 +434,24 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-purple-600" />
-                  AI-Generated Skills Test
+                  <ClipboardList className="w-5 h-5 text-purple-600" />
+                  Skills Test
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose max-w-none">
-                  <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
-                    {generatedTest}
-                  </pre>
+                <div className="space-y-2">
+                  <Label htmlFor="skillsTest">Edit your skills assessment</Label>
+                  <Textarea
+                    id="skillsTest"
+                    placeholder="Enter your skills test questions here..."
+                    value={generatedTest}
+                    onChange={(e) => handleSkillsTestChange(e.target.value)}
+                    rows={15}
+                    className="min-h-[300px] font-mono text-sm"
+                  />
+                  <p className="text-xs text-gray-500">
+                    These are the questions applicants will answer. Edit as needed.
+                  </p>
                 </div>
               </CardContent>
             </Card>
