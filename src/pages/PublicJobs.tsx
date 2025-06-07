@@ -1,18 +1,15 @@
 
-import { useState, useEffect } from "react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
-import { PublicJobCard } from "@/components/PublicJobCard";
-import { JobFilters } from "@/components/JobFilters";
-import { JobSorting } from "@/components/JobSorting";
-import { Briefcase } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { formatDistanceToNow } from "date-fns";
 import { useJobFiltering } from "@/hooks/useJobFiltering";
+import { usePublicJobs } from "@/hooks/usePublicJobs";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { PublicJobsHeader } from "@/components/public-jobs/PublicJobsHeader";
+import { PublicJobsFilters } from "@/components/public-jobs/PublicJobsFilters";
+import { PublicJobsList } from "@/components/public-jobs/PublicJobsList";
 
 const PublicJobs = () => {
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { jobs, loading, getTimeAgo } = usePublicJobs();
   
   const {
     searchTerm,
@@ -29,43 +26,6 @@ const PublicJobs = () => {
     clearFilters,
     applyAiSearchResults
   } = useJobFiltering(jobs);
-  
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  const fetchJobs = async () => {
-    setLoading(true);
-    try {
-      let query = supabase
-        .from('jobs')
-        .select(`
-          *,
-          applications(count)
-        `)
-        .eq('status', 'active')
-        .order('updated_at', { ascending: false });
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      
-      setJobs(data || []);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-      toast.error('Failed to load jobs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getTimeAgo = (dateString: string) => {
-    try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
-    } catch (error) {
-      return "recently";
-    }
-  };
 
   const handleAiSearch = async (prompt: string) => {
     try {
@@ -139,60 +99,31 @@ const PublicJobs = () => {
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <Briefcase className="w-8 h-8 mr-2 text-blue-600" />
-              Available Positions
-            </h1>
-            <p className="text-gray-600 mt-2">Explore open roles and find your perfect opportunity</p>
-          </div>
-        </div>
+        <PublicJobsHeader />
         
-        <JobFilters
+        <PublicJobsFilters
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           filters={filters}
           setFilters={setFilters}
-          onAiSearch={handleAiSearch}
-          onClearFilters={clearFilters}
-          availableOptions={availableOptions}
-          activeFiltersCount={activeFiltersCount}
-        />
-        
-        <JobSorting
           sortBy={sortBy}
           setSortBy={setSortBy}
           sortOrder={sortOrder}
           setSortOrder={setSortOrder}
+          onAiSearch={handleAiSearch}
+          onClearFilters={clearFilters}
+          availableOptions={availableOptions}
+          activeFiltersCount={activeFiltersCount}
           resultCount={filteredJobs.length}
         />
         
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-          </div>
-        ) : filteredJobs.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6">
-            {filteredJobs.map(job => (
-              <PublicJobCard 
-                key={job.id} 
-                job={job} 
-                getTimeAgo={getTimeAgo} 
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-1">No matching positions found</h3>
-            <p className="text-gray-500 max-w-md mx-auto">
-              {searchTerm || activeFiltersCount > 0 ? 
-                "Try using fewer specific terms or clearing some filters to see more opportunities" : 
-                "Check back soon for new opportunities"}
-            </p>
-          </div>
-        )}
+        <PublicJobsList
+          jobs={filteredJobs}
+          loading={loading}
+          searchTerm={searchTerm}
+          activeFiltersCount={activeFiltersCount}
+          getTimeAgo={getTimeAgo}
+        />
       </main>
     </div>
   );
