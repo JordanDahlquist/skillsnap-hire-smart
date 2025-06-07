@@ -124,6 +124,8 @@ const MyJobs = () => {
           <AIDailyBriefing 
             userDisplayName={getUserDisplayName()}
             onCreateJob={() => setIsCreateModalOpen(true)}
+            stats={stats}
+            onNeedsAttentionClick={handleNeedsAttentionClick}
           />
         </div>
       </div>

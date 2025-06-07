@@ -4,13 +4,21 @@ import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { parseMarkdown } from "@/utils/markdownParser";
+import { JobStats } from "@/hooks/useJobStats";
 
 interface AIDailyBriefingProps {
   userDisplayName: string;
   onCreateJob: () => void;
+  stats?: JobStats;
+  onNeedsAttentionClick?: () => void;
 }
 
-export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefingProps) => {
+export const AIDailyBriefing = ({ 
+  userDisplayName, 
+  onCreateJob, 
+  stats,
+  onNeedsAttentionClick 
+}: AIDailyBriefingProps) => {
   const { data: briefing, isLoading, error } = useDailyBriefing();
 
   // Fallback content
@@ -84,10 +92,15 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   };
 
   const getInsightCards = () => {
-    if (!briefing?.briefing_data) return [];
-
-    const data = briefing.briefing_data;
     const cards = [];
+
+    // Use briefing data if available, otherwise fall back to passed stats
+    const data = briefing?.briefing_data || {
+      jobs_needing_attention: stats?.jobsNeedingAttention || 0,
+      high_rated_applications: 0, // This would come from briefing data only
+      total_applications: stats?.totalApplications || 0,
+      applications_this_week: stats?.applicationsThisWeek || 0
+    };
 
     if (data.jobs_needing_attention > 0) {
       cards.push({
@@ -96,7 +109,8 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
         label: `Job${data.jobs_needing_attention === 1 ? '' : 's'} need attention`,
         color: "text-orange-600",
         bgColor: "bg-orange-50",
-        borderColor: "border-orange-200"
+        borderColor: "border-orange-200",
+        onClick: onNeedsAttentionClick
       });
     }
 
@@ -140,7 +154,11 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 {insightCards.map((card, index) => {
                   const IconComponent = card.icon;
                   return (
-                    <Card key={index} className={`${card.bgColor} ${card.borderColor} border`}>
+                    <Card 
+                      key={index} 
+                      className={`${card.bgColor} ${card.borderColor} border ${card.onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+                      onClick={card.onClick}
+                    >
                       <CardContent className="p-3">
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-lg bg-white/80 flex items-center justify-center`}>
