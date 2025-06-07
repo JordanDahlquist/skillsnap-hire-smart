@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import type { User, Session } from "@supabase/supabase-js";
 
 interface UserProfile {
   id: string;
@@ -18,6 +18,7 @@ interface UserProfile {
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +33,6 @@ export const useAuth = () => {
       
       if (error) {
         console.warn('Profile fetch error:', error.message);
-        // Don't throw error, just return null and continue
         return null;
       }
       
@@ -47,25 +47,12 @@ export const useAuth = () => {
   useEffect(() => {
     console.log('Auth hook initializing...');
     
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.id || 'No session');
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        // Fetch profile but don't block loading state
-        const userProfile = await fetchProfile(session.user.id);
-        setProfile(userProfile);
-      }
-      
-      // Always set loading to false after initial session check
-      setLoading(false);
-    });
-
-    // Listen for auth changes
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id || 'No session');
+        
+        setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
@@ -78,10 +65,24 @@ export const useAuth = () => {
           setProfile(null);
         }
         
-        // Set loading to false for auth state changes
         setLoading(false);
       }
     );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id || 'No session');
+      
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const userProfile = await fetchProfile(session.user.id);
+        setProfile(userProfile);
+      }
+      
+      setLoading(false);
+    });
 
     // Failsafe: ensure loading never stays true indefinitely
     const timeout = setTimeout(() => {
@@ -96,16 +97,36 @@ export const useAuth = () => {
   }, []);
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear all state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      // Redirect to home page
       window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (user?.id) {
+      const userProfile = await fetchProfile(user.id);
+      setProfile(userProfile);
     }
   };
 
   return {
     user,
+    session,
     profile,
     loading,
     signOut,
+    refreshProfile,
+    isAuthenticated: !!session && !!user
   };
 };
