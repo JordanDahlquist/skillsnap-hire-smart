@@ -8,9 +8,17 @@ interface JobsStatsProps {
   stats: JobStats;
   onNeedsAttentionClick?: () => void;
   needsAttentionActive?: boolean;
+  onActiveJobsClick?: () => void;
+  activeJobsFilterActive?: boolean;
 }
 
-export const JobsStats = ({ stats, onNeedsAttentionClick, needsAttentionActive }: JobsStatsProps) => {
+export const JobsStats = ({ 
+  stats, 
+  onNeedsAttentionClick, 
+  needsAttentionActive,
+  onActiveJobsClick,
+  activeJobsFilterActive
+}: JobsStatsProps) => {
   return (
     <div className="px-8 pb-4">
       <div className="max-w-7xl mx-auto">
@@ -49,13 +57,23 @@ export const JobsStats = ({ stats, onNeedsAttentionClick, needsAttentionActive }
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-lg">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 opacity-50" />
+          <Card 
+            className={`group relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 ${
+              onActiveJobsClick ? 'cursor-pointer hover:scale-[1.02]' : ''
+            } ${activeJobsFilterActive ? 'ring-1 ring-blue-400 shadow-blue-50' : ''}`}
+            onClick={onActiveJobsClick}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 opacity-50 group-hover:opacity-70 transition-opacity duration-200" />
             <CardContent className="relative p-4">
               <div className="flex items-start justify-between mb-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shadow-sm">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
                   <TrendingUp className="w-4 h-4 text-[#007af6]" />
                 </div>
+                {activeJobsFilterActive && (
+                  <Badge className="bg-blue-500 text-white border-0 px-1 py-0 text-[9px] font-medium h-3">
+                    ✓
+                  </Badge>
+                )}
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-gray-600 uppercase tracking-wide leading-tight">
@@ -64,6 +82,11 @@ export const JobsStats = ({ stats, onNeedsAttentionClick, needsAttentionActive }
                 <p className="text-lg font-bold text-[#007af6] leading-none">
                   {stats.activeJobs}
                 </p>
+                {activeJobsFilterActive && (
+                  <Badge className="bg-blue-200 text-blue-800 border-0 text-[8px] px-1 py-0 h-2.5">
+                    Active
+                  </Badge>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,8 @@ const MyJobs = () => {
     clearFilters,
     needsAttentionFilter,
     setNeedsAttentionFilter,
+    activeJobsFilter,
+    setActiveJobsFilter,
     activeFiltersCount
   } = useJobFiltering(jobs);
 
@@ -74,11 +77,30 @@ const MyJobs = () => {
   // Handle needs attention filter toggle
   const handleNeedsAttentionClick = () => {
     setNeedsAttentionFilter(!needsAttentionFilter);
+    setActiveJobsFilter(false); // Clear other filter
     if (!needsAttentionFilter) {
       setSortBy("needs_attention");
       toast({
         title: "Filtered by Attention",
         description: "Showing jobs with 10+ pending applications",
+      });
+    } else {
+      toast({
+        title: "Filter Cleared",
+        description: "Showing all jobs",
+      });
+    }
+  };
+
+  // Handle active jobs filter toggle
+  const handleActiveJobsClick = () => {
+    setActiveJobsFilter(!activeJobsFilter);
+    setNeedsAttentionFilter(false); // Clear other filter
+    if (!activeJobsFilter) {
+      setSortBy("updated_at");
+      toast({
+        title: "Filtered by Active Jobs",
+        description: "Showing only active job postings",
       });
     } else {
       toast({
@@ -130,6 +152,8 @@ const MyJobs = () => {
             stats={stats} 
             onNeedsAttentionClick={handleNeedsAttentionClick}
             needsAttentionActive={needsAttentionFilter}
+            onActiveJobsClick={handleActiveJobsClick}
+            activeJobsFilterActive={activeJobsFilter}
           />
         </div>
       </div>
@@ -195,6 +219,11 @@ const MyJobs = () => {
                 {needsAttentionFilter && (
                   <span className="ml-2 text-orange-600 font-medium">
                     (filtered for jobs needing attention)
+                  </span>
+                )}
+                {activeJobsFilter && (
+                  <span className="ml-2 text-blue-600 font-medium">
+                    (filtered for active jobs)
                   </span>
                 )}
               </div>

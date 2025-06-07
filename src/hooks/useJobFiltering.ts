@@ -13,6 +13,7 @@ export const useJobFiltering = (jobs: any[]) => {
   const [sortBy, setSortBy] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [needsAttentionFilter, setNeedsAttentionFilter] = useState(false);
+  const [activeJobsFilter, setActiveJobsFilter] = useState(false);
 
   // Extract available options from jobs data
   const availableOptions = useMemo(() => {
@@ -30,8 +31,15 @@ export const useJobFiltering = (jobs: any[]) => {
       );
     }
     
+    // Apply active jobs filter if enabled
+    if (activeJobsFilter) {
+      filtered = filtered.filter(job => 
+        job.status === 'active'
+      );
+    }
+    
     return sortJobs(filtered, sortBy, sortOrder);
-  }, [jobs, searchTerm, filters, sortBy, sortOrder, needsAttentionFilter]);
+  }, [jobs, searchTerm, filters, sortBy, sortOrder, needsAttentionFilter, activeJobsFilter]);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
@@ -45,13 +53,15 @@ export const useJobFiltering = (jobs: any[]) => {
     if (filters.duration !== "all") count++;
     if (filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000) count++;
     if (needsAttentionFilter) count++;
+    if (activeJobsFilter) count++;
     return count;
-  }, [filters, needsAttentionFilter]);
+  }, [filters, needsAttentionFilter, activeJobsFilter]);
 
   const clearFilters = () => {
     setSearchTerm("");
     setFilters(defaultFilters);
     setNeedsAttentionFilter(false);
+    setActiveJobsFilter(false);
   };
 
   // Enhanced AI search apply function with flexible matching
@@ -63,6 +73,7 @@ export const useJobFiltering = (jobs: any[]) => {
     setFilters(defaultFilters);
     setSearchTerm("");
     setNeedsAttentionFilter(false);
+    setActiveJobsFilter(false);
     
     // Fix budget range if AI returned [0, 0]
     let budgetRange = aiFilters.budgetRange || [0, 200000];
@@ -105,6 +116,8 @@ export const useJobFiltering = (jobs: any[]) => {
     clearFilters,
     applyAiSearchResults,
     needsAttentionFilter,
-    setNeedsAttentionFilter
+    setNeedsAttentionFilter,
+    activeJobsFilter,
+    setActiveJobsFilter
   };
 };
