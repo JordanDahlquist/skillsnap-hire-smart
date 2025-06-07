@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,29 +32,31 @@ export const AnalyticsModal = ({ open, onOpenChange }: AnalyticsModalProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
-          <DialogTitle className="text-2xl font-bold text-gray-900">
-            Hiring Analytics Dashboard
-          </DialogTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="text-xs"
-            >
-              <RefreshCw className="w-4 h-4 mr-1" />
-              Refresh
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              className="text-xs"
-            >
-              <Download className="w-4 h-4 mr-1" />
-              Export
-            </Button>
+        <DialogHeader className="pb-4 border-b pr-12">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Hiring Analytics Dashboard
+            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                className="text-xs"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                Refresh
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                className="text-xs"
+              >
+                <Download className="w-4 h-4 mr-1" />
+                Export
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
