@@ -119,14 +119,14 @@ export const EmailTemplates = () => {
     category: 'general'
   });
 
-  // Fetch email templates
+  // Fetch email templates with consistent ordering
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['email-templates'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('email_templates')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true }); // Changed to ascending order for consistent display
       
       if (error) throw error;
       return data as EmailTemplate[];
@@ -197,15 +197,16 @@ export const EmailTemplates = () => {
     }
   });
 
-  // Update template mutation
+  // Update template mutation - removed manual updated_at override
   const updateTemplateMutation = useMutation({
     mutationFn: async ({ id, ...templateData }: any) => {
       const { data, error } = await supabase
         .from('email_templates')
         .update({
           ...templateData,
-          variables: extractVariables(templateData.content),
-          updated_at: new Date().toISOString()
+          variables: extractVariables(templateData.content)
+          // Removed: updated_at: new Date().toISOString()
+          // Let Supabase handle updated_at automatically
         })
         .eq('id', id)
         .select()
