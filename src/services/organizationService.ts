@@ -1,12 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "./apiClient";
+import { logger } from "./loggerService";
 import { Organization } from "@/types";
 
 export const organizationService = {
   async fetchOrganization(organizationId: string): Promise<Organization> {
     return apiClient.query(async () => {
-      console.log('Fetching organization:', organizationId);
+      logger.debug('Fetching organization:', organizationId);
       
       const { data, error } = await supabase
         .from('organizations')
@@ -24,6 +25,7 @@ export const organizationService = {
 
   async updateOrganization(organizationId: string, updates: Partial<Organization>) {
     return apiClient.mutate(async () => {
+      logger.debug('Updating organization:', organizationId, updates);
       return await supabase
         .from('organizations')
         .update({ ...updates, updated_at: new Date().toISOString() })

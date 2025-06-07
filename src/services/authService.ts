@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "./apiClient";
+import { logger } from "./loggerService";
 
 export const authService = {
   async signOut() {
@@ -15,7 +16,7 @@ export const authService = {
       // Force page reload for clean state
       window.location.href = '/';
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.error('Error signing out:', error);
       // Force reload even if signOut fails
       window.location.href = '/';
     }
@@ -28,7 +29,7 @@ export const authService = {
 
   async fetchProfile(userId: string) {
     return apiClient.query(async () => {
-      console.log('Fetching profile for user:', userId);
+      logger.debug('Fetching profile for user:', userId);
       return await supabase
         .from('profiles')
         .select('*')
@@ -39,7 +40,7 @@ export const authService = {
 
   async fetchOrganizationMembership(userId: string) {
     return apiClient.query(async () => {
-      console.log('Fetching organization membership for user:', userId);
+      logger.debug('Fetching organization membership for user:', userId);
       
       const { data: memberships, error: membershipError } = await supabase
         .rpc('get_user_organization_membership_safe', { user_uuid: userId });

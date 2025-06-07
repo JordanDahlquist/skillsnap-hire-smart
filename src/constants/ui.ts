@@ -1,0 +1,36 @@
+
+export const UI_CONSTANTS = {
+  VIRTUAL_LIST: {
+    ITEM_HEIGHT: 200,
+    CONTAINER_HEIGHT: 800,
+    THRESHOLD_FOR_VIRTUALIZATION: 50,
+    OVERSCAN: 5
+  },
+  ANIMATIONS: {
+    SPINNER_SIZE: 'w-4 h-4',
+    LARGE_SPINNER_SIZE: 'w-12 h-12'
+  },
+  BREAKPOINTS: {
+    MOBILE: 'sm',
+    TABLET: 'md',
+    DESKTOP: 'lg'
+  },
+  RATE_LIMITS: {
+    MAX_ATTEMPTS: 5,
+    WINDOW_MS: 15 * 60 * 1000 // 15 minutes
+  }
+} as const;
+
+export const PERFORMANCE_CONSTANTS = {
+  DEBOUNCE_DELAY: 300,
+  THROTTLE_DELAY: 500,
+  CACHE_DURATION: 30000, // 30 seconds
+  MAX_RETRIES: 2
+} as const;
+
+export const VALIDATION_CONSTANTS = {
+  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+  MIN_PASSWORD_LENGTH: 8,
+  MAX_DESCRIPTION_LENGTH: 5000,
+  MAX_TITLE_LENGTH: 200
+} as const;

@@ -8,6 +8,7 @@ import { VirtualList } from "@/components/ui/virtual-list";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Job } from "@/types";
 import { logger } from "@/services/loggerService";
+import { UI_CONSTANTS } from "@/constants/ui";
 import { memo, useCallback } from "react";
 
 interface JobsContentProps {
@@ -144,7 +145,7 @@ export const JobsContent = memo(({
     );
   }
 
-  const useVirtualScrolling = filteredJobs.length > 50;
+  const useVirtualScrolling = filteredJobs.length > UI_CONSTANTS.VIRTUAL_LIST.THRESHOLD_FOR_VIRTUALIZATION;
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-8">
@@ -185,9 +186,10 @@ export const JobsContent = memo(({
           {useVirtualScrolling ? (
             <VirtualList
               items={filteredJobs}
-              itemHeight={200}
-              containerHeight={800}
+              itemHeight={UI_CONSTANTS.VIRTUAL_LIST.ITEM_HEIGHT}
+              containerHeight={UI_CONSTANTS.VIRTUAL_LIST.CONTAINER_HEIGHT}
               renderItem={renderJobItem}
+              overscan={UI_CONSTANTS.VIRTUAL_LIST.OVERSCAN}
             />
           ) : (
             filteredJobs.map((job) => (
