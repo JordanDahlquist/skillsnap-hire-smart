@@ -35,10 +35,8 @@ const MyJobs = () => {
   const {
     searchTerm,
     setSearchTerm,
-    statusFilter,
-    setStatusFilter,
-    workTypeFilter,
-    setWorkTypeFilter,
+    filters,
+    setFilters,
     sortBy,
     setSortBy,
     filteredJobs,
@@ -107,10 +105,10 @@ const MyJobs = () => {
       <JobManagementToolbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        workTypeFilter={workTypeFilter}
-        onWorkTypeFilterChange={setWorkTypeFilter}
+        statusFilter={filters.employmentType}
+        onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
+        workTypeFilter={filters.locationType}
+        onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
         sortBy={sortBy}
         onSortChange={setSortBy}
         totalJobs={jobs.length}
