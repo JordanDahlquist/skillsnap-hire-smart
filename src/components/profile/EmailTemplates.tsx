@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit2, Plus, Save, X, Download } from 'lucide-react';
+import { Trash2, Edit2, Plus, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface EmailTemplate {
@@ -111,7 +112,6 @@ export const EmailTemplates = () => {
   const queryClient = useQueryClient();
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [isLoadingPresets, setIsLoadingPresets] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     subject: '',
@@ -134,19 +134,10 @@ export const EmailTemplates = () => {
     enabled: !!user,
   });
 
-  // Load preset templates mutation
-  const loadPresetsMutation = useMutation({
+  // Auto-initialize preset templates for new users
+  const initializePresetsMutation = useMutation({
     mutationFn: async () => {
-      const existingTemplateNames = templates.map(t => t.name);
-      const newPresets = PRESET_TEMPLATES.filter(preset => 
-        !existingTemplateNames.includes(preset.name)
-      );
-
-      if (newPresets.length === 0) {
-        throw new Error('All preset templates already exist');
-      }
-
-      const presetsToInsert = newPresets.map(preset => ({
+      const presetsToInsert = PRESET_TEMPLATES.map(preset => ({
         ...preset,
         user_id: user?.id,
         variables: extractVariables(preset.content)
@@ -160,23 +151,17 @@ export const EmailTemplates = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-templates'] });
-      toast({
-        title: "Preset Templates Loaded",
-        description: `Successfully added ${data.length} preset email template${data.length > 1 ? 's' : ''}.`,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message === 'All preset templates already exist' 
-          ? "All preset templates have already been loaded." 
-          : "Failed to load preset templates.",
-        variant: error.message === 'All preset templates already exist' ? "default" : "destructive",
-      });
     }
   });
+
+  // Auto-initialize preset templates when user has none
+  useEffect(() => {
+    if (user && templates.length === 0 && !isLoading) {
+      initializePresetsMutation.mutate();
+    }
+  }, [user, templates.length, isLoading]);
 
   // Create template mutation
   const createTemplateMutation = useMutation({
@@ -298,12 +283,6 @@ export const EmailTemplates = () => {
     resetForm();
   };
 
-  const handleLoadPresets = () => {
-    setIsLoadingPresets(true);
-    loadPresetsMutation.mutate();
-    setIsLoadingPresets(false);
-  };
-
   if (isLoading) {
     return <div className="text-center py-4">Loading templates...</div>;
   }
@@ -317,22 +296,10 @@ export const EmailTemplates = () => {
             Create reusable email templates for candidate outreach. Use variables like {"{name}"}, {"{position}"}, {"{company}"} for personalization.
           </p>
         </div>
-        <div className="flex gap-2">
-          {templates.length === 0 && (
-            <Button 
-              variant="outline" 
-              onClick={handleLoadPresets}
-              disabled={isLoadingPresets || loadPresetsMutation.isPending}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Load Preset Templates
-            </Button>
-          )}
-          <Button onClick={() => setIsCreating(true)} disabled={isCreating || !!editingTemplate}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Template
-          </Button>
-        </div>
+        <Button onClick={() => setIsCreating(true)} disabled={isCreating || !!editingTemplate}>
+          <Plus className="w-4 h-4 mr-2" />
+          New Template
+        </Button>
       </div>
 
       {(isCreating || editingTemplate) && (
@@ -448,26 +415,11 @@ export const EmailTemplates = () => {
         ))}
       </div>
 
-      {templates.length === 0 && !isCreating && (
+      {templates.length === 0 && !isCreating && !initializePresetsMutation.isPending && (
         <Card>
           <CardContent className="text-center py-8">
-            <p className="text-gray-500 mb-4">No email templates created yet.</p>
-            <p className="text-sm text-gray-400 mb-6">
-              Get started quickly with our preset templates or create your own from scratch.
-            </p>
-            <div className="flex gap-2 justify-center">
-              <Button onClick={handleLoadPresets} disabled={isLoadingPresets || loadPresetsMutation.isPending}>
-                <Download className="w-4 h-4 mr-2" />
-                Load Preset Templates
-              </Button>
-              <Button variant="outline" onClick={() => setIsCreating(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Custom Template
-              </Button>
-            </div>
-            <div className="mt-4 text-xs text-gray-500">
-              Preset templates include: Interview Request, Application Received, Under Review, Rejection, and Follow-up
-            </div>
+            <p className="text-gray-500 mb-4">Setting up your email templates...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           </CardContent>
         </Card>
       )}
