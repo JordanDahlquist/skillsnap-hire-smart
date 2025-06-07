@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -30,14 +31,11 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { Plus, CopyCheck } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { generateMiniDescription, generateJobPost, generateTest } from "@/integrations/openai";
+import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useGenerateMiniDescription } from "@/hooks/useGenerateMiniDescription";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -67,11 +65,7 @@ interface CreateRoleModalProps {
 
 export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) => {
   const { user, organizationMembership } = useAuth();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedJobPost, setGeneratedJobPost] = useState<string | null>(null);
-  const [generatedTest, setGeneratedTest] = useState<string | null>(null);
-  const [isCopiedPost, setIsCopiedPost] = useState(false);
-  const [isCopiedTest, setIsCopiedTest] = useState(false);
+  const { generateMiniDescription } = useGenerateMiniDescription();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -90,71 +84,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
       state: "California",
       region: "Bay Area",
       city: "San Francisco",
-    },
-  });
-
-  const { mutate: generateMiniDesc } = useMutation({
-    mutationFn: async (description: string) => {
-      return await generateMiniDescription(description);
-    },
-    onSuccess: (data: any) => {
-      console.log('Generated mini description:', data);
-    },
-    onError: (error: any) => {
-      console.error('Error generating mini description:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate mini description. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const { mutate: generatePost } = useMutation({
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
-      setIsGenerating(true);
-      return await generateJobPost(values);
-    },
-    onSuccess: (data: any) => {
-      setIsGenerating(false);
-      setGeneratedJobPost(data);
-      toast({
-        title: "Generated",
-        description: "Job post generated successfully!",
-      });
-    },
-    onError: (error: any) => {
-      setIsGenerating(false);
-      console.error('Error generating job post:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate job post. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const { mutate: generateAssessment } = useMutation({
-    mutationFn: async (description: string) => {
-      setIsGenerating(true);
-      return await generateTest(description);
-    },
-    onSuccess: (data: any) => {
-      setIsGenerating(false);
-      setGeneratedTest(data);
-      toast({
-        title: "Generated",
-        description: "Assessment test generated successfully!",
-      });
-    },
-    onError: (error: any) => {
-      setIsGenerating(false);
-      console.error('Error generating assessment test:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate assessment test. Please try again.",
-        variant: "destructive",
-      });
     },
   });
 
@@ -203,38 +132,14 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         description: "Job created successfully!",
       });
 
-      generateMiniDesc(values.description);
-
-      if (generatedJobPost) {
-        const { error: updateError } = await supabase
-          .from('jobs')
-          .update({ generated_job_post: generatedJobPost })
-          .eq('id', data.id);
-
-        if (updateError) {
-          console.error('Error updating job post:', updateError);
-          toast({
-            title: "Error",
-            description: "Failed to update job post. Please try again.",
-            variant: "destructive",
-          });
-        }
-      }
-
-      if (generatedTest) {
-        const { error: updateError } = await supabase
-          .from('jobs')
-          .update({ generated_test: generatedTest })
-          .eq('id', data.id);
-
-        if (updateError) {
-          console.error('Error updating assessment test:', updateError);
-          toast({
-            title: "Error",
-            description: "Failed to update assessment test. Please try again.",
-            variant: "destructive",
-          });
-        }
+      // Generate mini description after job creation
+      if (data.id) {
+        await generateMiniDescription({
+          id: data.id,
+          title: values.title,
+          description: values.description,
+          role_type: values.role_type || 'full-time'
+        });
       }
 
       form.reset();
@@ -246,22 +151,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
         description: "Failed to create job. Please try again.",
         variant: "destructive",
       });
-    }
-  };
-
-  const handleCopyPost = () => {
-    if (generatedJobPost) {
-      navigator.clipboard.writeText(generatedJobPost);
-      setIsCopiedPost(true);
-      setTimeout(() => setIsCopiedPost(false), 2000);
-    }
-  };
-
-  const handleCopyTest = () => {
-    if (generatedTest) {
-      navigator.clipboard.writeText(generatedTest);
-      setIsCopiedTest(true);
-      setTimeout(() => setIsCopiedTest(false), 2000);
     }
   };
 
@@ -548,125 +437,6 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
                 )}
               />
             </div>
-
-            <div className="flex items-center space-x-2">
-              <FormField
-                control={form.control}
-                name="ai_generate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel>Generate Job Post with AI</FormLabel>
-                      <FormDescription>
-                        Generate a job post with AI based on the job description.
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {form.getValues("ai_generate") && (
-              <div className="space-y-4">
-                <Button
-                  type="button"
-                  className="bg-[#7928CA] hover:bg-[#a756f8] text-white"
-                  onClick={() => generatePost(form.getValues())}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                    <>
-                      Generating...
-                      <svg className="animate-spin h-5 w-5 ml-2" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    </>
-                  ) : (
-                    "Generate Job Post"
-                  )}
-                </Button>
-
-                {generatedJobPost && (
-                  <div className="space-y-2">
-                    <Textarea
-                      value={generatedJobPost}
-                      className="h-48 resize-none"
-                      readOnly
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleCopyPost}
-                      disabled={isCopiedPost}
-                      className="relative"
-                    >
-                      {isCopiedPost ? (
-                        <>
-                          <CopyCheck className="w-4 h-4 mr-2" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          Copy to Clipboard
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-
-                <Button
-                  type="button"
-                  className="bg-[#7928CA] hover:bg-[#a756f8] text-white"
-                  onClick={() => generateAssessment(form.getValues("description"))}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                    <>
-                      Generating...
-                      <svg className="animate-spin h-5 w-5 ml-2" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    </>
-                  ) : (
-                    "Generate Assessment Test"
-                  )}
-                </Button>
-
-                {generatedTest && (
-                  <div className="space-y-2">
-                    <Textarea
-                      value={generatedTest}
-                      className="h-48 resize-none"
-                      readOnly
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleCopyTest}
-                      disabled={isCopiedTest}
-                      className="relative"
-                    >
-                      {isCopiedTest ? (
-                        <>
-                          <CopyCheck className="w-4 h-4 mr-2" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          Copy to Clipboard
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
 
             <DialogFooter>
               <Button type="submit">Create Job</Button>
