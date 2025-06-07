@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -101,13 +100,12 @@ export const AccountSettings = () => {
 
       toast({
         title: 'Account deleted successfully',
-        description: 'Your account and all associated data have been permanently deleted.',
+        description: 'Your account and all associated data have been permanently deleted. You have been signed out.',
       });
 
-      // Sign out and redirect after a short delay
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
+      // Sign out the user after successful deletion
+      console.log('Signing out user after account deletion...');
+      await signOut();
 
     } catch (error: any) {
       console.error('Account deletion failed:', error);
