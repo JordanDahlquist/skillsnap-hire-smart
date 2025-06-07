@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -130,6 +129,31 @@ export const ApplicationDetail = ({
     }
   };
 
+  const renderAIRating = (rating: number | null) => {
+    if (!rating) {
+      return Array.from({ length: 3 }, (_, i) => (
+        <Star key={i} className="w-5 h-5 text-gray-300" />
+      ));
+    }
+
+    // Convert 5-star AI rating to 3-star scale
+    const convertedRating = (rating / 5) * 3;
+    
+    return Array.from({ length: 3 }, (_, i) => {
+      const starValue = i + 1;
+      const isActive = starValue <= Math.round(convertedRating);
+      
+      return (
+        <Star
+          key={i}
+          className={`w-5 h-5 ${
+            isActive ? 'text-green-500 fill-current' : 'text-gray-300'
+          }`}
+        />
+      );
+    });
+  };
+
   const renderManualRatingStars = (currentRating: number | null) => {
     return Array.from({ length: 3 }, (_, i) => {
       const starValue = i + 1;
@@ -162,6 +186,19 @@ export const ApplicationDetail = ({
               <p className="text-gray-600">{selectedApplication.email}</p>
             </div>
             <div className="flex flex-col gap-3">
+              {/* AI Review Section */}
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-sm font-medium text-gray-700">AI Review:</span>
+                <div className="flex gap-1">
+                  {renderAIRating(selectedApplication.ai_rating)}
+                </div>
+                {selectedApplication.ai_rating && (
+                  <span className="text-xs text-green-600 font-medium">
+                    {Math.round((selectedApplication.ai_rating / 5) * 3)}/3
+                  </span>
+                )}
+              </div>
+
               {/* Manual Rating Section */}
               <div className="flex flex-col items-end gap-2">
                 <span className="text-sm font-medium text-gray-700">Your Rating:</span>

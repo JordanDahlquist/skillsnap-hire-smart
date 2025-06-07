@@ -1,7 +1,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Star } from "lucide-react";
 
 interface Application {
   id: string;
@@ -31,31 +30,6 @@ export const ApplicationTabs = ({
   getRatingStars, 
   getTimeAgo 
 }: ApplicationTabsProps) => {
-  const renderAIRating = (rating: number | null) => {
-    if (!rating) {
-      return Array.from({ length: 3 }, (_, i) => (
-        <Star key={i} className="w-4 h-4 text-gray-300" />
-      ));
-    }
-
-    // Convert 5-star AI rating to 3-star scale
-    const convertedRating = (rating / 5) * 3;
-    
-    return Array.from({ length: 3 }, (_, i) => {
-      const starValue = i + 1;
-      const isActive = starValue <= Math.round(convertedRating);
-      
-      return (
-        <Star
-          key={i}
-          className={`w-4 h-4 ${
-            isActive ? 'text-green-500 fill-current' : 'text-gray-300'
-          }`}
-        />
-      );
-    });
-  };
-
   return (
     <Tabs defaultValue="summary" className="w-full">
       <TabsList className="grid w-full grid-cols-3">
@@ -66,14 +40,6 @@ export const ApplicationTabs = ({
 
       <TabsContent value="summary" className="space-y-4">
         <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-          {application.ai_rating && (
-            <div className="flex items-center gap-1">
-              {renderAIRating(application.ai_rating)}
-              <span className="text-lg font-semibold ml-2 text-green-600">
-                {Math.round((application.ai_rating / 5) * 3)}/3
-              </span>
-            </div>
-          )}
           <Badge className={getStatusColor(application.status)}>
             {application.status}
           </Badge>
