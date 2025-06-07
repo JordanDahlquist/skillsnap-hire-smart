@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -101,11 +100,16 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
     
     try {
       const jobData = {
-        ...values,
+        title: values.title,
+        description: values.description,
+        role_type: values.role_type || 'full-time',
+        experience_level: values.experience_level,
+        required_skills: values.required_skills,
+        budget: values.budget,
+        duration: values.duration,
         user_id: user.id,
         organization_id: organizationMembership.organization_id,
         status: values.status || 'draft',
-        experience_level: values.experience_level,
         employment_type: values.employment_type || 'project',
         location_type: values.location_type,
         country: values.country,

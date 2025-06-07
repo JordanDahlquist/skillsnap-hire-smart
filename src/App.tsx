@@ -12,7 +12,7 @@ import PublicJobs from "./pages/PublicJobs";
 import { LinkedInCallback } from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import { ProfileSettings } from "./pages/ProfileSettings";
+import ProfileSettings from "./pages/ProfileSettings";
 import { Dashboard } from "./components/Dashboard";
 import { JobApplicationPage } from "./pages/JobApplicationPage";
 

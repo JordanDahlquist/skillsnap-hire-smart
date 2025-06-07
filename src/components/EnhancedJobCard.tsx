@@ -172,8 +172,21 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
       if (!originalJob) throw new Error('Job not found');
 
       const { 
-        title, description, role_type, experience_level, budget, required_skills, duration, user_id,
-        location_type, country, state, region, city 
+        title, 
+        description, 
+        role_type, 
+        experience_level, 
+        budget, 
+        required_skills, 
+        duration, 
+        user_id,
+        organization_id,
+        employment_type,
+        location_type, 
+        country, 
+        state, 
+        region, 
+        city 
       } = originalJob;
       
       const { error } = await supabase
@@ -187,6 +200,8 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
           required_skills,
           duration,
           user_id,
+          organization_id,
+          employment_type,
           location_type,
           country,
           state,

@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface Invitation {
   id: string;
@@ -14,6 +15,46 @@ export interface Invitation {
   accepted_at: string | null;
   created_at: string;
 }
+
+export interface OrganizationMember {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  role: 'owner' | 'admin' | 'editor' | 'viewer';
+  created_at: string;
+  updated_at: string;
+  profiles?: {
+    id: string;
+    full_name: string | null;
+    email: string | null;
+  };
+}
+
+export const useOrganizationMembers = (organizationId: string | undefined) => {
+  return useQuery({
+    queryKey: ['organization-members', organizationId],
+    queryFn: async () => {
+      if (!organizationId) return [];
+      
+      const { data, error } = await supabase
+        .from('organization_memberships')
+        .select(`
+          *,
+          profiles (
+            id,
+            full_name,
+            email
+          )
+        `)
+        .eq('organization_id', organizationId)
+        .order('created_at', { ascending: true });
+      
+      if (error) throw error;
+      return data as OrganizationMember[];
+    },
+    enabled: !!organizationId,
+  });
+};
 
 export const useInvitations = (organizationId: string | undefined) => {
   return useQuery({
@@ -39,6 +80,7 @@ export const useInvitations = (organizationId: string | undefined) => {
 export const useSendInvitation = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ 
@@ -50,6 +92,10 @@ export const useSendInvitation = () => {
       email: string; 
       role: 'admin' | 'editor' | 'viewer';
     }) => {
+      if (!user?.id) {
+        throw new Error('User must be logged in to send invitations');
+      }
+
       // Generate a secure random token
       const token = crypto.randomUUID();
       
@@ -59,6 +105,7 @@ export const useSendInvitation = () => {
           organization_id: organizationId,
           email: email.toLowerCase(),
           role,
+          invited_by: user.id,
           token,
         })
         .select()
