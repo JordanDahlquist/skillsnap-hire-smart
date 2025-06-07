@@ -1,4 +1,3 @@
-
 import { Loader2, Sparkles, TrendingUp, Users, Bell } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,9 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     // Split into sentences and format intelligently
     const sentences = content.split(/(?<=[.!?])\s+/);
     
-    if (sentences.length === 0) return content;
+    if (sentences.length === 0) {
+      return { greeting: content, content: '' };
+    }
     
     // First sentence as greeting (usually starts with "Good morning" or similar)
     const greeting = sentences[0];
@@ -58,7 +59,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
           <h2 className="text-lg font-semibold text-gray-900">{formatted.greeting}</h2>
           {formatted.content && (
             <div 
-              className="text-base text-gray-700 leading-relaxed"
+              className="text-sm text-gray-700 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: parseMarkdown(formatted.content) }}
             />
           )}
@@ -72,7 +73,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
         <h2 className="text-lg font-semibold text-gray-900">{formatted.greeting}</h2>
         {formatted.content && (
           <div 
-            className="text-base text-gray-700 leading-relaxed"
+            className="text-sm text-gray-700 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: parseMarkdown(formatted.content) }}
           />
         )}
@@ -116,12 +117,12 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const insights = getInsightIcons();
 
   return (
-    <div className="py-6 px-8">
+    <div className="py-4 px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-          <div className="space-y-3 flex-1">
+          <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4 text-blue-500" />
+              <Sparkles className="w-3 h-3 text-blue-500" />
               <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">
                 AI Daily Briefing
               </span>
@@ -132,13 +133,13 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
             </div>
             
             {insights && insights.length > 0 && (
-              <div className="flex flex-wrap items-center gap-4 text-sm pt-2">
+              <div className="flex flex-wrap items-center gap-4 text-sm pt-1">
                 {insights.map((insight, index) => {
                   const IconComponent = insight.icon;
                   return (
                     <div key={index} className="flex items-center gap-1.5">
-                      <IconComponent className={`w-3.5 h-3.5 ${insight.color}`} />
-                      <span className="text-gray-600 text-sm">{insight.label}</span>
+                      <IconComponent className={`w-3 h-3 ${insight.color}`} />
+                      <span className="text-gray-600 text-xs">{insight.label}</span>
                     </div>
                   );
                 })}
