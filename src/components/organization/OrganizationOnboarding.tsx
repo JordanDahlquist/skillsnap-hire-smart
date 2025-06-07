@@ -54,7 +54,7 @@ export const OrganizationOnboarding = ({ isOpen, onComplete }: OrganizationOnboa
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[500px]" hideClose>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="w-5 h-5" />

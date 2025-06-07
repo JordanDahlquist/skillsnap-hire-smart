@@ -129,7 +129,7 @@ const MyJobs = () => {
     <div className="min-h-screen bg-gray-50">
       <UnifiedHeader 
         breadcrumbs={breadcrumbs}
-        onCreateRole={() => setIsCreateModalOpen(true)}
+        onCreateClick={() => setIsCreateModalOpen(true)}
         showCreateButton={true}
       />
 
