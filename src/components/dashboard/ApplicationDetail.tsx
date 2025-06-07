@@ -163,8 +163,10 @@ export const ApplicationDetail = ({
   };
 
   const renderManualRatingStars = (currentRating: number | null) => {
+    const shimmerClasses = ['animate-star-shimmer-1', 'animate-star-shimmer-2', 'animate-star-shimmer-3'];
+    
     return (
-      <div className={`flex gap-1 ${!currentRating ? 'animate-star-glow' : ''}`}>
+      <div className="flex gap-1">
         {Array.from({ length: 3 }, (_, i) => {
           const starValue = i + 1;
           const isActive = currentRating && starValue <= currentRating;
@@ -176,7 +178,7 @@ export const ApplicationDetail = ({
               disabled={isUpdating}
               className={`transition-all duration-200 hover:scale-110 disabled:opacity-50 ${
                 isActive ? 'text-blue-500' : 'text-gray-300 hover:text-blue-400'
-              }`}
+              } ${!currentRating ? shimmerClasses[i] : ''}`}
             >
               <Star 
                 className={`w-6 h-6 ${isActive ? 'fill-current' : ''}`}
