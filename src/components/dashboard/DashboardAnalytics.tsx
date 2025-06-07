@@ -1,6 +1,6 @@
 
-import { CompactDashboardHeader } from "./CompactDashboardHeader";
-import { getTimeAgo } from "@/utils/dateUtils";
+import { ApplicationTrendsChart } from "./ApplicationTrendsChart";
+import { PerformanceMetrics } from "./PerformanceMetrics";
 
 interface Application {
   id: string;
@@ -32,19 +32,16 @@ interface Job {
   created_at: string;
 }
 
-interface DashboardHeaderProps {
-  job: Job;
+interface DashboardAnalyticsProps {
   applications: Application[];
-  onJobUpdate: () => void;
+  job: Job;
 }
 
-export const DashboardHeader = ({ job, applications, onJobUpdate }: DashboardHeaderProps) => {
+export const DashboardAnalytics = ({ applications, job }: DashboardAnalyticsProps) => {
   return (
-    <CompactDashboardHeader 
-      job={job} 
-      applications={applications}
-      getTimeAgo={getTimeAgo}
-      onJobUpdate={onJobUpdate}
-    />
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <ApplicationTrendsChart applications={applications} />
+      <PerformanceMetrics applications={applications} job={job} />
+    </div>
   );
 };
