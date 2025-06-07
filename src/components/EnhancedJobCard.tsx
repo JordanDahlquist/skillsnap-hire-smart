@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,8 @@ import {
   Calendar,
   MapPin,
   Pencil,
-  Loader2
+  Loader2,
+  Bell
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,11 @@ type JobRow = Database['public']['Tables']['jobs']['Row'];
 
 interface Job extends JobRow {
   applications?: { count: number }[];
+  applicationStatusCounts?: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
 }
 
 interface EnhancedJobCardProps {
@@ -44,6 +49,9 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { toast } = useToast();
   const { generateMiniDescription } = useGenerateMiniDescription();
+
+  // Check if job needs attention (10+ pending applications)
+  const needsAttention = (job.applicationStatusCounts?.pending || 0) >= 10;
 
   // Automatically generate mini description for jobs that don't have one
   useEffect(() => {
@@ -226,6 +234,12 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
                     {job.title}
                   </Link>
                 </CardTitle>
+                {needsAttention && (
+                  <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-xs font-medium">
+                    <Bell className="w-3 h-3" />
+                    <span>Needs attention</span>
+                  </div>
+                )}
               </div>
               
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
@@ -282,7 +296,7 @@ export const EnhancedJobCard = ({ job, onJobUpdate, getTimeAgo }: EnhancedJobCar
                   size="sm"
                 />
               </div>
-              {applicationsCount > 10 && (
+              {applicationsCount > 10 && !needsAttention && (
                 <Badge variant="outline" className="text-green-600 border-green-200">
                   High Interest
                 </Badge>
