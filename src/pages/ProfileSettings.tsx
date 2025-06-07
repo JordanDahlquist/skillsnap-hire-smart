@@ -10,7 +10,7 @@ import { OrganizationSettings } from "@/components/organization/OrganizationSett
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertTriangle, Info } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 const ProfileSettings = () => {
   const { user, organizationMembership, refreshProfile, loading, dataLoading } = useAuth();
@@ -65,26 +65,7 @@ const ProfileSettings = () => {
           </div>
         </div>
 
-        {/* Debug information */}
-        {user && (
-          <Alert className="mb-6">
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              <div className="space-y-1 text-sm">
-                <p><strong>User ID:</strong> {user.id}</p>
-                <p><strong>Organization Status:</strong> {
-                  dataLoading 
-                    ? 'Loading...' 
-                    : organizationMembership 
-                      ? `${organizationMembership.role} of ${organizationMembership.organization.name}` 
-                      : 'No organization membership found'
-                }</p>
-                <p><strong>Can Manage Organization:</strong> {canManageOrganization ? 'Yes' : 'No'}</p>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-
+        {/* Show loading state while organization data is being fetched */}
         {dataLoading && (
           <Alert className="mb-6">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -94,11 +75,13 @@ const ProfileSettings = () => {
           </Alert>
         )}
 
+        {/* Show error only if data loading is complete and no organization is found */}
         {!organizationMembership && !dataLoading && (
           <Alert className="mb-6">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Organization data is not available. If you believe this is an error, try refreshing the data using the button above.
+              Unable to load organization information. You may need to be invited to an organization or create one. 
+              Try refreshing the data using the button above.
             </AlertDescription>
           </Alert>
         )}
