@@ -9,8 +9,8 @@ interface PublicJobsFiltersProps {
   setFilters: (filters: any) => void;
   sortBy: string;
   setSortBy: (sortBy: string) => void;
-  sortOrder: string;
-  setSortOrder: (order: string) => void;
+  sortOrder: "asc" | "desc";
+  setSortOrder: (order: "asc" | "desc") => void;
   onAiSearch: (prompt: string) => Promise<void>;
   onClearFilters: () => void;
   availableOptions: any;
