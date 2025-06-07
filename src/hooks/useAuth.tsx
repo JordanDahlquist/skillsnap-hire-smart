@@ -60,28 +60,24 @@ export const useAuth = () => {
     }
   };
 
-  const fetchOrganizationMembership = async (userId: string) => {
+  const fetchOrganizationMembership = async (userId: string, retryCount = 0) => {
     try {
-      console.log('Fetching organization membership for user:', userId);
+      console.log('Fetching organization membership for user:', userId, 'attempt:', retryCount + 1);
       
-      // Get user's membership with organization details
+      // Use the new security definer function to safely fetch membership data
       const { data: memberships, error: membershipsError } = await supabase
-        .from('organization_memberships')
-        .select(`
-          id,
-          organization_id,
-          role,
-          organization:organizations(
-            id,
-            name,
-            slug
-          )
-        `)
-        .eq('user_id', userId)
-        .limit(1);
+        .rpc('get_user_organization_membership_safe', { user_uuid: userId });
       
       if (membershipsError) {
         console.error('Organization membership fetch error:', membershipsError);
+        
+        // If it's a permission error and we haven't retried much, try again
+        if (retryCount < 2 && membershipsError.message?.includes('permission')) {
+          console.log('Retrying organization membership fetch due to permission error...');
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+          return fetchOrganizationMembership(userId, retryCount + 1);
+        }
+        
         return null;
       }
 
@@ -90,8 +86,20 @@ export const useAuth = () => {
         return null;
       }
 
-      const membership = memberships[0] as any;
-      console.log('Raw membership data:', membership);
+      const membership = memberships[0];
+      console.log('Raw membership data from RPC:', membership);
+      
+      // Fetch organization details separately
+      const { data: orgData, error: orgError } = await supabase
+        .from('organizations')
+        .select('id, name, slug')
+        .eq('id', membership.organization_id)
+        .single();
+      
+      if (orgError) {
+        console.error('Organization details fetch error:', orgError);
+        return null;
+      }
       
       // Transform the data to match our interface
       const transformedMembership: OrganizationMembership = {
@@ -99,9 +107,9 @@ export const useAuth = () => {
         organization_id: membership.organization_id,
         role: membership.role,
         organization: {
-          id: membership.organization.id,
-          name: membership.organization.name,
-          slug: membership.organization.slug
+          id: orgData.id,
+          name: orgData.name,
+          slug: orgData.slug
         }
       };
       
@@ -109,6 +117,14 @@ export const useAuth = () => {
       return transformedMembership;
     } catch (error) {
       console.error('Organization membership fetch exception:', error);
+      
+      // Retry logic for unexpected errors
+      if (retryCount < 2) {
+        console.log('Retrying organization membership fetch due to exception...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return fetchOrganizationMembership(userId, retryCount + 1);
+      }
+      
       return null;
     }
   };

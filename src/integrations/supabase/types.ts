@@ -504,6 +504,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_organization_membership_safe: {
+        Args: { user_uuid: string }
+        Returns: {
+          id: string
+          organization_id: string
+          user_id: string
+          role: Database["public"]["Enums"]["organization_role"]
+          created_at: string
+          updated_at: string
+        }[]
+      }
       get_user_organization_role: {
         Args: { user_uuid: string; org_id: string }
         Returns: string
