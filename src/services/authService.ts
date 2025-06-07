@@ -36,53 +36,5 @@ export const authService = {
         .eq('id', userId)
         .single();
     });
-  },
-
-  async fetchOrganizationMembership(userId: string) {
-    return apiClient.query(async () => {
-      logger.debug('Fetching organization membership for user:', userId);
-      
-      // Use the safe function that works with the new RLS policies
-      const { data: memberships, error: membershipError } = await supabase
-        .rpc('get_user_organization_membership_safe', { user_uuid: userId });
-      
-      if (membershipError) {
-        logger.error('Error fetching organization membership:', membershipError);
-        throw membershipError;
-      }
-      
-      if (!memberships || memberships.length === 0) {
-        logger.debug('No organization membership found for user');
-        return { data: null, error: null };
-      }
-
-      const membership = memberships[0];
-      
-      // Fetch organization details
-      const { data: orgData, error: orgError } = await supabase
-        .from('organizations')
-        .select('id, name, slug')
-        .eq('id', membership.organization_id)
-        .single();
-      
-      if (orgError) {
-        logger.error('Error fetching organization details:', orgError);
-        throw orgError;
-      }
-      
-      const result = {
-        id: membership.id,
-        organization_id: membership.organization_id,
-        role: membership.role,
-        organization: {
-          id: orgData.id,
-          name: orgData.name,
-          slug: orgData.slug
-        }
-      };
-      
-      logger.debug('Successfully fetched organization membership');
-      return { data: result, error: null };
-    });
   }
 };

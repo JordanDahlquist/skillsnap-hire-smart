@@ -1,20 +1,17 @@
 
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { AccountSettings } from "@/components/profile/AccountSettings";
 import { HiringPreferences } from "@/components/profile/HiringPreferences";
 import { EmailTemplates } from "@/components/profile/EmailTemplates";
-import { OrganizationSettings } from "@/components/organization/OrganizationSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 
 const ProfileSettings = () => {
-  const { user, organizationMembership, organizationError, refreshProfile, loading, dataLoading } = useAuth();
-  const canManageOrganization = organizationMembership?.role === 'owner' || organizationMembership?.role === 'admin';
+  const { user, refreshProfile, loading } = useAuth();
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/jobs" },
@@ -45,14 +42,14 @@ const ProfileSettings = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-              <p className="mt-2 text-gray-600">Manage your account, preferences, and organization settings.</p>
+              <p className="mt-2 text-gray-600">Manage your account and preferences.</p>
             </div>
             <Button 
               variant="outline" 
               onClick={handleRefreshData}
-              disabled={dataLoading}
+              disabled={loading}
             >
-              {dataLoading ? (
+              {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Refreshing...
@@ -67,47 +64,12 @@ const ProfileSettings = () => {
           </div>
         </div>
 
-        {/* Show loading state while organization data is being fetched */}
-        {dataLoading && (
-          <Alert className="mb-6">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <AlertDescription>
-              Loading organization data...
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Show organization error if there's an issue */}
-        {organizationError && !dataLoading && (
-          <Alert className="mb-6 border-amber-200 bg-amber-50">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-800">
-              <strong>Organization Issue:</strong> {organizationError}
-              <Button 
-                variant="link" 
-                className="p-0 h-auto ml-2 text-amber-700 underline"
-                onClick={handleRefreshData}
-              >
-                Try refreshing your data
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className={`grid w-full ${canManageOrganization ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="organization">
-              Organization
-              {organizationMembership && (
-                <span className="ml-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-                  {organizationMembership.role}
-                </span>
-              )}
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-6">
@@ -124,10 +86,6 @@ const ProfileSettings = () => {
 
           <TabsContent value="templates" className="space-y-6">
             <EmailTemplates />
-          </TabsContent>
-
-          <TabsContent value="organization" className="space-y-6">
-            <OrganizationSettings />
           </TabsContent>
         </Tabs>
       </div>

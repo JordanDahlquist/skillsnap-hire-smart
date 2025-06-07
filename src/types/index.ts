@@ -1,23 +1,4 @@
 
-export interface OrganizationMembership {
-  id: string;
-  organization_id: string;
-  role: 'owner' | 'admin' | 'editor' | 'viewer';
-  organization: {
-    id: string;
-    name: string;
-    slug: string | null;
-  };
-}
-
-export interface Organization {
-  id: string;
-  name: string;
-  slug: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface Application {
   id: string;
   name: string;
@@ -61,7 +42,6 @@ export interface Job {
   city?: string;
   required_skills: string;
   user_id: string;
-  organization_id: string;
 }
 
 export interface JobFilters {
