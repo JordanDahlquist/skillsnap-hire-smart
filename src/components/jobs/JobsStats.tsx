@@ -1,7 +1,6 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, bell, Users, TrendingUp, BarChart3 } from "lucide-react";
+import { Plus, Bell, Users, TrendingUp, BarChart3 } from "lucide-react";
 import { JobStats } from "@/hooks/useJobStats";
 
 interface JobsStatsProps {
@@ -24,7 +23,7 @@ export const JobsStats = ({ stats }: JobsStatsProps) => {
               )}
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <bell className="w-6 h-6 text-orange-600" />
+              <Bell className="w-6 h-6 text-orange-600" />
             </div>
           </div>
         </CardContent>
