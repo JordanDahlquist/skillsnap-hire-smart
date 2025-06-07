@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -54,13 +53,6 @@ export const AnalyticsModal = ({ open, onOpenChange }: AnalyticsModalProps) => {
             >
               <Download className="w-4 h-4 mr-1" />
               Export
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="w-4 h-4" />
             </Button>
           </div>
         </DialogHeader>
