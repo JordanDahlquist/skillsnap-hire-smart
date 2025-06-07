@@ -5,25 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { authService } from "@/services/authService";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
-
-interface OrganizationMembership {
-  id: string;
-  organization_id: string;
-  role: 'owner' | 'admin' | 'editor' | 'viewer';
-  organization: {
-    id: string;
-    name: string;
-    slug: string | null;
-  };
-}
-
-interface Organization {
-  id: string;
-  name: string;
-  slug: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { OrganizationMembership, Organization } from "@/types";
 
 export const useOrganizationMembership = (userId: string | undefined) => {
   const [organizationMembership, setOrganizationMembership] = useState<OrganizationMembership | null>(null);
