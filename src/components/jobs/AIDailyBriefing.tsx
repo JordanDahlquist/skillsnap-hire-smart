@@ -129,8 +129,6 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     return insights.slice(0, 3); // Show max 3 insights
   };
 
-  const insights = getInsightIcons();
-
   const handleExportReport = async () => {
     setIsExporting(true);
     try {
