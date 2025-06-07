@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -331,6 +330,7 @@ export const EmailTemplates = () => {
                     <SelectItem value="rejection">Rejection</SelectItem>
                     <SelectItem value="followup">Follow-up</SelectItem>
                     <SelectItem value="status">Status Update</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
