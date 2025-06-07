@@ -1,6 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, Star } from "lucide-react";
+
+import React from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Mail, MoreHorizontal } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -22,130 +25,141 @@ interface Application {
 interface ApplicationsListProps {
   applications: Application[];
   selectedApplication: Application | null;
-  onSelectApplication: (app: Application) => void;
+  onSelectApplication: (application: Application) => void;
   getStatusColor: (status: string) => string;
-  getRatingStars: (rating: number | null) => JSX.Element[];
+  getRatingStars: (rating: number | null) => React.ReactNode;
   getTimeAgo: (dateString: string) => string;
+  selectedApplications?: string[];
+  onSelectApplications?: (ids: string[]) => void;
+  onSendEmail?: () => void;
 }
 
-export const ApplicationsList = ({ 
-  applications, 
-  selectedApplication, 
+export const ApplicationsList = ({
+  applications,
+  selectedApplication,
   onSelectApplication,
   getStatusColor,
   getRatingStars,
-  getTimeAgo 
+  getTimeAgo,
+  selectedApplications = [],
+  onSelectApplications,
+  onSendEmail
 }: ApplicationsListProps) => {
-  
-  const renderManualRating = (rating: number | null) => {
-    return Array.from({ length: 3 }, (_, i) => {
-      const starValue = i + 1;
-      const isActive = rating && starValue <= rating;
-      
-      return (
-        <Star
-          key={i}
-          className={`w-3 h-3 ${
-            isActive ? 'text-blue-500 fill-current' : 'text-gray-300'
-          }`}
-        />
-      );
-    });
-  };
-
-  const renderAIRating = (rating: number | null) => {
-    if (!rating) {
-      return Array.from({ length: 3 }, (_, i) => (
-        <Star key={i} className="w-3 h-3 text-gray-300" />
-      ));
+  const handleSelectAll = (checked: boolean) => {
+    if (onSelectApplications) {
+      onSelectApplications(checked ? applications.map(app => app.id) : []);
     }
-
-    // Convert 5-star AI rating to 3-star scale
-    const convertedRating = (rating / 5) * 3;
-    
-    return Array.from({ length: 3 }, (_, i) => {
-      const starValue = i + 1;
-      const isActive = starValue <= Math.round(convertedRating);
-      
-      return (
-        <Star
-          key={i}
-          className={`w-3 h-3 ${
-            isActive ? 'text-green-500 fill-current' : 'text-gray-300'
-          }`}
-        />
-      );
-    });
   };
+
+  const handleSelectApplication = (applicationId: string, checked: boolean) => {
+    if (onSelectApplications) {
+      if (checked) {
+        onSelectApplications([...selectedApplications, applicationId]);
+      } else {
+        onSelectApplications(selectedApplications.filter(id => id !== applicationId));
+      }
+    }
+  };
+
+  const isAllSelected = applications.length > 0 && selectedApplications.length === applications.length;
+  const isSomeSelected = selectedApplications.length > 0 && selectedApplications.length < applications.length;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Applications</CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        {applications.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p>No applications yet</p>
-            <p className="text-sm">Applications will appear here when candidates apply</p>
-          </div>
-        ) : (
-          <div className="space-y-0">
-            {applications.map((app) => (
-              <div
-                key={app.id}
-                className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                  selectedApplication?.id === app.id ? "bg-purple-50 border-l-4 border-l-purple-600" : ""
-                }`}
-                onClick={() => onSelectApplication(app)}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">{app.name}</h3>
-                  <Badge className={getStatusColor(app.status)}>
-                    {app.status}
-                  </Badge>
-                </div>
-                
-                {/* Ratings Section */}
-                <div className="space-y-1 mb-2">
-                  {/* Manual Rating (You) - Above AI Rating */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-gray-500">You:</span>
-                    <div className="flex gap-0.5">
-                      {renderManualRating(app.manual_rating)}
-                    </div>
-                    {app.manual_rating ? (
-                      <span className="text-xs text-blue-600 ml-1 font-medium">
-                        {app.manual_rating}/3
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-400 ml-1">Not rated</span>
-                    )}
-                  </div>
-                  
-                  {/* AI Rating */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-gray-500">AI:</span>
-                    <div className="flex gap-0.5">
-                      {renderAIRating(app.ai_rating)}
-                    </div>
-                    {app.ai_rating ? (
-                      <span className="text-xs text-green-600 ml-1 font-medium">
-                        {Math.round((app.ai_rating / 5) * 3)}/3
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gray-400 ml-1">Not rated</span>
-                    )}
-                  </div>
-                </div>
-                
-                <p className="text-sm text-gray-600">{getTimeAgo(app.created_at)}</p>
-              </div>
-            ))}
+    <div className="bg-white rounded-lg border border-gray-200">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Applications ({applications.length})
+          </h2>
+          {onSelectApplications && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={isAllSelected}
+                ref={(ref) => {
+                  if (ref) ref.indeterminate = isSomeSelected;
+                }}
+                onCheckedChange={handleSelectAll}
+              />
+              <span className="text-sm text-gray-600">Select All</span>
+            </div>
+          )}
+        </div>
+        
+        {selectedApplications.length > 0 && onSendEmail && (
+          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <span className="text-sm text-blue-700">
+              {selectedApplications.length} candidate{selectedApplications.length > 1 ? 's' : ''} selected
+            </span>
+            <Button size="sm" onClick={onSendEmail}>
+              <Mail className="w-4 h-4 mr-1" />
+              Send Email
+            </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+        {applications.length === 0 ? (
+          <div className="p-6 text-center text-gray-500">
+            No applications yet for this job.
+          </div>
+        ) : (
+          applications.map((application) => (
+            <div
+              key={application.id}
+              className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+                selectedApplication?.id === application.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+              }`}
+              onClick={() => onSelectApplication(application)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3 flex-1">
+                  {onSelectApplications && (
+                    <Checkbox
+                      checked={selectedApplications.includes(application.id)}
+                      onCheckedChange={(checked) => handleSelectApplication(application.id, checked as boolean)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                        {application.name}
+                      </h3>
+                      <span className="text-xs text-gray-500">
+                        {getTimeAgo(application.created_at)}
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 truncate mb-2">
+                      {application.email}
+                    </p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Badge className={getStatusColor(application.status)}>
+                          {application.status}
+                        </Badge>
+                        {application.ai_rating && (
+                          <div className="flex items-center">
+                            {getRatingStars(application.ai_rating)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {application.ai_summary && (
+                      <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                        {application.ai_summary}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 };

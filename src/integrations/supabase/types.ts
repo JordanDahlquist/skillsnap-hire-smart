@@ -137,6 +137,105 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          application_id: string | null
+          content: string
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          recipient_email: string
+          recipient_name: string
+          sent_at: string | null
+          status: string | null
+          subject: string
+          template_id: string | null
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          content: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          recipient_email: string
+          recipient_name: string
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          template_id?: string | null
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          content?: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          recipient_email?: string
+          recipient_name?: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          template_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+          user_id: string
+          variables: Json | null
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string
+          user_id: string
+          variables?: Json | null
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           ai_mini_description: string | null

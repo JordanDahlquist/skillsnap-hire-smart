@@ -4,11 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Building, Settings, Camera } from 'lucide-react';
+import { User, Building, Settings, Camera, Mail } from 'lucide-react';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { AccountSettings } from '@/components/profile/AccountSettings';
 import { HiringPreferences } from '@/components/profile/HiringPreferences';
 import { ProfilePictureUpload } from '@/components/profile/ProfilePictureUpload';
+import { EmailTemplates } from '@/components/profile/EmailTemplates';
 import { UnifiedHeader } from '@/components/UnifiedHeader';
 
 export const ProfileSettings = () => {
@@ -88,7 +89,7 @@ export const ProfileSettings = () => {
           {/* Main Settings */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="profile" className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Profile
@@ -96,6 +97,10 @@ export const ProfileSettings = () => {
                 <TabsTrigger value="preferences" className="flex items-center gap-2">
                   <Building className="w-4 h-4" />
                   Hiring
+                </TabsTrigger>
+                <TabsTrigger value="emails" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Email Templates
                 </TabsTrigger>
                 <TabsTrigger value="account" className="flex items-center gap-2">
                   <Settings className="w-4 h-4" />
@@ -109,6 +114,10 @@ export const ProfileSettings = () => {
 
               <TabsContent value="preferences" className="mt-6">
                 <HiringPreferences />
+              </TabsContent>
+
+              <TabsContent value="emails" className="mt-6">
+                <EmailTemplates />
               </TabsContent>
 
               <TabsContent value="account" className="mt-6">

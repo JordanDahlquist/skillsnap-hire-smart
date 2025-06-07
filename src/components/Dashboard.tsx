@@ -11,6 +11,7 @@ import { ApplicationTrendsChart } from "./dashboard/ApplicationTrendsChart";
 import { PerformanceMetrics } from "./dashboard/PerformanceMetrics";
 import { ApplicationsList } from "./dashboard/ApplicationsList";
 import { ApplicationDetail } from "./dashboard/ApplicationDetail";
+import { EmailComposerModal } from "./dashboard/EmailComposerModal";
 import { DashboardSkeleton } from "./dashboard/DashboardSkeleton";
 
 interface Application {
@@ -47,6 +48,8 @@ export const Dashboard = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const { user } = useAuth();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
 
   // Fetch job details with error handling
   const { data: job, isLoading: jobLoading, error: jobError, refetch: refetchJob } = useQuery({
@@ -199,6 +202,8 @@ export const Dashboard = () => {
     );
   }
 
+  const selectedApplicationsData = applications.filter(app => selectedApplications.includes(app.id));
+
   // Breadcrumbs
   const breadcrumbs = [
     { label: "Dashboard", href: "/jobs" },
@@ -234,6 +239,9 @@ export const Dashboard = () => {
                 getStatusColor={getStatusColor}
                 getRatingStars={getRatingStars}
                 getTimeAgo={getTimeAgo}
+                selectedApplications={selectedApplications}
+                onSelectApplications={setSelectedApplications}
+                onSendEmail={() => setEmailModalOpen(true)}
               />
             </div>
 
@@ -251,6 +259,13 @@ export const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      <EmailComposerModal
+        open={emailModalOpen}
+        onOpenChange={setEmailModalOpen}
+        selectedApplications={selectedApplicationsData}
+        job={job}
+      />
     </div>
   );
 };
