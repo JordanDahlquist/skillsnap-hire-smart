@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,55 +23,45 @@ export const LinkedInCallback = () => {
         const errorParam = urlParams.get('error');
         const errorDescription = urlParams.get('error_description');
         
-        console.log('Error parameter from URL:', errorParam);
-        console.log('Error description from URL:', errorDescription);
-
         if (errorParam) {
           console.error('OAuth error detected:', errorParam, errorDescription);
           throw new Error(`OAuth error: ${errorParam} - ${errorDescription}`);
         }
 
         // Retrieve job context from sessionStorage
-        console.log('Retrieving job context from sessionStorage...');
         const storedContext = sessionStorage.getItem('linkedin_job_context');
         const storedRedirectUrl = sessionStorage.getItem('auth_redirect_url');
-        console.log('Stored context raw:', storedContext);
-        console.log('Stored redirect URL:', storedRedirectUrl);
+        console.log('Retrieved stored context:', storedContext);
+        console.log('Retrieved stored redirect URL:', storedRedirectUrl);
 
         let jobId = null;
-        let originRoute = null;
-        let originDomain = null;
+        let redirectUrl = '/jobs/public'; // Default fallback
 
         if (storedContext) {
           try {
             const jobContext = JSON.parse(storedContext);
             jobId = jobContext.jobId;
-            originRoute = jobContext.originRoute;
-            originDomain = jobContext.originDomain;
-            console.log('Successfully parsed job context:', jobContext);
-            console.log('Extracted job ID:', jobId);
-            console.log('Extracted origin route:', originRoute);
-            
-            // Clean up the stored context
+            console.log('Parsed job ID from context:', jobId);
             sessionStorage.removeItem('linkedin_job_context');
-            console.log('Cleaned up stored job context');
           } catch (error) {
             console.error('Error parsing stored job context:', error);
           }
-        } else {
-          console.warn('No job context found in sessionStorage');
         }
 
-        // Wait for the OAuth flow to complete and session to be established
-        console.log('Waiting for OAuth session to establish...');
+        if (storedRedirectUrl) {
+          redirectUrl = storedRedirectUrl;
+          sessionStorage.removeItem('auth_redirect_url');
+          console.log('Using stored redirect URL:', redirectUrl);
+        } else if (jobId) {
+          redirectUrl = `/apply/${jobId}`;
+          console.log('Using job-based redirect URL:', redirectUrl);
+        }
+
+        // Wait for OAuth session to be established
+        console.log('Waiting for OAuth session...');
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Get the session after OAuth redirect
-        console.log('Attempting to get session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        console.log('Session data after LinkedIn OAuth:', session);
-        console.log('Session error:', sessionError);
         
         if (sessionError) {
           console.error('Session error:', sessionError);
@@ -78,13 +69,10 @@ export const LinkedInCallback = () => {
         }
 
         if (session?.user) {
-          console.log('User found in session:', session.user.id);
-          console.log('User metadata:', session.user.user_metadata);
+          console.log('User authenticated successfully:', session.user.id);
           
-          // Extract profile information from the user metadata
+          // Create transformed LinkedIn data from user metadata
           const userMetadata = session.user.user_metadata;
-          
-          // Transform the basic available data
           const transformedData = {
             personalInfo: {
               name: userMetadata.full_name || userMetadata.name || session.user.email?.split('@')[0] || "",
@@ -101,7 +89,7 @@ export const LinkedInCallback = () => {
 
           console.log('Transformed LinkedIn data:', transformedData);
 
-          // Store the transformed data with a timestamp for debugging
+          // Store the data with timestamp
           const dataWithTimestamp = {
             ...transformedData,
             _timestamp: Date.now(),
@@ -109,98 +97,53 @@ export const LinkedInCallback = () => {
           };
           
           sessionStorage.setItem('linkedin_profile_data', JSON.stringify(dataWithTimestamp));
-          console.log('Stored LinkedIn profile data in sessionStorage with timestamp:', dataWithTimestamp._timestamp);
-          
-          // Also store a flag to indicate successful LinkedIn connection
           sessionStorage.setItem('linkedin_connected', 'true');
           
-          // Add another small delay to ensure sessionStorage write completes
-          await new Promise(resolve => setTimeout(resolve, 200));
+          console.log('Stored LinkedIn data, redirecting to:', redirectUrl);
           
-          // Determine the correct redirect URL based on retrieved job context or stored redirect URL
-          let redirectUrl;
+          // Add success parameter and timestamp to prevent caching
+          const finalRedirectUrl = `${redirectUrl}${redirectUrl.includes('?') ? '&' : '?'}linkedin=connected&t=${Date.now()}`;
           
-          if (storedRedirectUrl) {
-            // Use the stored redirect URL if available (preferred method)
-            redirectUrl = `${storedRedirectUrl}?linkedin=connected&t=${Date.now()}`;
-            console.log('Using stored redirect URL:', redirectUrl);
-            // Clean up the stored redirect URL
-            sessionStorage.removeItem('auth_redirect_url');
-          } else if (jobId) {
-            // Fallback to job context if no stored redirect URL
-            redirectUrl = `/apply/${jobId}?linkedin=connected&t=${Date.now()}`;
-            console.log('Job ID found from context, redirecting to application page:', redirectUrl);
-          } else {
-            console.log('No job ID or redirect URL found, checking for fallback options');
-            
-            // If we have origin route but no job ID, try to extract job ID from origin route
-            if (originRoute && originRoute.includes('/apply/')) {
-              const routeJobId = originRoute.split('/apply/')[1]?.split('?')[0];
-              if (routeJobId) {
-                redirectUrl = `/apply/${routeJobId}?linkedin=connected&t=${Date.now()}`;
-                console.log('Extracted job ID from origin route:', routeJobId, 'redirecting to:', redirectUrl);
-              } else {
-                redirectUrl = '/jobs/public';
-                console.log('Could not extract job ID from origin route, redirecting to public jobs');
-              }
-            } else {
-              redirectUrl = '/jobs/public';
-              console.log('No origin route or job context, redirecting to public jobs');
-            }
-          }
-          
-          console.log('Final redirect URL determined:', redirectUrl);
-          console.log('About to redirect using window.location.replace...');
+          toast({
+            title: "LinkedIn connected!",
+            description: "Your profile information has been imported successfully.",
+          });
           
           // Use replace to avoid back button issues
-          window.location.replace(redirectUrl);
+          window.location.replace(finalRedirectUrl);
         } else {
           console.error('No user session found after LinkedIn authentication');
-          throw new Error('No user session found after LinkedIn authentication');
+          throw new Error('Authentication failed - no user session');
         }
       } catch (error) {
         console.error('=== LinkedIn callback error ===', error);
         
         toast({
           title: "LinkedIn connection failed",
-          description: error instanceof Error ? error.message : "Please try again or use an alternative application method.",
+          description: error instanceof Error ? error.message : "Please try again.",
           variant: "destructive"
         });
         
-        // Try to extract job ID from stored context for error redirect
-        let jobId = null;
-        const storedContext = sessionStorage.getItem('linkedin_job_context');
-        const storedRedirectUrl = sessionStorage.getItem('auth_redirect_url');
+        // Clean up stored data
+        sessionStorage.removeItem('linkedin_job_context');
+        sessionStorage.removeItem('auth_redirect_url');
         
-        if (storedRedirectUrl) {
-          console.log('Error redirect using stored URL:', storedRedirectUrl);
-          sessionStorage.removeItem('auth_redirect_url');
-          window.location.replace(storedRedirectUrl);
-          return;
-        }
+        // Determine error redirect
+        const storedContext = sessionStorage.getItem('linkedin_job_context');
+        let errorRedirectUrl = '/jobs/public';
         
         if (storedContext) {
           try {
             const jobContext = JSON.parse(storedContext);
-            jobId = jobContext.jobId;
-            console.log('Extracted job ID for error redirect:', jobId);
-            
-            // Clean up the stored context
-            sessionStorage.removeItem('linkedin_job_context');
-          } catch (error) {
-            console.error('Error parsing stored job context for error redirect:', error);
+            if (jobContext.jobId) {
+              errorRedirectUrl = `/apply/${jobContext.jobId}`;
+            }
+          } catch (e) {
+            console.error('Error parsing context for error redirect:', e);
           }
         }
 
-        let errorRedirectUrl;
-        if (jobId) {
-          errorRedirectUrl = `/apply/${jobId}`;
-          console.log('Redirecting to job application page after error:', errorRedirectUrl);
-        } else {
-          errorRedirectUrl = '/jobs/public';
-          console.log('Redirecting to public jobs after error (no job ID)');
-        }
-
+        console.log('Redirecting to error page:', errorRedirectUrl);
         window.location.replace(errorRedirectUrl);
       }
     };

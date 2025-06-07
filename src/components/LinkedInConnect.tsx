@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,13 +36,13 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
   const { toast } = useToast();
 
   const handleLinkedInConnect = async () => {
+    console.log('=== LinkedIn Connect Button Clicked ===');
+    console.log('Job ID:', jobId);
+    console.log('Current URL:', window.location.href);
+    
     setConnecting(true);
+    
     try {
-      console.log('=== LinkedIn OAuth Flow Started ===');
-      console.log('Job ID from props:', jobId);
-      console.log('Current pathname:', window.location.pathname);
-      console.log('Current origin:', window.location.origin);
-
       // Store job context in sessionStorage before OAuth flow
       const jobContext = {
         jobId: jobId || null,
@@ -50,7 +51,7 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
         timestamp: Date.now()
       };
       
-      console.log('Storing job context in sessionStorage:', jobContext);
+      console.log('Storing job context:', jobContext);
       sessionStorage.setItem('linkedin_job_context', JSON.stringify(jobContext));
       
       // Store the intended redirect URL for after authentication
@@ -66,13 +67,14 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
       console.log('Verified stored context:', storedContext);
       console.log('Verified stored redirect:', storedRedirect);
 
-      // Use Supabase Auth's LinkedIn OIDC provider with default redirect handling
       console.log('Initiating LinkedIn OAuth with Supabase...');
+      
+      // Use Supabase Auth's LinkedIn OIDC provider
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          scopes: 'openid profile email'
-          // Removed custom redirectTo - let Supabase handle the default callback
+          scopes: 'openid profile email',
+          redirectTo: `${window.location.origin}/linkedin/callback`
         }
       });
 
@@ -82,7 +84,6 @@ export const LinkedInConnect = ({ jobId, onLinkedInData, onRemove, connectedProf
       }
 
       console.log('LinkedIn OAuth initiated successfully:', data);
-      console.log('=== LinkedIn OAuth Flow Initiated ===');
       
     } catch (error) {
       console.error('LinkedIn connection error:', error);
