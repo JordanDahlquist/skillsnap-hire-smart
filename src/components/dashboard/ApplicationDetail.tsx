@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -186,30 +187,33 @@ export const ApplicationDetail = ({
               <p className="text-gray-600">{selectedApplication.email}</p>
             </div>
             <div className="flex flex-col gap-3">
-              {/* AI Review Section */}
-              <div className="flex flex-col items-end gap-2">
-                <span className="text-sm font-medium text-gray-700">AI Review:</span>
-                <div className="flex gap-1">
-                  {renderAIRating(selectedApplication.ai_rating)}
+              {/* Rating Sections - Side by Side */}
+              <div className="flex justify-between gap-8">
+                {/* Manual Rating Section - Left */}
+                <div className="flex flex-col items-start gap-2">
+                  <span className="text-sm font-medium text-gray-700">Your Rating:</span>
+                  <div className="flex gap-1">
+                    {renderManualRatingStars(selectedApplication.manual_rating)}
+                  </div>
+                  {selectedApplication.manual_rating && (
+                    <span className="text-xs text-gray-500">
+                      {selectedApplication.manual_rating} star{selectedApplication.manual_rating > 1 ? 's' : ''}
+                    </span>
+                  )}
                 </div>
-                {selectedApplication.ai_rating && (
-                  <span className="text-xs text-green-600 font-medium">
-                    {Math.round((selectedApplication.ai_rating / 5) * 3)}/3
-                  </span>
-                )}
-              </div>
 
-              {/* Manual Rating Section */}
-              <div className="flex flex-col items-end gap-2">
-                <span className="text-sm font-medium text-gray-700">Your Rating:</span>
-                <div className="flex gap-1">
-                  {renderManualRatingStars(selectedApplication.manual_rating)}
+                {/* AI Review Section - Right */}
+                <div className="flex flex-col items-end gap-2">
+                  <span className="text-sm font-medium text-gray-700">AI Review:</span>
+                  <div className="flex gap-1">
+                    {renderAIRating(selectedApplication.ai_rating)}
+                  </div>
+                  {selectedApplication.ai_rating && (
+                    <span className="text-xs text-green-600 font-medium">
+                      {Math.round((selectedApplication.ai_rating / 5) * 3)}/3
+                    </span>
+                  )}
                 </div>
-                {selectedApplication.manual_rating && (
-                  <span className="text-xs text-gray-500">
-                    {selectedApplication.manual_rating} star{selectedApplication.manual_rating > 1 ? 's' : ''}
-                  </span>
-                )}
               </div>
               
               {/* Action Buttons */}
