@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,70 +15,43 @@ export interface Job extends JobRow {
 }
 
 export const useJobs = () => {
-  const { organizationMembership } = useAuth();
+  const { profile, organizationMembership } = useAuth();
+  
+  // Use organization_id if available, fallback to profile's default_organization_id
+  const organizationId = organizationMembership?.organization_id || profile?.default_organization_id;
+  
+  console.log('useJobs - Using organization ID:', organizationId);
+  console.log('useJobs - From membership:', organizationMembership?.organization_id);
+  console.log('useJobs - From profile:', profile?.default_organization_id);
 
   return useQuery({
-    queryKey: ['organization-jobs', organizationMembership?.organization_id],
+    queryKey: ['jobs', organizationId],
     queryFn: async () => {
-      if (!organizationMembership?.organization_id) {
-        console.log('No organization ID available for jobs query');
+      if (!organizationId) {
+        console.log('useJobs - No organization ID available, returning empty array');
         return [];
       }
       
-      console.log('Fetching jobs for organization:', organizationMembership.organization_id);
+      console.log('useJobs - Fetching jobs for organization:', organizationId);
       
       const { data, error } = await supabase
         .from('jobs')
         .select(`
           *,
-          applications(count)
+          applications!inner(count)
         `)
-        .eq('organization_id', organizationMembership.organization_id)
+        .eq('organization_id', organizationId)
         .order('created_at', { ascending: false });
-      
+
       if (error) {
-        console.error('Error fetching jobs:', error);
+        console.error('useJobs - Error fetching jobs:', error);
         throw error;
       }
-
-      // Fetch application status counts for each job
-      const jobsWithStatusCounts = await Promise.all(
-        (data || []).map(async (job) => {
-          const { data: statusCounts } = await supabase
-            .from('applications')
-            .select('status')
-            .eq('job_id', job.id);
-
-          const applicationStatusCounts = {
-            pending: statusCounts?.filter(app => app.status === 'pending').length || 0,
-            approved: statusCounts?.filter(app => app.status === 'approved').length || 0,
-            rejected: statusCounts?.filter(app => app.status === 'rejected').length || 0,
-          };
-
-          return {
-            ...job,
-            applicationStatusCounts
-          };
-        })
-      );
       
-      console.log('Jobs query result:', {
-        data: jobsWithStatusCounts || [],
-        error,
-        totalJobs: jobsWithStatusCounts?.length || 0,
-        jobStatuses: jobsWithStatusCounts?.map(job => ({ 
-          id: job.id, 
-          title: job.title, 
-          status: job.status,
-          pendingApplications: job.applicationStatusCounts?.pending || 0
-        })) || []
-      });
-      
-      return jobsWithStatusCounts as Job[];
+      console.log('useJobs - Fetched jobs:', data?.length || 0);
+      return data || [];
     },
-    enabled: !!organizationMembership?.organization_id,
-    staleTime: 0,
-    gcTime: 1000 * 60 * 5,
+    enabled: !!organizationId,
   });
 };
 

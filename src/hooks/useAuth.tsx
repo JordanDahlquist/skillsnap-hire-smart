@@ -62,22 +62,45 @@ export const useAuth = () => {
   const fetchOrganizationMembership = async (userId: string) => {
     try {
       console.log('Fetching organization membership for user:', userId);
-      const { data, error } = await supabase
-        .from('organization_memberships')
-        .select(`
-          *,
-          organization:organizations(*)
-        `)
-        .eq('user_id', userId)
-        .single();
       
-      if (error) {
-        console.warn('Organization membership fetch error:', error.message);
+      // First try to get the user's membership
+      const { data: memberships, error: membershipsError } = await supabase
+        .from('organization_memberships')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (membershipsError) {
+        console.warn('Organization membership fetch error:', membershipsError.message);
         return null;
       }
+
+      if (!memberships || memberships.length === 0) {
+        console.log('No organization membership found for user:', userId);
+        return null;
+      }
+
+      // Get the first membership (users should typically have one primary membership)
+      const membership = memberships[0];
       
-      console.log('Organization membership fetched successfully:', data);
-      return data;
+      // Fetch the organization details
+      const { data: organization, error: orgError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', membership.organization_id)
+        .single();
+      
+      if (orgError) {
+        console.warn('Organization fetch error:', orgError.message);
+        return null;
+      }
+
+      const result = {
+        ...membership,
+        organization
+      };
+      
+      console.log('Organization membership fetched successfully:', result);
+      return result;
     } catch (error) {
       console.warn('Organization membership fetch exception:', error);
       return null;
@@ -103,6 +126,11 @@ export const useAuth = () => {
             
             const orgMembership = await fetchOrganizationMembership(session.user.id);
             setOrganizationMembership(orgMembership);
+            
+            // If no organization membership found, log for debugging
+            if (!orgMembership) {
+              console.log('User has no organization membership - Organization tab will not appear');
+            }
           }, 0);
         } else {
           setProfile(null);
@@ -126,6 +154,10 @@ export const useAuth = () => {
         
         const orgMembership = await fetchOrganizationMembership(session.user.id);
         setOrganizationMembership(orgMembership);
+        
+        // Debug logging
+        console.log('User profile loaded:', userProfile);
+        console.log('Organization membership loaded:', orgMembership);
       }
       
       setLoading(false);
@@ -163,11 +195,15 @@ export const useAuth = () => {
 
   const refreshProfile = async () => {
     if (user?.id) {
+      console.log('Refreshing profile and organization data...');
       const userProfile = await fetchProfile(user.id);
       setProfile(userProfile);
       
       const orgMembership = await fetchOrganizationMembership(user.id);
       setOrganizationMembership(orgMembership);
+      
+      console.log('Refreshed profile:', userProfile);
+      console.log('Refreshed organization membership:', orgMembership);
     }
   };
 
