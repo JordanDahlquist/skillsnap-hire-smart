@@ -49,24 +49,16 @@ export const useRegenerateBriefing = () => {
       refreshProfile();
       
       toast({
-        title: "Scout's Got Fresh Insights! 🎉",
-        description: "Your daily update has been refreshed with new energy and perspective!",
+        title: "Briefing Regenerated",
+        description: "Your daily briefing has been updated with fresh insights",
       });
     },
     onError: (error: Error) => {
-      if (error.message.includes('limit reached')) {
-        toast({
-          title: "Scout Needs a Break! 😅",
-          description: "You've used all 3 regenerations for today. Scout will be back tomorrow with fresh updates!",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Scout Hit a Snag",
-          description: "Oops! Something went wrong while getting fresh insights. Let me try that again!",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Regeneration Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 

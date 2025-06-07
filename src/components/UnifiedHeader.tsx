@@ -1,138 +1,220 @@
 
-import React from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Building2, Settings } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { User, LogOut, BarChart3, Plus, Home, Loader2, Briefcase, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useJobs } from "@/hooks/useJobs";
+import { Link, useLocation } from "react-router-dom";
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
-interface Breadcrumb {
-  label: string;
-  href?: string;
-  isCurrentPage?: boolean;
-}
+import { cn } from "@/lib/utils";
 
 interface UnifiedHeaderProps {
-  breadcrumbs?: Breadcrumb[];
+  breadcrumbs?: Array<{
+    label: string;
+    href?: string;
+    isCurrentPage?: boolean;
+  }>;
+  onCreateRole?: () => void;
   showCreateButton?: boolean;
-  onCreateClick?: () => void;
 }
 
-export const UnifiedHeader = ({ 
-  breadcrumbs = [], 
-  showCreateButton = true, 
-  onCreateClick 
+export const UnifiedHeader = ({
+  breadcrumbs,
+  onCreateRole,
+  showCreateButton = true
 }: UnifiedHeaderProps) => {
-  const navigate = useNavigate();
-  const { user, organizationMembership, signOut } = useAuth();
-  const { refetch: refetchJobs } = useJobs();
+  const {
+    user,
+    profile,
+    signOut,
+    loading
+  } = useAuth();
+  const location = useLocation();
+  const isActive = (path: string) => location.pathname === path;
   
-  const handleCreateClick = () => {
-    if (onCreateClick) {
-      onCreateClick();
-    } else {
-      navigate('/jobs?create=true');
-      setTimeout(() => refetchJobs(), 100);
+  // Check if current location is the dashboard or any subdirectory of /jobs (except /jobs/public)
+  const isDashboard = location.pathname === "/jobs" || 
+    (location.pathname.startsWith("/jobs/") && !location.pathname.startsWith("/jobs/public"));
+  
+  const getUserInitials = () => {
+    if (profile?.full_name) {
+      return profile.full_name.split(' ').map(name => name[0]).join('').toUpperCase().slice(0, 2);
     }
+    return user?.email?.[0]?.toUpperCase() || 'U';
   };
-
-  const handleSignOut = async () => {
-    await signOut();
+  
+  const getUserDisplayName = () => {
+    if (profile?.full_name) {
+      return profile.full_name;
+    }
+    return user?.email || 'User';
   };
-
+  
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Left side - Logo and breadcrumbs */}
-          <div className="flex items-center space-x-4">
-            <Link to="/jobs" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-[#007af6] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <span className="font-semibold text-gray-900 hidden sm:block">Atract</span>
-            </Link>
-            
-            {breadcrumbs.length > 0 && (
-              <nav className="flex items-center space-x-2 text-sm text-gray-500">
-                <span>/</span>
-                {breadcrumbs.map((breadcrumb, index) => (
-                  <React.Fragment key={index}>
-                    {breadcrumb.href && !breadcrumb.isCurrentPage ? (
-                      <Link 
-                        to={breadcrumb.href}
-                        className="hover:text-gray-700 transition-colors"
-                      >
-                        {breadcrumb.label}
+    <>
+      <style>{`
+        @keyframes home-bounce {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          50% { transform: scale(1.1) rotate(3deg); }
+        }
+        
+        @keyframes briefcase-shake {
+          0%, 100% { transform: translateX(0) rotate(0deg); }
+          25% { transform: translateX(-1px) rotate(-1deg); }
+          75% { transform: translateX(1px) rotate(1deg); }
+        }
+        
+        @keyframes chart-grow {
+          0% { transform: scale(1) rotate(0deg); }
+          50% { transform: scale(1.15) rotate(-2deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        .home-icon {
+          transition: transform 0.2s ease-in-out;
+        }
+        
+        .home-icon:hover {
+          animation: home-bounce 0.4s ease-in-out;
+        }
+        
+        .briefcase-icon {
+          transition: transform 0.2s ease-in-out;
+        }
+        
+        .briefcase-icon:hover {
+          animation: briefcase-shake 0.3s ease-in-out;
+        }
+        
+        .chart-icon {
+          transition: transform 0.2s ease-in-out;
+        }
+        
+        .chart-icon:hover {
+          animation: chart-grow 0.35s ease-in-out;
+        }
+      `}</style>
+      
+      <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo and Main Navigation */}
+            <div className="flex items-center space-x-6">
+              <Link to="/" className="flex items-center space-x-2 group">
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                  <img 
+                    src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
+                    alt="Atract" 
+                    className="w-6 h-6 transition-transform duration-300 group-hover:rotate-180" 
+                  />
+                </div>
+                <span className="text-xl font-bold text-gray-900">Atract</span>
+              </Link>
+
+              {/* Main Navigation Menu */}
+              <NavigationMenu>
+                <NavigationMenuList>
+                  {/* Home link - visible to all */}
+                  <NavigationMenuItem>
+                    <NavigationMenuLink asChild>
+                      <Link to="/" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/") && "bg-accent text-accent-foreground")}>
+                        <Home className="w-4 h-4 mr-2 home-icon" />
+                        Home
                       </Link>
-                    ) : (
-                      <span className={breadcrumb.isCurrentPage ? "text-gray-900 font-medium" : ""}>
-                        {breadcrumb.label}
-                      </span>
-                    )}
-                    {index < breadcrumbs.length - 1 && <span>/</span>}
-                  </React.Fragment>
-                ))}
-              </nav>
-            )}
-          </div>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
 
-          {/* Center - Organization info */}
-          {organizationMembership && (
-            <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
-              <Building2 className="w-4 h-4" />
-              <span>{organizationMembership.organization.name}</span>
-              <span className="text-gray-400">•</span>
-              <span className="capitalize">{organizationMembership.role}</span>
+                  {/* Public Jobs link - only visible when not in dashboard */}
+                  {!isDashboard && (
+                    <NavigationMenuItem>
+                      <NavigationMenuLink asChild>
+                        <Link to="/jobs/public" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs/public") && "bg-accent text-accent-foreground")}>
+                          <Briefcase className="w-4 h-4 mr-2 briefcase-icon" />
+                          Jobs
+                        </Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  )}
+
+                  {/* Admin Dashboard link - only for logged in users */}
+                  {!loading && user && (
+                    <NavigationMenuItem>
+                      <NavigationMenuLink asChild>
+                        <Link to="/jobs" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs") && "bg-accent text-accent-foreground")}>
+                          <BarChart3 className="w-4 h-4 mr-2 chart-icon" />
+                          Dashboard
+                        </Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  )}
+                </NavigationMenuList>
+              </NavigationMenu>
             </div>
-          )}
-
-          {/* Right side - Actions and user menu */}
-          <div className="flex items-center space-x-3">
-            {showCreateButton && (
-              <Button onClick={handleCreateClick} size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Job
-              </Button>
-            )}
             
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-[#007af6] text-white">
-                      {user?.email?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex flex-col space-y-1 p-2">
-                  <p className="text-sm font-medium leading-none">{user?.email}</p>
-                  {organizationMembership && (
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {organizationMembership.organization.name} • {organizationMembership.role}
-                    </p>
+            {/* Right Side Navigation */}
+            <div className="flex items-center gap-4">
+              {loading ? (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading...
+                </div>
+              ) : user ? (
+                <>
+                  {/* User Menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="flex items-center gap-2 px-2">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="bg-[#007af6] text-white text-xs">
+                            {getUserInitials()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="hidden sm:block text-left">
+                          <p className="text-sm font-medium">{getUserDisplayName()}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile" className="flex items-center w-full">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Profile Settings
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {onCreateRole && (
+                        <>
+                          <DropdownMenuItem onClick={onCreateRole}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Job
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      <DropdownMenuItem onClick={signOut}>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sign Out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" asChild>
+                    <Link to="/auth">Sign In</Link>
+                  </Button>
+                  {showCreateButton && onCreateRole && (
+                    <Button onClick={onCreateRole} className="bg-[#007af6] hover:bg-[#0056b3] text-white">
+                      Create Job
+                    </Button>
                   )}
                 </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/settings" className="w-full flex items-center">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 };

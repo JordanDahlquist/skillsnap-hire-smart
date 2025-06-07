@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText, Heart } from "lucide-react";
+import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
 import { useJobs } from "@/hooks/useJobs";
@@ -26,8 +25,8 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
-  const getScoutFallbackContent = () => {
-    return `Hey ${userDisplayName}! 👋 Scout here, your cheerful hiring buddy! I'm so excited to help you build an amazing team. Every day I'll swing by with updates, insights, and a healthy dose of enthusiasm for your hiring journey! 🚀`;
+  const getFallbackContent = () => {
+    return `Good morning, ${userDisplayName}! Ready to find your next great hire? Your hiring dashboard is waiting for you.`;
   };
 
   const formatBriefingContent = (content: string) => {
@@ -38,7 +37,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       return { greeting: content, content: '' };
     }
     
-    // First sentence as greeting
+    // First sentence as greeting (usually starts with "Good morning" or similar)
     const greeting = sentences[0];
     const restContent = sentences.slice(1).join(' ');
     
@@ -59,13 +58,13 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       return (
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-          <span className="text-sm text-gray-600">Scout is preparing your daily update...</span>
+          <span className="text-sm text-gray-600">Generating your daily briefing...</span>
         </div>
       );
     }
 
     if (error || !briefing) {
-      const fallback = getScoutFallbackContent();
+      const fallback = getFallbackContent();
       const formatted = formatBriefingContent(fallback);
       return (
         <div className="space-y-2">
@@ -131,8 +130,8 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     setIsExporting(true);
     try {
       toast({
-        title: "Scout's Report Generator",
-        description: "I'm creating your comprehensive PDF report with all the good stuff! 📊",
+        title: "Generating Report",
+        description: "Creating your comprehensive PDF report with analytics...",
       });
 
       const reportData = {
@@ -147,27 +146,19 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       await generatePDFReport(reportData);
       
       toast({
-        title: "Report Ready! 🎉",
-        description: "Scout's comprehensive hiring analytics report has been downloaded as a PDF.",
+        title: "Report Generated",
+        description: "Your comprehensive hiring analytics report has been downloaded as a PDF.",
       });
     } catch (error) {
       console.error('Export error:', error);
       toast({
-        title: "Oops! Scout Hit a Snag",
-        description: "There was an error generating your report. Let me try that again!",
+        title: "Export Failed",
+        description: "There was an error generating your report. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const handleRegenerate = () => {
-    regenerate();
-    toast({
-      title: "Scout's Getting Fresh Insights!",
-      description: `Regenerating your update... You have ${remainingRegenerations - 1} regenerations left today!`,
-    });
   };
 
   const insights = getInsightIcons();
@@ -177,29 +168,28 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       <div className="max-w-7xl mx-auto">
         <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg">
           <CardContent className="p-6">
-            {/* Header with Scout's badge and regenerate button */}
+            {/* Header with AI badge and regenerate button */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Heart className="w-4 h-4 text-pink-500" />
+                <Sparkles className="w-4 h-4 text-blue-500" />
                 <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">
-                  Scout's Daily Update
+                  AI Daily Briefing
                 </span>
-                <Sparkles className="w-3 h-3 text-yellow-500" />
               </div>
               
               <Button
-                onClick={handleRegenerate}
+                onClick={regenerate}
                 disabled={!canRegenerate || isRegenerating}
                 variant="outline"
                 size="sm"
-                className="text-xs h-7 px-2 hover:bg-blue-50"
+                className="text-xs h-7 px-2"
               >
                 {isRegenerating ? (
                   <Loader2 className="w-3 h-3 animate-spin mr-1" />
                 ) : (
                   <RefreshCw className="w-3 h-3 mr-1" />
                 )}
-                Ask Scout Again ({remainingRegenerations} left)
+                Regenerate ({remainingRegenerations} left)
               </Button>
             </div>
 
@@ -230,23 +220,23 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 className="bg-[#007af6] hover:bg-[#0056b3] text-white px-4 py-2 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
               >
                 <Users className="w-4 h-4 mr-2" />
-                Let's Find Great Talent!
+                Create New Job
               </Button>
               
               <Button 
                 variant="outline"
                 size="sm"
-                className="text-sm hover:bg-blue-50"
+                className="text-sm"
                 onClick={() => setShowAnalytics(true)}
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
-                Scout's Analytics
+                View Analytics
               </Button>
               
               <Button 
                 variant="outline"
                 size="sm"
-                className="text-sm hover:bg-green-50"
+                className="text-sm"
                 onClick={handleExportReport}
                 disabled={isExporting || analytics.isLoading}
               >
@@ -255,18 +245,9 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 ) : (
                   <FileText className="w-4 h-4 mr-2" />
                 )}
-                Scout's Full Report
+                Export PDF Report
               </Button>
             </div>
-
-            {/* Scout's tip about regenerations for first-time users */}
-            {jobs.length === 0 && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-700">
-                  💡 <strong>Scout's tip:</strong> I'll give you a fresh daily update every morning! Plus, if you want me to take another look at things, just hit "Ask Scout Again" - you get 3 regenerations per day to keep things interesting!
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

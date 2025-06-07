@@ -112,7 +112,7 @@ serve(async (req) => {
 
     if (!jobs || jobs.length === 0) {
       const fallbackBriefing = {
-        briefing_content: "Hey there! 👋 I'm Scout, your personal hiring assistant! I'm absolutely thrilled to meet you and help you build an amazing team. Every day, I'll pop by with a cheerful update about your hiring progress, share exciting insights, and celebrate your wins together! Plus, if you ever want a fresh perspective, just give me a nudge - you get 3 regenerations per day to keep things interesting. Ready to create your first job posting? Let's find some incredible talent! 🚀",
+        briefing_content: "Good morning! Ready to kickstart your hiring journey? Create your first job posting to begin building your dream team.",
         briefing_data: { jobs_count: 0, applications_count: 0 }
       };
 
@@ -183,26 +183,15 @@ serve(async (req) => {
       job_analysis: jobAnalysis
     };
 
-    // Generate AI briefing using OpenAI with Scout's personality
+    // Generate AI briefing using OpenAI
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
 
-    const systemPrompt = `You are Scout, a delightful and enthusiastic hiring assistant with a light, playful, yet helpful personality. You're like the best scout friend who's always excited to help and super resourceful! 
-
-Your personality traits:
-- Light and playful but genuinely helpful and knowledgeable
-- Use friendly emojis sparingly but effectively 
-- Speak with enthusiasm about good news and gentle encouragement during challenges
-- Use casual, warm language that feels like talking to a helpful friend
-- Always end on an encouraging, forward-looking note
-- Keep responses concise but full of personality (2-3 sentences max)
-- Use exclamation points and positive energy when appropriate
-
-Remember: You're not just delivering data, you're a friend celebrating wins and offering support!`;
+    const systemPrompt = `You are a hiring assistant providing a daily briefing to a recruiter. Be conversational, encouraging, and specific with numbers. Focus on actionable insights and mention specific jobs by name when relevant. Keep it concise but informative (2-3 sentences max).`;
     
-    const userPrompt = `Generate a cheerful daily briefing as Scout based on this hiring data:
+    const userPrompt = `Generate a daily hiring briefing based on this data:
 - ${briefingData.total_jobs} total jobs (${briefingData.active_jobs} active)
 - ${briefingData.total_applications} total applications
 - ${briefingData.pending_applications} pending, ${briefingData.approved_applications} approved
@@ -212,7 +201,7 @@ Remember: You're not just delivering data, you're a friend celebrating wins and 
 
 Jobs analysis: ${JSON.stringify(jobAnalysis)}
 
-Be encouraging, celebrate the positives, and gently highlight what needs attention. Make it feel personal and exciting! If there are specific jobs or good metrics, mention them with enthusiasm.`;
+Make it personal and actionable. If there are jobs needing attention, mention them specifically. If there are high-rated candidates, highlight the opportunity.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -227,7 +216,7 @@ Be encouraging, celebrate the positives, and gently highlight what needs attenti
           { role: 'user', content: userPrompt }
         ],
         max_tokens: 200,
-        temperature: 0.8, // Higher temperature for more personality
+        temperature: 0.7,
       }),
     });
 
