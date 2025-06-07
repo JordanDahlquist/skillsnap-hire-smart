@@ -41,11 +41,15 @@ export const authService = {
     return apiClient.query(async () => {
       console.log('Fetching organization membership for user:', userId);
       
-      const { data: memberships } = await supabase
+      const { data: memberships, error: membershipError } = await supabase
         .rpc('get_user_organization_membership_safe', { user_uuid: userId });
       
+      if (membershipError) {
+        throw membershipError;
+      }
+      
       if (!memberships || memberships.length === 0) {
-        return null;
+        return { data: null, error: null };
       }
 
       const membership = memberships[0];
@@ -61,7 +65,7 @@ export const authService = {
         throw orgError;
       }
       
-      return {
+      const result = {
         id: membership.id,
         organization_id: membership.organization_id,
         role: membership.role,
@@ -71,6 +75,8 @@ export const authService = {
           slug: orgData.slug
         }
       };
+      
+      return { data: result, error: null };
     });
   }
 };
