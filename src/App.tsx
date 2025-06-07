@@ -67,6 +67,11 @@ const App = () => (
                 <ProfileSettings />
               </AuthGuard>
             } />
+            <Route path="/settings" element={
+              <AuthGuard>
+                <ProfileSettings />
+              </AuthGuard>
+            } />
             <Route path="/linkedin/callback" element={<LinkedInCallback />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="*" element={<NotFound />} />
