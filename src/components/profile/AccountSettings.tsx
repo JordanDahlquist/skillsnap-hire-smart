@@ -81,16 +81,39 @@ export const AccountSettings = () => {
     setDeleteLoading(true);
 
     try {
-      // Note: In a production app, account deletion should be handled by a server-side function
-      // This is a simplified implementation
-      toast({
-        title: 'Account deletion requested',
-        description: 'Please contact support to complete account deletion.',
+      console.log('Starting account deletion process...');
+      
+      const { data, error } = await supabase.functions.invoke('delete-user-account', {
+        body: { confirmationText: deleteConfirmText }
       });
-    } catch (error: any) {
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to delete account');
+      }
+
+      if (data?.error) {
+        console.error('Account deletion error:', data.error);
+        throw new Error(data.error);
+      }
+
+      console.log('Account deletion successful:', data);
+
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete account. Please contact support.',
+        title: 'Account deleted successfully',
+        description: 'Your account and all associated data have been permanently deleted.',
+      });
+
+      // Sign out and redirect after a short delay
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Account deletion failed:', error);
+      toast({
+        title: 'Account deletion failed',
+        description: error.message || 'Failed to delete account. Please try again or contact support.',
         variant: 'destructive',
       });
     } finally {
@@ -228,24 +251,34 @@ export const AccountSettings = () => {
           <Alert className="border-red-200 bg-red-50 mb-4">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              <strong>Warning:</strong> This action is irreversible. Please contact support for account deletion.
+              <strong>Warning:</strong> This action is irreversible. All your data including jobs, applications, and settings will be permanently deleted.
             </AlertDescription>
           </Alert>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">
-                Request Account Deletion
+                Delete Account
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle className="text-red-600">
-                  Request Account Deletion?
+                  Delete Account Permanently?
                 </AlertDialogTitle>
                 <AlertDialogDescription className="space-y-3">
                   <p>
-                    This will request the permanent deletion of your account and all associated data.
+                    This will permanently delete your account and all associated data including:
+                  </p>
+                  <ul className="list-disc list-inside text-sm">
+                    <li>All job postings and applications</li>
+                    <li>Email templates and logs</li>
+                    <li>Organization memberships</li>
+                    <li>Profile information</li>
+                    <li>All other account data</li>
+                  </ul>
+                  <p className="font-semibold">
+                    This action cannot be undone.
                   </p>
                   <p>
                     To confirm, please type <strong>"DELETE MY ACCOUNT"</strong> in the field below:
@@ -270,10 +303,10 @@ export const AccountSettings = () => {
                   {deleteLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Requesting...
+                      Deleting...
                     </>
                   ) : (
-                    'Request Deletion'
+                    'Delete Account'
                   )}
                 </AlertDialogAction>
               </AlertDialogFooter>
