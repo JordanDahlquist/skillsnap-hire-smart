@@ -1,6 +1,9 @@
-import { Loader2, Sparkles, TrendingUp, Users, Bell } from "lucide-react";
+
+import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
+import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { parseMarkdown } from "@/utils/markdownParser";
 
 interface AIDailyBriefingProps {
@@ -10,6 +13,7 @@ interface AIDailyBriefingProps {
 
 export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefingProps) => {
   const { data: briefing, isLoading, error } = useDailyBriefing();
+  const { regenerate, isRegenerating, remainingRegenerations, canRegenerate } = useRegenerateBriefing();
 
   // Fallback content
   const getFallbackContent = () => {
@@ -119,21 +123,41 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   return (
     <div className="py-4 px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-          <div className="space-y-2 flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-3 h-3 text-blue-500" />
-              <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">
-                AI Daily Briefing
-              </span>
+        <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg">
+          <CardContent className="p-6">
+            {/* Header with AI badge and regenerate button */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-blue-500" />
+                <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">
+                  AI Daily Briefing
+                </span>
+              </div>
+              
+              <Button
+                onClick={regenerate}
+                disabled={!canRegenerate || isRegenerating}
+                variant="outline"
+                size="sm"
+                className="text-xs h-7 px-2"
+              >
+                {isRegenerating ? (
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                ) : (
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                )}
+                Regenerate ({remainingRegenerations} left)
+              </Button>
             </div>
-            
-            <div className="max-w-4xl">
+
+            {/* Main content */}
+            <div className="mb-4">
               {getDisplayContent()}
             </div>
             
+            {/* Insights */}
             {insights && insights.length > 0 && (
-              <div className="flex flex-wrap items-center gap-4 text-sm pt-1">
+              <div className="flex flex-wrap items-center gap-4 text-sm mb-6 pb-4 border-b border-gray-100">
                 {insights.map((insight, index) => {
                   const IconComponent = insight.icon;
                   return (
@@ -145,19 +169,37 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 })}
               </div>
             )}
-          </div>
-          
-          <div className="flex-shrink-0">
-            <Button 
-              onClick={onCreateJob}
-              className="bg-[#007af6] hover:bg-[#0056b3] text-white px-6 py-3 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-              size="lg"
-            >
-              <Users className="w-5 h-5 mr-2" />
-              Create New Job
-            </Button>
-          </div>
-        </div>
+
+            {/* Action Bar */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button 
+                onClick={onCreateJob}
+                className="bg-[#007af6] hover:bg-[#0056b3] text-white px-4 py-2 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Create New Job
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="sm"
+                className="text-sm"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                View Analytics
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="sm"
+                className="text-sm"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Export Report
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

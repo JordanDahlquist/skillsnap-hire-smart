@@ -31,20 +31,74 @@ serve(async (req) => {
       throw new Error('User not authenticated');
     }
 
-    // Check for existing valid briefing
-    const { data: existingBriefing } = await supabaseClient
-      .from('daily_briefings')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+    // Parse request body for force regenerate option
+    let forceRegenerate = false;
+    try {
+      const body = await req.json();
+      forceRegenerate = body.force_regenerate || false;
+    } catch {
+      // No body or invalid JSON, continue with normal flow
+    }
 
-    if (existingBriefing) {
-      return new Response(JSON.stringify({ briefing: existingBriefing }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // If force regenerate, check and update daily limits
+    if (forceRegenerate) {
+      // Get user profile to check regeneration limits
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('daily_briefing_regenerations, last_regeneration_date')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        const today = new Date().toISOString().split('T')[0];
+        const lastRegenDate = profile.last_regeneration_date;
+        
+        let currentCount = profile.daily_briefing_regenerations || 0;
+        
+        // Reset count if it's a new day
+        if (lastRegenDate !== today) {
+          currentCount = 0;
+        }
+        
+        // Check if user has exceeded daily limit
+        if (currentCount >= 3) {
+          throw new Error('Daily regeneration limit reached (3 per day)');
+        }
+        
+        // Update regeneration count
+        await supabaseClient
+          .from('profiles')
+          .update({
+            daily_briefing_regenerations: currentCount + 1,
+            last_regeneration_date: today
+          })
+          .eq('id', user.id);
+      }
+
+      // Delete existing briefing to force regeneration
+      await supabaseClient
+        .from('daily_briefings')
+        .delete()
+        .eq('user_id', user.id)
+        .gte('expires_at', new Date().toISOString());
+    }
+
+    // Check for existing valid briefing (unless force regenerate)
+    if (!forceRegenerate) {
+      const { data: existingBriefing } = await supabaseClient
+        .from('daily_briefings')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existingBriefing) {
+        return new Response(JSON.stringify({ briefing: existingBriefing }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Fetch user's jobs and applications data

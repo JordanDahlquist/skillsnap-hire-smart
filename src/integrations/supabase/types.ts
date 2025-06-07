@@ -208,12 +208,14 @@ export type Database = {
           company_name: string | null
           company_website: string | null
           created_at: string
+          daily_briefing_regenerations: number | null
           default_location: string | null
           email: string | null
           full_name: string | null
           id: string
           industry: string | null
           job_title: string | null
+          last_regeneration_date: string | null
           phone: string | null
           profile_picture_url: string | null
           updated_at: string
@@ -222,12 +224,14 @@ export type Database = {
           company_name?: string | null
           company_website?: string | null
           created_at?: string
+          daily_briefing_regenerations?: number | null
           default_location?: string | null
           email?: string | null
           full_name?: string | null
           id: string
           industry?: string | null
           job_title?: string | null
+          last_regeneration_date?: string | null
           phone?: string | null
           profile_picture_url?: string | null
           updated_at?: string
@@ -236,12 +240,14 @@ export type Database = {
           company_name?: string | null
           company_website?: string | null
           created_at?: string
+          daily_briefing_regenerations?: number | null
           default_location?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
           industry?: string | null
           job_title?: string | null
+          last_regeneration_date?: string | null
           phone?: string | null
           profile_picture_url?: string | null
           updated_at?: string
