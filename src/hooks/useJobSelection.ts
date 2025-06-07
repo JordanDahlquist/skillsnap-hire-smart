@@ -1,29 +1,19 @@
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { exportJobsToCSV } from "@/utils/exportUtils";
 import { Job } from "@/hooks/useJobs";
+import { useSelection } from "./useSelection";
 
 export const useJobSelection = (jobs: Job[], onUpdate: () => void) => {
-  const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const { toast } = useToast();
-
-  const handleJobSelection = useCallback((jobId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedJobs(prev => [...prev, jobId]);
-    } else {
-      setSelectedJobs(prev => prev.filter(id => id !== jobId));
-    }
-  }, []);
-
-  const handleSelectAll = useCallback((checked: boolean, filteredJobs: Job[]) => {
-    if (checked) {
-      setSelectedJobs(filteredJobs.map(job => job.id));
-    } else {
-      setSelectedJobs([]);
-    }
-  }, []);
+  const {
+    selectedItems: selectedJobs,
+    handleSelection: handleJobSelection,
+    handleSelectAll,
+    clearSelection
+  } = useSelection<string>(jobs.map(job => job.id));
 
   const handleBulkAction = useCallback(async (action: string) => {
     if (selectedJobs.length === 0) return;
@@ -57,7 +47,7 @@ export const useJobSelection = (jobs: Job[], onUpdate: () => void) => {
           break;
       }
 
-      setSelectedJobs([]);
+      clearSelection();
       onUpdate();
     } catch (error) {
       console.error('Error performing bulk action:', error);
@@ -67,13 +57,13 @@ export const useJobSelection = (jobs: Job[], onUpdate: () => void) => {
         variant: "destructive",
       });
     }
-  }, [selectedJobs, jobs, onUpdate, toast]);
+  }, [selectedJobs, jobs, onUpdate, toast, clearSelection]);
 
   return {
     selectedJobs,
     handleJobSelection,
-    handleSelectAll,
+    handleSelectAll: (checked: boolean, filteredJobs: Job[]) => handleSelectAll(checked, filteredJobs.map(job => job.id)),
     handleBulkAction,
-    clearSelection: () => setSelectedJobs([])
+    clearSelection
   };
 };
