@@ -12,7 +12,6 @@ interface JobFiltersProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   filters: {
-    roleType: string;
     locationType: string;
     experienceLevel: string;
     employmentType: string;
@@ -25,7 +24,6 @@ interface JobFiltersProps {
   onAiSearch: (prompt: string) => void;
   onClearFilters: () => void;
   availableOptions: {
-    roleTypes: string[];
     locationTypes: string[];
     experienceLevels: string[];
     employmentTypes: string[];
@@ -71,7 +69,6 @@ export const JobFilters = ({
   const getActiveFilterBadges = () => {
     const badges = [];
     
-    if (filters.roleType !== "all") badges.push({ key: "roleType", label: "Role", value: filters.roleType });
     if (filters.locationType !== "all") badges.push({ key: "locationType", label: "Location Type", value: filters.locationType });
     if (filters.experienceLevel !== "all") badges.push({ key: "experienceLevel", label: "Experience", value: filters.experienceLevel });
     if (filters.employmentType !== "all") badges.push({ key: "employmentType", label: "Employment", value: filters.employmentType });
@@ -169,18 +166,6 @@ export const JobFilters = ({
           <SelectContent>
             <SelectItem value="all">All types</SelectItem>
             {availableOptions.employmentTypes.map(type => (
-              <SelectItem key={type} value={type || "unknown"}>{type || "Unknown"}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={filters.roleType} onValueChange={(value) => handleFilterChange("roleType", value)}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Role type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All roles</SelectItem>
-            {availableOptions.roleTypes.map(type => (
               <SelectItem key={type} value={type || "unknown"}>{type || "Unknown"}</SelectItem>
             ))}
           </SelectContent>

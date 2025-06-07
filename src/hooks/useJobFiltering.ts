@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from "react";
 import { JobFilters, defaultFilters } from "./job-filtering/types";
-import { findBestRoleMatch, findBestMatch } from "./job-filtering/jobMatching";
+import { findBestMatch } from "./job-filtering/jobMatching";
 import { applyJobFilters, sortJobs } from "./job-filtering/filterUtils";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
 
@@ -44,7 +44,6 @@ export const useJobFiltering = (jobs: any[]) => {
   // Count active filters
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (filters.roleType !== "all") count++;
     if (filters.locationType !== "all") count++;
     if (filters.experienceLevel !== "all") count++;
     if (filters.employmentType !== "all") count++;
@@ -84,7 +83,6 @@ export const useJobFiltering = (jobs: any[]) => {
     
     // Apply smart matching for filters with enhanced flexibility
     const smartFilters: JobFilters = {
-      roleType: findBestRoleMatch(aiFilters.roleType, availableOptions.roleTypes),
       locationType: findBestMatch(aiFilters.locationType, availableOptions.locationTypes),
       experienceLevel: findBestMatch(aiFilters.experienceLevel, availableOptions.experienceLevels),
       employmentType: findBestMatch(aiFilters.employmentType, availableOptions.employmentTypes),
