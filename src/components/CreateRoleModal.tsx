@@ -388,7 +388,7 @@ export const CreateRoleModal = ({ open, onOpenChange }: CreateRoleModalProps) =>
           </TabsList>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form className="space-y-6">
               <TabsContent value="1" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
