@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,9 @@ export const JobManagementToolbar = ({
     { value: 'title_desc', label: 'Title Z-A' }
   ].filter(option => option.value && option.value.trim() !== '');
 
+  // Get the current sort label
+  const currentSortLabel = sortOptions.find(option => option.value === sortBy)?.label || 'Sort by';
+
   return (
     <div className="bg-white border-b border-gray-200 py-5 space-y-4">
       <div className="max-w-7xl mx-auto px-8">
@@ -125,7 +129,9 @@ export const JobManagementToolbar = ({
           <div className="flex gap-2 items-center">
             <Select value={sortBy || 'created_desc'} onValueChange={onSortChange}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue>
+                  {currentSortLabel}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {sortOptions.map((option) => (
