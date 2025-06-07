@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -36,21 +35,34 @@ export const useOrganizationMembers = (organizationId: string | undefined) => {
     queryFn: async () => {
       if (!organizationId) return [];
       
-      const { data, error } = await supabase
+      // First get the memberships
+      const { data: memberships, error: membershipsError } = await supabase
         .from('organization_memberships')
-        .select(`
-          *,
-          profiles!organization_memberships_user_id_fkey (
-            id,
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('organization_id', organizationId)
         .order('created_at', { ascending: true });
       
-      if (error) throw error;
-      return data as OrganizationMember[];
+      if (membershipsError) throw membershipsError;
+      if (!memberships || memberships.length === 0) return [];
+
+      // Get user IDs from memberships
+      const userIds = memberships.map(m => m.user_id);
+      
+      // Get profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const result = memberships.map(membership => ({
+        ...membership,
+        profiles: profiles?.find(profile => profile.id === membership.user_id) || null
+      }));
+      
+      return result as OrganizationMember[];
     },
     enabled: !!organizationId,
   });
