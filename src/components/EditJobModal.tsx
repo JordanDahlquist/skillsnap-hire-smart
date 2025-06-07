@@ -40,7 +40,7 @@ interface EditJobModalProps {
 }
 
 export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobModalProps) => {
-  const [step, setStep] = useState(1);
+  const [activeTab, setActiveTab] = useState("1");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -112,6 +112,7 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
       });
       setGeneratedJob(job.generated_job_post || "");
       setGeneratedTest(job.generated_test || "");
+      setActiveTab("1");
     }
   }, [open, job]);
 
@@ -147,58 +148,58 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
     setGeneratedTest(job.generated_test || "");
   };
 
-  const handleNext = async () => {
-    if (step === 1) {
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-    } else if (step === 3) {
-      setStep(4);
-    } else {
-      // Update the job in database
-      setLoading(true);
-      try {
-        const { error } = await supabase
-          .from('jobs')
-          .update({
-            title: formData.title,
-            description: formData.description,
-            role_type: formData.roleType,
-            employment_type: formData.employmentType,
-            experience_level: formData.experience,
-            duration: formData.duration || null,
-            budget: formatBudgetRange(formData.budgetMin, formData.budgetMax) || null,
-            required_skills: formData.skills,
-            location_type: formData.locationType,
-            country: formData.country || null,
-            state: formData.state || null,
-            city: formData.city || null,
-            generated_job_post: generatedJob,
-            generated_test: generatedTest,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', job.id);
+  const handleSaveChanges = async () => {
+    // Validate required fields
+    if (!formData.title || !formData.description || !formData.employmentType || !formData.experience) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields before saving.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-        if (error) throw error;
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .update({
+          title: formData.title,
+          description: formData.description,
+          role_type: formData.roleType,
+          employment_type: formData.employmentType,
+          experience_level: formData.experience,
+          duration: formData.duration || null,
+          budget: formatBudgetRange(formData.budgetMin, formData.budgetMax) || null,
+          required_skills: formData.skills,
+          location_type: formData.locationType,
+          country: formData.country || null,
+          state: formData.state || null,
+          city: formData.city || null,
+          generated_job_post: generatedJob,
+          generated_test: generatedTest,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', job.id);
 
-        toast({
-          title: "Job updated successfully!",
-          description: "Your changes have been saved.",
-        });
+      if (error) throw error;
 
-        onJobUpdate();
-        onOpenChange(false);
-        setStep(1);
-      } catch (error) {
-        console.error('Error updating job:', error);
-        toast({
-          title: "Error updating job",
-          description: "Please try again or contact support if the problem persists.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
+      toast({
+        title: "Job updated successfully!",
+        description: "Your changes have been saved.",
+      });
+
+      onJobUpdate();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error updating job:', error);
+      toast({
+        title: "Error updating job",
+        description: "Please try again or contact support if the problem persists.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -273,21 +274,21 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={step.toString()} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="1" disabled={step < 1}>
+            <TabsTrigger value="1">
               <FileText className="w-4 h-4 mr-2" />
               Role Details
             </TabsTrigger>
-            <TabsTrigger value="2" disabled={step < 2}>
+            <TabsTrigger value="2">
               <MapPin className="w-4 h-4 mr-2" />
               Location
             </TabsTrigger>
-            <TabsTrigger value="3" disabled={step < 3}>
+            <TabsTrigger value="3">
               <FileText className="w-4 h-4 mr-2" />
               Job Post
             </TabsTrigger>
-            <TabsTrigger value="4" disabled={step < 4}>
+            <TabsTrigger value="4">
               <ClipboardList className="w-4 h-4 mr-2" />
               Skills Test
             </TabsTrigger>
@@ -429,25 +430,28 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
           <TabsContent value="3" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-purple-600" />
-                  Job Post
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                    Job Post
+                  </div>
+                  {!editingJobPost && (
+                    <Button 
+                      onClick={() => setEditingJobPost(true)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Edit Job Post
+                    </Button>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {!editingJobPost ? (
-                  <div className="space-y-4">
-                    <div 
-                      className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: generatedJob || "No job post content available. Click edit to add content." }}
-                    />
-                    <Button 
-                      onClick={() => setEditingJobPost(true)}
-                      variant="outline"
-                    >
-                      Edit Job Post
-                    </Button>
-                  </div>
+                  <div 
+                    className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none"
+                    dangerouslySetInnerHTML={{ __html: generatedJob || "No job post content available. Click edit to add content." }}
+                  />
                 ) : (
                   <RichTextEditor
                     value={generatedJob}
@@ -464,25 +468,28 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
           <TabsContent value="4" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ClipboardList className="w-5 h-5 text-purple-600" />
-                  Skills Test
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ClipboardList className="w-5 h-5 text-purple-600" />
+                    Skills Test
+                  </div>
+                  {!editingSkillsTest && (
+                    <Button 
+                      onClick={() => setEditingSkillsTest(true)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Edit Skills Test
+                    </Button>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {!editingSkillsTest ? (
-                  <div className="space-y-4">
-                    <div 
-                      className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: generatedTest || "No skills test content available. Click edit to add content." }}
-                    />
-                    <Button 
-                      onClick={() => setEditingSkillsTest(true)}
-                      variant="outline"
-                    >
-                      Edit Skills Test
-                    </Button>
-                  </div>
+                  <div 
+                    className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none"
+                    dangerouslySetInnerHTML={{ __html: generatedTest || "No skills test content available. Click edit to add content." }}
+                  />
                 ) : (
                   <RichTextEditor
                     value={generatedTest}
@@ -497,23 +504,16 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-between pt-6">
+        <div className="flex justify-end pt-6">
           <Button
-            variant="outline"
-            onClick={() => setStep(Math.max(1, step - 1))}
-            disabled={step === 1}
-          >
-            Back
-          </Button>
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed || loading}
+            onClick={handleSaveChanges}
+            disabled={loading}
             className="bg-purple-600 hover:bg-purple-700 text-white"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
             ) : null}
-            {step === 4 ? "Save Changes" : "Next Step"}
+            Save Changes
           </Button>
         </div>
       </DialogContent>
