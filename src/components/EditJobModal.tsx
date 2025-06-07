@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, FileText, ClipboardList, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LocationSelector } from "./LocationSelector";
+import { RichTextEditor } from "./RichTextEditor";
 
 interface Job {
   id: string;
@@ -58,6 +59,8 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
   });
   const [generatedJob, setGeneratedJob] = useState("");
   const [generatedTest, setGeneratedTest] = useState("");
+  const [editingJobPost, setEditingJobPost] = useState(false);
+  const [editingSkillsTest, setEditingSkillsTest] = useState(false);
   const { toast } = useToast();
 
   // Helper function to parse budget range from stored format
@@ -122,6 +125,26 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
 
   const handleSkillsTestChange = (value: string) => {
     setGeneratedTest(value);
+  };
+
+  const handleJobPostSave = () => {
+    setEditingJobPost(false);
+  };
+
+  const handleJobPostCancel = () => {
+    setEditingJobPost(false);
+    // Reset to original content if needed
+    setGeneratedJob(job.generated_job_post || "");
+  };
+
+  const handleSkillsTestSave = () => {
+    setEditingSkillsTest(false);
+  };
+
+  const handleSkillsTestCancel = () => {
+    setEditingSkillsTest(false);
+    // Reset to original content if needed
+    setGeneratedTest(job.generated_test || "");
   };
 
   const handleNext = async () => {
@@ -412,20 +435,28 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="jobPost">Edit your job posting</Label>
-                  <Textarea
-                    id="jobPost"
-                    placeholder="Enter your job posting content here..."
+                {!editingJobPost ? (
+                  <div className="space-y-4">
+                    <div 
+                      className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none"
+                      dangerouslySetInnerHTML={{ __html: generatedJob || "No job post content available. Click edit to add content." }}
+                    />
+                    <Button 
+                      onClick={() => setEditingJobPost(true)}
+                      variant="outline"
+                    >
+                      Edit Job Post
+                    </Button>
+                  </div>
+                ) : (
+                  <RichTextEditor
                     value={generatedJob}
-                    onChange={(e) => handleJobPostChange(e.target.value)}
-                    rows={15}
-                    className="min-h-[300px] font-mono text-sm"
+                    onChange={handleJobPostChange}
+                    onSave={handleJobPostSave}
+                    onCancel={handleJobPostCancel}
+                    placeholder="Enter your job posting content here..."
                   />
-                  <p className="text-xs text-gray-500">
-                    This is the job posting that will be visible to applicants. Edit as needed.
-                  </p>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -439,20 +470,28 @@ export const EditJobModal = ({ open, onOpenChange, job, onJobUpdate }: EditJobMo
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="skillsTest">Edit your skills assessment</Label>
-                  <Textarea
-                    id="skillsTest"
-                    placeholder="Enter your skills test questions here..."
+                {!editingSkillsTest ? (
+                  <div className="space-y-4">
+                    <div 
+                      className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none"
+                      dangerouslySetInnerHTML={{ __html: generatedTest || "No skills test content available. Click edit to add content." }}
+                    />
+                    <Button 
+                      onClick={() => setEditingSkillsTest(true)}
+                      variant="outline"
+                    >
+                      Edit Skills Test
+                    </Button>
+                  </div>
+                ) : (
+                  <RichTextEditor
                     value={generatedTest}
-                    onChange={(e) => handleSkillsTestChange(e.target.value)}
-                    rows={15}
-                    className="min-h-[300px] font-mono text-sm"
+                    onChange={handleSkillsTestChange}
+                    onSave={handleSkillsTestSave}
+                    onCancel={handleSkillsTestCancel}
+                    placeholder="Enter your skills test questions here..."
                   />
-                  <p className="text-xs text-gray-500">
-                    These are the questions applicants will answer. Edit as needed.
-                  </p>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
