@@ -163,25 +163,29 @@ export const ApplicationDetail = ({
   };
 
   const renderManualRatingStars = (currentRating: number | null) => {
-    return Array.from({ length: 3 }, (_, i) => {
-      const starValue = i + 1;
-      const isActive = currentRating && starValue <= currentRating;
-      
-      return (
-        <button
-          key={i}
-          onClick={() => handleManualRating(starValue)}
-          disabled={isUpdating}
-          className={`transition-all duration-200 hover:scale-110 disabled:opacity-50 ${
-            isActive ? 'text-blue-500' : 'text-gray-300 hover:text-blue-400'
-          }`}
-        >
-          <Star 
-            className={`w-6 h-6 ${isActive ? 'fill-current' : ''}`}
-          />
-        </button>
-      );
-    });
+    return (
+      <div className={`flex gap-1 ${!currentRating ? 'animate-star-glow' : ''}`}>
+        {Array.from({ length: 3 }, (_, i) => {
+          const starValue = i + 1;
+          const isActive = currentRating && starValue <= currentRating;
+          
+          return (
+            <button
+              key={i}
+              onClick={() => handleManualRating(starValue)}
+              disabled={isUpdating}
+              className={`transition-all duration-200 hover:scale-110 disabled:opacity-50 ${
+                isActive ? 'text-blue-500' : 'text-gray-300 hover:text-blue-400'
+              }`}
+            >
+              <Star 
+                className={`w-6 h-6 ${isActive ? 'fill-current' : ''}`}
+              />
+            </button>
+          );
+        })}
+      </div>
+    );
   };
 
   if (selectedApplication) {
@@ -227,13 +231,11 @@ export const ApplicationDetail = ({
                 {/* Manual Rating Section - Left */}
                 <div className="flex flex-col items-start gap-2">
                   <span className="text-sm font-semibold text-gray-800">Your Rating</span>
-                  <div className="flex gap-1">
-                    {renderManualRatingStars(selectedApplication.manual_rating)}
-                  </div>
+                  {renderManualRatingStars(selectedApplication.manual_rating)}
                   <span className="text-xs text-gray-500 min-h-[16px]">
                     {selectedApplication.manual_rating 
                       ? `${selectedApplication.manual_rating} star${selectedApplication.manual_rating > 1 ? 's' : ''}`
-                      : 'Not rated'
+                      : 'Click to rate'
                     }
                   </span>
                 </div>
