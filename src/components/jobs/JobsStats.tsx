@@ -49,57 +49,57 @@ export const JobsStats = ({ stats, onNeedsAttentionClick, needsAttentionActive }
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 opacity-0 group-hover:opacity-50 transition-opacity duration-200" />
-            <CardContent className="relative p-2">
-              <div className="flex items-start justify-between mb-1">
-                <div className="w-4 h-4 bg-blue-100 rounded-md flex items-center justify-center">
-                  <TrendingUp className="w-2.5 h-2.5 text-[#007af6]" />
+          <Card className="relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 opacity-30" />
+            <CardContent className="relative p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shadow-sm">
+                  <TrendingUp className="w-4 h-4 text-[#007af6]" />
                 </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-[9px] font-medium text-gray-600 uppercase tracking-wide leading-tight">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide leading-tight">
                   Active Jobs
                 </p>
-                <p className="text-sm font-bold text-[#007af6] leading-none">
+                <p className="text-lg font-bold text-[#007af6] leading-none">
                   {stats.activeJobs}
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-purple-100 opacity-0 group-hover:opacity-50 transition-opacity duration-200" />
-            <CardContent className="relative p-2">
-              <div className="flex items-start justify-between mb-1">
-                <div className="w-4 h-4 bg-purple-100 rounded-md flex items-center justify-center">
-                  <Users className="w-2.5 h-2.5 text-purple-600" />
+          <Card className="relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-purple-100 opacity-30" />
+            <CardContent className="relative p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center shadow-sm">
+                  <Users className="w-4 h-4 text-purple-600" />
                 </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-[9px] font-medium text-gray-600 uppercase tracking-wide leading-tight">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide leading-tight">
                   Total Applications
                 </p>
-                <p className="text-sm font-bold text-purple-600 leading-none">
+                <p className="text-lg font-bold text-purple-600 leading-none">
                   {stats.totalApplications}
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="group relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-200">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-green-100 opacity-0 group-hover:opacity-50 transition-opacity duration-200" />
-            <CardContent className="relative p-2">
-              <div className="flex items-start justify-between mb-1">
-                <div className="w-4 h-4 bg-green-100 rounded-md flex items-center justify-center">
-                  <BarChart3 className="w-2.5 h-2.5 text-green-600" />
+          <Card className="relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-green-100 opacity-30" />
+            <CardContent className="relative p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shadow-sm">
+                  <BarChart3 className="w-4 h-4 text-green-600" />
                 </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-[9px] font-medium text-gray-600 uppercase tracking-wide leading-tight">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide leading-tight">
                   Applications This Week
                 </p>
-                <p className="text-sm font-bold text-green-600 leading-none">
+                <p className="text-lg font-bold text-green-600 leading-none">
                   {stats.applicationsThisWeek}
                 </p>
               </div>
