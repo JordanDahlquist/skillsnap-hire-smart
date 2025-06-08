@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, ArrowRight, Sparkles, Save, Eye, FileText } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Save, Eye, FileText, Edit3 } from "lucide-react";
 import { PdfUpload } from "@/components/PdfUpload";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface JobFormData {
   title: string;
@@ -55,6 +56,10 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
   // Generated content
   const [generatedJobPost, setGeneratedJobPost] = useState("");
   const [generatedSkillsTest, setGeneratedSkillsTest] = useState("");
+
+  // Edit modes for rich text editing
+  const [isEditingJobPost, setIsEditingJobPost] = useState(false);
+  const [isEditingSkillsTest, setIsEditingSkillsTest] = useState(false);
 
   const updateFormData = (field: keyof JobFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -168,6 +173,30 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
     }
   };
 
+  const handleJobPostSave = () => {
+    setIsEditingJobPost(false);
+    toast({
+      title: "Job Post Updated",
+      description: "Your changes have been saved."
+    });
+  };
+
+  const handleJobPostCancel = () => {
+    setIsEditingJobPost(false);
+  };
+
+  const handleSkillsTestSave = () => {
+    setIsEditingSkillsTest(false);
+    toast({
+      title: "Skills Test Updated", 
+      description: "Your changes have been saved."
+    });
+  };
+
+  const handleSkillsTestCancel = () => {
+    setIsEditingSkillsTest(false);
+  };
+
   const saveJob = async (status: 'draft' | 'published') => {
     if (!user?.id) return;
 
@@ -219,6 +248,8 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
       setPdfFileName(null);
       setUseOriginalPdf(null);
       setCurrentStep(1);
+      setIsEditingJobPost(false);
+      setIsEditingSkillsTest(false);
     } catch (error) {
       toast({
         title: "Save Failed",
@@ -462,27 +493,49 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <Label htmlFor="jobPost">
+                      <Label>
                         {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
                       </Label>
-                      {!(uploadedPdfContent && useOriginalPdf === true) && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={generateJobPost}
-                          disabled={isGenerating}
-                        >
-                          Regenerate
-                        </Button>
-                      )}
+                      <div className="flex gap-2">
+                        {!isEditingJobPost && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setIsEditingJobPost(true)}
+                            className="flex items-center gap-2"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                            Edit
+                          </Button>
+                        )}
+                        {!(uploadedPdfContent && useOriginalPdf === true) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={generateJobPost}
+                            disabled={isGenerating}
+                          >
+                            Regenerate
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <Textarea
-                      id="jobPost"
-                      value={generatedJobPost}
-                      onChange={(e) => setGeneratedJobPost(e.target.value)}
-                      rows={12}
-                      className="font-mono text-sm"
-                    />
+                    
+                    {isEditingJobPost ? (
+                      <RichTextEditor
+                        value={generatedJobPost}
+                        onChange={setGeneratedJobPost}
+                        onSave={handleJobPostSave}
+                        onCancel={handleJobPostCancel}
+                        placeholder="Enter your job posting content here..."
+                      />
+                    ) : (
+                      <div 
+                        className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsEditingJobPost(true)}
+                        dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }}
+                      />
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -516,23 +569,45 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <Label htmlFor="skillsTest">Generated Skills Test</Label>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={generateSkillsTest}
-                        disabled={isGenerating}
-                      >
-                        Regenerate
-                      </Button>
+                      <Label>Generated Skills Test</Label>
+                      <div className="flex gap-2">
+                        {!isEditingSkillsTest && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setIsEditingSkillsTest(true)}
+                            className="flex items-center gap-2"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                            Edit
+                          </Button>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={generateSkillsTest}
+                          disabled={isGenerating}
+                        >
+                          Regenerate
+                        </Button>
+                      </div>
                     </div>
-                    <Textarea
-                      id="skillsTest"
-                      value={generatedSkillsTest}
-                      onChange={(e) => setGeneratedSkillsTest(e.target.value)}
-                      rows={12}
-                      className="font-mono text-sm"
-                    />
+                    
+                    {isEditingSkillsTest ? (
+                      <RichTextEditor
+                        value={generatedSkillsTest}
+                        onChange={setGeneratedSkillsTest}
+                        onSave={handleSkillsTestSave}
+                        onCancel={handleSkillsTestCancel}
+                        placeholder="Enter your skills test questions here..."
+                      />
+                    ) : (
+                      <div 
+                        className="min-h-[300px] p-4 border rounded-lg bg-gray-50 prose max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsEditingSkillsTest(true)}
+                        dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }}
+                      />
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -577,10 +652,8 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                 {generatedJobPost && (
                   <div>
                     <h3 className="font-semibold mb-2">Job Post Preview</h3>
-                    <div className="bg-gray-50 p-4 rounded border max-h-32 overflow-y-auto">
-                      <p className="text-sm text-gray-700 whitespace-pre-line">
-                        {generatedJobPost.substring(0, 200)}...
-                      </p>
+                    <div className="bg-gray-50 p-4 rounded border prose max-w-none max-h-64 overflow-y-auto">
+                      <div dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }} />
                     </div>
                   </div>
                 )}
@@ -588,10 +661,8 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                 {generatedSkillsTest && (
                   <div>
                     <h3 className="font-semibold mb-2">Skills Test Preview</h3>
-                    <div className="bg-gray-50 p-4 rounded border max-h-32 overflow-y-auto">
-                      <p className="text-sm text-gray-700 whitespace-pre-line">
-                        {generatedSkillsTest.substring(0, 200)}...
-                      </p>
+                    <div className="bg-gray-50 p-4 rounded border prose max-w-none max-h-64 overflow-y-auto">
+                      <div dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }} />
                     </div>
                   </div>
                 )}
