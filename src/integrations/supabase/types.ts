@@ -446,6 +446,7 @@ export type Database = {
           last_regeneration_date: string | null
           phone: string | null
           profile_picture_url: string | null
+          unique_email: string
           updated_at: string
         }
         Insert: {
@@ -462,6 +463,7 @@ export type Database = {
           last_regeneration_date?: string | null
           phone?: string | null
           profile_picture_url?: string | null
+          unique_email: string
           updated_at?: string
         }
         Update: {
@@ -478,6 +480,7 @@ export type Database = {
           last_regeneration_date?: string | null
           phone?: string | null
           profile_picture_url?: string | null
+          unique_email?: string
           updated_at?: string
         }
         Relationships: []
@@ -487,7 +490,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_unique_email: {
+        Args: { user_id: string; full_name: string; email: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

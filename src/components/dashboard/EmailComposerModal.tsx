@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Eye, Users, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface EmailTemplate {
@@ -48,7 +49,7 @@ export const EmailComposerModal = ({
   selectedApplications,
   job
 }: EmailComposerModalProps) => {
-  const { user, profile } = useAuth();
+  const { user, profile } = useOptimizedAuth();
   const { toast } = useToast();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [subject, setSubject] = useState('');
@@ -61,9 +62,9 @@ export const EmailComposerModal = ({
     return job.company_name || profile?.company_name || 'Our Company';
   };
 
-  // Always use the verified atract.ai domain for emails
-  const getReplyToEmail = () => {
-    return 'hiring@atract.ai';
+  // Use the user's unique email address
+  const getUserUniqueEmail = () => {
+    return profile?.unique_email || 'user@atract.ai';
   };
 
   // Fetch email templates
@@ -109,10 +110,10 @@ export const EmailComposerModal = ({
       return;
     }
 
-    if (!user?.id) {
+    if (!user?.id || !profile?.unique_email) {
       toast({
         title: "Authentication Error",
-        description: "You must be logged in to send emails.",
+        description: "You must be logged in with a valid profile to send emails.",
         variant: "destructive",
       });
       return;
@@ -122,20 +123,20 @@ export const EmailComposerModal = ({
     
     try {
       const companyName = getCompanyName();
-      const replyToEmail = getReplyToEmail();
+      const userUniqueEmail = getUserUniqueEmail();
       
-      // Call the send-bulk-email edge function with user ID
+      // Call the send-bulk-email edge function with user's unique email
       const { data, error } = await supabase.functions.invoke('send-bulk-email', {
         body: {
-          user_id: user.id, // Pass user ID explicitly
+          user_id: user.id,
           applications: selectedApplications,
           job: job,
           subject: subject,
           content: content,
           template_id: selectedTemplateId || null,
           company_name: companyName,
-          reply_to_email: replyToEmail,
-          create_threads: true // Flag to create email threads
+          reply_to_email: userUniqueEmail,
+          create_threads: true
         }
       });
 
@@ -143,7 +144,7 @@ export const EmailComposerModal = ({
 
       toast({
         title: "Emails Sent",
-        description: `Successfully sent emails to ${selectedApplications.length} candidate${selectedApplications.length > 1 ? 's' : ''} from ${replyToEmail}.`,
+        description: `Successfully sent emails to ${selectedApplications.length} candidate${selectedApplications.length > 1 ? 's' : ''} from ${userUniqueEmail}.`,
       });
 
       onOpenChange(false);
@@ -197,15 +198,15 @@ export const EmailComposerModal = ({
             </div>
 
             <div>
-              <Label htmlFor="reply-to">Reply-to Address</Label>
+              <Label htmlFor="from-email">From Address</Label>
               <Input
-                id="reply-to"
-                value={getReplyToEmail()}
+                id="from-email"
+                value={getUserUniqueEmail()}
                 disabled
                 className="bg-gray-50"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Recipients can reply to this address and it will appear in your inbox
+                Your unique email address for private conversations
               </p>
             </div>
 
@@ -277,7 +278,7 @@ export const EmailComposerModal = ({
                   <div className="space-y-3">
                     <div>
                       <Label className="text-xs text-gray-500">From:</Label>
-                      <p className="text-sm font-medium">{getReplyToEmail()}</p>
+                      <p className="text-sm font-medium">{getUserUniqueEmail()}</p>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Subject:</Label>

@@ -44,9 +44,33 @@ const handler = async (req: Request): Promise<Response> => {
       hasHtml: !!emailData.html
     });
 
+    // Find user by their unique email address
+    console.log('Looking up user by unique email:', emailData.to);
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, user_id: id')
+      .eq('unique_email', emailData.to)
+      .single();
+
+    if (profileError || !profileData) {
+      console.error('No user found for email:', emailData.to, profileError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: `No user found for email address: ${emailData.to}` 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const userId = profileData.id;
+    console.log('Found user for email:', userId);
+
     // Extract thread information from subject or references
     let threadId: string | null = null;
-    let userId: string | null = null;
     
     // Try to extract thread ID from subject (if it contains a thread identifier)
     const threadMatch = emailData.subject.match(/\[Thread:([^\]]+)\]/);
@@ -69,6 +93,7 @@ const handler = async (req: Request): Promise<Response> => {
       const { data: existingThreads, error: searchError } = await supabase
         .from('email_threads')
         .select('id, user_id, participants')
+        .eq('user_id', userId)
         .ilike('subject', `%${normalizedSubject}%`)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -88,88 +113,52 @@ const handler = async (req: Request): Promise<Response> => {
           
           if (participants.includes(emailData.from)) {
             threadId = thread.id;
-            userId = thread.user_id;
             console.log('Found matching thread by participants:', threadId);
             break;
           }
         }
       }
     } else {
-      // Get user ID from the found thread
+      // Verify the thread belongs to this user
       const { data: threadData, error: threadError } = await supabase
         .from('email_threads')
         .select('user_id')
         .eq('id', threadId)
+        .eq('user_id', userId)
         .single();
 
-      if (threadError) {
-        console.error('Error fetching thread data:', threadError);
-      } else if (threadData) {
-        userId = threadData.user_id;
-        console.log('Retrieved user ID from thread:', userId);
+      if (threadError || !threadData) {
+        console.error('Thread not found or does not belong to user:', threadId, userId);
+        threadId = null;
       }
     }
 
     // If still no thread found, create a new one
     if (!threadId) {
-      console.log('No existing thread found, attempting to create new thread');
+      console.log('No existing thread found, creating new thread');
       
-      // Try to find user by checking if the "to" email is hiring@atract.ai
-      if (emailData.to === 'hiring@atract.ai') {
-        // For now, we'll need to find a way to associate this with a user
-        // This could be improved by having a mapping or looking at recent outbound emails
-        console.log('Email sent to hiring@atract.ai - need to determine target user');
-        
-        // Look for recent outbound emails to this sender to find the user
-        const { data: recentMessages } = await supabase
-          .from('email_messages')
-          .select('thread_id, email_threads!inner(user_id)')
-          .eq('recipient_email', emailData.from)
-          .eq('direction', 'outbound')
-          .order('created_at', { ascending: false })
-          .limit(1);
+      // Create new thread
+      const { data: newThread, error: createError } = await supabase
+        .from('email_threads')
+        .insert({
+          user_id: userId,
+          subject: emailData.subject,
+          participants: [emailData.from, emailData.to],
+          reply_to_email: emailData.to,
+          last_message_at: new Date().toISOString(),
+          unread_count: 1,
+          status: 'active'
+        })
+        .select('id')
+        .single();
 
-        if (recentMessages && recentMessages.length > 0) {
-          userId = (recentMessages[0] as any).email_threads.user_id;
-          console.log('Found user from recent outbound message:', userId);
-        }
+      if (createError) {
+        console.error('Failed to create new thread:', createError);
+        throw createError;
       }
 
-      if (userId) {
-        // Create new thread
-        const { data: newThread, error: createError } = await supabase
-          .from('email_threads')
-          .insert({
-            user_id: userId,
-            subject: emailData.subject,
-            participants: [emailData.from, emailData.to],
-            last_message_at: new Date().toISOString(),
-            unread_count: 1,
-            status: 'active'
-          })
-          .select('id')
-          .single();
-
-        if (createError) {
-          console.error('Failed to create new thread:', createError);
-          throw createError;
-        }
-
-        threadId = newThread.id;
-        console.log('Created new thread:', threadId);
-      } else {
-        console.log('No user found for email:', emailData.to);
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: 'No user found for incoming email' 
-          }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          }
-        );
-      }
+      threadId = newThread.id;
+      console.log('Created new thread:', threadId);
     }
 
     if (!threadId) {

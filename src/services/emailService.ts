@@ -1,5 +1,4 @@
 
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface EmailThreadData {
@@ -8,7 +7,7 @@ export interface EmailThreadData {
   jobId?: string;
   subject: string;
   participants: string[];
-  replyToEmail?: string;
+  userUniqueEmail: string;
 }
 
 export interface SendEmailData {
@@ -19,7 +18,7 @@ export interface SendEmailData {
   content: string;
   applicationId?: string;
   jobId?: string;
-  replyToEmail?: string;
+  userUniqueEmail: string;
 }
 
 export const emailService = {
@@ -33,7 +32,7 @@ export const emailService = {
         job_id: data.jobId || null,
         subject: data.subject,
         participants: data.participants,
-        reply_to_email: data.replyToEmail || null,
+        reply_to_email: data.userUniqueEmail,
         last_message_at: new Date().toISOString(),
         unread_count: 0,
         status: 'active'
@@ -58,8 +57,8 @@ export const emailService = {
         applicationId: data.applicationId,
         jobId: data.jobId,
         subject: data.subject,
-        participants: [user.data.user.email!, data.recipientEmail],
-        replyToEmail: data.replyToEmail || 'hiring@atract.ai' // Use verified domain
+        participants: [data.userUniqueEmail, data.recipientEmail],
+        userUniqueEmail: data.userUniqueEmail
       });
     }
 
@@ -68,7 +67,7 @@ export const emailService = {
       .from('email_messages')
       .insert({
         thread_id: threadId,
-        sender_email: user.data.user.email || '',
+        sender_email: data.userUniqueEmail,
         recipient_email: data.recipientEmail,
         subject: data.subject,
         content: data.content,
@@ -82,15 +81,15 @@ export const emailService = {
     // Send the actual email via existing edge function with thread tracking
     const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
       body: {
-        user_id: user.data.user.id, // Pass user ID explicitly
+        user_id: user.data.user.id,
         applications: [{
           email: data.recipientEmail,
           name: data.recipientName
         }],
         job: { title: 'Email' },
-        subject: `${data.subject} [Thread:${threadId}]`, // Include thread ID for tracking
+        subject: `${data.subject} [Thread:${threadId}]`,
         content: data.content,
-        reply_to_email: data.replyToEmail || 'hiring@atract.ai', // Use verified domain
+        reply_to_email: data.userUniqueEmail,
         thread_id: threadId
       }
     });
@@ -114,4 +113,3 @@ export const emailService = {
     if (logError) console.error('Failed to log email:', logError);
   }
 };
-

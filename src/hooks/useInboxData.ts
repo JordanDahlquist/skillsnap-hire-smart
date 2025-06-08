@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,7 @@ import { useOptimizedAuth } from './useOptimizedAuth';
 import type { EmailThread, EmailMessage } from '@/types/inbox';
 
 export const useInboxData = () => {
-  const { user } = useOptimizedAuth();
+  const { user, profile } = useOptimizedAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const subscriptionRef = useRef<any>(null);
@@ -100,14 +99,13 @@ export const useInboxData = () => {
   const sendReplyMutation = useMutation({
     mutationFn: async ({ threadId, content }: { threadId: string; content: string }) => {
       const thread = threads.find(t => t.id === threadId);
-      if (!thread || !user?.email) throw new Error('Thread or user not found');
+      if (!thread || !user?.email || !profile?.unique_email) throw new Error('Thread, user, or unique email not found');
 
-      // Get recipient email (first participant that's not the current user or hiring@atract.ai)
+      // Get recipient email (first participant that's not the current user's unique email)
       const recipients = Array.isArray(thread.participants) 
         ? thread.participants.filter(p => 
             typeof p === 'string' && 
-            p !== user.email && 
-            p !== 'hiring@atract.ai'
+            p !== profile.unique_email
           )
         : [];
       
@@ -118,7 +116,7 @@ export const useInboxData = () => {
         .from('email_messages')
         .insert({
           thread_id: threadId,
-          sender_email: 'hiring@atract.ai', // Always use verified domain
+          sender_email: profile.unique_email,
           recipient_email: recipientEmail,
           subject: `Re: ${thread.subject}`,
           content,
@@ -132,15 +130,15 @@ export const useInboxData = () => {
       // Send actual email via edge function
       const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
         body: {
-          user_id: user.id, // Pass user ID explicitly
+          user_id: user.id,
           applications: [{
             email: recipientEmail,
-            name: recipientEmail.split('@')[0] // Simple fallback name
+            name: recipientEmail.split('@')[0]
           }],
           job: { title: 'Reply' },
           subject: `Re: ${thread.subject} [Thread:${threadId}]`,
           content: content,
-          reply_to_email: 'hiring@atract.ai'
+          reply_to_email: profile.unique_email
         }
       });
 
