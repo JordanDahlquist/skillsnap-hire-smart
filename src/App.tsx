@@ -8,7 +8,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGuard } from "@/components/AuthGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import MyJobs from "./pages/MyJobs";
+import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
 import PublicJobs from "./pages/PublicJobs";
 import { LinkedInCallback } from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
@@ -52,7 +52,7 @@ const App = () => (
             } />
             <Route path="/jobs" element={
               <AuthGuard>
-                <MyJobs />
+                <OptimizedJobsPage />
               </AuthGuard>
             } />
             <Route path="/jobs/public" element={<PublicJobs />} />

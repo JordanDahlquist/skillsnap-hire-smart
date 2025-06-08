@@ -7,7 +7,6 @@ import { JobFilters, defaultFilters } from "./job-filtering/types";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
 import { applyJobFiltersOptimized, sortJobs } from "./job-filtering/optimizedFilterUtils";
 import { useDebounce } from "./useDebounce";
-import { logger } from "@/services/loggerService";
 
 export const useJobsData = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,8 +31,6 @@ export const useJobsData = () => {
   const stats = useJobStats(jobs, recentApplications);
 
   const filteredJobs = useMemo(() => {
-    logger.debug('Filtering jobs with optimized logic');
-    
     let filtered = applyJobFiltersOptimized(jobs, debouncedSearchTerm, filters);
     
     if (needsAttentionFilter) {

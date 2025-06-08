@@ -1,3 +1,4 @@
+
 import { memo, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { OptimizedJobCard } from "@/components/OptimizedJobCard";
 import { VirtualList } from "@/components/ui/virtual-list";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Job } from "@/types";
-import { logger } from "@/services/loggerService";
 import { UI_CONSTANTS } from "@/constants/ui";
 
 interface OptimizedJobsContentProps {
@@ -78,7 +78,6 @@ export const OptimizedJobsContent = memo(({
 }: OptimizedJobsContentProps) => {
   const handleSelectAll = useCallback((checked: boolean) => {
     onSelectAll(checked, filteredJobs);
-    logger.info(`${checked ? 'Selected' : 'Deselected'} all jobs`, { count: filteredJobs.length });
   }, [onSelectAll, filteredJobs]);
 
   const renderJobItem = useCallback((job: Job, index: number) => (

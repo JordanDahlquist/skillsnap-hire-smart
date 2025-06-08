@@ -11,7 +11,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { JobsHeaderSection } from "./JobsHeaderSection";
 import { JobsToolbar } from "./JobsToolbar";
 import { OptimizedJobsContent } from "./OptimizedJobsContent";
-import { logger } from "@/services/loggerService";
 import { LOADING_MESSAGES, SUCCESS_MESSAGES } from "@/constants/messages";
 
 export const OptimizedJobsPage = memo(() => {
@@ -85,13 +84,11 @@ export const OptimizedJobsPage = memo(() => {
         title: "Filtered by Attention",
         description: "Showing jobs with 10+ pending applications",
       });
-      logger.info('Needs attention filter activated');
     } else {
       toast({
         title: "Filter Cleared",
         description: "Showing all jobs",
       });
-      logger.info('Needs attention filter cleared');
     }
   }, [needsAttentionFilter, setNeedsAttentionFilter, setActiveJobsFilter, setSortBy, toast]);
 
@@ -106,13 +103,11 @@ export const OptimizedJobsPage = memo(() => {
         title: "Filtered by Active Jobs",
         description: "Showing only active job postings",
       });
-      logger.info('Active jobs filter activated');
     } else {
       toast({
         title: "Filter Cleared",
         description: "Showing all jobs",
       });
-      logger.info('Active jobs filter cleared');
     }
   }, [activeJobsFilter, setActiveJobsFilter, setNeedsAttentionFilter, setSortBy, toast]);
 
