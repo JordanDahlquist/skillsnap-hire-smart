@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   Target, 
-  TrendingUp,
-  AlertCircle,
   CheckCircle,
   Clock
 } from "lucide-react";
@@ -67,9 +65,9 @@ export const PerformanceMetrics = ({ applications, job }: PerformanceMetricsProp
   };
 
   return (
-    <Card className="h-32">
+    <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between text-base">
+        <CardTitle className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4" />
             Job Performance
@@ -79,9 +77,9 @@ export const PerformanceMetrics = ({ applications, job }: PerformanceMetricsProp
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3">
+      <CardContent className="p-4">
         {isTooNewForAnalysis ? (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 py-2">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
               <Clock className="w-4 h-4 text-primary" />
             </div>
@@ -93,8 +91,8 @@ export const PerformanceMetrics = ({ applications, job }: PerformanceMetricsProp
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
               <div className="text-center">
                 <p className="text-xl font-bold text-primary">{healthScore}</p>
                 <p className="text-xs text-muted-foreground">Score</p>
@@ -104,16 +102,16 @@ export const PerformanceMetrics = ({ applications, job }: PerformanceMetricsProp
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-2 bg-muted/50 rounded">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center p-3 bg-muted/50 rounded">
                 <p className="text-sm font-bold text-foreground">{velocityScore}</p>
                 <p className="text-xs text-muted-foreground">Velocity</p>
               </div>
-              <div className="text-center p-2 bg-muted/50 rounded">
+              <div className="text-center p-3 bg-muted/50 rounded">
                 <p className="text-sm font-bold text-foreground">{approvalRate}%</p>
                 <p className="text-xs text-muted-foreground">Approval</p>
               </div>
-              <div className="text-center p-2 bg-muted/50 rounded">
+              <div className="text-center p-3 bg-muted/50 rounded">
                 <p className="text-sm font-bold text-foreground">{qualityScore}%</p>
                 <p className="text-xs text-muted-foreground">Quality</p>
               </div>
@@ -122,7 +120,7 @@ export const PerformanceMetrics = ({ applications, job }: PerformanceMetricsProp
         )}
         
         {healthScore >= 80 && !isTooNewForAnalysis && (
-          <div className="flex items-center gap-2 mt-2 p-2 bg-primary/5 rounded">
+          <div className="flex items-center gap-2 mt-3 p-2 bg-primary/5 rounded">
             <CheckCircle className="w-3 h-3 text-primary" />
             <p className="text-xs text-primary font-medium">Excellent performance!</p>
           </div>

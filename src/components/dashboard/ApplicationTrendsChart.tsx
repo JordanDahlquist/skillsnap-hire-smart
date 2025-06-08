@@ -41,15 +41,15 @@ export const ApplicationTrendsChart = ({ applications }: ApplicationTrendsChartP
 
   if (applications.length === 0) {
     return (
-      <Card className="h-32">
+      <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-sm">
             <TrendingUp className="w-4 h-4" />
             Application Trends
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-3">
-          <div className="text-center text-muted-foreground py-2">
+        <CardContent className="p-4">
+          <div className="text-center text-muted-foreground py-4">
             <Calendar className="w-6 h-6 mx-auto mb-2 opacity-50" />
             <p className="text-xs">No data available</p>
           </div>
@@ -59,46 +59,46 @@ export const ApplicationTrendsChart = ({ applications }: ApplicationTrendsChartP
   }
 
   return (
-    <Card className="h-32">
+    <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-sm">
           <TrendingUp className="w-4 h-4" />
           Application Trends
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3">
-        <div className="grid grid-cols-4 gap-3">
-          <div className="text-center">
-            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-1 mx-auto">
+      <CardContent className="p-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center p-3 bg-muted/50 rounded">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-2 mx-auto">
               <Users className="w-3 h-3 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground">This Week</p>
+            <p className="text-xs text-muted-foreground mb-1">This Week</p>
             <p className="text-lg font-bold text-foreground">{thisWeek.length}</p>
           </div>
           
-          <div className="text-center">
-            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-1 mx-auto">
+          <div className="text-center p-3 bg-muted/50 rounded">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-2 mx-auto">
               <TrendingUp className="w-3 h-3 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground">Growth</p>
+            <p className="text-xs text-muted-foreground mb-1">Growth</p>
             <p className={`text-lg font-bold ${weeklyGrowth >= 0 ? 'text-primary' : 'text-destructive'}`}>
               {weeklyGrowth > 0 ? '+' : ''}{weeklyGrowth}%
             </p>
           </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-1 mx-auto">
+          <div className="text-center p-3 bg-muted/50 rounded">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-2 mx-auto">
               <Star className="w-3 h-3 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground">Avg Rating</p>
+            <p className="text-xs text-muted-foreground mb-1">Avg Rating</p>
             <p className="text-lg font-bold text-foreground">{avgRating}</p>
           </div>
           
-          <div className="text-center">
-            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-1 mx-auto">
+          <div className="text-center p-3 bg-muted/50 rounded">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-2 mx-auto">
               <Calendar className="w-3 h-3 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="text-xs text-muted-foreground mb-1">Total</p>
             <p className="text-lg font-bold text-foreground">{applications.length}</p>
           </div>
         </div>
