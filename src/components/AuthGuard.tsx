@@ -12,6 +12,7 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
+  // Only show loading for auth, not profile
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { authService } from "@/services/authService";
 
 interface UserProfile {
@@ -20,35 +20,68 @@ interface UserProfile {
 export const useProfile = (userId: string | undefined) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false); // Prevent concurrent loads
+  const cacheRef = useRef<{ userId: string; profile: UserProfile; timestamp: number } | null>(null);
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
-  const loadProfile = async (id: string) => {
+  const loadProfile = useCallback(async (id: string) => {
+    // Prevent concurrent loads
+    if (loadingRef.current) {
+      console.log('Profile load already in progress, skipping...');
+      return;
+    }
+
+    // Check cache first
+    const now = Date.now();
+    if (cacheRef.current && 
+        cacheRef.current.userId === id && 
+        (now - cacheRef.current.timestamp) < CACHE_DURATION) {
+      console.log('Using cached profile');
+      setProfile(cacheRef.current.profile);
+      return;
+    }
+
+    loadingRef.current = true;
     setLoading(true);
+    
     try {
       const profileData = await authService.fetchProfile(id);
-      setProfile(profileData);
-      console.log('Profile loaded:', profileData?.full_name || 'No name');
+      if (profileData) {
+        setProfile(profileData);
+        // Cache the result
+        cacheRef.current = {
+          userId: id,
+          profile: profileData,
+          timestamp: now
+        };
+        console.log('Profile loaded:', profileData?.full_name || 'No name');
+      }
     } catch (error) {
       console.warn('Failed to load profile:', error);
       setProfile(null);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && userId !== cacheRef.current?.userId) {
       loadProfile(userId);
-    } else {
+    } else if (!userId) {
       setProfile(null);
       setLoading(false);
+      cacheRef.current = null;
     }
-  }, [userId]);
+  }, [userId, loadProfile]);
 
-  const refreshProfile = () => {
+  const refreshProfile = useCallback(() => {
     if (userId) {
+      // Clear cache and reload
+      cacheRef.current = null;
       loadProfile(userId);
     }
-  };
+  }, [userId, loadProfile]);
 
   return {
     profile,

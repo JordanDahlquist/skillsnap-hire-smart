@@ -7,11 +7,10 @@ import { HiringPreferences } from "@/components/profile/HiringPreferences";
 import { EmailTemplates } from "@/components/profile/EmailTemplates";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, RefreshCw } from "lucide-react";
 
 const ProfileSettings = () => {
-  const { user, refreshProfile, loading } = useAuth();
+  const { user, refreshProfile, loading, profileLoading } = useAuth();
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/jobs" },
@@ -22,12 +21,13 @@ const ProfileSettings = () => {
     await refreshProfile();
   };
 
+  // Only show loading screen for auth loading, not profile loading
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007af6] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading settings...</p>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -47,9 +47,9 @@ const ProfileSettings = () => {
             <Button 
               variant="outline" 
               onClick={handleRefreshData}
-              disabled={loading}
+              disabled={profileLoading}
             >
-              {loading ? (
+              {profileLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Refreshing...

@@ -2,17 +2,18 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, Plus, LogOut } from "lucide-react";
+import { Settings, Plus, LogOut, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface UserMenuProps {
   user: any;
   profile: any;
+  profileLoading?: boolean;
   onSignOut: () => void;
   onCreateRole?: () => void;
 }
 
-export const UserMenu = ({ user, profile, onSignOut, onCreateRole }: UserMenuProps) => {
+export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRole }: UserMenuProps) => {
   const getUserInitials = () => {
     if (profile?.full_name) {
       return profile.full_name.split(' ').map((name: string) => name[0]).join('').toUpperCase().slice(0, 2);
@@ -21,6 +22,9 @@ export const UserMenu = ({ user, profile, onSignOut, onCreateRole }: UserMenuPro
   };
   
   const getUserDisplayName = () => {
+    if (profileLoading) {
+      return 'Loading...';
+    }
     if (profile?.full_name) {
       return profile.full_name;
     }
@@ -33,11 +37,14 @@ export const UserMenu = ({ user, profile, onSignOut, onCreateRole }: UserMenuPro
         <Button variant="ghost" className="flex items-center gap-2 px-2">
           <Avatar className="w-8 h-8">
             <AvatarFallback className="bg-[#007af6] text-white text-xs">
-              {getUserInitials()}
+              {profileLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : getUserInitials()}
             </AvatarFallback>
           </Avatar>
           <div className="hidden sm:block text-left">
-            <p className="text-sm font-medium">{getUserDisplayName()}</p>
+            <p className="text-sm font-medium flex items-center gap-1">
+              {getUserDisplayName()}
+              {profileLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+            </p>
             <p className="text-xs text-gray-500">{user.email}</p>
           </div>
         </Button>
