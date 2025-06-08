@@ -1,4 +1,5 @@
 
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface EmailThreadData {
@@ -58,7 +59,7 @@ export const emailService = {
         jobId: data.jobId,
         subject: data.subject,
         participants: [user.data.user.email!, data.recipientEmail],
-        replyToEmail: data.replyToEmail || user.data.user.email!
+        replyToEmail: data.replyToEmail || 'hiring@atract.ai' // Use verified domain
       });
     }
 
@@ -89,7 +90,7 @@ export const emailService = {
         job: { title: 'Email' },
         subject: `${data.subject} [Thread:${threadId}]`, // Include thread ID for tracking
         content: data.content,
-        reply_to_email: data.replyToEmail || user.data.user.email,
+        reply_to_email: data.replyToEmail || 'hiring@atract.ai', // Use verified domain
         thread_id: threadId
       }
     });
@@ -113,3 +114,4 @@ export const emailService = {
     if (logError) console.error('Failed to log email:', logError);
   }
 };
+

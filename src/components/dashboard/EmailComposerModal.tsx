@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -62,17 +61,9 @@ export const EmailComposerModal = ({
     return job.company_name || profile?.company_name || 'Our Company';
   };
 
-  // Generate a proper reply-to email address
+  // Always use the verified atract.ai domain for emails
   const getReplyToEmail = () => {
-    if (profile?.company_name) {
-      // Create a proper hiring email based on company name
-      const companyDomain = profile.company_website 
-        ? new URL(profile.company_website).hostname.replace('www.', '')
-        : 'atract.ai'; // fallback domain
-      
-      return `hiring@${companyDomain}`;
-    }
-    return user?.email || 'hiring@atract.ai';
+    return 'hiring@atract.ai';
   };
 
   // Fetch email templates

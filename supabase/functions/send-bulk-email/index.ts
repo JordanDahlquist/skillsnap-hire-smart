@@ -1,4 +1,5 @@
 
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from "npm:resend@2.0.0";
@@ -69,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const results = [];
-    const fromEmail = reply_to_email || 'hiring@atract.ai';
+    const fromEmail = reply_to_email || 'hiring@atract.ai'; // Use verified domain as fallback
     const companyName = company_name || 'Our Company';
 
     for (const application of applications) {
@@ -226,3 +227,4 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
+
