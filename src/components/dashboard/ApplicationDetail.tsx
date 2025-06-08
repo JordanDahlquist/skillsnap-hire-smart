@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { EmailComposerModal } from "./EmailComposerModal";
 import { ApplicationDetailContent } from "./components/ApplicationDetailContent";
@@ -6,32 +5,18 @@ import { ApplicationRejectionDialog } from "./components/ApplicationRejectionDia
 import { ApplicationDetailFallback } from "./components/ApplicationDetailFallback";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Application } from "@/types";
 
-interface Application {
+interface JobForApplicationDetail {
   id: string;
-  name: string;
-  email: string;
-  portfolio: string | null;
-  created_at: string;
-  ai_rating: number | null;
-  ai_summary: string | null;
-  status: string;
-  experience: string | null;
-  answer_1: string | null;
-  answer_2: string | null;
-  answer_3: string | null;
-  manual_rating: number | null;
-  rejection_reason: string | null;
-}
-
-interface Job {
-  id: string;
+  title?: string;
+  description?: string;
 }
 
 interface ApplicationDetailProps {
   selectedApplication: Application | null;
   applications: Application[];
-  job: Job;
+  job: JobForApplicationDetail;
   getStatusColor: (status: string) => string;
   getRatingStars: (rating: number | null) => JSX.Element[];
   getTimeAgo: (dateString: string) => string;
@@ -218,7 +203,7 @@ export const ApplicationDetail = ({
           open={showEmailModal}
           onOpenChange={setShowEmailModal}
           selectedApplications={[selectedApplication]}
-          job={job}
+          job={job as any}
         />
 
         <ApplicationRejectionDialog
