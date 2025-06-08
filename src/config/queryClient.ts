@@ -8,29 +8,11 @@ interface QueryError extends Error {
   status?: number;
 }
 
-// Enhanced error handling for React Query
-const queryErrorHandler = (error: unknown, query: any) => {
-  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-  
-  // Track query errors
-  errorTrackingService.trackError(
-    error instanceof Error ? error : new Error(errorMessage),
-    {
-      component: 'React Query',
-      action: `Query: ${query.queryKey?.join(' - ')}`,
-      metadata: { queryKey: query.queryKey }
-    },
-    'medium'
-  );
-
-  logger.error('Query failed:', { error: errorMessage, queryKey: query.queryKey });
-};
-
-// Optimized query client with better defaults
+// Optimized query client with better defaults for performance
 export const createOptimizedQueryClient = () => new QueryClient({
   defaultOptions: {
     queries: {
-      // Retry logic
+      // Reduced retry logic for better performance
       retry: (failureCount, error) => {
         const queryError = error as QueryError;
         
@@ -47,23 +29,25 @@ export const createOptimizedQueryClient = () => new QueryClient({
           return false;
         }
         
-        return failureCount < 2;
+        // Reduced from 2 to 1 retry for better performance
+        return failureCount < 1;
       },
       
-      // Retry delay with exponential backoff
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      // Optimized retry delay
+      retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 5000), // Faster retries, lower max
       
-      // Cache settings
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
+      // Optimized cache settings for performance
+      staleTime: 2 * 60 * 1000, // Reduced to 2 minutes
+      gcTime: 5 * 60 * 1000, // Reduced to 5 minutes
       
-      // Refetch settings
+      // Optimized refetch settings
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
-      refetchOnMount: true,
+      refetchOnMount: false, // Changed to false to reduce initial requests
+      refetchInterval: false, // Disable polling by default
     },
     mutations: {
-      // Mutation retry
+      // Reduced mutation retry for performance
       retry: (failureCount, error) => {
         const mutationError = error as QueryError;
         
@@ -74,20 +58,23 @@ export const createOptimizedQueryClient = () => new QueryClient({
             mutationError?.status === 400) {
           return false;
         }
-        return failureCount < 1; // Only retry once for mutations
+        return false; // Disabled retries for mutations for better UX
       },
       
-      // Error handling for mutations
+      // Optimized error handling for mutations
       onError: (error, variables, context) => {
-        errorTrackingService.trackError(
-          error instanceof Error ? error : new Error(String(error)),
-          {
-            component: 'React Query',
-            action: 'Mutation failed',
-            metadata: { variables, context }
-          },
-          'high'
-        );
+        // Only track high-priority errors
+        if (error instanceof Error && !error.message.includes('auth')) {
+          errorTrackingService.trackError(
+            error,
+            {
+              component: 'React Query',
+              action: 'Mutation failed',
+              metadata: { variables, context }
+            },
+            'medium' // Reduced from 'high' to 'medium'
+          );
+        }
       },
     },
   },

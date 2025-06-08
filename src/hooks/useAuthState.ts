@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import { authService } from "@/services/authService";
@@ -10,8 +10,29 @@ export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Performance optimization: prevent duplicate calls
+  const initializingRef = useRef(false);
+  const initializedRef = useRef(false);
+
+  // Memoized sign out function
+  const signOut = useCallback(async () => {
+    try {
+      await authService.signOut();
+      setSession(null);
+      setUser(null);
+    } catch (error) {
+      logError('Sign out failed:', error);
+    }
+  }, [logError]);
 
   useEffect(() => {
+    // Prevent duplicate initialization
+    if (initializingRef.current || initializedRef.current) {
+      return;
+    }
+
+    initializingRef.current = true;
     logDebug('Auth state hook initializing...');
     
     // Set up auth state listener
@@ -22,32 +43,43 @@ export const useAuthState = () => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Always set loading to false after auth state change
-        setLoading(false);
+        // Set loading to false after first auth state change
+        if (initializingRef.current) {
+          setLoading(false);
+          initializingRef.current = false;
+          initializedRef.current = true;
+        }
       }
     );
 
-    // Check for existing session
+    // Check for existing session with timeout
+    const sessionTimeout = setTimeout(() => {
+      logInfo('Session check timeout reached');
+      setLoading(false);
+      initializingRef.current = false;
+      initializedRef.current = true;
+    }, 1500); // Reduced timeout for better performance
+
     authService.getSession().then((session) => {
+      clearTimeout(sessionTimeout);
       logInfo('Initial session check:', session?.user?.id || 'No session');
       
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      initializingRef.current = false;
+      initializedRef.current = true;
     }).catch((error) => {
+      clearTimeout(sessionTimeout);
       logError('Failed to get initial session:', error);
       setLoading(false);
+      initializingRef.current = false;
+      initializedRef.current = true;
     });
 
-    // Reduced failsafe timeout for auth loading
-    const timeout = setTimeout(() => {
-      logInfo('Auth loading timeout reached, setting loading to false');
-      setLoading(false);
-    }, 2000); // Reduced from 3000 to 2000ms
-
     return () => {
+      clearTimeout(sessionTimeout);
       subscription.unsubscribe();
-      clearTimeout(timeout);
     };
   }, [logDebug, logError, logInfo]);
 
@@ -56,6 +88,6 @@ export const useAuthState = () => {
     session,
     loading,
     isAuthenticated: !!session && !!user,
-    signOut: authService.signOut
+    signOut
   };
 };
