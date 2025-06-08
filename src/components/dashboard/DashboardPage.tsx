@@ -5,7 +5,6 @@ import { useOptimizedJob } from "@/hooks/useOptimizedJobs";
 import { useOptimizedApplications } from "@/hooks/useOptimizedApplications";
 import { UnifiedHeader } from "../UnifiedHeader";
 import { DashboardHeader } from "./DashboardHeader";
-import { DashboardAnalytics } from "./DashboardAnalytics";
 import { ApplicationsManager } from "./ApplicationsManager";
 import { EmailComposerModal } from "./EmailComposerModal";
 import { DashboardSkeleton } from "./DashboardSkeleton";
@@ -148,20 +147,16 @@ export const DashboardPage = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
-          <DashboardAnalytics applications={applications} job={job} />
-
-          <ApplicationsManager
-            applications={applications}
-            selectedApplication={selectedApplication}
-            onSelectApplication={setSelectedApplication}
-            selectedApplications={selectedApplications}
-            onSelectApplications={setSelectedApplications}
-            onSendEmail={() => setEmailModalOpen(true)}
-            onApplicationUpdate={handleApplicationUpdate}
-            job={job}
-          />
-        </div>
+        <ApplicationsManager
+          applications={applications}
+          selectedApplication={selectedApplication}
+          onSelectApplication={setSelectedApplication}
+          selectedApplications={selectedApplications}
+          onSelectApplications={setSelectedApplications}
+          onSendEmail={() => setEmailModalOpen(true)}
+          onApplicationUpdate={handleApplicationUpdate}
+          job={job}
+        />
       </div>
 
       <EmailComposerModal
