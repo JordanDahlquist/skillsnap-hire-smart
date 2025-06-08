@@ -1,8 +1,5 @@
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -12,50 +9,66 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-const profileSchema = z.object({
-  full_name: z.string().min(2, 'Name must be at least 2 characters'),
-  company_name: z.string().optional(),
-  job_title: z.string().optional(),
-  phone: z.string().optional(),
-  company_website: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-  industry: z.string().optional(),
-});
-
-type ProfileFormData = z.infer<typeof profileSchema>;
-
 export const ProfileForm = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      full_name: profile?.full_name || '',
-      company_name: profile?.company_name || '',
-      job_title: profile?.job_title || '',
-      phone: profile?.phone || '',
-      company_website: profile?.company_website || '',
-      industry: profile?.industry || '',
-    },
+  const [formData, setFormData] = useState({
+    full_name: profile?.full_name || '',
+    company_name: profile?.company_name || '',
+    job_title: profile?.job_title || '',
+    phone: profile?.phone || '',
+    company_website: profile?.company_website || '',
+    industry: profile?.industry || '',
   });
 
-  const onSubmit = async (data: ProfileFormData) => {
-    if (!user) return;
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.full_name || formData.full_name.length < 2) {
+      newErrors.full_name = 'Name must be at least 2 characters';
+    }
+
+    if (formData.company_website && formData.company_website.trim() !== '') {
+      try {
+        new URL(formData.company_website);
+      } catch {
+        newErrors.company_website = 'Please enter a valid URL';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm() || !user) return;
+
+    setIsSubmitting(true);
 
     try {
       const { error } = await supabase
         .from('profiles')
         .update({
-          full_name: data.full_name,
-          company_name: data.company_name || null,
-          job_title: data.job_title || null,
-          phone: data.phone || null,
-          company_website: data.company_website || null,
-          industry: data.industry || null,
+          full_name: formData.full_name,
+          company_name: formData.company_name || null,
+          job_title: formData.job_title || null,
+          phone: formData.phone || null,
+          company_website: formData.company_website || null,
+          industry: formData.industry || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
@@ -75,6 +88,8 @@ export const ProfileForm = () => {
         description: error.message || 'Failed to update profile',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -87,17 +102,19 @@ export const ProfileForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="full_name">Full Name *</Label>
               <Input
                 id="full_name"
-                {...register('full_name')}
+                value={formData.full_name}
+                onChange={(e) => handleInputChange('full_name', e.target.value)}
                 className={errors.full_name ? 'border-red-500' : ''}
+                required
               />
               {errors.full_name && (
-                <p className="text-sm text-red-600 mt-1">{errors.full_name.message}</p>
+                <p className="text-sm text-red-600 mt-1">{errors.full_name}</p>
               )}
             </div>
 
@@ -116,24 +133,18 @@ export const ProfileForm = () => {
               <Label htmlFor="company_name">Company Name</Label>
               <Input
                 id="company_name"
-                {...register('company_name')}
-                className={errors.company_name ? 'border-red-500' : ''}
+                value={formData.company_name}
+                onChange={(e) => handleInputChange('company_name', e.target.value)}
               />
-              {errors.company_name && (
-                <p className="text-sm text-red-600 mt-1">{errors.company_name.message}</p>
-              )}
             </div>
 
             <div>
               <Label htmlFor="job_title">Job Title</Label>
               <Input
                 id="job_title"
-                {...register('job_title')}
-                className={errors.job_title ? 'border-red-500' : ''}
+                value={formData.job_title}
+                onChange={(e) => handleInputChange('job_title', e.target.value)}
               />
-              {errors.job_title && (
-                <p className="text-sm text-red-600 mt-1">{errors.job_title.message}</p>
-              )}
             </div>
 
             <div>
@@ -141,24 +152,18 @@ export const ProfileForm = () => {
               <Input
                 id="phone"
                 type="tel"
-                {...register('phone')}
-                className={errors.phone ? 'border-red-500' : ''}
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
               />
-              {errors.phone && (
-                <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>
-              )}
             </div>
 
             <div>
               <Label htmlFor="industry">Industry</Label>
               <Input
                 id="industry"
-                {...register('industry')}
-                className={errors.industry ? 'border-red-500' : ''}
+                value={formData.industry}
+                onChange={(e) => handleInputChange('industry', e.target.value)}
               />
-              {errors.industry && (
-                <p className="text-sm text-red-600 mt-1">{errors.industry.message}</p>
-              )}
             </div>
           </div>
 
@@ -168,11 +173,12 @@ export const ProfileForm = () => {
               id="company_website"
               type="url"
               placeholder="https://example.com"
-              {...register('company_website')}
+              value={formData.company_website}
+              onChange={(e) => handleInputChange('company_website', e.target.value)}
               className={errors.company_website ? 'border-red-500' : ''}
             />
             {errors.company_website && (
-              <p className="text-sm text-red-600 mt-1">{errors.company_website.message}</p>
+              <p className="text-sm text-red-600 mt-1">{errors.company_website}</p>
             )}
           </div>
 
