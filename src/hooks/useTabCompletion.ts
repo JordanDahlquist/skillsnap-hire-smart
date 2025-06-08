@@ -20,7 +20,7 @@ export const useTabCompletion = (
   const [tab3Skipped, setTab3Skipped] = useState(false);
   const [tab4Skipped, setTab4Skipped] = useState(false);
 
-  // Watch specific form fields instead of the watch function
+  // Watch specific form fields
   const title = form.watch("title");
   const description = form.watch("description");
   const employment_type = form.watch("employment_type");
@@ -46,7 +46,7 @@ export const useTabCompletion = (
       tab4Skipped
     });
     
-    // Tab 1: Role Details - check required fields (removed status)
+    // Tab 1: Role Details - check required fields
     const tab1Complete = !!(
       title &&
       description &&
