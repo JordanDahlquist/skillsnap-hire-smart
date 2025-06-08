@@ -1,11 +1,16 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Briefcase, Mail } from "lucide-react";
+import { Briefcase, Mail, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInboxData } from "@/hooks/useInboxData";
 import { Badge } from "@/components/ui/badge";
 
 const navigationItems = [
+  {
+    name: "Dashboard",
+    href: "/jobs",
+    icon: LayoutDashboard,
+  },
   {
     name: "Jobs",
     href: "/jobs",
