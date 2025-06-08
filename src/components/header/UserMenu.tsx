@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -58,6 +57,7 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
             Dashboard
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/profile" className="flex items-center w-full">
             <Settings className="w-4 h-4 mr-2" />
