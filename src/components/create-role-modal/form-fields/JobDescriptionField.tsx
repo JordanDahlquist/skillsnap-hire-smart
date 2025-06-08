@@ -4,9 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { PdfUpload } from "@/components/PdfUpload";
 import { Upload, Sparkles } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { FormData } from "../utils/types";
 
 interface JobDescriptionFieldProps {
-  form: any;
+  form: UseFormReturn<FormData>;
   uploadedPdfContent: string | null;
   uploadedFileName: string | null;
   rewriteWithAI: boolean;
