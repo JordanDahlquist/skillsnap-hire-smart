@@ -1,81 +1,219 @@
 
 import { QueryClient } from "@tanstack/react-query";
-import { logger } from "@/services/loggerService";
+import { productionLogger } from "@/services/productionLoggerService";
 import { errorTrackingService } from "@/services/errorTrackingService";
+import { environment } from "@/config/environment";
 
-// Enhanced error type with optional status
 interface QueryError extends Error {
   status?: number;
+  code?: string;
 }
 
-// Optimized query client with better defaults for performance
+// Performance monitoring utility
+const withPerformanceTracking = (operation: string) => {
+  const startTime = Date.now();
+  return () => {
+    const duration = Date.now() - startTime;
+    if (environment.enablePerformanceMonitoring) {
+      productionLogger.performance(operation, duration);
+    }
+  };
+};
+
 export const createOptimizedQueryClient = () => new QueryClient({
   defaultOptions: {
     queries: {
-      // Reduced retry logic for better performance
       retry: (failureCount, error) => {
         const queryError = error as QueryError;
         
         // Don't retry auth-related errors
         if (queryError?.message?.includes('JWT') || 
             queryError?.message?.includes('auth') ||
-            queryError?.message?.includes('unauthorized')) {
+            queryError?.message?.includes('unauthorized') ||
+            queryError?.status === 401 || 
+            queryError?.status === 403) {
+          productionLogger.warn('Auth error detected, skipping retry', {
+            component: 'QueryClient',
+            metadata: { error: queryError.message, status: queryError.status }
+          });
           return false;
         }
         
-        // Don't retry 4xx errors (except 408, 429)
+        // Don't retry client errors (4xx except retryable ones)
         if (queryError?.status && queryError.status >= 400 && queryError.status < 500 && 
-            queryError.status !== 408 && queryError.status !== 429) {
+            queryError.status !== 408 && // Request Timeout
+            queryError.status !== 429 && // Too Many Requests
+            queryError.status !== 409) { // Conflict (sometimes retryable)
+          productionLogger.warn('Client error detected, skipping retry', {
+            component: 'QueryClient',
+            metadata: { error: queryError.message, status: queryError.status }
+          });
           return false;
         }
         
-        // Reduced from 2 to 1 retry for better performance
-        return failureCount < 1;
+        const shouldRetry = failureCount < environment.retryAttempts;
+        if (!shouldRetry) {
+          productionLogger.warn('Max retries exceeded', {
+            component: 'QueryClient',
+            metadata: { failureCount, maxRetries: environment.retryAttempts }
+          });
+        }
+        
+        return shouldRetry;
       },
       
-      // Optimized retry delay
-      retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 5000), // Faster retries, lower max
+      retryDelay: (attemptIndex) => {
+        const delay = Math.min(environment.retryDelay * Math.pow(2, attemptIndex), 10000);
+        productionLogger.debug('Query retry delay', {
+          component: 'QueryClient',
+          metadata: { attemptIndex, delay }
+        });
+        return delay;
+      },
       
-      // Optimized cache settings for performance
-      staleTime: 2 * 60 * 1000, // Reduced to 2 minutes
-      gcTime: 5 * 60 * 1000, // Reduced to 5 minutes
+      // Optimized cache settings
+      staleTime: 3 * 60 * 1000, // 3 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
       
-      // Optimized refetch settings
+      // Network-aware settings
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
-      refetchOnMount: false, // Changed to false to reduce initial requests
-      refetchInterval: false, // Disable polling by default
+      refetchOnMount: true,
+      refetchInterval: false,
+      
+      // Add timeout for queries
+      queryFn: undefined, // Will be overridden per query
+      
+      meta: {
+        timeout: environment.apiTimeout
+      }
     },
+    
     mutations: {
-      // Reduced mutation retry for performance
       retry: (failureCount, error) => {
         const mutationError = error as QueryError;
         
-        // Don't retry auth or validation errors
+        // Never retry auth errors or validation errors
         if (mutationError?.message?.includes('JWT') || 
             mutationError?.message?.includes('auth') ||
+            mutationError?.status === 401 ||
+            mutationError?.status === 403 ||
             mutationError?.status === 422 || 
             mutationError?.status === 400) {
+          productionLogger.warn('Non-retryable mutation error', {
+            component: 'QueryClient',
+            metadata: { error: mutationError.message, status: mutationError.status }
+          });
           return false;
         }
-        return false; // Disabled retries for mutations for better UX
+        
+        // Only retry server errors (5xx) and network errors
+        const shouldRetry = failureCount === 0 && (
+          !mutationError?.status || 
+          mutationError.status >= 500 ||
+          mutationError.message?.includes('network') ||
+          mutationError.message?.includes('timeout')
+        );
+        
+        if (shouldRetry) {
+          productionLogger.info('Retrying mutation', {
+            component: 'QueryClient',
+            metadata: { error: mutationError.message, attempt: failureCount + 1 }
+          });
+        }
+        
+        return shouldRetry;
       },
       
-      // Optimized error handling for mutations
+      retryDelay: () => environment.retryDelay,
+      
       onError: (error, variables, context) => {
-        // Only track high-priority errors
-        if (error instanceof Error && !error.message.includes('auth')) {
+        if (environment.enableErrorTracking && error instanceof Error) {
+          const queryError = error as QueryError;
+          
+          // Only track non-auth errors to reduce noise
+          if (!error.message.includes('auth') && !error.message.includes('JWT')) {
+            errorTrackingService.trackError(
+              error,
+              {
+                component: 'React Query Mutation',
+                action: 'Mutation failed',
+                metadata: { 
+                  variables: environment.isDevelopment ? variables : '[REDACTED]',
+                  context,
+                  status: queryError.status
+                }
+              },
+              queryError.status && queryError.status >= 500 ? 'high' : 'medium'
+            );
+          }
+        }
+        
+        productionLogger.error('Mutation failed', {
+          component: 'QueryClient',
+          metadata: { 
+            error: error.message,
+            variables: environment.isDevelopment ? variables : '[REDACTED]'
+          }
+        });
+      },
+      
+      onSuccess: (data, variables, context) => {
+        if (environment.isDevelopment) {
+          productionLogger.debug('Mutation succeeded', {
+            component: 'QueryClient',
+            metadata: { variables, context }
+          });
+        }
+      }
+    },
+  },
+  
+  // Global error handler
+  queryCache: {
+    onError: (error, query) => {
+      const trackPerformance = withPerformanceTracking(`Query: ${query.queryKey.join('/')}`);
+      trackPerformance();
+      
+      if (environment.enableErrorTracking && error instanceof Error) {
+        const queryError = error as QueryError;
+        
+        // Only track significant errors
+        if (!error.message.includes('auth') && !error.message.includes('JWT')) {
           errorTrackingService.trackError(
             error,
             {
               component: 'React Query',
-              action: 'Mutation failed',
-              metadata: { variables, context }
+              action: 'Query failed',
+              metadata: { 
+                queryKey: query.queryKey,
+                status: queryError.status
+              }
             },
-            'medium' // Reduced from 'high' to 'medium'
+            queryError.status && queryError.status >= 500 ? 'high' : 'low'
           );
         }
-      },
+      }
+      
+      productionLogger.error('Query failed', {
+        component: 'QueryClient',
+        metadata: { 
+          queryKey: query.queryKey,
+          error: error.message
+        }
+      });
     },
-  },
+    
+    onSuccess: (data, query) => {
+      const trackPerformance = withPerformanceTracking(`Query: ${query.queryKey.join('/')}`);
+      trackPerformance();
+      
+      if (environment.isDevelopment) {
+        productionLogger.debug('Query succeeded', {
+          component: 'QueryClient',
+          metadata: { queryKey: query.queryKey }
+        });
+      }
+    }
+  } as any
 });

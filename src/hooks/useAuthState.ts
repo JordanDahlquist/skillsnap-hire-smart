@@ -3,10 +3,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import { authService } from "@/services/authService";
-import { useLogger } from "./useLogger";
+import { productionLogger } from "@/services/productionLoggerService";
+import { environment } from "@/config/environment";
 
 export const useAuthState = () => {
-  const { logDebug, logError, logInfo } = useLogger('useAuthState');
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -17,14 +17,28 @@ export const useAuthState = () => {
 
   // Memoized sign out function
   const signOut = useCallback(async () => {
+    const startTime = Date.now();
     try {
       await authService.signOut();
       setSession(null);
       setUser(null);
+      
+      productionLogger.info('User signed out successfully', {
+        component: 'useAuthState',
+        action: 'SIGN_OUT'
+      });
     } catch (error) {
-      logError('Sign out failed:', error);
+      productionLogger.error('Sign out failed', {
+        component: 'useAuthState',
+        action: 'SIGN_OUT',
+        metadata: { error }
+      });
+    } finally {
+      if (environment.enablePerformanceMonitoring) {
+        productionLogger.performance('signOut', Date.now() - startTime);
+      }
     }
-  }, [logError]);
+  }, []);
 
   useEffect(() => {
     // Prevent duplicate initialization
@@ -33,12 +47,19 @@ export const useAuthState = () => {
     }
 
     initializingRef.current = true;
-    logDebug('Auth state hook initializing...');
+    productionLogger.debug('Auth state hook initializing...', {
+      component: 'useAuthState',
+      action: 'INIT'
+    });
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        logInfo('Auth state change:', event, session?.user?.id || 'No session');
+        productionLogger.info('Auth state change', {
+          component: 'useAuthState',
+          action: 'AUTH_STATE_CHANGE',
+          metadata: { event, userId: session?.user?.id || 'No session' }
+        });
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -54,15 +75,22 @@ export const useAuthState = () => {
 
     // Check for existing session with timeout
     const sessionTimeout = setTimeout(() => {
-      logInfo('Session check timeout reached');
+      productionLogger.warn('Session check timeout reached', {
+        component: 'useAuthState',
+        action: 'SESSION_TIMEOUT'
+      });
       setLoading(false);
       initializingRef.current = false;
       initializedRef.current = true;
-    }, 1500); // Reduced timeout for better performance
+    }, environment.apiTimeout / 2); // Use half the API timeout
 
     authService.getSession().then((session) => {
       clearTimeout(sessionTimeout);
-      logInfo('Initial session check:', session?.user?.id || 'No session');
+      productionLogger.info('Initial session check completed', {
+        component: 'useAuthState',
+        action: 'INITIAL_SESSION_CHECK',
+        metadata: { userId: session?.user?.id || 'No session' }
+      });
       
       setSession(session);
       setUser(session?.user ?? null);
@@ -71,7 +99,11 @@ export const useAuthState = () => {
       initializedRef.current = true;
     }).catch((error) => {
       clearTimeout(sessionTimeout);
-      logError('Failed to get initial session:', error);
+      productionLogger.error('Failed to get initial session', {
+        component: 'useAuthState',
+        action: 'INITIAL_SESSION_CHECK',
+        metadata: { error }
+      });
       setLoading(false);
       initializingRef.current = false;
       initializedRef.current = true;
@@ -81,7 +113,7 @@ export const useAuthState = () => {
       clearTimeout(sessionTimeout);
       subscription.unsubscribe();
     };
-  }, [logDebug, logError, logInfo]);
+  }, []);
 
   return {
     user,

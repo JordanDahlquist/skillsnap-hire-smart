@@ -2,10 +2,9 @@
 import { useMemo } from "react";
 import { useAuthState } from "./useAuthState";
 import { useProfile } from "./useProfile";
-import { useLogger } from "./useLogger";
+import { productionLogger } from "@/services/productionLoggerService";
 
 export const useAuth = () => {
-  const { logDebug } = useLogger('useAuth');
   const { user, session, loading: authLoading, isAuthenticated, signOut } = useAuthState();
   
   // Memoize profile loading condition to prevent unnecessary re-renders
@@ -25,11 +24,15 @@ export const useAuth = () => {
   const refreshAll = useMemo(() => {
     return () => {
       if (user?.id) {
-        logDebug('Refreshing user profile...');
+        productionLogger.debug('Refreshing user profile...', {
+          component: 'useAuth',
+          action: 'REFRESH_PROFILE',
+          metadata: { userId: user.id }
+        });
         refreshProfile();
       }
     };
-  }, [user?.id, refreshProfile, logDebug]);
+  }, [user?.id, refreshProfile]);
 
   // Memoize return object to prevent unnecessary re-renders
   return useMemo(() => ({

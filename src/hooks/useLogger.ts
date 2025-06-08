@@ -1,45 +1,66 @@
 
 import { useEffect, useRef } from 'react';
-import { logger } from '@/services/loggerService';
+import { productionLogger } from '@/services/productionLoggerService';
 
 export const useLogger = (componentName: string) => {
   const renderCount = useRef(0);
+  const mountTime = useRef<number>(Date.now());
 
   useEffect(() => {
     renderCount.current++;
-    logger.componentMount(`${componentName} (render #${renderCount.current})`);
+    mountTime.current = Date.now();
+    
+    productionLogger.componentMount(componentName, { renderCount: renderCount.current });
     
     return () => {
-      logger.componentUnmount(componentName);
+      const mountDuration = Date.now() - mountTime.current;
+      productionLogger.componentUnmount(componentName);
+      
+      // Track components that stay mounted for a long time
+      if (mountDuration > 60000) { // 1 minute
+        productionLogger.performance(`${componentName} mount duration`, mountDuration);
+      }
     };
   }, [componentName]);
 
   const logUserAction = (action: string, details?: any) => {
-    logger.userAction(`${componentName}: ${action}`, details);
+    productionLogger.userAction(`${componentName}: ${action}`, details);
   };
 
   const logApiCall = (method: string, endpoint: string, data?: any) => {
-    logger.apiCall(method, endpoint, data);
+    productionLogger.apiCall(method, endpoint, data);
   };
 
-  const logApiResponse = (method: string, endpoint: string, response: any) => {
-    logger.apiResponse(method, endpoint, response);
+  const logApiResponse = (method: string, endpoint: string, response: any, duration?: number) => {
+    productionLogger.apiResponse(method, endpoint, response, duration);
   };
 
   const logDebug = (message: string, ...args: any[]) => {
-    logger.debug(`${componentName}: ${message}`, ...args);
+    productionLogger.debug(`${componentName}: ${message}`, {
+      component: componentName,
+      metadata: args.length > 0 ? args : undefined
+    });
   };
 
   const logInfo = (message: string, ...args: any[]) => {
-    logger.info(`${componentName}: ${message}`, ...args);
+    productionLogger.info(`${componentName}: ${message}`, {
+      component: componentName,
+      metadata: args.length > 0 ? args : undefined
+    });
   };
 
   const logWarn = (message: string, ...args: any[]) => {
-    logger.warn(`${componentName}: ${message}`, ...args);
+    productionLogger.warn(`${componentName}: ${message}`, {
+      component: componentName,
+      metadata: args.length > 0 ? args : undefined
+    });
   };
 
   const logError = (message: string, ...args: any[]) => {
-    logger.error(`${componentName}: ${message}`, ...args);
+    productionLogger.error(`${componentName}: ${message}`, {
+      component: componentName,
+      metadata: args.length > 0 ? args : undefined
+    });
   };
 
   return {

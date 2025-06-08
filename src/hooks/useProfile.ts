@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { authService } from "@/services/authService";
+import { productionLogger } from "@/services/productionLoggerService";
+import { environment } from "@/config/environment";
 
 interface UserProfile {
   id: string;
@@ -29,7 +31,7 @@ export const useProfile = (userId: string | undefined) => {
   
   // Optimized configuration
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
-  const PROFILE_TIMEOUT = 3000; // 3 seconds timeout
+  const PROFILE_TIMEOUT = environment.apiTimeout / 3; // Use 1/3 of API timeout
 
   const loadProfile = useCallback(async (id: string) => {
     // Check if already loading for this user
@@ -42,7 +44,11 @@ export const useProfile = (userId: string | undefined) => {
     if (cacheRef.current && 
         cacheRef.current.userId === id && 
         (now - cacheRef.current.timestamp) < CACHE_DURATION) {
-      console.log('Using cached profile');
+      productionLogger.debug('Using cached profile', {
+        component: 'useProfile',
+        action: 'CACHE_HIT',
+        metadata: { userId: id }
+      });
       setProfile(cacheRef.current.profile);
       setError(null);
       return;
@@ -53,17 +59,26 @@ export const useProfile = (userId: string | undefined) => {
       return requestRef.current;
     }
 
+    const startTime = Date.now();
     loadingRef.current = true;
     setLoading(true);
     setError(null);
     
-    // Create the request promise
+    productionLogger.debug('Loading profile', {
+      component: 'useProfile',
+      action: 'LOAD_START',
+      metadata: { userId: id }
+    });
+    
+    // Create the request promise with timeout
     requestRef.current = Promise.race([
       authService.fetchProfile(id),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Profile loading timeout')), PROFILE_TIMEOUT)
       )
     ]).then((profileData) => {
+      const duration = Date.now() - startTime;
+      
       if (profileData) {
         const typedProfile = profileData as UserProfile;
         setProfile(typedProfile);
@@ -75,13 +90,36 @@ export const useProfile = (userId: string | undefined) => {
           profile: typedProfile,
           timestamp: now
         };
-        console.log('Profile loaded successfully:', typedProfile?.full_name || 'No name');
+        
+        productionLogger.info('Profile loaded successfully', {
+          component: 'useProfile',
+          action: 'LOAD_SUCCESS',
+          metadata: { 
+            userId: id,
+            fullName: typedProfile?.full_name || 'No name',
+            duration 
+          }
+        });
+        
+        if (environment.enablePerformanceMonitoring) {
+          productionLogger.performance('loadProfile', duration, { userId: id });
+        }
       } else {
         setProfile(null);
         setError(null);
+        productionLogger.debug('No profile data returned', {
+          component: 'useProfile',
+          action: 'LOAD_EMPTY',
+          metadata: { userId: id }
+        });
       }
     }).catch((error) => {
-      console.warn('Failed to load profile:', error);
+      const duration = Date.now() - startTime;
+      productionLogger.warn('Failed to load profile', {
+        component: 'useProfile',
+        action: 'LOAD_ERROR',
+        metadata: { userId: id, error: error.message, duration }
+      });
       setError(null); // Don't treat as critical error
       setProfile(null);
     }).finally(() => {
@@ -112,6 +150,11 @@ export const useProfile = (userId: string | undefined) => {
 
   const refreshProfile = useCallback(() => {
     if (userId) {
+      productionLogger.debug('Refreshing profile', {
+        component: 'useProfile',
+        action: 'REFRESH',
+        metadata: { userId }
+      });
       // Clear cache and reload
       cacheRef.current = null;
       requestRef.current = null;
