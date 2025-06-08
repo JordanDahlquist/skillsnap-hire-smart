@@ -3,6 +3,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster"
 import Auth from "./pages/Auth";
@@ -45,6 +46,7 @@ function App() {
                 <Inbox />
               </AuthGuard>
             } />
+            <Route path="/analytics" element={<Navigate to="/jobs" replace />} />
             <Route path="/apply/:jobId" element={<JobApplicationPage />} />
             <Route path="/public-jobs" element={<PublicJobs />} />
             <Route path="/profile" element={

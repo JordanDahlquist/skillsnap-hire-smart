@@ -139,40 +139,53 @@ export const useInboxData = () => {
     }
   });
 
-  // Set up real-time subscription
+  // Set up real-time subscription with proper cleanup
   useEffect(() => {
     if (!user?.id) return;
 
-    const channel = supabase
-      .channel('inbox-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'email_threads',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['email-threads'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'email_messages'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['email-messages'] });
-        }
-      )
-      .subscribe();
+    console.log('Setting up inbox real-time subscription for user:', user.id);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const channelName = `inbox-updates-${user.id}`;
+    
+    try {
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'email_threads',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Email threads change:', payload);
+            queryClient.invalidateQueries({ queryKey: ['email-threads'] });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'email_messages'
+          },
+          (payload) => {
+            console.log('Email messages change:', payload);
+            queryClient.invalidateQueries({ queryKey: ['email-messages'] });
+          }
+        )
+        .subscribe((status) => {
+          console.log('Subscription status:', status);
+        });
+
+      return () => {
+        console.log('Cleaning up inbox subscription');
+        supabase.removeChannel(channel);
+      };
+    } catch (error) {
+      console.error('Error setting up inbox subscription:', error);
+    }
   }, [user?.id, queryClient]);
 
   return {
