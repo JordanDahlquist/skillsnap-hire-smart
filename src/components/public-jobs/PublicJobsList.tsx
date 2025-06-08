@@ -1,6 +1,7 @@
 
 import { PublicJobCard } from "@/components/PublicJobCard";
 import { Briefcase } from "lucide-react";
+import { memo } from "react";
 
 interface PublicJobsListProps {
   jobs: any[];
@@ -10,7 +11,7 @@ interface PublicJobsListProps {
   getTimeAgo: (dateString: string) => string;
 }
 
-export const PublicJobsList = ({
+export const PublicJobsList = memo(({
   jobs,
   loading,
   searchTerm,
@@ -50,4 +51,6 @@ export const PublicJobsList = ({
       </p>
     </div>
   );
-};
+});
+
+PublicJobsList.displayName = 'PublicJobsList';

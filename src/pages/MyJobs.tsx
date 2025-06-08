@@ -1,8 +1,8 @@
 
-import { JobsPage } from "@/components/jobs/JobsPage";
+import { OptimizedJobsPage } from "@/components/jobs/OptimizedJobsPage";
 
 const MyJobs = () => {
-  return <JobsPage />;
+  return <OptimizedJobsPage />;
 };
 
 export default MyJobs;
