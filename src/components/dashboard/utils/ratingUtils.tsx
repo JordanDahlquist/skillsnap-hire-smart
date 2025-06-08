@@ -38,7 +38,7 @@ export const renderAIRating = (rating: number | null) => {
       <Star
         key={i}
         className={`w-4 h-4 ${
-          isActive ? 'text-green-500 fill-current' : 'text-gray-300'
+          isActive ? 'text-purple-500 fill-current' : 'text-gray-300'
         }`}
       />
     );

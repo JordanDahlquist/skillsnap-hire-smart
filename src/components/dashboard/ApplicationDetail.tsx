@@ -230,7 +230,7 @@ export const ApplicationDetail = ({
         <Star
           key={i}
           className={`w-5 h-5 ${
-            isActive ? 'text-green-500 fill-current' : 'text-gray-300'
+            isActive ? 'text-purple-500 fill-current' : 'text-gray-300'
           }`}
         />
       );
@@ -338,7 +338,7 @@ export const ApplicationDetail = ({
                     <div className="flex gap-1">
                       {renderAIRating(selectedApplication.ai_rating)}
                     </div>
-                    <span className="text-xs text-green-600 font-medium min-h-[16px]">
+                    <span className="text-xs text-purple-600 font-medium min-h-[16px]">
                       {selectedApplication.ai_rating 
                         ? `${selectedApplication.ai_rating.toFixed(1)}/3`
                         : 'Not rated'
