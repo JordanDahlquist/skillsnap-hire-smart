@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, ArrowRight, Sparkles, Save, Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Save, Eye, FileText } from "lucide-react";
+import { PdfUpload } from "@/components/PdfUpload";
 
 interface JobFormData {
   title: string;
@@ -46,6 +47,11 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
     location: "remote"
   });
 
+  // PDF upload state
+  const [uploadedPdfContent, setUploadedPdfContent] = useState<string | null>(null);
+  const [pdfFileName, setPdfFileName] = useState<string | null>(null);
+  const [useOriginalPdf, setUseOriginalPdf] = useState<boolean | null>(null);
+
   // Generated content
   const [generatedJobPost, setGeneratedJobPost] = useState("");
   const [generatedSkillsTest, setGeneratedSkillsTest] = useState("");
@@ -54,12 +60,36 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePdfUpload = (content: string, fileName: string) => {
+    setUploadedPdfContent(content);
+    setPdfFileName(fileName);
+    setFormData(prev => ({ ...prev, description: content }));
+    setUseOriginalPdf(null); // Reset choice when new PDF is uploaded
+  };
+
+  const handlePdfRemove = () => {
+    setUploadedPdfContent(null);
+    setPdfFileName(null);
+    setUseOriginalPdf(null);
+    setFormData(prev => ({ ...prev, description: "" }));
+  };
+
   const generateJobPost = async () => {
     if (!formData.title || !formData.description) {
       toast({
         title: "Missing Information",
         description: "Please fill in the job title and description first.",
         variant: "destructive"
+      });
+      return;
+    }
+
+    // If user chose to use original PDF content, skip generation
+    if (uploadedPdfContent && useOriginalPdf === true) {
+      setGeneratedJobPost(formData.description);
+      toast({
+        title: "Using Original Content",
+        description: "Using your uploaded job description as-is."
       });
       return;
     }
@@ -86,7 +116,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
       setGeneratedJobPost(data.jobPost);
       toast({
         title: "Job Post Generated!",
-        description: "Your AI-powered job posting is ready for review."
+        description: uploadedPdfContent && useOriginalPdf === false 
+          ? "Your PDF content has been rewritten by AI." 
+          : "Your AI-powered job posting is ready for review."
       });
     } catch (error) {
       toast({
@@ -183,6 +215,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
       });
       setGeneratedJobPost("");
       setGeneratedSkillsTest("");
+      setUploadedPdfContent(null);
+      setPdfFileName(null);
+      setUseOriginalPdf(null);
       setCurrentStep(1);
     } catch (error) {
       toast({
@@ -258,6 +293,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
 
                 <div>
                   <Label htmlFor="description">Job Description *</Label>
+                  <p className="text-xs text-gray-500 mb-2">Basic info for AI to generate professional job description</p>
                   <Textarea
                     id="description"
                     value={formData.description}
@@ -266,6 +302,63 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                     rows={4}
                     required
                   />
+                </div>
+
+                {/* PDF Upload Section */}
+                <div className="space-y-2">
+                  <PdfUpload
+                    onFileUpload={handlePdfUpload}
+                    onRemove={handlePdfRemove}
+                    uploadedFile={pdfFileName}
+                  />
+                  
+                  {/* PDF Choice Section */}
+                  {uploadedPdfContent && useOriginalPdf === null && (
+                    <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-800">PDF Content Loaded</span>
+                      </div>
+                      <p className="text-xs text-blue-700 mb-3">How would you like to use this content?</p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setUseOriginalPdf(true)}
+                          className="text-xs"
+                        >
+                          Keep Original
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setUseOriginalPdf(false)}
+                          className="text-xs"
+                        >
+                          Have AI Rewrite
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Show choice made */}
+                  {uploadedPdfContent && useOriginalPdf !== null && (
+                    <div className="bg-green-50 border border-green-200 rounded p-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-green-800">
+                          {useOriginalPdf ? "Using original PDF content" : "AI will rewrite PDF content"}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUseOriginalPdf(null)}
+                          className="text-xs h-6 px-2 text-green-600 hover:text-green-800"
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -340,36 +433,48 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-blue-600" />
-                  AI Job Post Generator
+                  {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "AI Job Post Generator"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!generatedJobPost ? (
                   <div className="text-center py-8">
                     <p className="text-gray-600 mb-4">
-                      Generate a professional job posting based on your details
+                      {uploadedPdfContent && useOriginalPdf === true
+                        ? "Use your uploaded job description as the final job post"
+                        : uploadedPdfContent && useOriginalPdf === false
+                        ? "Generate an improved version of your uploaded job description"
+                        : "Generate a professional job posting based on your details"
+                      }
                     </p>
                     <Button 
                       onClick={generateJobPost}
                       disabled={isGenerating}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
-                      {isGenerating ? 'Generating...' : 'Generate Job Post'}
+                      {isGenerating ? 'Processing...' : 
+                       uploadedPdfContent && useOriginalPdf === true ? 'Use Original Content' :
+                       uploadedPdfContent && useOriginalPdf === false ? 'Rewrite with AI' :
+                       'Generate Job Post'}
                       <Sparkles className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <Label htmlFor="jobPost">Generated Job Post</Label>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={generateJobPost}
-                        disabled={isGenerating}
-                      >
-                        Regenerate
-                      </Button>
+                      <Label htmlFor="jobPost">
+                        {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
+                      </Label>
+                      {!(uploadedPdfContent && useOriginalPdf === true) && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={generateJobPost}
+                          disabled={isGenerating}
+                        >
+                          Regenerate
+                        </Button>
+                      )}
                     </div>
                     <Textarea
                       id="jobPost"
@@ -458,6 +563,16 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                   <h3 className="font-semibold mb-2">Experience Level</h3>
                   <p className="text-gray-700">{formData.experienceLevel}</p>
                 </div>
+
+                {pdfFileName && (
+                  <div>
+                    <h3 className="font-semibold mb-2">Source Content</h3>
+                    <p className="text-sm text-gray-600">
+                      From PDF: {pdfFileName} 
+                      {useOriginalPdf === true ? " (used as-is)" : " (rewritten by AI)"}
+                    </p>
+                  </div>
+                )}
 
                 {generatedJobPost && (
                   <div>
