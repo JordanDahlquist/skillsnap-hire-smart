@@ -1,11 +1,11 @@
-
 import { useState, memo, useCallback } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { useJobSelection } from "@/hooks/useJobSelection";
 import { useAsyncOperation } from "@/hooks/useAsyncOperation";
 import { useJobsData } from "@/hooks/useJobsData";
 import { useStandardizedError } from "@/hooks/useStandardizedError";
+import { useOptimizedJobs } from "@/hooks/useOptimizedJobs";
 import { JobCreatorPanel } from "@/components/JobCreatorPanel";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -15,18 +15,18 @@ import { OptimizedJobsContent } from "./OptimizedJobsContent";
 import { LOADING_MESSAGES, SUCCESS_MESSAGES } from "@/constants/messages";
 
 export const OptimizedJobsPage = memo(() => {
-  const { user, profile } = useAuth();
+  const { user, profile } = useOptimizedAuth(); // Use optimized auth
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const { toast } = useToast();
   const { execute: executeAsync } = useAsyncOperation();
   const { handleError } = useStandardizedError();
 
-  // Consolidated data hook
+  // Use optimized jobs hook for better performance
+  const { data: jobs = [], isLoading: jobsLoading, refetch } = useOptimizedJobs(user?.id);
+
+  // Consolidated data hook (keeping existing logic but with optimized data)
   const {
-    jobs,
     filteredJobs,
-    isLoading,
-    refetch,
     stats,
     searchTerm,
     setSearchTerm,
@@ -42,7 +42,7 @@ export const OptimizedJobsPage = memo(() => {
     activeFiltersCount
   } = useJobsData();
 
-  // Job selection
+  // Job selection (keeping existing logic)
   const {
     selectedJobs,
     handleJobSelection,
@@ -126,7 +126,8 @@ export const OptimizedJobsPage = memo(() => {
     setIsCreatePanelOpen(true);
   }, []);
 
-  if (isLoading) {
+  // Use jobsLoading from optimized hook instead of consolidated loading
+  if (jobsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

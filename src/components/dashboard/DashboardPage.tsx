@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
+import { useOptimizedJob } from "@/hooks/useOptimizedJobs";
+import { useOptimizedApplications } from "@/hooks/useOptimizedApplications";
 import { UnifiedHeader } from "../UnifiedHeader";
 import { DashboardHeader } from "./DashboardHeader";
 import { DashboardAnalytics } from "./DashboardAnalytics";
@@ -44,66 +43,28 @@ interface Job {
 
 export const DashboardPage = () => {
   const { jobId } = useParams<{ jobId: string }>();
-  const { user } = useAuth();
+  const { user } = useOptimizedAuth(); // Use optimized auth
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
 
-  // Fetch job details with error handling
-  const { data: job, isLoading: jobLoading, error: jobError, refetch: refetchJob } = useQuery({
-    queryKey: ['job', jobId],
-    queryFn: async () => {
-      if (!jobId) throw new Error('No job ID provided');
-      
-      logger.debug('Fetching job details for ID:', jobId);
-      
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('id', jobId)
-        .maybeSingle();
-      
-      if (error) {
-        logger.error('Job fetch error:', error);
-        throw error;
-      }
-      
-      if (!data) {
-        logger.warn('No job found with ID:', jobId);
-        throw new Error('Job not found');
-      }
-      
-      return data as Job;
-    },
-    enabled: !!jobId,
-    retry: 1,
-  });
+  // Parallel loading: Both job and applications load simultaneously
+  const { 
+    data: job, 
+    isLoading: jobLoading, 
+    error: jobError, 
+    refetch: refetchJob 
+  } = useOptimizedJob(jobId);
 
-  // Fetch applications for this job with error handling
-  const { data: applications = [], isLoading: applicationsLoading, error: applicationsError, refetch: refetchApplications } = useQuery({
-    queryKey: ['applications', jobId],
-    queryFn: async () => {
-      if (!jobId) return [];
-      
-      logger.debug('Fetching applications for job ID:', jobId);
-      
-      const { data, error } = await supabase
-        .from('applications')
-        .select('*')
-        .eq('job_id', jobId)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        logger.error('Applications fetch error:', error);
-        throw error;
-      }
-      
-      logger.debug('Applications fetched:', data?.length || 0);
-      return data as Application[];
-    },
-    enabled: !!jobId,
-    retry: 1,
-  });
+  const { 
+    data: applications = [], 
+    isLoading: applicationsLoading, 
+    error: applicationsError, 
+    refetch: refetchApplications 
+  } = useOptimizedApplications(jobId);
+
+  // Combined loading state - both queries run in parallel
+  const isLoading = jobLoading || applicationsLoading;
 
   // Set first application as selected when applications load
   useEffect(() => {
@@ -131,8 +92,8 @@ export const DashboardPage = () => {
     refetchApplications();
   };
 
-  // Loading state with skeleton
-  if (jobLoading || applicationsLoading) {
+  // Loading state with skeleton - faster loading with parallel queries
+  if (isLoading) {
     return <DashboardSkeleton />;
   }
 

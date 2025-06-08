@@ -1,14 +1,15 @@
-
 import { useMemo, useCallback, useState } from "react";
-import { useJobs } from "./useJobs";
+import { useOptimizedJobs } from "./useOptimizedJobs"; // Use optimized hook
 import { useRecentApplications } from "./useApplications";
 import { useJobStats } from "./useJobStats";
+import { useOptimizedAuth } from "./useOptimizedAuth"; // Use optimized auth
 import { JobFilters, defaultFilters } from "./job-filtering/types";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
 import { applyJobFiltersOptimized, sortJobs } from "./job-filtering/optimizedFilterUtils";
 import { useDebounce } from "./useDebounce";
 
 export const useJobsData = () => {
+  const { user } = useOptimizedAuth(); // Use optimized auth
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<JobFilters>(defaultFilters);
   const [sortBy, setSortBy] = useState("updated_at");
@@ -19,8 +20,8 @@ export const useJobsData = () => {
   // Debounce search to prevent excessive filtering
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // Data fetching
-  const { data: jobs = [], isLoading, refetch } = useJobs();
+  // Data fetching with optimized hooks
+  const { data: jobs = [], isLoading, refetch } = useOptimizedJobs(user?.id);
   const { data: recentApplications = [] } = useRecentApplications(jobs.map(job => job.id));
 
   // Memoized calculations
