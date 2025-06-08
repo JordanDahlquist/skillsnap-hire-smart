@@ -25,14 +25,14 @@ export const DEFAULT_FORM_VALUES = {
   description: "",
   experience_level: "mid-level",
   required_skills: "",
-  budget: undefined,
-  duration: undefined,
+  budget: "",
+  duration: "",
   employment_type: "full-time",
   location_type: "remote",
   country: "United States",
-  state: undefined,
-  region: undefined,
-  city: undefined
+  state: "",
+  region: "",
+  city: ""
 };
 
 export const EMPLOYMENT_TYPES = [

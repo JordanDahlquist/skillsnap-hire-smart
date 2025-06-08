@@ -22,10 +22,10 @@ export const LocationTab = ({ form, onLocationChange }: LocationTabProps) => {
         </CardHeader>
         <CardContent>
           <LocationSelector
-            locationType={form.watch("location_type") || "remote"}
-            country={form.watch("country") || ""}
-            state={form.watch("state") || ""}
-            city={form.watch("city") || ""}
+            locationType={form.watch("location_type")}
+            country={form.watch("country")}
+            state={form.watch("state")}
+            city={form.watch("city")}
             onLocationChange={onLocationChange}
           />
         </CardContent>
