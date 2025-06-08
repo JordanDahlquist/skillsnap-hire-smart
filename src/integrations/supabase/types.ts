@@ -151,6 +151,7 @@ export type Database = {
           status: string | null
           subject: string
           template_id: string | null
+          thread_id: string | null
           user_id: string
         }
         Insert: {
@@ -166,6 +167,7 @@ export type Database = {
           status?: string | null
           subject: string
           template_id?: string | null
+          thread_id?: string | null
           user_id: string
         }
         Update: {
@@ -181,6 +183,7 @@ export type Database = {
           status?: string | null
           subject?: string
           template_id?: string | null
+          thread_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -196,6 +199,63 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "email_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_messages: {
+        Row: {
+          content: string
+          created_at: string
+          direction: string
+          external_message_id: string | null
+          id: string
+          is_read: boolean
+          message_type: string
+          recipient_email: string
+          sender_email: string
+          subject: string | null
+          thread_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          direction: string
+          external_message_id?: string | null
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          recipient_email: string
+          sender_email: string
+          subject?: string | null
+          thread_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          direction?: string
+          external_message_id?: string | null
+          id?: string
+          is_read?: boolean
+          message_type?: string
+          recipient_email?: string
+          sender_email?: string
+          subject?: string | null
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "email_threads"
             referencedColumns: ["id"]
           },
         ]
@@ -235,6 +295,63 @@ export type Database = {
           variables?: Json | null
         }
         Relationships: []
+      }
+      email_threads: {
+        Row: {
+          application_id: string | null
+          created_at: string
+          id: string
+          job_id: string | null
+          last_message_at: string
+          participants: Json
+          status: string
+          subject: string
+          unread_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          last_message_at?: string
+          participants?: Json
+          status?: string
+          subject: string
+          unread_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          last_message_at?: string
+          participants?: Json
+          status?: string
+          subject?: string
+          unread_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_threads_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_threads_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       jobs: {
         Row: {

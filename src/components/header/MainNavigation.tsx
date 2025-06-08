@@ -1,98 +1,67 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
-import { Home, Briefcase, BarChart3 } from "lucide-react";
+import { Briefcase, Mail, Settings, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useInboxData } from "@/hooks/useInboxData";
+import { Badge } from "@/components/ui/badge";
 
-interface MainNavigationProps {
-  isAuthenticated: boolean;
-  isDashboard: boolean;
-}
+const navigationItems = [
+  {
+    name: "Jobs",
+    href: "/jobs",
+    icon: Briefcase,
+  },
+  {
+    name: "Inbox",
+    href: "/inbox",
+    icon: Mail,
+    showBadge: true,
+  },
+  {
+    name: "Analytics",
+    href: "/analytics",
+    icon: BarChart3,
+  },
+  {
+    name: "Settings",
+    href: "/profile",
+    icon: Settings,
+  },
+];
 
-export const MainNavigation = ({ isAuthenticated, isDashboard }: MainNavigationProps) => {
+export const MainNavigation = () => {
   const location = useLocation();
-  const isActive = (path: string) => location.pathname === path;
+  const { threads } = useInboxData();
+  
+  const totalUnread = threads?.reduce((sum, thread) => sum + thread.unread_count, 0) || 0;
 
   return (
-    <>
-      <style>{`
-        @keyframes home-bounce {
-          0%, 100% { transform: scale(1) rotate(0deg); }
-          50% { transform: scale(1.1) rotate(3deg); }
-        }
+    <nav className="hidden md:flex space-x-8">
+      {navigationItems.map((item) => {
+        const isActive = location.pathname === item.href;
+        const Icon = item.icon;
         
-        @keyframes briefcase-shake {
-          0%, 100% { transform: translateX(0) rotate(0deg); }
-          25% { transform: translateX(-1px) rotate(-1deg); }
-          75% { transform: translateX(1px) rotate(1deg); }
-        }
-        
-        @keyframes chart-grow {
-          0% { transform: scale(1) rotate(0deg); }
-          50% { transform: scale(1.15) rotate(-2deg); }
-          100% { transform: scale(1) rotate(0deg); }
-        }
-        
-        .home-icon {
-          transition: transform 0.2s ease-in-out;
-        }
-        
-        .home-icon:hover {
-          animation: home-bounce 0.4s ease-in-out;
-        }
-        
-        .briefcase-icon {
-          transition: transform 0.2s ease-in-out;
-        }
-        
-        .briefcase-icon:hover {
-          animation: briefcase-shake 0.3s ease-in-out;
-        }
-        
-        .chart-icon {
-          transition: transform 0.2s ease-in-out;
-        }
-        
-        .chart-icon:hover {
-          animation: chart-grow 0.35s ease-in-out;
-        }
-      `}</style>
-      
-      <NavigationMenu>
-        <NavigationMenuList>
-          {/* Home link - always visible and accessible */}
-          <NavigationMenuItem>
-            <NavigationMenuLink asChild>
-              <Link to="/" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/") && "bg-accent text-accent-foreground")}>
-                <Home className="w-4 h-4 mr-2 home-icon" />
-                Home
-              </Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-
-          {/* Public Jobs link - always visible */}
-          <NavigationMenuItem>
-            <NavigationMenuLink asChild>
-              <Link to="/jobs/public" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs/public") && "bg-accent text-accent-foreground")}>
-                <Briefcase className="w-4 h-4 mr-2 briefcase-icon" />
-                Jobs
-              </Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-
-          {/* Dashboard link - only for authenticated users */}
-          {isAuthenticated && (
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild>
-                <Link to="/jobs" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs") && "bg-accent text-accent-foreground")}>
-                  <BarChart3 className="w-4 h-4 mr-2 chart-icon" />
-                  Dashboard
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          )}
-        </NavigationMenuList>
-      </NavigationMenu>
-    </>
+        return (
+          <Link
+            key={item.name}
+            to={item.href}
+            className={cn(
+              "flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+            )}
+          >
+            <Icon className="w-4 h-4" />
+            <span>{item.name}</span>
+            {item.showBadge && totalUnread > 0 && (
+              <Badge variant="destructive" className="ml-1 text-xs">
+                {totalUnread}
+              </Badge>
+            )}
+          </Link>
+        );
+      })}
+    </nav>
   );
 };
