@@ -197,7 +197,7 @@ export const EmailComposerModal = ({
             <div className="flex gap-2">
               <Button onClick={handleSendEmails} disabled={isSending || !subject || !content}>
                 <Send className="w-4 h-4 mr-2" />
-                {isSending ? 'Sending...' : 'Send Emails'}
+                {isSending ? 'Sending...' : 'Send Email'}
               </Button>
               <Button variant="outline" onClick={() => setShowPreview(!showPreview)}>
                 <Eye className="w-4 h-4 mr-2" />
