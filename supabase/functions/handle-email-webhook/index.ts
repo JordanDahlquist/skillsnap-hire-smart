@@ -26,13 +26,23 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('=== Email Webhook Called ===');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers));
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const emailData: IncomingEmail = await req.json();
-    console.log('Received email webhook:', emailData);
+    console.log('Received email webhook data:', {
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject,
+      hasText: !!emailData.text,
+      hasHtml: !!emailData.html
+    });
 
     // Extract thread information from subject or references
     let threadId: string | null = null;
@@ -56,19 +66,25 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('Searching for thread with normalized subject:', normalizedSubject);
 
       // Find thread by subject and check if sender is a participant
-      const { data: existingThreads } = await supabase
+      const { data: existingThreads, error: searchError } = await supabase
         .from('email_threads')
         .select('id, user_id, participants')
         .ilike('subject', `%${normalizedSubject}%`)
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(10);
 
-      if (existingThreads && existingThreads.length > 0) {
+      if (searchError) {
+        console.error('Error searching for threads:', searchError);
+      } else if (existingThreads && existingThreads.length > 0) {
+        console.log(`Found ${existingThreads.length} potential matching threads`);
+        
         // Find a thread where the sender is a participant
         for (const thread of existingThreads) {
           const participants = Array.isArray(thread.participants) 
             ? thread.participants 
             : [];
+          
+          console.log('Checking thread:', thread.id, 'participants:', participants);
           
           if (participants.includes(emailData.from)) {
             threadId = thread.id;
@@ -80,14 +96,17 @@ const handler = async (req: Request): Promise<Response> => {
       }
     } else {
       // Get user ID from the found thread
-      const { data: threadData } = await supabase
+      const { data: threadData, error: threadError } = await supabase
         .from('email_threads')
         .select('user_id')
         .eq('id', threadId)
         .single();
 
-      if (threadData) {
+      if (threadError) {
+        console.error('Error fetching thread data:', threadError);
+      } else if (threadData) {
         userId = threadData.user_id;
+        console.log('Retrieved user ID from thread:', userId);
       }
     }
 
@@ -95,16 +114,28 @@ const handler = async (req: Request): Promise<Response> => {
     if (!threadId) {
       console.log('No existing thread found, attempting to create new thread');
       
-      // Try to find user by reply-to email address
-      const { data: userData } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', emailData.to)
-        .single();
-
-      if (userData) {
-        userId = userData.id;
+      // Try to find user by checking if the "to" email is hiring@atract.ai
+      if (emailData.to === 'hiring@atract.ai') {
+        // For now, we'll need to find a way to associate this with a user
+        // This could be improved by having a mapping or looking at recent outbound emails
+        console.log('Email sent to hiring@atract.ai - need to determine target user');
         
+        // Look for recent outbound emails to this sender to find the user
+        const { data: recentMessages } = await supabase
+          .from('email_messages')
+          .select('thread_id, email_threads!inner(user_id)')
+          .eq('recipient_email', emailData.from)
+          .eq('direction', 'outbound')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (recentMessages && recentMessages.length > 0) {
+          userId = (recentMessages[0] as any).email_threads.user_id;
+          console.log('Found user from recent outbound message:', userId);
+        }
+      }
+
+      if (userId) {
         // Create new thread
         const { data: newThread, error: createError } = await supabase
           .from('email_threads')
@@ -142,6 +173,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (!threadId) {
+      console.error('Could not determine thread for incoming email');
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -155,6 +187,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Insert the new message
+    console.log('Inserting new message for thread:', threadId);
     const { error: messageError } = await supabase
       .from('email_messages')
       .insert({
@@ -174,7 +207,20 @@ const handler = async (req: Request): Promise<Response> => {
       throw messageError;
     }
 
-    console.log('Successfully stored incoming email message for thread:', threadId);
+    // Update thread last message time and unread count
+    const { error: updateError } = await supabase
+      .from('email_threads')
+      .update({
+        last_message_at: new Date().toISOString(),
+        unread_count: supabase.raw('unread_count + 1')
+      })
+      .eq('id', threadId);
+
+    if (updateError) {
+      console.error('Failed to update thread:', updateError);
+    }
+
+    console.log('Successfully processed incoming email for thread:', threadId);
 
     return new Response(
       JSON.stringify({ success: true, thread_id: threadId }),

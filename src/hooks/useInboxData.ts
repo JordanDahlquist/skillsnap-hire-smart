@@ -102,9 +102,13 @@ export const useInboxData = () => {
       const thread = threads.find(t => t.id === threadId);
       if (!thread || !user?.email) throw new Error('Thread or user not found');
 
-      // Get recipient email (first participant that's not the current user)
+      // Get recipient email (first participant that's not the current user or hiring@atract.ai)
       const recipients = Array.isArray(thread.participants) 
-        ? thread.participants.filter(p => typeof p === 'string' && p !== user.email)
+        ? thread.participants.filter(p => 
+            typeof p === 'string' && 
+            p !== user.email && 
+            p !== 'hiring@atract.ai'
+          )
         : [];
       
       const recipientEmail = recipients[0] || '';
@@ -114,7 +118,7 @@ export const useInboxData = () => {
         .from('email_messages')
         .insert({
           thread_id: threadId,
-          sender_email: user.email,
+          sender_email: 'hiring@atract.ai', // Always use verified domain
           recipient_email: recipientEmail,
           subject: `Re: ${thread.subject}`,
           content,
@@ -128,6 +132,7 @@ export const useInboxData = () => {
       // Send actual email via edge function
       const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
         body: {
+          user_id: user.id, // Pass user ID explicitly
           applications: [{
             email: recipientEmail,
             name: recipientEmail.split('@')[0] // Simple fallback name
@@ -135,7 +140,7 @@ export const useInboxData = () => {
           job: { title: 'Reply' },
           subject: `Re: ${thread.subject} [Thread:${threadId}]`,
           content: content,
-          reply_to_email: user.email
+          reply_to_email: 'hiring@atract.ai'
         }
       });
 
@@ -212,7 +217,7 @@ export const useInboxData = () => {
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
-            console.log('Email threads change:', payload);
+            console.log('Email threads change detected:', payload);
             queryClient.invalidateQueries({ queryKey: ['email-threads'] });
           }
         )
@@ -224,18 +229,27 @@ export const useInboxData = () => {
             table: 'email_messages'
           },
           (payload) => {
-            console.log('Email messages change:', payload);
+            console.log('Email messages change detected:', payload);
             // Only invalidate if this message belongs to one of our threads
             const messageThreadId = (payload.new as any)?.thread_id || (payload.old as any)?.thread_id;
             const userThreadIds = threads.map(t => t.id);
             if (messageThreadId && userThreadIds.includes(messageThreadId)) {
+              console.log('Message belongs to user thread, refreshing data');
               queryClient.invalidateQueries({ queryKey: ['email-messages'] });
               queryClient.invalidateQueries({ queryKey: ['email-threads'] });
+              
+              // Show notification for new inbound messages
+              if (payload.eventType === 'INSERT' && (payload.new as any)?.direction === 'inbound') {
+                toast({
+                  title: "New message received",
+                  description: `From: ${(payload.new as any)?.sender_email}`,
+                });
+              }
             }
           }
         )
         .subscribe((status) => {
-          console.log('Subscription status:', status);
+          console.log('Inbox subscription status:', status);
         });
 
       subscriptionRef.current = channel;
