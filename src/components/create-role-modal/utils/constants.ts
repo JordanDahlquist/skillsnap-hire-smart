@@ -13,8 +13,8 @@ export const formSchema = z.object({
   budget: z.string().optional(),
   duration: z.string().optional(),
   employment_type: z.string(),
-  location_type: z.string().optional(),
-  country: z.string().optional(),
+  location_type: z.string(),
+  country: z.string(),
   state: z.string().optional(),
   region: z.string().optional(),
   city: z.string().optional()
@@ -25,14 +25,14 @@ export const DEFAULT_FORM_VALUES = {
   description: "",
   experience_level: "mid-level",
   required_skills: "",
-  budget: "",
-  duration: "",
+  budget: undefined,
+  duration: undefined,
   employment_type: "full-time",
   location_type: "remote",
   country: "United States",
-  state: "California",
-  region: "Bay Area",
-  city: "San Francisco"
+  state: undefined,
+  region: undefined,
+  city: undefined
 };
 
 export const EMPLOYMENT_TYPES = [
