@@ -1,6 +1,7 @@
 
 import { useState, useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
+import { FormData } from "@/components/create-role-modal/utils/types";
 
 interface TabCompletionState {
   tab1Complete: boolean;
@@ -12,7 +13,7 @@ interface TabCompletionState {
 }
 
 export const useTabCompletion = (
-  form: UseFormReturn<any>,
+  form: UseFormReturn<FormData>,
   generatedJobPost: string,
   generatedSkillsTest: string
 ) => {
