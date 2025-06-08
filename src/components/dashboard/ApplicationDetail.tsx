@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,8 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ThumbsDown, Eye, Users, ExternalLink, Star, UserCheck, RotateCcw } from "lucide-react";
+import { ThumbsDown, Eye, Users, ExternalLink, Star, UserCheck, RotateCcw, Mail } from "lucide-react";
 import { ApplicationTabs } from "./ApplicationTabs";
+import { EmailComposerModal } from "./EmailComposerModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -68,6 +70,7 @@ export const ApplicationDetail = ({
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
   const [customReason, setCustomReason] = useState("");
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const { toast } = useToast();
 
   const handleManualRating = async (rating: number) => {
@@ -305,6 +308,14 @@ export const ApplicationDetail = ({
                   )}
                   <Button 
                     size="sm" 
+                    onClick={() => setShowEmailModal(true)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email
+                  </Button>
+                  <Button 
+                    size="sm" 
                     disabled={true}
                     className="bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed"
                   >
@@ -358,6 +369,14 @@ export const ApplicationDetail = ({
             />
           </CardContent>
         </Card>
+
+        {/* Email Composer Modal */}
+        <EmailComposerModal
+          open={showEmailModal}
+          onOpenChange={setShowEmailModal}
+          selectedApplications={[selectedApplication]}
+          job={job}
+        />
 
         {/* Rejection Reason Dialog */}
         <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
