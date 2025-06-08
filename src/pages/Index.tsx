@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Clock, Users, Target, LogIn } from "lucide-react";
 import { useState } from "react";
-import { CreateRoleModal } from "@/components/CreateRoleModal";
+import { JobCreatorPanel } from "@/components/JobCreatorPanel";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
@@ -205,7 +206,7 @@ const Index = () => {
         </div>
       </section>
 
-      <CreateRoleModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      <JobCreatorPanel open={showCreateModal} onOpenChange={setShowCreateModal} />
       <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
     </div>
   );
