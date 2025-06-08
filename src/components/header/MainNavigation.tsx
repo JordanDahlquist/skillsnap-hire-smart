@@ -33,7 +33,11 @@ export const MainNavigation = () => {
   return (
     <nav className="hidden md:flex space-x-8">
       {navigationItems.map((item, index) => {
-        const isActive = location.pathname === item.href;
+        // Dashboard should be active on /jobs route and individual job pages
+        const isActive = item.href === "/jobs" 
+          ? location.pathname === "/jobs" || location.pathname.startsWith("/jobs/")
+          : location.pathname === item.href;
+        
         const Icon = item.icon;
         
         return (
