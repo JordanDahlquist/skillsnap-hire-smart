@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from "npm:resend@2.0.0";
@@ -176,7 +175,7 @@ const handler = async (req: Request): Promise<Response> => {
       company_name 
     }: BulkEmailRequest = await req.json();
 
-    console.log(`Processing bulk email for ${applications.length} recipients`);
+    console.log(`Processing bulk email for ${applications.length} recipients using verified domain atract.ai`);
 
     const processTemplate = (text: string, application: any) => {
       return text
@@ -195,13 +194,20 @@ const handler = async (req: Request): Promise<Response> => {
         const personalizedContent = processTemplate(content, application);
         const htmlContent = createEmailTemplate(personalizedContent, company_name);
 
-        // Send email via Resend
+        // Send email via Resend using verified domain
         const emailResponse = await resend.emails.send({
-          from: `${company_name} <onboarding@resend.dev>`, // You can update this to your verified domain
+          from: `${company_name} <noreply@atract.ai>`,
           to: [application.email],
           subject: personalizedSubject,
           html: htmlContent,
         });
+
+        console.log(`Email attempt to ${application.email}:`, emailResponse);
+
+        // Check for Resend API errors
+        if (emailResponse.error) {
+          console.error(`Resend API error for ${application.email}:`, emailResponse.error);
+        }
 
         // Log the email in the database
         const { error: logError } = await supabaseClient
@@ -226,10 +232,11 @@ const handler = async (req: Request): Promise<Response> => {
         emailResults.push({
           recipient: application.email,
           success: !emailResponse.error,
-          error: emailResponse.error?.message || null
+          error: emailResponse.error?.message || null,
+          resend_id: emailResponse.data?.id || null
         });
 
-        console.log(`Email sent to ${application.email}:`, emailResponse.error ? 'FAILED' : 'SUCCESS');
+        console.log(`Email to ${application.email}:`, emailResponse.error ? 'FAILED' : 'SUCCESS');
 
       } catch (error) {
         console.error(`Error sending email to ${application.email}:`, error);
@@ -253,7 +260,8 @@ const handler = async (req: Request): Promise<Response> => {
         total: applications.length,
         sent: successCount,
         failed: failureCount
-      }
+      },
+      domain_used: "atract.ai"
     }), {
       status: 200,
       headers: {
