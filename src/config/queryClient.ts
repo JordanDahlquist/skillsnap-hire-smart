@@ -3,6 +3,11 @@ import { QueryClient } from "@tanstack/react-query";
 import { logger } from "@/services/loggerService";
 import { errorTrackingService } from "@/services/errorTrackingService";
 
+// Enhanced error type with optional status
+interface QueryError extends Error {
+  status?: number;
+}
+
 // Enhanced error handling for React Query
 const queryErrorHandler = (error: unknown, query: any) => {
   const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -27,16 +32,18 @@ export const createOptimizedQueryClient = () => new QueryClient({
     queries: {
       // Retry logic
       retry: (failureCount, error) => {
+        const queryError = error as QueryError;
+        
         // Don't retry auth-related errors
-        if (error?.message?.includes('JWT') || 
-            error?.message?.includes('auth') ||
-            error?.message?.includes('unauthorized')) {
+        if (queryError?.message?.includes('JWT') || 
+            queryError?.message?.includes('auth') ||
+            queryError?.message?.includes('unauthorized')) {
           return false;
         }
         
         // Don't retry 4xx errors (except 408, 429)
-        if (error?.status >= 400 && error?.status < 500 && 
-            error?.status !== 408 && error?.status !== 429) {
+        if (queryError?.status && queryError.status >= 400 && queryError.status < 500 && 
+            queryError.status !== 408 && queryError.status !== 429) {
           return false;
         }
         
@@ -50,9 +57,6 @@ export const createOptimizedQueryClient = () => new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
       
-      // Error handling
-      onError: queryErrorHandler,
-      
       // Refetch settings
       refetchOnWindowFocus: false,
       refetchOnReconnect: 'always',
@@ -61,11 +65,13 @@ export const createOptimizedQueryClient = () => new QueryClient({
     mutations: {
       // Mutation retry
       retry: (failureCount, error) => {
+        const mutationError = error as QueryError;
+        
         // Don't retry auth or validation errors
-        if (error?.message?.includes('JWT') || 
-            error?.message?.includes('auth') ||
-            error?.status === 422 || 
-            error?.status === 400) {
+        if (mutationError?.message?.includes('JWT') || 
+            mutationError?.message?.includes('auth') ||
+            mutationError?.status === 422 || 
+            mutationError?.status === 400) {
           return false;
         }
         return failureCount < 1; // Only retry once for mutations
