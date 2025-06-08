@@ -1,5 +1,6 @@
 
 import { z } from "zod";
+import { UseFormReturn } from "react-hook-form";
 import { formSchema } from "./constants";
 
 export type FormData = z.infer<typeof formSchema>;
@@ -10,6 +11,6 @@ export interface CreateRoleModalProps {
 }
 
 export interface TabContentProps {
-  form: any;
+  form: UseFormReturn<FormData>;
   [key: string]: any;
 }

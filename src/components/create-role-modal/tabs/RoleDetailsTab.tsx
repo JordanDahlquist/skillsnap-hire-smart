@@ -2,12 +2,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormDescription } from "@/components/ui/form";
 import { User, DollarSign, FileEdit } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { FormData } from "../utils/types";
 import { BasicInfoFields } from "../form-fields/BasicInfoFields";
 import { ProjectDetailsFields } from "../form-fields/ProjectDetailsFields";
 import { JobDescriptionField } from "../form-fields/JobDescriptionField";
 
 interface RoleDetailsTabProps {
-  form: any;
+  form: UseFormReturn<FormData>;
   uploadedPdfContent: string | null;
   uploadedFileName: string | null;
   rewriteWithAI: boolean;

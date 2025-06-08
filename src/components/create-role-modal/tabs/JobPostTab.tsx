@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Wand2, Sparkles, X, Loader2 } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { FormData } from "../utils/types";
 import { EmptyState } from "../ui-components/EmptyState";
 import { LoadingState } from "../ui-components/LoadingState";
 import { GeneratedContent } from "../ui-components/GeneratedContent";
 
 interface JobPostTabProps {
-  form: any;
+  form: UseFormReturn<FormData>;
   generatedJobPost: string;
   setGeneratedJobPost: (content: string) => void;
   tab3Skipped: boolean;

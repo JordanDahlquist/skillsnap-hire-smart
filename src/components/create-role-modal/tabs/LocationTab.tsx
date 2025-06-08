@@ -2,9 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LocationSelector } from "@/components/LocationSelector";
 import { MapPin } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { FormData } from "../utils/types";
 
 interface LocationTabProps {
-  form: any;
+  form: UseFormReturn<FormData>;
   onLocationChange: (field: string, value: string) => void;
 }
 
