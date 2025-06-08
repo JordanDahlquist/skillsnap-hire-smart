@@ -7,14 +7,14 @@ import { Badge } from "@/components/ui/badge";
 
 const navigationItems = [
   {
-    name: "Dashboard",
-    href: "/jobs",
-    icon: LayoutDashboard,
-  },
-  {
     name: "Jobs",
     href: "/jobs",
     icon: Briefcase,
+  },
+  {
+    name: "Dashboard",
+    href: "/jobs",
+    icon: LayoutDashboard,
   },
   {
     name: "Inbox",
@@ -32,8 +32,10 @@ export const MainNavigation = () => {
 
   return (
     <nav className="hidden md:flex space-x-8">
-      {navigationItems.map((item) => {
-        const isActive = location.pathname === item.href;
+      {navigationItems.map((item, index) => {
+        // Only show "Jobs" as active when on /jobs route to avoid both being highlighted
+        const isActive = location.pathname === item.href && 
+          (item.href !== "/jobs" || item.name === "Jobs");
         const Icon = item.icon;
         
         return (
