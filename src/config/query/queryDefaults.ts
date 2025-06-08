@@ -18,7 +18,6 @@ export const getQueryDefaults = () => ({
   
   // Background refetching for better UX
   refetchIntervalInBackground: false,
-  refetchOnReconnect: true,
   
   // Add timeout for queries
   meta: {
