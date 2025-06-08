@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
-import { Plus, Sparkles, FileText, ClipboardList, MapPin, Loader2, Wand2, CheckCircle, AlertCircle, X } from "lucide-react";
+import { Plus, Sparkles, FileText, ClipboardList, MapPin, Loader2, Wand2, CheckCircle, AlertCircle, X, User, Briefcase, DollarSign, Clock, Star, FileEdit, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGenerateMiniDescription } from "@/hooks/useGenerateMiniDescription";
@@ -457,153 +457,251 @@ export const CreateRoleModal = ({
           <Form {...form}>
             <form className="space-y-6">
               <TabsContent value="1" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <FormField control={form.control} name="title" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>
-                            Job Title
-                            <span className="text-red-500 ml-1">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="Software Engineer" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
+                <div className="relative">
+                  {/* Background decoration */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 rounded-xl -z-10" />
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Basic Information Card */}
+                    <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+                      <CardHeader className="pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                          <User className="w-5 h-5 text-blue-600" />
+                          Basic Information
+                        </CardTitle>
+                        <div className="h-0.5 w-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-4">
+                          <FormField control={form.control} name="title" render={({
+                          field
+                        }) => <FormItem className="group">
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <Briefcase className="w-4 h-4 text-blue-500" />
+                                  Job Title
+                                  <span className="text-red-500 ml-1">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input 
+                                      placeholder="e.g. Senior Software Engineer" 
+                                      className="pl-4 pr-4 py-3 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-white/70 backdrop-blur-sm hover:bg-white/90"
+                                      {...field} 
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300" />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>} />
 
-                    <FormField control={form.control} name="employment_type" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>
-                            Employment Type
-                            <span className="text-red-500 ml-1">*</span>
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select employment type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="full-time">Full-time</SelectItem>
-                              <SelectItem value="part-time">Part-time</SelectItem>
-                              <SelectItem value="contract">Contract</SelectItem>
-                              <SelectItem value="temporary">Temporary</SelectItem>
-                              <SelectItem value="internship">Internship</SelectItem>
-                              <SelectItem value="project">Project</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>} />
+                          <FormField control={form.control} name="employment_type" render={({
+                          field
+                        }) => <FormItem className="group">
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <Clock className="w-4 h-4 text-green-500" />
+                                  Employment Type
+                                  <span className="text-red-500 ml-1">*</span>
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="pl-4 pr-4 py-3 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all duration-200 bg-white/70 backdrop-blur-sm hover:bg-white/90">
+                                      <SelectValue placeholder="Select employment type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200">
+                                    <SelectItem value="full-time" className="hover:bg-green-50">Full-time</SelectItem>
+                                    <SelectItem value="part-time" className="hover:bg-green-50">Part-time</SelectItem>
+                                    <SelectItem value="contract" className="hover:bg-green-50">Contract</SelectItem>
+                                    <SelectItem value="temporary" className="hover:bg-green-50">Temporary</SelectItem>
+                                    <SelectItem value="internship" className="hover:bg-green-50">Internship</SelectItem>
+                                    <SelectItem value="project" className="hover:bg-green-50">Project</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>} />
 
-                    <FormField control={form.control} name="experience_level" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>
-                            Experience Level
-                            <span className="text-red-500 ml-1">*</span>
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select experience level" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="entry-level">Entry Level</SelectItem>
-                              <SelectItem value="mid-level">Mid Level</SelectItem>
-                              <SelectItem value="senior-level">Senior Level</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>} />
+                          <FormField control={form.control} name="experience_level" render={({
+                          field
+                        }) => <FormItem className="group">
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <Star className="w-4 h-4 text-yellow-500" />
+                                  Experience Level
+                                  <span className="text-red-500 ml-1">*</span>
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="pl-4 pr-4 py-3 border-gray-200 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all duration-200 bg-white/70 backdrop-blur-sm hover:bg-white/90">
+                                      <SelectValue placeholder="Select experience level" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200">
+                                    <SelectItem value="entry-level" className="hover:bg-yellow-50">Entry Level</SelectItem>
+                                    <SelectItem value="mid-level" className="hover:bg-yellow-50">Mid Level</SelectItem>
+                                    <SelectItem value="senior-level" className="hover:bg-yellow-50">Senior Level</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>} />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Project Details Card */}
+                    <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+                      <CardHeader className="pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+                          <DollarSign className="w-5 h-5 text-green-600" />
+                          Project Details
+                        </CardTitle>
+                        <div className="h-0.5 w-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-full" />
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-4">
+                          <FormField control={form.control} name="required_skills" render={({
+                          field
+                        }) => <FormItem className="group">
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <Star className="w-4 h-4 text-purple-500" />
+                                  Required Skills
+                                  <span className="text-red-500 ml-1">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input 
+                                      placeholder="e.g. JavaScript, React, Node.js, TypeScript" 
+                                      className="pl-4 pr-4 py-3 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 bg-white/70 backdrop-blur-sm hover:bg-white/90"
+                                      {...field} 
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300" />
+                                  </div>
+                                </FormControl>
+                                <FormDescription className="text-xs text-gray-500">
+                                  Separate skills with commas for better parsing.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>} />
+
+                          <FormField control={form.control} name="budget" render={({
+                          field
+                        }) => <FormItem className="group">
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <DollarSign className="w-4 h-4 text-green-500" />
+                                  Budget (Optional)
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input 
+                                      placeholder="e.g. $80,000 - $120,000 annually" 
+                                      className="pl-4 pr-4 py-3 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all duration-200 bg-white/70 backdrop-blur-sm hover:bg-white/90"
+                                      {...field} 
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300" />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>} />
+
+                          <FormField control={form.control} name="duration" render={({
+                          field
+                        }) => <FormItem className="group">
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                  <Clock className="w-4 h-4 text-blue-500" />
+                                  Duration (Optional)
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input 
+                                      placeholder="e.g. 6 months, Ongoing, 1 year contract" 
+                                      className="pl-4 pr-4 py-3 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 bg-white/70 backdrop-blur-sm hover:bg-white/90"
+                                      {...field} 
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300" />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>} />
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
 
-                  <div className="space-y-4">
-                    <FormField control={form.control} name="required_skills" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>
-                            Required Skills
-                            <span className="text-red-500 ml-1">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="JavaScript, React, Node.js" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Separate skills with commas.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>} />
-
-                    <FormField control={form.control} name="budget" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>Budget (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="$80,000 - $120,000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
-
-                    <FormField control={form.control} name="duration" render={({
-                    field
-                  }) => <FormItem>
-                          <FormLabel>Duration (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="3 months" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>} />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <FormLabel>
-                      Job Requirements & Description (AI Input)
-                      <span className="text-red-500 ml-1">*</span>
-                    </FormLabel>
-                    <FormDescription className="mt-1 mb-4">
-                      Provide general requirements and description. The AI will use this to generate a polished job posting.
-                    </FormDescription>
-                    
-                    <div className="space-y-3">
+                  {/* Job Requirements & Description Card */}
+                  <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                        <FileEdit className="w-5 h-5 text-purple-600" />
+                        Job Requirements & Description (AI Input)
+                        <span className="text-red-500 ml-1 text-base">*</span>
+                      </CardTitle>
+                      <div className="h-0.5 w-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+                      <FormDescription className="mt-2 text-sm text-gray-600 leading-relaxed">
+                        Provide general requirements and description. The AI will transform this into a polished, professional job posting.
+                      </FormDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                       <FormField control={form.control} name="description" render={({
                       field
-                    }) => <FormItem>
+                    }) => <FormItem className="group">
                             <FormControl>
-                              <Textarea 
-                                placeholder="Write job requirements and description here. This will guide the AI in generating your job posting." 
-                                className="resize-none" 
-                                rows={6} 
-                                {...field} 
-                              />
+                              <div className="relative">
+                                <Textarea 
+                                  placeholder="Describe the role, key responsibilities, must-have qualifications, and any specific requirements. Be as detailed as you like - the AI will structure this beautifully!" 
+                                  className="resize-none border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 bg-white/70 backdrop-blur-sm hover:bg-white/90 min-h-[120px]" 
+                                  rows={6} 
+                                  {...field} 
+                                />
+                                <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300" />
+                                
+                                {/* Character counter */}
+                                <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 backdrop-blur-sm px-2 py-1 rounded">
+                                  {field.value?.length || 0} characters
+                                </div>
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>} />
                       
-                      <PdfUpload 
-                        onFileUpload={handlePdfUpload}
-                        onRemove={handlePdfRemove}
-                        uploadedFile={uploadedFileName}
-                      />
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-100">
+                        <div className="flex items-start gap-3">
+                          <Upload className="w-5 h-5 text-blue-600 mt-0.5" />
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 mb-2">Or Upload Existing Job Description</h4>
+                            <PdfUpload 
+                              onFileUpload={handlePdfUpload}
+                              onRemove={handlePdfRemove}
+                              uploadedFile={uploadedFileName}
+                            />
+                          </div>
+                        </div>
+                      </div>
                       
                       {uploadedPdfContent && (
-                        <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
-                          <Switch
-                            id="rewrite-toggle"
-                            checked={rewriteWithAI}
-                            onCheckedChange={handleRewriteToggle}
-                          />
-                          <label htmlFor="rewrite-toggle" className="text-sm font-medium">
-                            Let AI rewrite the uploaded content
-                          </label>
+                        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-4 border border-emerald-200">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                                <Sparkles className="w-4 h-4 text-emerald-600" />
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <Switch
+                                id="rewrite-toggle"
+                                checked={rewriteWithAI}
+                                onCheckedChange={handleRewriteToggle}
+                                className="data-[state=checked]:bg-emerald-600"
+                              />
+                              <label htmlFor="rewrite-toggle" className="text-sm font-medium text-emerald-900 ml-3">
+                                Let AI enhance and rewrite the uploaded content
+                              </label>
+                              <p className="text-xs text-emerald-700 mt-1 ml-8">
+                                AI will improve structure, clarity, and appeal while preserving key information
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       )}
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </TabsContent>
 
