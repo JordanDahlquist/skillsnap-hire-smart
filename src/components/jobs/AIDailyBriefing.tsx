@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText, Plus } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
@@ -218,7 +217,6 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
             <div className="flex flex-wrap items-center gap-3">
               <Button 
                 onClick={onCreateJob}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-sm"
                 size="sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
