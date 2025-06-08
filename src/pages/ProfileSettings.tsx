@@ -6,20 +6,15 @@ import { AccountSettings } from "@/components/profile/AccountSettings";
 import { HiringPreferences } from "@/components/profile/HiringPreferences";
 import { EmailTemplates } from "@/components/profile/EmailTemplates";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const ProfileSettings = () => {
-  const { user, refreshProfile, loading, profileLoading } = useAuth();
+  const { loading } = useAuth();
 
   const breadcrumbs = [
     { label: "Dashboard", href: "/jobs" },
     { label: "Profile Settings", isCurrentPage: true },
   ];
-
-  const handleRefreshData = async () => {
-    await refreshProfile();
-  };
 
   // Only show loading screen for auth loading, not profile loading
   if (loading) {
@@ -39,29 +34,8 @@ const ProfileSettings = () => {
       
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-              <p className="mt-2 text-gray-600">Manage your account and preferences.</p>
-            </div>
-            <Button 
-              variant="outline" 
-              onClick={handleRefreshData}
-              disabled={profileLoading}
-            >
-              {profileLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh Data
-                </>
-              )}
-            </Button>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <p className="mt-2 text-gray-600">Manage your account and preferences.</p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
