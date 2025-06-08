@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 export const ProfileForm = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,6 +24,20 @@ export const ProfileForm = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Update form data when profile changes
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        company_name: profile.company_name || '',
+        job_title: profile.job_title || '',
+        phone: profile.phone || '',
+        company_website: profile.company_website || '',
+        industry: profile.industry || '',
+      });
+    }
+  }, [profile]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -80,8 +94,9 @@ export const ProfileForm = () => {
         description: 'Your profile information has been saved successfully.',
       });
 
-      // Reload the page to refresh the profile data
-      window.location.reload();
+      // Refresh the profile data instead of reloading the page
+      refreshProfile();
+      
     } catch (error: any) {
       toast({
         title: 'Error',
