@@ -18,6 +18,7 @@ interface UserProfile {
   industry: string | null;
   daily_briefing_regenerations: number | null;
   last_regeneration_date: string | null;
+  unique_email: string | null;
 }
 
 export const useOptimizedProfile = (userId: string | undefined) => {

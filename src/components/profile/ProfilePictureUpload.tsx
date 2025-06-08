@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Upload, Loader2 } from 'lucide-react';
 
-export const ProfilePictureUpload = () => {
+interface ProfilePictureUploadProps {
+  currentUrl?: string;
+  onUpload?: (url: string) => void;
+}
+
+export const ProfilePictureUpload = ({ currentUrl, onUpload }: ProfilePictureUploadProps) => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
@@ -73,24 +77,29 @@ export const ProfilePictureUpload = () => {
         .from('profile-pictures')
         .getPublicUrl(fileName);
 
-      // Update the profile with the new picture URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          profile_picture_url: publicUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+      // If onUpload prop is provided, use it (for form integration)
+      if (onUpload) {
+        onUpload(publicUrl);
+      } else {
+        // Otherwise, update the profile directly
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            profile_picture_url: publicUrl,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', user.id);
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
+
+        // Reload to refresh the profile data
+        window.location.reload();
+      }
 
       toast({
         title: 'Profile picture updated',
         description: 'Your profile picture has been uploaded successfully.',
       });
-
-      // Reload to refresh the profile data
-      window.location.reload();
     } catch (error: any) {
       toast({
         title: 'Upload failed',
@@ -102,10 +111,12 @@ export const ProfilePictureUpload = () => {
     }
   };
 
+  const displayUrl = currentUrl || profile?.profile_picture_url;
+
   return (
     <div className="flex flex-col items-center space-y-4">
       <Avatar className="w-24 h-24">
-        <AvatarImage src={profile?.profile_picture_url} alt="Profile picture" />
+        <AvatarImage src={displayUrl} alt="Profile picture" />
         <AvatarFallback className="bg-blue-600 text-white text-xl">
           {getUserInitials()}
         </AvatarFallback>
