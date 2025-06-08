@@ -1,20 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  Legend
-} from "recharts";
-import { TrendingUp, TrendingDown, Calendar, Star } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { TrendingUp, TrendingDown, Calendar, Star, BarChart3, Activity } from "lucide-react";
 import { TrendData } from "@/hooks/useHiringAnalytics";
 
 interface TrendsTabProps {
@@ -39,12 +26,14 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
   const prevRatingAvg = prev7Days.reduce((sum, day) => sum + day.avgRating, 0) / 7;
   const ratingTrend = recentRatingAvg > prevRatingAvg;
 
-  // Format data for charts
-  const chartData = trendData.map(day => ({
-    ...day,
-    date: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  }));
+  // Calculate peak day
+  const peakDay = trendData.reduce((max, day) => day.applications > max.applications ? day : max, trendData[0]);
+  const peakDayName = peakDay?.date 
+    ? new Date(peakDay.date).toLocaleDateString('en-US', { weekday: 'long' })
+    : 'N/A';
+  const peakApplications = Math.max(...trendData.map(d => d.applications));
 
+  // Calculate weekly summary
   const weeklyData = [];
   for (let i = 0; i < trendData.length; i += 7) {
     const week = trendData.slice(i, i + 7);
@@ -56,6 +45,12 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
       avgRating: weekAvgRating
     });
   }
+
+  // Get recent daily data for display
+  const recentDays = trendData.slice(-7).map(day => ({
+    ...day,
+    date: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }));
 
   return (
     <div className="space-y-6">
@@ -118,13 +113,9 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Peak Application Day</p>
-                <p className="text-lg font-bold">
-                  {trendData.reduce((max, day) => day.applications > max.applications ? day : max, trendData[0])?.date 
-                    ? new Date(trendData.reduce((max, day) => day.applications > max.applications ? day : max, trendData[0]).date).toLocaleDateString('en-US', { weekday: 'long' })
-                    : 'N/A'}
-                </p>
+                <p className="text-lg font-bold">{peakDayName}</p>
                 <p className="text-sm text-gray-600">
-                  {Math.max(...trendData.map(d => d.applications))} applications
+                  {peakApplications} applications
                 </p>
               </div>
               <div className="p-3 rounded-full bg-purple-50">
@@ -135,81 +126,99 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
         </Card>
       </div>
 
-      {/* Daily Applications Trend */}
+      {/* Recent Daily Activity */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle>Daily Application Volume (Last 30 Days)</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            Daily Application Volume (Last 7 Days)
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="applicationGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Area 
-                  type="monotone" 
-                  dataKey="applications" 
-                  stroke="#3b82f6" 
-                  fillOpacity={1} 
-                  fill="url(#applicationGradient)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="space-y-4">
+            {recentDays.map((day, index) => (
+              <div key={day.date} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <span className="text-sm font-medium text-blue-600">{day.date}</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">Applications: {day.applications}</p>
+                    <p className="text-sm text-gray-600">Rating: {day.avgRating.toFixed(1)}/5.0</p>
+                  </div>
+                </div>
+                <div className="w-24">
+                  <Progress 
+                    value={Math.min((day.applications / peakApplications) * 100, 100)} 
+                    className="h-2" 
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Quality and Volume Comparison */}
+      {/* Quality and Weekly Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle>Application Quality Trend</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="w-5 h-5" />
+              Application Quality Overview
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={[0, 5]} />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="avgRating" 
-                    stroke="#f59e0b" 
-                    strokeWidth={3}
-                    dot={{ fill: '#f59e0b', r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Current Week Average</span>
+                <span className="text-lg font-bold text-yellow-600">{recentRatingAvg.toFixed(1)}/5.0</span>
+              </div>
+              <Progress value={(recentRatingAvg / 5) * 100} className="h-3" />
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Previous Week Average</span>
+                <span className="text-lg font-bold text-gray-600">{prevRatingAvg.toFixed(1)}/5.0</span>
+              </div>
+              <Progress value={(prevRatingAvg / 5) * 100} className="h-3" />
+              
+              <div className="pt-2 border-t">
+                <div className="flex items-center gap-2">
+                  {ratingTrend ? (
+                    <TrendingUp className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-600" />
+                  )}
+                  <span className={`text-sm ${ratingTrend ? 'text-green-600' : 'text-red-600'}`}>
+                    {ratingTrend ? 'Quality is improving' : 'Quality is declining'}
+                  </span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle>Weekly Summary</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Weekly Summary
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="week" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="applications" fill="#3b82f6" name="Applications" />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="space-y-4">
+              {weeklyData.slice(-4).map((week, index) => (
+                <div key={week.week} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{week.week}</p>
+                    <p className="text-sm text-gray-600">Avg Rating: {week.avgRating.toFixed(1)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-blue-600">{week.applications}</p>
+                    <p className="text-sm text-gray-600">applications</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
