@@ -197,7 +197,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
     setIsEditingSkillsTest(false);
   };
 
-  const saveJob = async (status: 'draft' | 'published') => {
+  const saveJob = async (status: 'draft' | 'active') => {
     if (!user?.id) return;
 
     setIsSaving(true);
@@ -223,8 +223,8 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
       if (error) throw error;
 
       toast({
-        title: status === 'published' ? "Job Published!" : "Job Saved!",
-        description: status === 'published' 
+        title: status === 'active' ? "Job Published!" : "Job Saved!",
+        description: status === 'active' 
           ? "Your job posting is now live and accepting applications."
           : "Your job has been saved as a draft."
       });
@@ -271,7 +271,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
 
   const canProceedToStep2 = formData.title && formData.description;
   const canProceedToStep3 = generatedJobPost;
-  const canPublish = generatedJobPost && generatedSkillsTest;
+  const canActivate = generatedJobPost && generatedSkillsTest;
 
   if (!open) return null;
 
@@ -693,8 +693,8 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                     Save Draft
                   </Button>
                   <Button 
-                    onClick={() => saveJob('published')}
-                    disabled={isSaving || !canPublish}
+                    onClick={() => saveJob('active')}
+                    disabled={isSaving || !canActivate}
                     className="bg-green-600 hover:bg-green-700"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
