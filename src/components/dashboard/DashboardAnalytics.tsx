@@ -39,7 +39,7 @@ interface DashboardAnalyticsProps {
 
 export const DashboardAnalytics = ({ applications, job }: DashboardAnalyticsProps) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <ApplicationTrendsChart applications={applications} />
       <PerformanceMetrics applications={applications} job={job} />
     </div>

@@ -41,18 +41,17 @@ export const ApplicationTrendsChart = ({ applications }: ApplicationTrendsChartP
 
   if (applications.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
+      <Card className="h-32">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <TrendingUp className="w-4 h-4" />
             Application Trends
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="text-center text-gray-500 py-8">
-            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p>No application data available yet</p>
-            <p className="text-sm">Trends will appear once you receive applications</p>
+        <CardContent className="p-3">
+          <div className="text-center text-muted-foreground py-2">
+            <Calendar className="w-6 h-6 mx-auto mb-2 opacity-50" />
+            <p className="text-xs">No data available</p>
           </div>
         </CardContent>
       </Card>
@@ -60,69 +59,47 @@ export const ApplicationTrendsChart = ({ applications }: ApplicationTrendsChartP
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" />
+    <Card className="h-32">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <TrendingUp className="w-4 h-4" />
           Application Trends
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="grid grid-cols-2 gap-6">
-          {/* This Week Stats */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Users className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">This Week</p>
-                <p className="text-2xl font-bold">{thisWeek.length}</p>
-              </div>
+      <CardContent className="p-3">
+        <div className="grid grid-cols-4 gap-3">
+          <div className="text-center">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-1 mx-auto">
+              <Users className="w-3 h-3 text-primary" />
             </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Weekly Growth</p>
-                <p className={`text-2xl font-bold ${weeklyGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {weeklyGrowth > 0 ? '+' : ''}{weeklyGrowth}%
-                </p>
-              </div>
+            <p className="text-xs text-muted-foreground">This Week</p>
+            <p className="text-lg font-bold text-foreground">{thisWeek.length}</p>
+          </div>
+          
+          <div className="text-center">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-1 mx-auto">
+              <TrendingUp className="w-3 h-3 text-primary" />
             </div>
+            <p className="text-xs text-muted-foreground">Growth</p>
+            <p className={`text-lg font-bold ${weeklyGrowth >= 0 ? 'text-primary' : 'text-destructive'}`}>
+              {weeklyGrowth > 0 ? '+' : ''}{weeklyGrowth}%
+            </p>
           </div>
 
-          {/* Rating Stats */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Star className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Average Rating</p>
-                <p className="text-2xl font-bold">{avgRating}</p>
-              </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-1 mx-auto">
+              <Star className="w-3 h-3 text-primary" />
             </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Calendar className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Applications</p>
-                <p className="text-2xl font-bold">{applications.length}</p>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground">Avg Rating</p>
+            <p className="text-lg font-bold text-foreground">{avgRating}</p>
           </div>
-        </div>
-
-        {/* Weekly Comparison */}
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-600">Last Week: {lastWeek.length} applications</span>
-            <span className="text-gray-600">Rated Applications: {ratedApplications.length}</span>
+          
+          <div className="text-center">
+            <div className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded mb-1 mx-auto">
+              <Calendar className="w-3 h-3 text-primary" />
+            </div>
+            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="text-lg font-bold text-foreground">{applications.length}</p>
           </div>
         </div>
       </CardContent>
