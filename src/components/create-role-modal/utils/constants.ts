@@ -10,14 +10,14 @@ export const formSchema = z.object({
   }),
   experience_level: z.string(),
   required_skills: z.string(),
-  budget: z.string().optional(),
-  duration: z.string().optional(),
+  budget: z.string(),
+  duration: z.string(),
   employment_type: z.string(),
   location_type: z.string(),
   country: z.string(),
-  state: z.string().optional(),
-  region: z.string().optional(),
-  city: z.string().optional()
+  state: z.string(),
+  region: z.string(),
+  city: z.string()
 });
 
 export const DEFAULT_FORM_VALUES = {

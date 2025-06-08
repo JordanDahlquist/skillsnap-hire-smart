@@ -46,7 +46,7 @@ export const useTabCompletion = (
       tab4Skipped
     });
     
-    // Tab 1: Role Details - check required fields
+    // Tab 1: Role Details - check required fields (non-empty strings)
     const tab1Complete = !!(
       title &&
       description &&
@@ -55,7 +55,7 @@ export const useTabCompletion = (
       required_skills
     );
 
-    // Tab 2: Location - check location fields
+    // Tab 2: Location - check location fields (non-empty strings)
     const tab2Complete = !!(
       location_type &&
       (location_type === 'remote' || 
