@@ -56,6 +56,7 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
@@ -89,12 +90,18 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
     setFullName(sanitized);
   };
 
+  const handleCompanyNameChange = (value: string) => {
+    const sanitized = sanitizeInput(value);
+    setCompanyName(sanitized);
+  };
+
   const isFormValid = (isSignUp: boolean = false) => {
     const emailValid = email && validateEmail(email) && !emailError;
     const passwordValid = password && (isSignUp ? passwordStrength.score >= 4 : password.length >= 6);
     const nameValid = isSignUp ? fullName.length >= 2 : true;
+    const companyValid = isSignUp ? companyName.length >= 2 : true;
     
-    return emailValid && passwordValid && nameValid;
+    return emailValid && passwordValid && nameValid && companyValid;
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -134,6 +141,7 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
       setEmail("");
       setPassword("");
       setFullName("");
+      setCompanyName("");
     } catch (error: any) {
       toast({
         title: "Sign in failed",
@@ -166,6 +174,7 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
         options: {
           data: {
             full_name: fullName,
+            company_name: companyName,
           },
           emailRedirectTo: `${window.location.origin}/`
         }
@@ -188,6 +197,7 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
       setEmail("");
       setPassword("");
       setFullName("");
+      setCompanyName("");
     } catch (error: any) {
       toast({
         title: "Sign up failed",
@@ -315,6 +325,17 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                   onChange={(e) => handleFullNameChange(e.target.value)}
                   required
                   minLength={2}
+                />
+              </div>
+              <div>
+                <Label htmlFor="signup-company">Company Name</Label>
+                <Input
+                  id="signup-company"
+                  value={companyName}
+                  onChange={(e) => handleCompanyNameChange(e.target.value)}
+                  required
+                  minLength={2}
+                  placeholder="Your company name"
                 />
               </div>
               <div>

@@ -33,6 +33,7 @@ interface Application {
 interface Job {
   id: string;
   title: string;
+  company_name?: string;
 }
 
 interface EmailComposerModalProps {
@@ -55,6 +56,11 @@ export const EmailComposerModal = ({
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [isSending, setIsSending] = useState(false);
+
+  // Smart fallback for company name: job-specific > profile > 'Our Company'
+  const getCompanyName = () => {
+    return job.company_name || profile?.company_name || 'Our Company';
+  };
 
   // Fetch email templates
   const { data: templates = [] } = useQuery({
@@ -81,11 +87,12 @@ export const EmailComposerModal = ({
   };
 
   const processTemplate = (text: string, application: Application) => {
+    const companyName = getCompanyName();
     return text
       .replace(/{name}/g, application.name)
       .replace(/{email}/g, application.email)
       .replace(/{position}/g, job.title)
-      .replace(/{company}/g, profile?.company_name || 'Our Company');
+      .replace(/{company}/g, companyName);
   };
 
   const handleSendEmails = async () => {
@@ -101,6 +108,8 @@ export const EmailComposerModal = ({
     setIsSending(true);
     
     try {
+      const companyName = getCompanyName();
+      
       // Call the send-bulk-email edge function
       const { data, error } = await supabase.functions.invoke('send-bulk-email', {
         body: {
@@ -109,7 +118,7 @@ export const EmailComposerModal = ({
           subject: subject,
           content: content,
           template_id: selectedTemplateId || null,
-          company_name: profile?.company_name || 'Our Company'
+          company_name: companyName
         }
       });
 

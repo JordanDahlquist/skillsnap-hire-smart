@@ -358,6 +358,7 @@ export type Database = {
           ai_mini_description: string | null
           budget: string | null
           city: string | null
+          company_name: string | null
           country: string | null
           created_at: string
           description: string
@@ -381,6 +382,7 @@ export type Database = {
           ai_mini_description?: string | null
           budget?: string | null
           city?: string | null
+          company_name?: string | null
           country?: string | null
           created_at?: string
           description: string
@@ -404,6 +406,7 @@ export type Database = {
           ai_mini_description?: string | null
           budget?: string | null
           city?: string | null
+          company_name?: string | null
           country?: string | null
           created_at?: string
           description?: string
@@ -427,7 +430,7 @@ export type Database = {
       }
       profiles: {
         Row: {
-          company_name: string | null
+          company_name: string
           company_website: string | null
           created_at: string
           daily_briefing_regenerations: number | null
@@ -443,7 +446,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          company_name?: string | null
+          company_name: string
           company_website?: string | null
           created_at?: string
           daily_briefing_regenerations?: number | null
@@ -459,7 +462,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          company_name?: string | null
+          company_name?: string
           company_website?: string | null
           created_at?: string
           daily_briefing_regenerations?: number | null
