@@ -1,19 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip,
-  Legend
-} from "recharts";
 import { Users, Clock, TrendingUp, CheckCircle } from "lucide-react";
 import { PipelineData } from "@/hooks/useHiringAnalytics";
 
@@ -32,12 +19,6 @@ interface PipelineTabProps {
 
 export const PipelineTab = ({ analytics }: PipelineTabProps) => {
   const { pipelineData, jobPerformanceData } = analytics;
-
-  const pieData = [
-    { name: 'Pending', value: pipelineData.pending, color: '#f59e0b' },
-    { name: 'Approved', value: pipelineData.approved, color: '#10b981' },
-    { name: 'Rejected', value: pipelineData.rejected, color: '#ef4444' }
-  ];
 
   const funnelData = [
     { stage: 'Applied', count: pipelineData.totalApplications, percentage: 100 },
@@ -113,33 +94,35 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
         </Card>
       </div>
 
-      {/* Charts Row */}
+      {/* Status Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Status Distribution Pie Chart */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle>Application Status Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
-                    dataKey="value"
-                    label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-4 bg-yellow-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-yellow-600" />
+                  <span className="font-medium">Pending</span>
+                </div>
+                <span className="text-2xl font-bold text-yellow-600">{pipelineData.pending}</span>
+              </div>
+              <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="font-medium">Approved</span>
+                </div>
+                <span className="text-2xl font-bold text-green-600">{pipelineData.approved}</span>
+              </div>
+              <div className="flex justify-between items-center p-4 bg-red-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-red-600" />
+                  <span className="font-medium">Rejected</span>
+                </div>
+                <span className="text-2xl font-bold text-red-600">{pipelineData.rejected}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -167,29 +150,35 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
         </Card>
       </div>
 
-      {/* Job Performance Chart */}
+      {/* Job Performance Stats */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
           <CardTitle>Top Performing Jobs</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topJobs} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="jobTitle" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="applications" fill="#3b82f6" name="Applications" />
-                <Bar dataKey="approvalRate" fill="#10b981" name="Approval Rate %" />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="space-y-4">
+            {topJobs.map((job, index) => (
+              <div key={job.jobId} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">{job.jobTitle}</h4>
+                  <p className="text-sm text-gray-500">Job #{index + 1}</p>
+                </div>
+                <div className="flex gap-6 text-center">
+                  <div>
+                    <p className="text-sm text-gray-600">Applications</p>
+                    <p className="text-lg font-bold text-blue-600">{job.applications}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Approval Rate</p>
+                    <p className="text-lg font-bold text-green-600">{job.approvalRate}%</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Avg Rating</p>
+                    <p className="text-lg font-bold text-yellow-600">{job.avgRating.toFixed(1)}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
