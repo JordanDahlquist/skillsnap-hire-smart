@@ -304,6 +304,7 @@ export type Database = {
           job_id: string | null
           last_message_at: string
           participants: Json
+          reply_to_email: string | null
           status: string
           subject: string
           unread_count: number
@@ -317,6 +318,7 @@ export type Database = {
           job_id?: string | null
           last_message_at?: string
           participants?: Json
+          reply_to_email?: string | null
           status?: string
           subject: string
           unread_count?: number
@@ -330,6 +332,7 @@ export type Database = {
           job_id?: string | null
           last_message_at?: string
           participants?: Json
+          reply_to_email?: string | null
           status?: string
           subject?: string
           unread_count?: number

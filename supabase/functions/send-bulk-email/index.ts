@@ -1,8 +1,7 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,142 +9,26 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface Application {
+  email: string;
+  name: string;
+}
+
+interface Job {
+  title: string;
+}
+
 interface BulkEmailRequest {
-  applications: Array<{
-    id: string;
-    name: string;
-    email: string;
-  }>;
-  job: {
-    id: string;
-    title: string;
-  };
+  applications: Application[];
+  job: Job;
   subject: string;
   content: string;
   template_id?: string;
-  company_name: string;
+  company_name?: string;
+  reply_to_email?: string;
+  create_threads?: boolean;
+  thread_id?: string;
 }
-
-const createEmailTemplate = (content: string, companyName: string) => {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Message from ${companyName}</title>
-      <style>
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-          line-height: 1.6;
-          color: #333333;
-          margin: 0;
-          padding: 0;
-          background-color: #f8fafc;
-        }
-        .email-container {
-          max-width: 600px;
-          margin: 0 auto;
-          background-color: #ffffff;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .email-header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 30px 40px;
-          text-align: center;
-        }
-        .company-name {
-          font-size: 24px;
-          font-weight: 700;
-          margin: 0;
-          text-transform: uppercase;
-          letter-spacing: 2px;
-        }
-        .email-body {
-          padding: 40px;
-        }
-        .content {
-          white-space: pre-wrap;
-          font-size: 16px;
-          line-height: 1.8;
-          color: #374151;
-          margin-bottom: 30px;
-        }
-        .divider {
-          height: 1px;
-          background: linear-gradient(to right, transparent, #e5e7eb, transparent);
-          margin: 30px 0;
-        }
-        .email-footer {
-          background-color: #f9fafb;
-          padding: 30px 40px;
-          text-align: center;
-          border-top: 1px solid #e5e7eb;
-        }
-        .footer-text {
-          color: #6b7280;
-          font-size: 14px;
-          margin: 0 0 15px 0;
-        }
-        .unsubscribe-text {
-          color: #9ca3af;
-          font-size: 12px;
-          margin: 0;
-        }
-        .professional-signature {
-          margin-top: 20px;
-          padding-top: 20px;
-          border-top: 2px solid #e5e7eb;
-          color: #6b7280;
-          font-size: 14px;
-        }
-        @media only screen and (max-width: 600px) {
-          .email-header, .email-body, .email-footer {
-            padding: 20px;
-          }
-          .company-name {
-            font-size: 20px;
-            letter-spacing: 1px;
-          }
-          .content {
-            font-size: 15px;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="email-container">
-        <div class="email-header">
-          <h1 class="company-name">${companyName}</h1>
-        </div>
-        
-        <div class="email-body">
-          <div class="content">${content}</div>
-          
-          <div class="divider"></div>
-          
-          <div class="professional-signature">
-            <strong>Best regards,</strong><br>
-            The ${companyName} Hiring Team
-          </div>
-        </div>
-        
-        <div class="email-footer">
-          <p class="footer-text">
-            This email was sent from <strong>${companyName}</strong> regarding your job application.
-          </p>
-          <p class="unsubscribe-text">
-            If you no longer wish to receive emails about this application, please contact us directly.
-          </p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -153,18 +36,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization')!;
-    const supabaseClient = createClient(
+    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-
-    // Get the user from the auth token
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
 
     const { 
       applications, 
@@ -172,106 +48,169 @@ const handler = async (req: Request): Promise<Response> => {
       subject, 
       content, 
       template_id, 
-      company_name 
+      company_name,
+      reply_to_email,
+      create_threads = false,
+      thread_id
     }: BulkEmailRequest = await req.json();
 
-    console.log(`Processing bulk email for ${applications.length} recipients using verified domain atract.ai`);
+    console.log('Sending bulk emails:', { 
+      count: applications.length, 
+      subject, 
+      reply_to_email,
+      create_threads 
+    });
 
-    const processTemplate = (text: string, application: any) => {
-      return text
-        .replace(/{name}/g, application.name)
-        .replace(/{email}/g, application.email)
-        .replace(/{position}/g, job.title)
-        .replace(/{company}/g, company_name);
-    };
+    // Get current user for thread creation
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      throw new Error('User not authenticated');
+    }
 
-    const emailResults = [];
+    const results = [];
+    const fromEmail = reply_to_email || 'hiring@atract.ai';
+    const companyName = company_name || 'Our Company';
 
-    // Process emails in batches to avoid rate limits
     for (const application of applications) {
       try {
-        const personalizedSubject = processTemplate(subject, application);
-        const personalizedContent = processTemplate(content, application);
-        const htmlContent = createEmailTemplate(personalizedContent, company_name);
+        let finalThreadId = thread_id;
 
-        // Send email via Resend using verified domain
-        const emailResponse = await resend.emails.send({
-          from: `${company_name} <noreply@atract.ai>`,
-          to: [application.email],
-          subject: personalizedSubject,
-          html: htmlContent,
-        });
+        // Create email thread if requested and not provided
+        if (create_threads && !finalThreadId) {
+          const { data: thread, error: threadError } = await supabase
+            .from('email_threads')
+            .insert({
+              user_id: user.id,
+              subject: subject,
+              participants: [fromEmail, application.email],
+              reply_to_email: fromEmail,
+              last_message_at: new Date().toISOString(),
+              unread_count: 0,
+              status: 'active'
+            })
+            .select('id')
+            .single();
 
-        console.log(`Email attempt to ${application.email}:`, emailResponse);
+          if (threadError) {
+            console.error('Failed to create thread:', threadError);
+            throw threadError;
+          }
 
-        // Check for Resend API errors
-        if (emailResponse.error) {
-          console.error(`Resend API error for ${application.email}:`, emailResponse.error);
+          finalThreadId = thread.id;
+          console.log('Created thread:', finalThreadId);
         }
 
-        // Log the email in the database
-        const { error: logError } = await supabaseClient
+        // Process template variables
+        const processedSubject = subject
+          .replace(/{name}/g, application.name)
+          .replace(/{email}/g, application.email)
+          .replace(/{position}/g, job.title)
+          .replace(/{company}/g, companyName);
+
+        const processedContent = content
+          .replace(/{name}/g, application.name)
+          .replace(/{email}/g, application.email)
+          .replace(/{position}/g, job.title)
+          .replace(/{company}/g, companyName);
+
+        // Add thread tracking to subject if we have a thread
+        const finalSubject = finalThreadId 
+          ? `${processedSubject} [Thread:${finalThreadId}]`
+          : processedSubject;
+
+        // Send email via Resend
+        const emailResult = await resend.emails.send({
+          from: `${companyName} <${fromEmail}>`,
+          to: [application.email],
+          subject: finalSubject,
+          html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+              ${processedContent.replace(/\n/g, '<br>')}
+            </div>
+          `,
+          reply_to: fromEmail,
+        });
+
+        console.log('Email sent successfully:', emailResult);
+
+        // Store message in database if we have a thread
+        if (finalThreadId) {
+          const { error: messageError } = await supabase
+            .from('email_messages')
+            .insert({
+              thread_id: finalThreadId,
+              sender_email: fromEmail,
+              recipient_email: application.email,
+              subject: finalSubject,
+              content: processedContent,
+              direction: 'outbound',
+              message_type: 'original',
+              is_read: true
+            });
+
+          if (messageError) {
+            console.error('Failed to store message:', messageError);
+          }
+        }
+
+        // Log the email
+        const { error: logError } = await supabase
           .from('email_logs')
           .insert({
             user_id: user.id,
-            application_id: application.id,
-            template_id: template_id || null,
+            thread_id: finalThreadId,
             recipient_email: application.email,
             recipient_name: application.name,
-            subject: personalizedSubject,
-            content: personalizedContent,
-            status: emailResponse.error ? 'failed' : 'sent',
-            sent_at: new Date().toISOString(),
-            error_message: emailResponse.error?.message || null
+            subject: finalSubject,
+            content: processedContent,
+            template_id: template_id || null,
+            status: 'sent',
+            sent_at: new Date().toISOString()
           });
 
         if (logError) {
-          console.error('Error logging email:', logError);
+          console.error('Failed to log email:', logError);
         }
 
-        emailResults.push({
-          recipient: application.email,
-          success: !emailResponse.error,
-          error: emailResponse.error?.message || null,
-          resend_id: emailResponse.data?.id || null
+        results.push({
+          email: application.email,
+          success: true,
+          thread_id: finalThreadId,
+          message_id: emailResult.data?.id
         });
 
-        console.log(`Email to ${application.email}:`, emailResponse.error ? 'FAILED' : 'SUCCESS');
-
       } catch (error) {
-        console.error(`Error sending email to ${application.email}:`, error);
-        emailResults.push({
-          recipient: application.email,
+        console.error(`Failed to send email to ${application.email}:`, error);
+        results.push({
+          email: application.email,
           success: false,
           error: error.message
         });
       }
     }
 
-    const successCount = emailResults.filter(r => r.success).length;
-    const failureCount = emailResults.filter(r => !r.success).length;
+    const successCount = results.filter(r => r.success).length;
+    console.log(`Bulk email completed: ${successCount}/${applications.length} sent successfully`);
 
-    console.log(`Bulk email completed: ${successCount} sent, ${failureCount} failed`);
-
-    return new Response(JSON.stringify({
-      success: true,
-      results: emailResults,
-      summary: {
-        total: applications.length,
-        sent: successCount,
-        failed: failureCount
-      },
-      domain_used: "atract.ai"
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        results,
+        summary: {
+          total: applications.length,
+          sent: successCount,
+          failed: applications.length - successCount
+        }
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
 
   } catch (error: any) {
     console.error("Error in send-bulk-email function:", error);
+    
     return new Response(
       JSON.stringify({ 
         success: false, 

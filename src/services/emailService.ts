@@ -7,6 +7,7 @@ export interface EmailThreadData {
   jobId?: string;
   subject: string;
   participants: string[];
+  replyToEmail?: string;
 }
 
 export interface SendEmailData {
@@ -17,10 +18,12 @@ export interface SendEmailData {
   content: string;
   applicationId?: string;
   jobId?: string;
+  replyToEmail?: string;
 }
 
 export const emailService = {
   async createEmailThread(data: EmailThreadData): Promise<string> {
+    console.log('Creating email thread:', data);
     const { data: thread, error } = await supabase
       .from('email_threads')
       .insert({
@@ -29,6 +32,7 @@ export const emailService = {
         job_id: data.jobId || null,
         subject: data.subject,
         participants: data.participants,
+        reply_to_email: data.replyToEmail || null,
         last_message_at: new Date().toISOString(),
         unread_count: 0,
         status: 'active'
@@ -37,23 +41,24 @@ export const emailService = {
       .single();
 
     if (error) throw error;
+    console.log('Created thread:', thread);
     return thread.id;
   },
 
   async sendEmail(data: SendEmailData): Promise<void> {
     let threadId = data.threadId;
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) throw new Error('User not authenticated');
 
     // Create thread if it doesn't exist
     if (!threadId) {
-      const user = await supabase.auth.getUser();
-      if (!user.data.user) throw new Error('User not authenticated');
-
       threadId = await this.createEmailThread({
         userId: user.data.user.id,
         applicationId: data.applicationId,
         jobId: data.jobId,
         subject: data.subject,
-        participants: [user.data.user.email!, data.recipientEmail]
+        participants: [user.data.user.email!, data.recipientEmail],
+        replyToEmail: data.replyToEmail || user.data.user.email!
       });
     }
 
@@ -62,7 +67,7 @@ export const emailService = {
       .from('email_messages')
       .insert({
         thread_id: threadId,
-        sender_email: (await supabase.auth.getUser()).data.user?.email || '',
+        sender_email: user.data.user.email || '',
         recipient_email: data.recipientEmail,
         subject: data.subject,
         content: data.content,
@@ -73,15 +78,18 @@ export const emailService = {
 
     if (messageError) throw messageError;
 
-    // Send the actual email via existing edge function
+    // Send the actual email via existing edge function with thread tracking
     const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
       body: {
-        emails: [{
-          recipient_email: data.recipientEmail,
-          recipient_name: data.recipientName,
-          subject: `${data.subject} [Thread:${threadId}]`, // Include thread ID for tracking
-          content: data.content
-        }]
+        applications: [{
+          email: data.recipientEmail,
+          name: data.recipientName
+        }],
+        job: { title: 'Email' },
+        subject: `${data.subject} [Thread:${threadId}]`, // Include thread ID for tracking
+        content: data.content,
+        reply_to_email: data.replyToEmail || user.data.user.email,
+        thread_id: threadId
       }
     });
 
@@ -91,7 +99,7 @@ export const emailService = {
     const { error: logError } = await supabase
       .from('email_logs')
       .insert({
-        user_id: (await supabase.auth.getUser()).data.user?.id || '',
+        user_id: user.data.user.id,
         application_id: data.applicationId || null,
         thread_id: threadId,
         recipient_email: data.recipientEmail,

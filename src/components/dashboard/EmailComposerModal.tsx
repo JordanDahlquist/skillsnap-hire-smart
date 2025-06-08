@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -62,6 +61,19 @@ export const EmailComposerModal = ({
     return job.company_name || profile?.company_name || 'Our Company';
   };
 
+  // Generate a proper reply-to email address
+  const getReplyToEmail = () => {
+    if (profile?.company_name) {
+      // Create a proper hiring email based on company name
+      const companyDomain = profile.company_website 
+        ? new URL(profile.company_website).hostname.replace('www.', '')
+        : 'atract.ai'; // fallback domain
+      
+      return `hiring@${companyDomain}`;
+    }
+    return user?.email || 'hiring@atract.ai';
+  };
+
   // Fetch email templates
   const { data: templates = [] } = useQuery({
     queryKey: ['email-templates'],
@@ -109,8 +121,9 @@ export const EmailComposerModal = ({
     
     try {
       const companyName = getCompanyName();
+      const replyToEmail = getReplyToEmail();
       
-      // Call the send-bulk-email edge function
+      // Call the send-bulk-email edge function with enhanced data
       const { data, error } = await supabase.functions.invoke('send-bulk-email', {
         body: {
           applications: selectedApplications,
@@ -118,7 +131,9 @@ export const EmailComposerModal = ({
           subject: subject,
           content: content,
           template_id: selectedTemplateId || null,
-          company_name: companyName
+          company_name: companyName,
+          reply_to_email: replyToEmail,
+          create_threads: true // Flag to create email threads
         }
       });
 
@@ -126,7 +141,7 @@ export const EmailComposerModal = ({
 
       toast({
         title: "Emails Sent",
-        description: `Successfully sent emails to ${selectedApplications.length} candidate${selectedApplications.length > 1 ? 's' : ''}.`,
+        description: `Successfully sent emails to ${selectedApplications.length} candidate${selectedApplications.length > 1 ? 's' : ''} from ${replyToEmail}.`,
       });
 
       onOpenChange(false);
@@ -180,6 +195,19 @@ export const EmailComposerModal = ({
             </div>
 
             <div>
+              <Label htmlFor="reply-to">Reply-to Address</Label>
+              <Input
+                id="reply-to"
+                value={getReplyToEmail()}
+                disabled
+                className="bg-gray-50"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Recipients can reply to this address and it will appear in your inbox
+              </p>
+            </div>
+
+            <div>
               <Label htmlFor="subject">Subject</Label>
               <Input
                 id="subject"
@@ -196,7 +224,7 @@ export const EmailComposerModal = ({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Email content..."
-                rows={12}
+                rows={10}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Available variables: {"{name}"}, {"{email}"}, {"{position}"}, {"{company}"}
@@ -246,6 +274,10 @@ export const EmailComposerModal = ({
                 <CardContent>
                   <div className="space-y-3">
                     <div>
+                      <Label className="text-xs text-gray-500">From:</Label>
+                      <p className="text-sm font-medium">{getReplyToEmail()}</p>
+                    </div>
+                    <div>
                       <Label className="text-xs text-gray-500">Subject:</Label>
                       <p className="text-sm font-medium">
                         {processTemplate(subject, previewExample)}
@@ -253,7 +285,7 @@ export const EmailComposerModal = ({
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">Content:</Label>
-                      <ScrollArea className="h-48 p-3 bg-gray-50 rounded border text-sm whitespace-pre-wrap">
+                      <ScrollArea className="h-40 p-3 bg-gray-50 rounded border text-sm whitespace-pre-wrap">
                         {processTemplate(content, previewExample)}
                       </ScrollArea>
                     </div>
