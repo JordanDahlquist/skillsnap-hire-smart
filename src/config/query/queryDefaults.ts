@@ -14,7 +14,7 @@ export const getQueryDefaults = () => ({
   refetchOnWindowFocus: false,
   refetchOnReconnect: 'always' as const,
   refetchOnMount: true,
-  refetchInterval: false,
+  refetchInterval: false as const, // Fix: explicitly type as false
   
   // Add timeout for queries
   meta: {
