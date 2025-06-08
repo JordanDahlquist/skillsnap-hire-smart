@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useJobSelection } from "@/hooks/useJobSelection";
 import { useAsyncOperation } from "@/hooks/useAsyncOperation";
 import { useJobsData } from "@/hooks/useJobsData";
+import { useStandardizedError } from "@/hooks/useStandardizedError";
 import { JobCreatorPanel } from "@/components/JobCreatorPanel";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -18,6 +19,7 @@ export const OptimizedJobsPage = memo(() => {
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const { toast } = useToast();
   const { execute: executeAsync } = useAsyncOperation();
+  const { handleError } = useStandardizedError();
 
   // Consolidated data hook
   const {
@@ -56,22 +58,31 @@ export const OptimizedJobsPage = memo(() => {
   }, [profile?.full_name, user?.email]);
 
   const handleRefresh = useCallback(async () => {
-    await executeAsync(
-      async () => {
-        await refetch();
-        return true;
-      },
-      {
-        logOperation: 'Manual refresh triggered',
-        onSuccess: () => {
-          toast({
-            title: "Refreshed",
-            description: SUCCESS_MESSAGES.UPDATED,
-          });
+    try {
+      await executeAsync(
+        async () => {
+          await refetch();
+          return true;
+        },
+        {
+          logOperation: 'Manual refresh triggered',
+          onSuccess: () => {
+            toast({
+              title: "Refreshed",
+              description: SUCCESS_MESSAGES.UPDATED,
+            });
+          }
         }
-      }
-    );
-  }, [executeAsync, refetch, toast]);
+      );
+    } catch (error) {
+      handleError(error, {
+        component: 'OptimizedJobsPage',
+        action: 'Manual refresh',
+        toastTitle: 'Refresh failed',
+        fallbackMessage: 'Unable to refresh jobs. Please try again.'
+      });
+    }
+  }, [executeAsync, refetch, toast, handleError]);
 
   const handleNeedsAttentionClick = useCallback(() => {
     const newValue = !needsAttentionFilter;
@@ -117,10 +128,10 @@ export const OptimizedJobsPage = memo(() => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007af6] mx-auto"></div>
-          <p className="mt-4 text-gray-600">{LOADING_MESSAGES.LOADING}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">{LOADING_MESSAGES.LOADING}</p>
         </div>
       </div>
     );
@@ -132,7 +143,7 @@ export const OptimizedJobsPage = memo(() => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <UnifiedHeader 
           breadcrumbs={breadcrumbs}
           onCreateRole={handleCreateJob}

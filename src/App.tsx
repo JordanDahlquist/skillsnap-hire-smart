@@ -2,10 +2,11 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthGuard } from "@/components/AuthGuard";
+import { createOptimizedQueryClient } from "@/config/queryClient";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
@@ -17,20 +18,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 import { Dashboard } from "./components/Dashboard";
 import { JobApplicationPage } from "./pages/JobApplicationPage";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error) => {
-        // Don't retry auth-related errors
-        if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
-          return false;
-        }
-        return failureCount < 2;
-      },
-      staleTime: 30000,
-    },
-  },
-});
+const queryClient = createOptimizedQueryClient();
 
 const App = () => (
   <ErrorBoundary>

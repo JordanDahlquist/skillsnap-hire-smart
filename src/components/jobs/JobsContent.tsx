@@ -1,15 +1,14 @@
-
+import { memo, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
-import { RefactoredJobCard } from "@/components/RefactoredJobCard";
+import { OptimizedJobCard } from "@/components/OptimizedJobCard";
 import { VirtualList } from "@/components/ui/virtual-list";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Job } from "@/types";
 import { logger } from "@/services/loggerService";
 import { UI_CONSTANTS } from "@/constants/ui";
-import { memo, useCallback } from "react";
 
 interface JobsContentProps {
   jobs: Job[];
@@ -49,7 +48,7 @@ const JobItem = memo(({
         />
       </div>
       <div className="flex-1">
-        <RefactoredJobCard
+        <OptimizedJobCard
           job={job}
           onJobUpdate={onRefetch}
           getTimeAgo={getTimeAgo}
