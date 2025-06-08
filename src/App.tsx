@@ -1,18 +1,19 @@
+
 import {
   BrowserRouter as Router,
   Routes,
   Route,
 } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster"
-import { Auth } from "./pages/Auth";
-import { Index } from "./pages/Index";
-import { NotFound } from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/AuthGuard";
 import { Dashboard } from "./components/Dashboard";
 import { JobApplicationPage } from "./pages/JobApplicationPage";
-import { PublicJobs } from "./pages/PublicJobs";
-import { ProfileSettings } from "./pages/ProfileSettings";
-import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import PublicJobs from "./pages/PublicJobs";
+import ProfileSettings from "./pages/ProfileSettings";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { LinkedInCallback } from "./pages/LinkedInCallback";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";

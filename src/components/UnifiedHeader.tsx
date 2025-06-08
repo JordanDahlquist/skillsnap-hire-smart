@@ -36,10 +36,7 @@ export const UnifiedHeader = ({
           {/* Logo and Main Navigation */}
           <div className="flex items-center space-x-6">
             <HeaderLogo />
-            <MainNavigation 
-              isAuthenticated={isAuthenticated}
-              isDashboard={isDashboard}
-            />
+            <MainNavigation />
           </div>
           
           {/* Right Side Navigation */}
