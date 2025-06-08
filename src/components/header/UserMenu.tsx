@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, Plus, LogOut, Loader2 } from "lucide-react";
+import { Settings, Plus, LogOut, Loader2, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface UserMenuProps {
@@ -52,6 +52,12 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem asChild>
+          <Link to="/jobs" className="flex items-center w-full">
+            <LayoutDashboard className="w-4 h-4 mr-2" />
+            Dashboard
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/profile" className="flex items-center w-full">
             <Settings className="w-4 h-4 mr-2" />
