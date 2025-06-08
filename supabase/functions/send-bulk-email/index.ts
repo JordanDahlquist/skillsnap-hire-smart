@@ -19,6 +19,7 @@ interface Job {
 }
 
 interface BulkEmailRequest {
+  user_id: string; // Accept user ID from request body
   applications: Application[];
   job: Job;
   subject: string;
@@ -43,6 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const { 
+      user_id,
       applications, 
       job, 
       subject, 
@@ -54,18 +56,17 @@ const handler = async (req: Request): Promise<Response> => {
       thread_id
     }: BulkEmailRequest = await req.json();
 
+    if (!user_id) {
+      throw new Error('User ID is required');
+    }
+
     console.log('Sending bulk emails:', { 
+      user_id,
       count: applications.length, 
       subject, 
       reply_to_email,
       create_threads 
     });
-
-    // Get current user for thread creation
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      throw new Error('User not authenticated');
-    }
 
     const results = [];
     const fromEmail = reply_to_email || 'hiring@atract.ai';
@@ -80,7 +81,7 @@ const handler = async (req: Request): Promise<Response> => {
           const { data: thread, error: threadError } = await supabase
             .from('email_threads')
             .insert({
-              user_id: user.id,
+              user_id: user_id, // Use the passed user ID
               subject: subject,
               participants: [fromEmail, application.email],
               reply_to_email: fromEmail,
@@ -157,7 +158,7 @@ const handler = async (req: Request): Promise<Response> => {
         const { error: logError } = await supabase
           .from('email_logs')
           .insert({
-            user_id: user.id,
+            user_id: user_id, // Use the passed user ID
             thread_id: finalThreadId,
             recipient_email: application.email,
             recipient_name: application.name,

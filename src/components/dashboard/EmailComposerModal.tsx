@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -117,15 +118,25 @@ export const EmailComposerModal = ({
       return;
     }
 
+    if (!user?.id) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to send emails.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSending(true);
     
     try {
       const companyName = getCompanyName();
       const replyToEmail = getReplyToEmail();
       
-      // Call the send-bulk-email edge function with enhanced data
+      // Call the send-bulk-email edge function with user ID
       const { data, error } = await supabase.functions.invoke('send-bulk-email', {
         body: {
+          user_id: user.id, // Pass user ID explicitly
           applications: selectedApplications,
           job: job,
           subject: subject,

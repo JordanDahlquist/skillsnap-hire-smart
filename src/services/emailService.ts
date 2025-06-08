@@ -81,6 +81,7 @@ export const emailService = {
     // Send the actual email via existing edge function with thread tracking
     const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
       body: {
+        user_id: user.data.user.id, // Pass user ID explicitly
         applications: [{
           email: data.recipientEmail,
           name: data.recipientName
