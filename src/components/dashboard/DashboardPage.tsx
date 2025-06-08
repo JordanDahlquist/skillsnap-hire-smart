@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
@@ -7,6 +8,7 @@ import { UnifiedHeader } from "../UnifiedHeader";
 import { DashboardHeader } from "./DashboardHeader";
 import { ApplicationsManager } from "./ApplicationsManager";
 import { EmailComposerModal } from "./EmailComposerModal";
+import { JobCreatorPanel } from "../JobCreatorPanel";
 import { DashboardSkeleton } from "./DashboardSkeleton";
 import { logger } from "@/services/loggerService";
 
@@ -46,6 +48,7 @@ export const DashboardPage = () => {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [createJobOpen, setCreateJobOpen] = useState(false);
 
   // Parallel loading: Both job and applications load simultaneously
   const { 
@@ -89,6 +92,10 @@ export const DashboardPage = () => {
   const handleJobUpdate = () => {
     refetchJob();
     refetchApplications();
+  };
+
+  const handleCreateJob = () => {
+    setCreateJobOpen(true);
   };
 
   // Loading state with skeleton - faster loading with parallel queries
@@ -138,7 +145,11 @@ export const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <UnifiedHeader breadcrumbs={breadcrumbs} showCreateButton={false} />
+      <UnifiedHeader 
+        breadcrumbs={breadcrumbs} 
+        onCreateRole={handleCreateJob}
+        showCreateButton={true} 
+      />
       
       <DashboardHeader 
         job={job} 
@@ -164,6 +175,11 @@ export const DashboardPage = () => {
         onOpenChange={setEmailModalOpen}
         selectedApplications={selectedApplicationsData}
         job={job}
+      />
+
+      <JobCreatorPanel
+        open={createJobOpen}
+        onOpenChange={setCreateJobOpen}
       />
     </div>
   );
