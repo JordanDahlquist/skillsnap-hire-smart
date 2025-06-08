@@ -33,8 +33,10 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!requireAuth && isAuthenticated) {
-    // Check for stored redirect URL
+  // FIXED: Remove the automatic redirect for authenticated users on home page
+  // Let authenticated users access any page they want to visit
+  if (!requireAuth && isAuthenticated && location.pathname === '/auth') {
+    // Only redirect away from auth page if user is already authenticated
     const storedRedirectUrl = sessionStorage.getItem('auth_redirect_url');
     if (storedRedirectUrl) {
       sessionStorage.removeItem('auth_redirect_url');

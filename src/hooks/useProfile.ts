@@ -24,99 +24,93 @@ export const useProfile = (userId: string | undefined) => {
   const loadingRef = useRef(false);
   const cacheRef = useRef<{ userId: string; profile: UserProfile; timestamp: number } | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   
-  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
-  const PROFILE_TIMEOUT = 3000; // 3 second timeout (reduced from 3000)
-  const DEBOUNCE_DELAY = 100; // 100ms debounce
+  // Simplified configuration - less aggressive caching and timeouts
+  const CACHE_DURATION = 2 * 60 * 1000; // Reduced to 2 minutes
+  const PROFILE_TIMEOUT = 2000; // Reduced to 2 seconds
+  const RETRY_DELAY = 500; // 500ms retry delay
 
   const loadProfile = useCallback(async (id: string) => {
-    // Clear any existing debounce
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+    // Prevent concurrent loads
+    if (loadingRef.current) {
+      console.log('Profile load already in progress, skipping...');
+      return;
     }
 
-    // Debounce rapid requests
-    return new Promise<void>((resolve) => {
-      debounceRef.current = setTimeout(async () => {
-        // Prevent concurrent loads
-        if (loadingRef.current) {
-          console.log('Profile load already in progress, skipping...');
-          resolve();
-          return;
-        }
+    // Check cache first
+    const now = Date.now();
+    if (cacheRef.current && 
+        cacheRef.current.userId === id && 
+        (now - cacheRef.current.timestamp) < CACHE_DURATION) {
+      console.log('Using cached profile');
+      setProfile(cacheRef.current.profile);
+      setError(null);
+      return;
+    }
 
-        // Check cache first
-        const now = Date.now();
-        if (cacheRef.current && 
-            cacheRef.current.userId === id && 
-            (now - cacheRef.current.timestamp) < CACHE_DURATION) {
-          console.log('Using cached profile');
-          setProfile(cacheRef.current.profile);
-          setError(null);
-          resolve();
-          return;
-        }
+    loadingRef.current = true;
+    setLoading(true);
+    setError(null);
+    
+    // Set up timeout for reliability
+    timeoutRef.current = setTimeout(() => {
+      console.warn('Profile loading timed out after 2 seconds');
+      setError('Profile loading timed out');
+      setLoading(false);
+      loadingRef.current = false;
+    }, PROFILE_TIMEOUT);
 
-        loadingRef.current = true;
-        setLoading(true);
+    try {
+      const profileData = await authService.fetchProfile(id);
+      
+      // Clear timeout if request completes
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      
+      if (profileData) {
+        // Type assertion since we know the structure from authService
+        const typedProfile = profileData as UserProfile;
+        setProfile(typedProfile);
         setError(null);
-        
-        // Set up timeout
-        timeoutRef.current = setTimeout(() => {
-          console.warn('Profile loading timed out after 3 seconds');
-          setError('Profile loading timed out');
-          setLoading(false);
-          loadingRef.current = false;
-        }, PROFILE_TIMEOUT);
-
-        try {
-          const profileData = await authService.fetchProfile(id);
-          
-          // Clear timeout if request completes
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-          }
-          
-          if (profileData) {
-            // Type assertion since we know the structure from authService
-            const typedProfile = profileData as UserProfile;
-            setProfile(typedProfile);
-            setError(null);
-            // Cache the result
-            cacheRef.current = {
-              userId: id,
-              profile: typedProfile,
-              timestamp: now
-            };
-            console.log('Profile loaded:', typedProfile?.full_name || 'No name');
-          } else {
-            setError('Profile not found');
-            setProfile(null);
-          }
-        } catch (error) {
-          // Clear timeout
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-          }
-          
-          console.warn('Failed to load profile:', error);
-          setError('Failed to load profile');
-          setProfile(null);
-        } finally {
-          setLoading(false);
-          loadingRef.current = false;
-          resolve();
-        }
-      }, DEBOUNCE_DELAY);
-    });
-  }, []);
+        // Cache the result
+        cacheRef.current = {
+          userId: id,
+          profile: typedProfile,
+          timestamp: now
+        };
+        console.log('Profile loaded successfully:', typedProfile?.full_name || 'No name');
+      } else {
+        console.log('No profile found for user');
+        setError(null); // Don't treat missing profile as error
+        setProfile(null);
+      }
+    } catch (error) {
+      // Clear timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      
+      console.warn('Failed to load profile:', error);
+      // Don't treat profile loading errors as critical
+      setError(null);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
+    }
+  }, [CACHE_DURATION, PROFILE_TIMEOUT]);
 
   useEffect(() => {
     if (userId && userId !== cacheRef.current?.userId) {
-      loadProfile(userId);
+      // Small delay to prevent race conditions
+      const delayTimer = setTimeout(() => {
+        loadProfile(userId);
+      }, RETRY_DELAY);
+
+      return () => clearTimeout(delayTimer);
     } else if (!userId) {
       setProfile(null);
       setLoading(false);
@@ -129,11 +123,8 @@ export const useProfile = (userId: string | undefined) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
     };
-  }, [userId, loadProfile]);
+  }, [userId, loadProfile, RETRY_DELAY]);
 
   const refreshProfile = useCallback(() => {
     if (userId) {

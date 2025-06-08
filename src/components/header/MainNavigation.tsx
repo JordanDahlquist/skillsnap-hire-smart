@@ -60,7 +60,7 @@ export const MainNavigation = ({ isAuthenticated, isDashboard }: MainNavigationP
       
       <NavigationMenu>
         <NavigationMenuList>
-          {/* Home link - visible to all */}
+          {/* Home link - always visible and accessible */}
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
               <Link to="/" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/") && "bg-accent text-accent-foreground")}>
@@ -70,19 +70,17 @@ export const MainNavigation = ({ isAuthenticated, isDashboard }: MainNavigationP
             </NavigationMenuLink>
           </NavigationMenuItem>
 
-          {/* Public Jobs link - only visible when not in dashboard */}
-          {!isDashboard && (
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild>
-                <Link to="/jobs/public" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs/public") && "bg-accent text-accent-foreground")}>
-                  <Briefcase className="w-4 h-4 mr-2 briefcase-icon" />
-                  Jobs
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          )}
+          {/* Public Jobs link - always visible */}
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
+              <Link to="/jobs/public" className={cn("group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50", isActive("/jobs/public") && "bg-accent text-accent-foreground")}>
+                <Briefcase className="w-4 h-4 mr-2 briefcase-icon" />
+                Jobs
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
 
-          {/* Admin Dashboard link - only for logged in users */}
+          {/* Dashboard link - only for authenticated users */}
           {isAuthenticated && (
             <NavigationMenuItem>
               <NavigationMenuLink asChild>

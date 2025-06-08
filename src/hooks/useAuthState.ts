@@ -21,6 +21,8 @@ export const useAuthState = () => {
         
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Always set loading to false after auth state change
         setLoading(false);
       }
     );
@@ -37,11 +39,11 @@ export const useAuthState = () => {
       setLoading(false);
     });
 
-    // Failsafe timeout for auth loading
+    // Reduced failsafe timeout for auth loading
     const timeout = setTimeout(() => {
       logInfo('Auth loading timeout reached, setting loading to false');
       setLoading(false);
-    }, 3000);
+    }, 2000); // Reduced from 3000 to 2000ms
 
     return () => {
       subscription.unsubscribe();

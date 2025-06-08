@@ -22,7 +22,7 @@ export const UnifiedHeader = ({
   onCreateRole,
   showCreateButton = true
 }: UnifiedHeaderProps) => {
-  const { user, profile, profileLoading, profileError, signOut, loading } = useAuth();
+  const { user, profile, profileLoading, signOut, loading, isAuthenticated } = useAuth();
   const location = useLocation();
   
   // Check if current location is the dashboard or any subdirectory of /jobs (except /jobs/public)
@@ -37,7 +37,7 @@ export const UnifiedHeader = ({
           <div className="flex items-center space-x-6">
             <HeaderLogo />
             <MainNavigation 
-              isAuthenticated={!!user && !loading}
+              isAuthenticated={isAuthenticated}
               isDashboard={isDashboard}
             />
           </div>
@@ -49,7 +49,7 @@ export const UnifiedHeader = ({
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Loading...
               </div>
-            ) : user ? (
+            ) : isAuthenticated ? (
               <UserMenu 
                 user={user}
                 profile={profile}
