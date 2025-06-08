@@ -10,9 +10,9 @@ export const useAuth = () => {
   
   // Only load profile if we have a user and auth is not loading
   const shouldLoadProfile = !!user?.id && !authLoading;
-  const { profile, loading: profileLoading, refreshProfile } = useProfile(shouldLoadProfile ? user.id : undefined);
+  const { profile, loading: profileLoading, error: profileError, refreshProfile } = useProfile(shouldLoadProfile ? user.id : undefined);
 
-  // Don't block on profile loading - auth loading is what matters for navigation
+  // Auth loading is what matters for navigation - don't block on profile loading
   const loading = authLoading;
 
   const refreshAll = useCallback(() => {
@@ -28,6 +28,7 @@ export const useAuth = () => {
     profile,
     loading, // Only auth loading blocks navigation
     profileLoading, // Separate profile loading state
+    profileError, // Expose profile errors
     signOut,
     refreshProfile: refreshAll,
     isAuthenticated

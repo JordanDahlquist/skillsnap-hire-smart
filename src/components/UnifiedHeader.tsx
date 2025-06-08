@@ -22,7 +22,7 @@ export const UnifiedHeader = ({
   onCreateRole,
   showCreateButton = true
 }: UnifiedHeaderProps) => {
-  const { user, profile, profileLoading, signOut, loading } = useAuth();
+  const { user, profile, profileLoading, profileError, signOut, loading } = useAuth();
   const location = useLocation();
   
   // Check if current location is the dashboard or any subdirectory of /jobs (except /jobs/public)

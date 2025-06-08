@@ -22,13 +22,15 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
   };
   
   const getUserDisplayName = () => {
-    if (profileLoading) {
-      return 'Loading...';
+    // Show user email immediately if profile is loading or not available
+    if (profileLoading || !profile?.full_name) {
+      return user?.email?.split('@')[0] || 'User';
     }
-    if (profile?.full_name) {
-      return profile.full_name;
-    }
-    return user?.email || 'User';
+    return profile.full_name;
+  };
+
+  const getDisplayEmail = () => {
+    return user?.email || '';
   };
 
   return (
@@ -37,15 +39,15 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
         <Button variant="ghost" className="flex items-center gap-2 px-2">
           <Avatar className="w-8 h-8">
             <AvatarFallback className="bg-[#007af6] text-white text-xs">
-              {profileLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : getUserInitials()}
+              {getUserInitials()}
             </AvatarFallback>
           </Avatar>
           <div className="hidden sm:block text-left">
             <p className="text-sm font-medium flex items-center gap-1">
               {getUserDisplayName()}
-              {profileLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+              {profileLoading && <Loader2 className="w-3 h-3 animate-spin opacity-50" />}
             </p>
-            <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="text-xs text-gray-500">{getDisplayEmail()}</p>
           </div>
         </Button>
       </DropdownMenuTrigger>
