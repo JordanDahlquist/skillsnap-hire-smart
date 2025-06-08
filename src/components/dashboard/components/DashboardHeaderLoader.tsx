@@ -1,0 +1,20 @@
+
+import { Loader2 } from "lucide-react";
+import { DASHBOARD_HEADER_CONSTANTS } from "../constants/dashboardHeaderConstants";
+
+interface DashboardHeaderLoaderProps {
+  isVisible: boolean;
+}
+
+export const DashboardHeaderLoader = ({ isVisible }: DashboardHeaderLoaderProps) => {
+  if (!isVisible) return null;
+
+  return (
+    <div className={DASHBOARD_HEADER_CONSTANTS.LOADING_OVERLAY.BACKDROP + " flex items-center justify-center"}>
+      <div className={DASHBOARD_HEADER_CONSTANTS.LOADING_OVERLAY.CONTENT + " flex items-center gap-3"}>
+        <Loader2 className="w-5 h-5 animate-spin" />
+        <span>Updating job status...</span>
+      </div>
+    </div>
+  );
+};

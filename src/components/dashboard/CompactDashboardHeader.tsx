@@ -1,31 +1,13 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { StatusDropdown } from "@/components/ui/status-dropdown";
-import { 
-  ExternalLink, 
-  ArrowLeft, 
-  Share2, 
-  MoreHorizontal,
-  Eye,
-  Download,
-  Pencil,
-  Archive,
-  ArchiveRestore,
-  Loader2
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { EditJobModal } from "@/components/EditJobModal";
+import { DashboardHeaderInfo } from "./components/DashboardHeaderInfo";
+import { DashboardHeaderActions } from "./components/DashboardHeaderActions";
+import { DashboardHeaderLoader } from "./components/DashboardHeaderLoader";
+import { useDashboardHeaderActions } from "@/hooks/useDashboardHeaderActions";
+import { DASHBOARD_HEADER_CONSTANTS } from "./constants/dashboardHeaderConstants";
 
 interface Job {
   id: string;
@@ -70,260 +52,49 @@ export const CompactDashboardHeader = ({
   getTimeAgo, 
   onJobUpdate 
 }: CompactDashboardHeaderProps) => {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const { toast } = useToast();
-
-  const handleStatusChange = async (newStatus: string) => {
-    setIsUpdating(true);
-    
-    try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', job.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Status updated",
-        description: `Job is now ${newStatus}`,
-      });
-      
-      onJobUpdate();
-    } catch (error) {
-      console.error('Error updating job status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update job status",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleShareJob = async () => {
-    const jobUrl = `${window.location.origin}/apply/${job.id}`;
-    try {
-      await navigator.clipboard.writeText(jobUrl);
-      toast({
-        title: "Link copied!",
-        description: "Job application link copied to clipboard",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy link",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleExportApplications = () => {
-    if (applications.length === 0) {
-      toast({
-        title: "No data to export",
-        description: "This job has no applications yet",
-      });
-      return;
-    }
-
-    const csvContent = [
-      ['Name', 'Email', 'Applied Date', 'AI Rating', 'Status'].join(','),
-      ...applications.map(app => [
-        app.name,
-        app.email,
-        new Date(app.created_at).toLocaleDateString(),
-        app.ai_rating || 'N/A',
-        app.status
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${job.title.replace(/[^a-zA-Z0-9]/g, '_')}_applications.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-    toast({
-      title: "Export completed",
-      description: "Applications data exported to CSV file",
-    });
-  };
-
-  const handleEditJob = () => {
-    setIsEditModalOpen(true);
-  };
-
-  const handleArchiveJob = async () => {
-    setIsUpdating(true);
-    try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({ status: 'closed', updated_at: new Date().toISOString() })
-        .eq('id', job.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Job archived",
-        description: "Job has been archived successfully",
-      });
-      
-      onJobUpdate();
-    } catch (error) {
-      console.error('Error archiving job:', error);
-      toast({
-        title: "Error",
-        description: "Failed to archive job",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleUnarchiveJob = async () => {
-    setIsUpdating(true);
-    try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({ status: 'active', updated_at: new Date().toISOString() })
-        .eq('id', job.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Job unarchived",
-        description: "Job has been unarchived and is now active",
-      });
-      
-      onJobUpdate();
-    } catch (error) {
-      console.error('Error unarchiving job:', error);
-      toast({
-        title: "Error",
-        description: "Failed to unarchive job",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  // Calculate days running
-  const startDate = new Date(job.created_at);
-  const today = new Date();
-  const daysRunning = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-
-  // Format start date
-  const startDateFormatted = startDate.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: startDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-  });
-
-  const isArchived = job.status === 'closed';
+  const {
+    isUpdating,
+    isEditModalOpen,
+    setIsEditModalOpen,
+    handleStatusChange,
+    handleShareJob,
+    handleExportApplications,
+    handleEditJob,
+    handleArchiveJob,
+    handleUnarchiveJob
+  } = useDashboardHeaderActions(job, applications, onJobUpdate);
 
   return (
     <>
-      {/* Loading overlay */}
-      {isUpdating && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 flex items-center gap-3">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Updating job status...</span>
-          </div>
-        </div>
-      )}
+      <DashboardHeaderLoader isVisible={isUpdating} />
 
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div className={`bg-background/80 backdrop-blur-sm border-b border-border sticky ${DASHBOARD_HEADER_CONSTANTS.STICKY_TOP_OFFSET} ${DASHBOARD_HEADER_CONSTANTS.Z_INDEX}`}>
+        <div className={`${DASHBOARD_HEADER_CONSTANTS.MAX_WIDTH} mx-auto ${DASHBOARD_HEADER_CONSTANTS.PADDING.HORIZONTAL} ${DASHBOARD_HEADER_CONSTANTS.PADDING.VERTICAL}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button variant="outline" size="sm" asChild>
                 <Link to="/jobs">
-                  <ArrowLeft className="w-4 h-4 text-gray-600" />
+                  <ArrowLeft className="w-4 h-4 text-muted-foreground" />
                 </Link>
               </Button>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-lg font-semibold text-gray-900">{job.title}</h1>
-                  <Badge className={job.status === 'active' ? "bg-blue-100 text-blue-800" : job.status === 'paused' ? "bg-gray-100 text-gray-800" : job.status === 'closed' ? "bg-gray-100 text-gray-600" : "bg-gray-100 text-gray-800"}>
-                    {job.status}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
-                  <span>Posted {getTimeAgo(job.created_at)}</span>
-                  <span>•</span>
-                  <span>Started {startDateFormatted}</span>
-                  <span>•</span>
-                  <span>{daysRunning} day{daysRunning !== 1 ? 's' : ''} running</span>
-                  <span>•</span>
-                  <span>{applications.length} applications</span>
-                  <span>•</span>
-                  <div className="flex items-center gap-1">
-                    <Eye className="w-3 h-3 text-gray-400" />
-                    <span>342 views</span>
-                  </div>
-                </div>
-              </div>
+              
+              <DashboardHeaderInfo 
+                job={job}
+                applications={applications}
+                getTimeAgo={getTimeAgo}
+              />
             </div>
             
-            <div className="flex items-center gap-2">
-              <StatusDropdown
-                currentStatus={job.status}
-                onStatusChange={handleStatusChange}
-                disabled={isUpdating}
-              />
-
-              <Button variant="outline" size="sm" onClick={handleShareJob} disabled={isUpdating}>
-                <Share2 className="w-4 h-4 text-gray-600" />
-              </Button>
-
-              <Button variant="outline" size="sm" asChild disabled={isUpdating}>
-                <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-4 h-4 text-gray-600" />
-                </a>
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" disabled={isUpdating}>
-                    {isUpdating ? (
-                      <Loader2 className="w-4 h-4 text-gray-600 animate-spin" />
-                    ) : (
-                      <MoreHorizontal className="w-4 h-4 text-gray-600" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleEditJob}>
-                    <Pencil className="w-4 h-4 mr-2" />
-                    Edit Job
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleExportApplications}>
-                    <Download className="w-4 h-4 mr-2" />
-                    Export Data
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  {isArchived ? (
-                    <DropdownMenuItem onClick={handleUnarchiveJob}>
-                      <ArchiveRestore className="w-4 h-4 mr-2" />
-                      Unarchive Job
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={handleArchiveJob} className="text-red-600">
-                      <Archive className="w-4 h-4 mr-2" />
-                      Archive Job
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <DashboardHeaderActions
+              job={job}
+              isUpdating={isUpdating}
+              onStatusChange={handleStatusChange}
+              onShareJob={handleShareJob}
+              onEditJob={handleEditJob}
+              onExportApplications={handleExportApplications}
+              onArchiveJob={handleArchiveJob}
+              onUnarchiveJob={handleUnarchiveJob}
+            />
           </div>
         </div>
       </div>
