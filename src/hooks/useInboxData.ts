@@ -226,9 +226,9 @@ export const useInboxData = () => {
           (payload) => {
             console.log('Email messages change:', payload);
             // Only invalidate if this message belongs to one of our threads
-            const messageThreadId = payload.new?.thread_id || payload.old?.thread_id;
+            const messageThreadId = (payload.new as any)?.thread_id || (payload.old as any)?.thread_id;
             const userThreadIds = threads.map(t => t.id);
-            if (userThreadIds.includes(messageThreadId)) {
+            if (messageThreadId && userThreadIds.includes(messageThreadId)) {
               queryClient.invalidateQueries({ queryKey: ['email-messages'] });
               queryClient.invalidateQueries({ queryKey: ['email-threads'] });
             }
