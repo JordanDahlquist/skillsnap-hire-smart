@@ -3,7 +3,7 @@ import React, { memo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail } from 'lucide-react';
+import { Mail, Star } from 'lucide-react';
 import { logger } from '@/services/loggerService';
 
 interface Application {
@@ -28,7 +28,6 @@ interface ApplicationsListProps {
   selectedApplication: Application | null;
   onSelectApplication: (application: Application) => void;
   getStatusColor: (status: string) => string;
-  getRatingStars: (rating: number | null) => React.ReactNode;
   getTimeAgo: (dateString: string) => string;
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
@@ -40,7 +39,6 @@ const ApplicationItem = memo(({
   selectedApplication, 
   onSelectApplication, 
   getStatusColor, 
-  getRatingStars, 
   getTimeAgo,
   selectedApplications = [],
   onSelectApplications
@@ -49,7 +47,6 @@ const ApplicationItem = memo(({
   selectedApplication: Application | null;
   onSelectApplication: (application: Application) => void;
   getStatusColor: (status: string) => string;
-  getRatingStars: (rating: number | null) => React.ReactNode;
   getTimeAgo: (dateString: string) => string;
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
@@ -70,6 +67,53 @@ const ApplicationItem = memo(({
     onSelectApplication(application);
     logger.debug('Application clicked for detail view', { applicationId: application.id });
   }, [onSelectApplication, application]);
+
+  const renderManualRating = (rating: number | null) => {
+    if (!rating) {
+      return Array.from({ length: 3 }, (_, i) => (
+        <Star key={i} className="w-4 h-4 text-gray-300" />
+      ));
+    }
+
+    return Array.from({ length: 3 }, (_, i) => {
+      const starValue = i + 1;
+      const isActive = starValue <= rating;
+      
+      return (
+        <Star
+          key={i}
+          className={`w-4 h-4 ${
+            isActive ? 'text-blue-500 fill-current' : 'text-gray-300'
+          }`}
+        />
+      );
+    });
+  };
+
+  const renderAIRating = (rating: number | null) => {
+    if (!rating) {
+      return Array.from({ length: 3 }, (_, i) => (
+        <Star key={i} className="w-4 h-4 text-gray-300" />
+      ));
+    }
+
+    // Convert 5-star AI rating to 3-star scale
+    const convertedRating = (rating / 5) * 3;
+    
+    return Array.from({ length: 3 }, (_, i) => {
+      const starValue = i + 1;
+      const isActive = starValue <= Math.round(convertedRating);
+      
+      return (
+        <Star
+          key={i}
+          className={`w-4 h-4 ${
+            isActive ? 'text-green-500 fill-current' : 'text-gray-300'
+          }`}
+        />
+      );
+    });
+  };
 
   return (
     <div
@@ -106,11 +150,27 @@ const ApplicationItem = memo(({
                 <Badge className={getStatusColor(application.status)}>
                   {application.status}
                 </Badge>
-                {application.ai_rating && (
-                  <div className="flex items-center">
-                    {getRatingStars(application.ai_rating)}
+              </div>
+            </div>
+
+            {/* Rating Section */}
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-4">
+                {/* Manual Rating */}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-500">Your:</span>
+                  <div className="flex gap-0.5">
+                    {renderManualRating(application.manual_rating)}
                   </div>
-                )}
+                </div>
+                
+                {/* AI Rating */}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-500">AI:</span>
+                  <div className="flex gap-0.5">
+                    {renderAIRating(application.ai_rating)}
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -133,7 +193,6 @@ export const ApplicationsList = memo(({
   selectedApplication,
   onSelectApplication,
   getStatusColor,
-  getRatingStars,
   getTimeAgo,
   selectedApplications = [],
   onSelectApplications,
@@ -202,7 +261,6 @@ export const ApplicationsList = memo(({
               selectedApplication={selectedApplication}
               onSelectApplication={onSelectApplication}
               getStatusColor={getStatusColor}
-              getRatingStars={getRatingStars}
               getTimeAgo={getTimeAgo}
               selectedApplications={selectedApplications}
               onSelectApplications={onSelectApplications}
