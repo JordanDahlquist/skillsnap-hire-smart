@@ -40,16 +40,21 @@ Test Answers:
 
 Provide:
 1. A comprehensive summary (2-3 sentences) of the candidate's strengths and fit for the role
-2. A rating from 1.0 to 5.0 based on:
+2. A rating from 1.0 to 3.0 based on:
    - Technical skills demonstration
    - Problem-solving approach
    - Communication quality
    - Overall fit for the role
 
+Use a 3-star rating scale where:
+- 1.0-1.5: Below expectations
+- 1.6-2.4: Meets expectations  
+- 2.5-3.0: Exceeds expectations
+
 Format your response as JSON:
 {
   "summary": "Your analysis summary here",
-  "rating": 4.2
+  "rating": 2.8
 }`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -63,7 +68,7 @@ Format your response as JSON:
         messages: [
           {
             role: 'system',
-            content: 'You are an expert technical recruiter analyzing job applications. Provide honest, detailed assessments.'
+            content: 'You are an expert technical recruiter analyzing job applications. Provide honest, detailed assessments using a 3-star rating scale.'
           },
           {
             role: 'user',

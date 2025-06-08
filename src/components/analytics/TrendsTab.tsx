@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp, TrendingDown, Calendar, Star, BarChart3, Activity } from "lucide-react";
@@ -88,7 +87,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
               <div>
                 <p className="text-sm text-gray-600">Average Rating Trend</p>
                 <p className="text-2xl font-bold">
-                  {recentRatingAvg.toFixed(1)}/5.0
+                  {recentRatingAvg.toFixed(1)}/3.0
                 </p>
                 <div className="flex items-center gap-1 mt-1">
                   {ratingTrend ? (
@@ -144,7 +143,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
                   </div>
                   <div>
                     <p className="font-medium">Applications: {day.applications}</p>
-                    <p className="text-sm text-gray-600">Rating: {day.avgRating.toFixed(1)}/5.0</p>
+                    <p className="text-sm text-gray-600">Rating: {day.avgRating.toFixed(1)}/3.0</p>
                   </div>
                 </div>
                 <div className="w-24">
@@ -172,15 +171,15 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Current Week Average</span>
-                <span className="text-lg font-bold text-yellow-600">{recentRatingAvg.toFixed(1)}/5.0</span>
+                <span className="text-lg font-bold text-yellow-600">{recentRatingAvg.toFixed(1)}/3.0</span>
               </div>
-              <Progress value={(recentRatingAvg / 5) * 100} className="h-3" />
+              <Progress value={(recentRatingAvg / 3) * 100} className="h-3" />
               
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Previous Week Average</span>
-                <span className="text-lg font-bold text-gray-600">{prevRatingAvg.toFixed(1)}/5.0</span>
+                <span className="text-lg font-bold text-gray-600">{prevRatingAvg.toFixed(1)}/3.0</span>
               </div>
-              <Progress value={(prevRatingAvg / 5) * 100} className="h-3" />
+              <Progress value={(prevRatingAvg / 3) * 100} className="h-3" />
               
               <div className="pt-2 border-t">
                 <div className="flex items-center gap-2">

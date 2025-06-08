@@ -25,7 +25,7 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
   const { metrics, pipelineData } = analytics;
 
   const getPerformanceScore = () => {
-    const ratingScore = (metrics.avgRating / 5) * 30;
+    const ratingScore = (metrics.avgRating / 3) * 30;
     const approvalScore = (metrics.approvalRate / 100) * 40;
     const activityScore = Math.min(metrics.applicationsThisWeek / 10, 1) * 30;
     return Math.round(ratingScore + approvalScore + activityScore);

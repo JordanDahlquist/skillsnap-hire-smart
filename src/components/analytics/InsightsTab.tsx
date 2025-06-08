@@ -181,9 +181,9 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium">Quality Score Target</span>
-                <span className="text-sm text-gray-600">{metrics.avgRating.toFixed(1)} / 4.0</span>
+                <span className="text-sm text-gray-600">{metrics.avgRating.toFixed(1)} / 2.5</span>
               </div>
-              <Progress value={Math.min((metrics.avgRating / 4.0) * 100, 100)} className="h-2" />
+              <Progress value={Math.min((metrics.avgRating / 2.5) * 100, 100)} className="h-2" />
             </div>
             
             <div>
@@ -263,7 +263,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
               </div>
               <div className="text-sm text-gray-600">Average Candidate Quality</div>
               <div className="text-xs text-gray-500 mt-1">
-                {metrics.avgRating >= 3.5 ? 'Excellent quality' : 'Room for improvement'}
+                {metrics.avgRating >= 2.5 ? 'Excellent quality' : 'Room for improvement'}
               </div>
             </div>
             

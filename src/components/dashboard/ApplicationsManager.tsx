@@ -64,7 +64,7 @@ export const ApplicationsManager = ({
     }
   };
 
-  // Simple 3-star rating function for backwards compatibility
+  // Simple 3-star rating function
   const getRatingStars = (rating: number | null) => {
     if (!rating) {
       return Array.from({ length: 3 }, (_, i) => (

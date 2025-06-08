@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -62,8 +61,8 @@ export const EnhancedDashboardStats = ({ applications, job }: EnhancedDashboardS
 
   const topExperienceLevel = Object.entries(experienceLevels).sort(([,a], [,b]) => b - a)[0];
 
-  // Quality score based on AI ratings
-  const highQualityApps = applications.filter(app => (app.ai_rating || 0) >= 4).length;
+  // Quality score based on AI ratings (3-star scale)
+  const highQualityApps = applications.filter(app => (app.ai_rating || 0) >= 2.5).length;
   const qualityScore = applications.length > 0 ? Math.round((highQualityApps / applications.length) * 100) : 0;
 
   return (
@@ -216,7 +215,7 @@ export const EnhancedDashboardStats = ({ applications, job }: EnhancedDashboardS
               <div className="text-center p-4 bg-purple-50 rounded-lg">
                 <p className="text-sm text-purple-600 font-medium">Quality Applications</p>
                 <p className="text-2xl font-bold text-purple-900">{highQualityApps}</p>
-                <p className="text-xs text-purple-700">4+ star ratings</p>
+                <p className="text-xs text-purple-700">2.5+ star ratings</p>
               </div>
             </div>
           </CardContent>

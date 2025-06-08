@@ -30,12 +30,9 @@ export const renderAIRating = (rating: number | null) => {
     ));
   }
 
-  // Convert 5-star AI rating to 3-star scale
-  const convertedRating = (rating / 5) * 3;
-  
   return Array.from({ length: 3 }, (_, i) => {
     const starValue = i + 1;
-    const isActive = starValue <= Math.round(convertedRating);
+    const isActive = starValue <= Math.round(rating);
     
     return (
       <Star

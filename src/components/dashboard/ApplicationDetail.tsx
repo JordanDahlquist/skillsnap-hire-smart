@@ -221,13 +221,10 @@ export const ApplicationDetail = ({
         <Star key={i} className="w-5 h-5 text-gray-300" />
       ));
     }
-
-    // Convert 5-star AI rating to 3-star scale
-    const convertedRating = (rating / 5) * 3;
     
     return Array.from({ length: 3 }, (_, i) => {
       const starValue = i + 1;
-      const isActive = starValue <= Math.round(convertedRating);
+      const isActive = starValue <= Math.round(rating);
       
       return (
         <Star
@@ -343,7 +340,7 @@ export const ApplicationDetail = ({
                     </div>
                     <span className="text-xs text-green-600 font-medium min-h-[16px]">
                       {selectedApplication.ai_rating 
-                        ? `${Math.round((selectedApplication.ai_rating / 5) * 3)}/3`
+                        ? `${selectedApplication.ai_rating.toFixed(1)}/3`
                         : 'Not rated'
                       }
                     </span>
