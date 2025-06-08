@@ -81,9 +81,53 @@ export const createOptimizedQueryClient = () => new QueryClient({
       refetchOnMount: true,
       refetchInterval: false,
       
-      // Add timeout for queries
-      queryFn: undefined, // Will be overridden per query
+      // Global error handler for queries
+      onError: (error, query) => {
+        const trackPerformance = withPerformanceTracking(`Query: ${query.queryKey.join('/')}`);
+        trackPerformance();
+        
+        if (environment.enableErrorTracking && error instanceof Error) {
+          const queryError = error as QueryError;
+          
+          // Only track significant errors
+          if (!error.message.includes('auth') && !error.message.includes('JWT')) {
+            errorTrackingService.trackError(
+              error,
+              {
+                component: 'React Query',
+                action: 'Query failed',
+                metadata: { 
+                  queryKey: query.queryKey,
+                  status: queryError.status
+                }
+              },
+              queryError.status && queryError.status >= 500 ? 'high' : 'low'
+            );
+          }
+        }
+        
+        productionLogger.error('Query failed', {
+          component: 'QueryClient',
+          metadata: { 
+            queryKey: query.queryKey,
+            error: error.message
+          }
+        });
+      },
       
+      onSuccess: (data, query) => {
+        const trackPerformance = withPerformanceTracking(`Query: ${query.queryKey.join('/')}`);
+        trackPerformance();
+        
+        if (environment.isDevelopment) {
+          productionLogger.debug('Query succeeded', {
+            component: 'QueryClient',
+            metadata: { queryKey: query.queryKey }
+          });
+        }
+      },
+      
+      // Add timeout for queries
       meta: {
         timeout: environment.apiTimeout
       }
@@ -166,54 +210,6 @@ export const createOptimizedQueryClient = () => new QueryClient({
           });
         }
       }
-    },
-  },
-  
-  // Global error handler
-  queryCache: {
-    onError: (error, query) => {
-      const trackPerformance = withPerformanceTracking(`Query: ${query.queryKey.join('/')}`);
-      trackPerformance();
-      
-      if (environment.enableErrorTracking && error instanceof Error) {
-        const queryError = error as QueryError;
-        
-        // Only track significant errors
-        if (!error.message.includes('auth') && !error.message.includes('JWT')) {
-          errorTrackingService.trackError(
-            error,
-            {
-              component: 'React Query',
-              action: 'Query failed',
-              metadata: { 
-                queryKey: query.queryKey,
-                status: queryError.status
-              }
-            },
-            queryError.status && queryError.status >= 500 ? 'high' : 'low'
-          );
-        }
-      }
-      
-      productionLogger.error('Query failed', {
-        component: 'QueryClient',
-        metadata: { 
-          queryKey: query.queryKey,
-          error: error.message
-        }
-      });
-    },
-    
-    onSuccess: (data, query) => {
-      const trackPerformance = withPerformanceTracking(`Query: ${query.queryKey.join('/')}`);
-      trackPerformance();
-      
-      if (environment.isDevelopment) {
-        productionLogger.debug('Query succeeded', {
-          component: 'QueryClient',
-          metadata: { queryKey: query.queryKey }
-        });
-      }
     }
-  } as any
+  }
 });
