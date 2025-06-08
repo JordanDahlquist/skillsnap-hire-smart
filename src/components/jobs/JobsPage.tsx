@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
@@ -8,7 +7,7 @@ import { useJobStats } from "@/hooks/useJobStats";
 import { useJobSelection } from "@/hooks/useJobSelection";
 import { useJobFiltering } from "@/hooks/useJobFiltering";
 import { useAsyncOperation } from "@/hooks/useAsyncOperation";
-import { CreateRoleModal } from "@/components/CreateRoleModal";
+import { JobCreatorPanel } from "@/components/JobCreatorPanel";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { JobsHeaderSection } from "./JobsHeaderSection";
@@ -19,7 +18,7 @@ import { LOADING_MESSAGES, SUCCESS_MESSAGES } from "@/constants/messages";
 
 export const JobsPage = () => {
   const { user, profile } = useAuth();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const { toast } = useToast();
   const { execute: executeAsync } = useAsyncOperation();
 
@@ -142,14 +141,14 @@ export const JobsPage = () => {
       <div className="min-h-screen bg-gray-50">
         <UnifiedHeader 
           breadcrumbs={breadcrumbs}
-          onCreateRole={() => setIsCreateModalOpen(true)}
+          onCreateRole={() => setIsCreatePanelOpen(true)}
           showCreateButton={true}
         />
 
         <ErrorBoundary>
           <JobsHeaderSection
             userDisplayName={getUserDisplayName()}
-            onCreateJob={() => setIsCreateModalOpen(true)}
+            onCreateJob={() => setIsCreatePanelOpen(true)}
             stats={stats}
             onNeedsAttentionClick={handleNeedsAttentionClick}
             needsAttentionActive={needsAttentionFilter}
@@ -184,7 +183,7 @@ export const JobsPage = () => {
             selectedJobs={selectedJobs}
             onJobSelection={handleJobSelection}
             onSelectAll={handleSelectAll}
-            onCreateJob={() => setIsCreateModalOpen(true)}
+            onCreateJob={() => setIsCreatePanelOpen(true)}
             onRefetch={refetch}
             clearFilters={clearFilters}
             needsAttentionFilter={needsAttentionFilter}
@@ -192,9 +191,9 @@ export const JobsPage = () => {
           />
         </ErrorBoundary>
 
-        <CreateRoleModal 
-          open={isCreateModalOpen} 
-          onOpenChange={setIsCreateModalOpen} 
+        <JobCreatorPanel 
+          open={isCreatePanelOpen} 
+          onOpenChange={setIsCreatePanelOpen} 
         />
       </div>
     </ErrorBoundary>
