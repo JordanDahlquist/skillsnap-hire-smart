@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { apiClient } from "./apiClient";
 import { logger } from "./loggerService";
 
 export const authService = {
@@ -28,21 +27,19 @@ export const authService = {
   },
 
   async fetchProfile(userId: string) {
-    return apiClient.query(async () => {
-      logger.debug('Fetching profile for user:', userId);
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
+    logger.debug('Fetching profile for user:', userId);
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle(); // Use maybeSingle instead of single to handle no results gracefully
 
-      if (error) {
-        logger.error('Profile fetch error:', error);
-        throw error;
-      }
+    if (error) {
+      logger.error('Profile fetch error:', error);
+      throw error;
+    }
 
-      return data;
-    });
+    return data;
   }
 };

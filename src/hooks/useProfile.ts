@@ -27,7 +27,7 @@ export const useProfile = (userId: string | undefined) => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
-  const PROFILE_TIMEOUT = 3000; // 3 second timeout
+  const PROFILE_TIMEOUT = 3000; // 3 second timeout (reduced from 3000)
   const DEBOUNCE_DELAY = 100; // 100ms debounce
 
   const loadProfile = useCallback(async (id: string) => {
@@ -80,15 +80,17 @@ export const useProfile = (userId: string | undefined) => {
           }
           
           if (profileData) {
-            setProfile(profileData);
+            // Type assertion since we know the structure from authService
+            const typedProfile = profileData as UserProfile;
+            setProfile(typedProfile);
             setError(null);
             // Cache the result
             cacheRef.current = {
               userId: id,
-              profile: profileData,
+              profile: typedProfile,
               timestamp: now
             };
-            console.log('Profile loaded:', profileData?.full_name || 'No name');
+            console.log('Profile loaded:', typedProfile?.full_name || 'No name');
           } else {
             setError('Profile not found');
             setProfile(null);
