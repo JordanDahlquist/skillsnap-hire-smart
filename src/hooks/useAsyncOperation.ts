@@ -1,19 +1,23 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { logger } from "@/services/loggerService";
 import { useErrorHandler } from "./useErrorHandler";
-import { useCleanup } from "@/utils/cleanupUtils";
-import { PERFORMANCE_CONSTANTS } from "@/constants/ui";
 
 export const useAsyncOperation = <T = any>() => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const { handleError } = useErrorHandler();
-  const { addAbortController, cleanup } = useCleanup();
+  const abortControllersRef = useRef<Set<AbortController>>(new Set());
 
   useEffect(() => {
-    return cleanup;
-  }, [cleanup]);
+    // Cleanup function to abort all pending operations
+    return () => {
+      abortControllersRef.current.forEach(controller => {
+        controller.abort();
+      });
+      abortControllersRef.current.clear();
+    };
+  }, []);
 
   const execute = useCallback(async (
     operation: () => Promise<T>,
@@ -28,7 +32,7 @@ export const useAsyncOperation = <T = any>() => {
     setError(null);
 
     const controller = new AbortController();
-    addAbortController(controller);
+    abortControllersRef.current.add(controller);
 
     try {
       if (options?.logOperation) {
@@ -80,11 +84,12 @@ export const useAsyncOperation = <T = any>() => {
 
       return null;
     } finally {
+      abortControllersRef.current.delete(controller);
       if (!controller.signal.aborted) {
         setIsLoading(false);
       }
     }
-  }, [handleError, addAbortController]);
+  }, [handleError]);
 
   const reset = useCallback(() => {
     setError(null);
