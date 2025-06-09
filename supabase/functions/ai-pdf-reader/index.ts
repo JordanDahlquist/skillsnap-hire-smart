@@ -7,20 +7,131 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promise<string> {
+// Simple PDF text extraction function
+function extractTextFromPDF(pdfBuffer: Uint8Array): string {
+  try {
+    // Convert PDF buffer to string for text extraction
+    const pdfString = new TextDecoder('latin1').decode(pdfBuffer);
+    
+    // Look for text content in PDF structure
+    let extractedText = '';
+    
+    // Method 1: Extract text from BT...ET blocks (text objects)
+    const textObjectRegex = /BT\s*(.*?)\s*ET/gs;
+    const textObjects = pdfString.match(textObjectRegex);
+    
+    if (textObjects) {
+      for (const textObj of textObjects) {
+        // Extract text from Tj and TJ operators
+        const tjRegex = /\((.*?)\)\s*Tj/g;
+        const tjArrayRegex = /\[(.*?)\]\s*TJ/g;
+        
+        let match;
+        while ((match = tjRegex.exec(textObj)) !== null) {
+          const text = match[1];
+          if (text && text.length > 0) {
+            extractedText += decodeText(text) + ' ';
+          }
+        }
+        
+        while ((match = tjArrayRegex.exec(textObj)) !== null) {
+          const arrayContent = match[1];
+          const textParts = arrayContent.match(/\((.*?)\)/g);
+          if (textParts) {
+            for (const part of textParts) {
+              const text = part.slice(1, -1); // Remove parentheses
+              if (text && text.length > 0) {
+                extractedText += decodeText(text) + ' ';
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Method 2: Fallback - look for readable text patterns in streams
+    if (!extractedText.trim()) {
+      const streamRegex = /stream\s*(.*?)\s*endstream/gs;
+      const streams = pdfString.match(streamRegex);
+      
+      if (streams) {
+        for (const stream of streams) {
+          const contentLines = stream.split('\n');
+          for (const line of contentLines) {
+            // Look for text content in streams, avoiding binary data
+            if (line.includes('(') && line.includes(')') && 
+                !line.includes('<<') && !line.includes('>>') &&
+                line.length < 200) {
+              const textMatch = line.match(/\((.*?)\)/g);
+              if (textMatch) {
+                for (const match of textMatch) {
+                  const text = match.slice(1, -1);
+                  if (text && text.length > 2) {
+                    extractedText += decodeText(text) + ' ';
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Clean up the extracted text
+    let cleanText = extractedText
+      .replace(/\\n/g, '\n')
+      .replace(/\\r/g, '')
+      .replace(/\\t/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // Remove excessive whitespace and normalize
+    cleanText = cleanText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .join('\n');
+    
+    return cleanText;
+  } catch (error) {
+    console.error('PDF extraction error:', error);
+    throw new Error('Failed to extract text from PDF');
+  }
+}
+
+// Helper function to decode PDF text encoding
+function decodeText(text: string): string {
+  try {
+    // Handle common PDF text encodings
+    let decoded = text
+      .replace(/\\n/g, '\n')
+      .replace(/\\r/g, '')
+      .replace(/\\t/g, ' ')
+      .replace(/\\\(/g, '(')
+      .replace(/\\\)/g, ')')
+      .replace(/\\\\/g, '\\');
+    
+    // Handle octal escape sequences
+    decoded = decoded.replace(/\\(\d{3})/g, (match, octal) => {
+      const charCode = parseInt(octal, 8);
+      return charCode >= 32 && charCode <= 126 ? String.fromCharCode(charCode) : ' ';
+    });
+    
+    return decoded;
+  } catch (error) {
+    return text;
+  }
+}
+
+async function cleanTextWithAI(rawText: string, fileName: string): Promise<string> {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
   if (!openAIApiKey) {
-    throw new Error('OpenAI API key not configured');
+    // If no OpenAI key, return the raw text
+    return rawText;
   }
 
   try {
-    console.log(`Processing PDF with AI: ${fileName}`);
-    
-    // Convert PDF to base64
-    const base64Pdf = btoa(String.fromCharCode(...pdfBuffer));
-    
-    // Use OpenAI's document understanding capability with gpt-4o
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -28,27 +139,15 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at extracting text content from PDF documents. Extract ALL the text content from the provided PDF exactly as written, preserving the structure and formatting as much as possible. Do not summarize or rewrite - just extract the complete text content.'
+            content: 'You are an expert at cleaning up text extracted from PDF documents. Clean up the formatting, fix spacing issues, and make the text readable while preserving ALL the original content exactly as written. Do not summarize, rewrite, or change the meaning - just fix formatting issues.'
           },
           {
             role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Please extract all the text content from this PDF file (${fileName}) exactly as written. Return the complete text content without any modifications.`
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:application/pdf;base64,${base64Pdf}`,
-                  detail: 'high'
-                }
-              }
-            ]
+            content: `Please clean up this text extracted from a PDF file (${fileName}). Fix any formatting issues, spacing problems, or encoding artifacts, but preserve all the original content exactly:\n\n${rawText}`
           }
         ],
         max_tokens: 4000,
@@ -57,29 +156,16 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.warn('AI cleanup failed, returning raw text');
+      return rawText;
     }
 
     const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response from OpenAI API');
-    }
-
-    const extractedText = data.choices[0].message.content.trim();
-    
-    if (!extractedText || extractedText.length < 10) {
-      throw new Error('Could not extract meaningful content from the PDF. The document may be corrupted or contain only images.');
-    }
-
-    console.log(`Successfully extracted ${extractedText.length} characters using AI`);
-    return extractedText;
+    return data.choices[0].message.content.trim() || rawText;
 
   } catch (error) {
-    console.error('Error in AI text extraction:', error);
-    throw new Error(`Failed to extract text using AI: ${error.message}`);
+    console.warn('AI cleanup error, returning raw text:', error);
+    return rawText;
   }
 }
 
@@ -90,7 +176,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('AI PDF reading request received');
+    console.log('PDF text extraction request received');
     
     const formData = await req.formData();
     const pdfFile = formData.get('pdf') as File;
@@ -99,21 +185,32 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
     
-    console.log(`Processing PDF with AI: ${pdfFile.name}, size: ${pdfFile.size} bytes`);
+    console.log(`Processing PDF: ${pdfFile.name}, size: ${pdfFile.size} bytes`);
     
     // Convert file to buffer
     const arrayBuffer = await pdfFile.arrayBuffer();
     const pdfBuffer = new Uint8Array(arrayBuffer);
     
-    // Extract text using AI
-    const extractedText = await extractTextWithAI(pdfBuffer, pdfFile.name);
+    // Extract text directly from PDF
+    const rawText = extractTextFromPDF(pdfBuffer);
+    
+    if (!rawText || rawText.length < 10) {
+      throw new Error('Could not extract meaningful text from PDF. Please ensure the PDF contains readable text.');
+    }
+    
+    console.log(`Successfully extracted ${rawText.length} characters`);
+    
+    // Clean up the text with AI if available
+    const cleanedText = await cleanTextWithAI(rawText, pdfFile.name);
+    
+    console.log(`Final text length after AI cleanup: ${cleanedText.length} characters`);
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        text: extractedText,
+        text: cleanedText,
         fileName: pdfFile.name,
-        method: 'ai-direct'
+        method: 'direct-extraction'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -121,11 +218,11 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    console.error('Error processing PDF with AI:', error);
+    console.error('Error processing PDF:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'Failed to process PDF with AI' 
+        error: error.message || 'Failed to process PDF' 
       }),
       { 
         status: 400,
