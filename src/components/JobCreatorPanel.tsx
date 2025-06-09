@@ -274,15 +274,34 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
   };
 
   const nextStep = () => {
+    // Special case: Skip Step 2 if using original PDF content
+    if (currentStep === 1 && uploadedPdfContent && useOriginalPdf === true) {
+      setGeneratedJobPost(formData.description);
+      setCurrentStep(3); // Skip directly to Step 3
+      toast({
+        title: "Using Original Content",
+        description: "Skipping AI generation, using your uploaded job description as-is."
+      });
+      return;
+    }
+    
+    // Normal step progression
     if (currentStep < 4) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
+    // Special case: If we're on Step 3 and came from Step 1 (skipped Step 2), go back to Step 1
+    if (currentStep === 3 && uploadedPdfContent && useOriginalPdf === true) {
+      setCurrentStep(1);
+      return;
+    }
+    
+    // Normal step progression
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   const canProceedToStep2 = formData.title && formData.description;
-  const canProceedToStep3 = generatedJobPost;
+  const canProceedToStep3 = generatedJobPost || (uploadedPdfContent && useOriginalPdf === true);
   const canActivate = generatedJobPost && generatedSkillsTest;
 
   if (!open) return null;
@@ -302,20 +321,27 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
 
         {/* Step Indicator */}
         <div className="flex items-center justify-center py-2 px-4 border-b flex-shrink-0">
-          {[1, 2, 3, 4].map((step) => (
-            <div key={step} className="flex items-center">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                currentStep >= step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-              }`}>
-                {step}
+          {[1, 2, 3, 4].map((step) => {
+            // Mark Step 2 as completed if we're using original PDF and are on Step 3 or 4
+            const isCompleted = currentStep >= step || 
+              (step === 2 && uploadedPdfContent && useOriginalPdf === true && currentStep >= 3);
+            
+            return (
+              <div key={step} className="flex items-center">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                  isCompleted ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                }`}>
+                  {step}
+                </div>
+                {step < 4 && (
+                  <div className={`w-8 h-1 mx-1 ${
+                    currentStep > step || (step === 2 && uploadedPdfContent && useOriginalPdf === true && currentStep >= 3)
+                      ? 'bg-blue-600' : 'bg-gray-200'
+                  }`} />
+                )}
               </div>
-              {step < 4 && (
-                <div className={`w-8 h-1 mx-1 ${
-                  currentStep > step ? 'bg-blue-600' : 'bg-gray-200'
-                }`} />
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Content Area - Flexible */}
@@ -411,7 +437,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
                     <div className="bg-green-50 border border-green-200 rounded p-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-green-800">
-                          {useOriginalPdf ? "Using original PDF content" : "AI will rewrite PDF content"}
+                          {useOriginalPdf ? "Using original PDF content - will skip AI generation" : "AI will rewrite PDF content"}
                         </span>
                         <Button
                           variant="ghost"
@@ -866,7 +892,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
                 }
                 size="sm"
               >
-                Next
+                {currentStep === 1 && uploadedPdfContent && useOriginalPdf === true ? 'Skip to Skills Test' : 'Next'}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             )}
