@@ -47,7 +47,7 @@ serve(async (req) => {
       .eq('id', user.id)
       .single()
 
-    // Get user's jobs and applications for context
+    // Get user's jobs with comprehensive application data
     const { data: jobs } = await supabase
       .from('jobs')
       .select(`
@@ -57,7 +57,33 @@ serve(async (req) => {
         created_at,
         role_type,
         experience_level,
-        applications(id, name, email, status, ai_rating, manual_rating, created_at)
+        required_skills,
+        description,
+        employment_type,
+        applications(
+          id, 
+          name, 
+          email, 
+          status, 
+          ai_rating, 
+          manual_rating, 
+          created_at,
+          ai_summary,
+          work_experience,
+          education,
+          skills,
+          experience,
+          portfolio_url,
+          github_url,
+          linkedin_url,
+          location,
+          phone,
+          pipeline_stage,
+          rejection_reason,
+          parsed_resume_data,
+          cover_letter,
+          available_start_date
+        )
       `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
@@ -77,30 +103,127 @@ serve(async (req) => {
       content: msg.message_content
     })) || []
 
-    // Build context about user's hiring data
+    // Build comprehensive context about hiring data
     const totalJobs = jobs?.length || 0
     const activeJobs = jobs?.filter(job => job.status === 'active').length || 0
     const allApplications = jobs?.flatMap(job => job.applications || []) || []
     const pendingApplications = allApplications.filter(app => app.status === 'pending').length
-    const topCandidates = allApplications
+    const reviewedApplications = allApplications.filter(app => app.status === 'reviewed').length
+    const topRatedCandidates = allApplications
       .filter(app => (app.ai_rating && app.ai_rating >= 2.5) || (app.manual_rating && app.manual_rating >= 2))
-      .slice(0, 5)
+      .sort((a, b) => {
+        const aRating = a.manual_rating || a.ai_rating || 0
+        const bRating = b.manual_rating || b.ai_rating || 0
+        return bRating - aRating
+      })
+      .slice(0, 10)
 
-    const systemPrompt = `You are Scout, an AI hiring assistant for ${profile?.full_name || 'the user'} at ${profile?.company_name || 'their company'}. You help with hiring decisions, candidate analysis, and job management.
+    // Create detailed candidate profiles for AI context
+    const candidateProfiles = allApplications.map(app => {
+      const skillsArray = Array.isArray(app.skills) ? app.skills : []
+      const workExperience = Array.isArray(app.work_experience) ? app.work_experience : []
+      const education = Array.isArray(app.education) ? app.education : []
+      
+      return {
+        id: app.id,
+        name: app.name,
+        email: app.email,
+        status: app.status,
+        ai_rating: app.ai_rating,
+        manual_rating: app.manual_rating,
+        pipeline_stage: app.pipeline_stage,
+        rejection_reason: app.rejection_reason,
+        ai_summary: app.ai_summary,
+        location: app.location,
+        skills: skillsArray.map(skill => typeof skill === 'string' ? skill : skill?.name || skill?.skill).filter(Boolean),
+        experience_years: app.experience,
+        work_history: workExperience.map(exp => ({
+          company: exp?.company || exp?.employer,
+          title: exp?.title || exp?.position,
+          duration: exp?.duration || `${exp?.start_date} - ${exp?.end_date}`,
+          description: exp?.description
+        })).filter(exp => exp.company || exp.title),
+        education_background: education.map(edu => ({
+          institution: edu?.institution || edu?.school,
+          degree: edu?.degree,
+          field: edu?.field || edu?.major,
+          year: edu?.year || edu?.graduation_year
+        })).filter(edu => edu.institution || edu.degree),
+        portfolio_url: app.portfolio_url,
+        github_url: app.github_url,
+        linkedin_url: app.linkedin_url,
+        available_start_date: app.available_start_date,
+        cover_letter_excerpt: app.cover_letter ? app.cover_letter.substring(0, 200) + '...' : null
+      }
+    })
 
-Current hiring context:
+    // Create job context with requirements
+    const jobContext = jobs?.map(job => ({
+      id: job.id,
+      title: job.title,
+      status: job.status,
+      role_type: job.role_type,
+      experience_level: job.experience_level,
+      required_skills: job.required_skills,
+      employment_type: job.employment_type,
+      application_count: job.applications?.length || 0,
+      description_excerpt: job.description ? job.description.substring(0, 300) + '...' : null
+    })) || []
+
+    const systemPrompt = `You are Scout, an AI hiring assistant for ${profile?.full_name || 'the user'} at ${profile?.company_name || 'their company'}. You help analyze candidates, make hiring recommendations, and optimize the recruitment process.
+
+CURRENT HIRING CONTEXT:
 - Total jobs: ${totalJobs} (${activeJobs} active)
 - Total applications: ${allApplications.length}
 - Pending reviews: ${pendingApplications}
-- Top candidates available: ${topCandidates.length}
+- Reviewed applications: ${reviewedApplications}
+- Top-rated candidates: ${topRatedCandidates.length}
 
-You can reference specific jobs and candidates in your responses. When discussing jobs or candidates, you can suggest showing them as interactive cards by mentioning job IDs or application IDs in your response.
+AVAILABLE JOBS:
+${jobContext.map(job => `
+• ${job.title} (ID: ${job.id})
+  - Status: ${job.status}
+  - Type: ${job.role_type} | ${job.employment_type}
+  - Experience Level: ${job.experience_level}
+  - Required Skills: ${job.required_skills}
+  - Applications: ${job.application_count}
+  ${job.description_excerpt ? `- Description: ${job.description_excerpt}` : ''}
+`).join('\n')}
 
-Be conversational, helpful, and proactive. Ask follow-up questions. Offer specific insights about their hiring pipeline. If they ask about jobs or candidates, provide relevant analysis and suggest actionable next steps.
+CANDIDATE PROFILES:
+${candidateProfiles.slice(0, 20).map(candidate => `
+• ${candidate.name} (ID: ${candidate.id})
+  - Status: ${candidate.status} | Stage: ${candidate.pipeline_stage || 'applied'}
+  - Ratings: Your=${candidate.manual_rating || 'unrated'}, AI=${candidate.ai_rating || 'unrated'}
+  - Location: ${candidate.location || 'Not specified'}
+  - Skills: ${candidate.skills.join(', ') || 'Not specified'}
+  - Experience: ${candidate.experience_years || 'Not specified'} years
+  ${candidate.ai_summary ? `- AI Summary: ${candidate.ai_summary}` : ''}
+  ${candidate.work_history.length > 0 ? `- Recent Role: ${candidate.work_history[0]?.title} at ${candidate.work_history[0]?.company}` : ''}
+  ${candidate.education_background.length > 0 ? `- Education: ${candidate.education_background[0]?.degree} from ${candidate.education_background[0]?.institution}` : ''}
+  ${candidate.portfolio_url ? `- Portfolio: ${candidate.portfolio_url}` : ''}
+  ${candidate.github_url ? `- GitHub: ${candidate.github_url}` : ''}
+  ${candidate.rejection_reason ? `- Rejection Reason: ${candidate.rejection_reason}` : ''}
+`).join('\n')}
 
-Available jobs: ${jobs?.map(job => `${job.title} (ID: ${job.id}, Status: ${job.status}, ${job.applications?.length || 0} applications)`).join(', ')}
+YOUR CAPABILITIES:
+1. **Candidate Analysis**: Analyze individual candidates' qualifications, experience, and fit for specific roles
+2. **Comparative Assessment**: Compare multiple candidates and recommend the best fits
+3. **Hiring Recommendations**: Suggest who to interview, hire, or reject based on comprehensive data
+4. **Pipeline Optimization**: Recommend improvements to your hiring process
+5. **Skill Matching**: Match candidate skills with job requirements
+6. **Decision Support**: Provide data-driven insights for hiring decisions
 
-Respond naturally and conversationally. Keep responses concise but informative.`
+IMPORTANT INSTRUCTIONS:
+- When discussing specific candidates or jobs, you can reference them by ID to show interactive cards
+- Provide actionable recommendations with reasoning based on the actual candidate data
+- Be specific about why you recommend certain candidates over others
+- Consider both technical skills and cultural fit when making recommendations
+- Suggest specific next steps for each candidate (interview, technical assessment, hire, reject)
+- If asked about top candidates, rank them by fit and explain your reasoning
+- Always ground your recommendations in the actual candidate data provided
+
+Be conversational, insightful, and proactive. Ask follow-up questions to better understand hiring needs. Provide specific, actionable advice based on the comprehensive candidate data available.`
 
     // Prepare OpenAI messages
     const messages = [
@@ -109,7 +232,7 @@ Respond naturally and conversationally. Keep responses concise but informative.`
       { role: 'user', content: message }
     ]
 
-    console.log('Calling OpenAI with messages:', messages.length)
+    console.log('Calling OpenAI with comprehensive candidate data:', candidateProfiles.length, 'candidates')
 
     // Call OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -121,7 +244,7 @@ Respond naturally and conversationally. Keep responses concise but informative.`
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages,
-        max_tokens: 500,
+        max_tokens: 800,
         temperature: 0.7,
       }),
     })
@@ -139,8 +262,8 @@ Respond naturally and conversationally. Keep responses concise but informative.`
     const jobIds: string[] = []
     const applicationIds: string[] = []
     
-    // Extract job IDs from response
-    const jobMatches = aiMessage.match(/job(?:\s+ID)?[:\s]+([a-f0-9-]{36})/gi)
+    // Extract job IDs from response (matches: job ID: uuid, job id: uuid, etc.)
+    const jobMatches = aiMessage.match(/job\s+(?:ID|id)[:\s]+([a-f0-9-]{36})/gi)
     if (jobMatches) {
       jobMatches.forEach((match: string) => {
         const id = match.match(/([a-f0-9-]{36})/)?.[1]
@@ -150,8 +273,8 @@ Respond naturally and conversationally. Keep responses concise but informative.`
       })
     }
 
-    // Extract application IDs from response  
-    const appMatches = aiMessage.match(/(?:candidate|application)(?:\s+ID)?[:\s]+([a-f0-9-]{36})/gi)
+    // Extract application IDs from response (matches: candidate ID: uuid, ID: uuid, etc.)
+    const appMatches = aiMessage.match(/(?:candidate|application|ID)[:\s]+([a-f0-9-]{36})/gi)
     if (appMatches) {
       appMatches.forEach((match: string) => {
         const id = match.match(/([a-f0-9-]{36})/)?.[1]
@@ -228,7 +351,11 @@ Respond naturally and conversationally. Keep responses concise but informative.`
       candidateCards = applicationsData || []
     }
 
-    console.log('Response prepared with cards:', { jobCards: jobCards.length, candidateCards: candidateCards.length })
+    console.log('Response prepared with enhanced context:', { 
+      candidateProfiles: candidateProfiles.length,
+      jobCards: jobCards.length, 
+      candidateCards: candidateCards.length 
+    })
 
     return new Response(
       JSON.stringify({
