@@ -1,13 +1,13 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText } from "lucide-react";
+import { FileText, Eye } from "lucide-react";
 import { PdfUpload } from "@/components/PdfUpload";
 import { JobFormData, JobCreatorActions } from "./types";
+import { useState } from "react";
 
 interface Step1BasicInfoProps {
   formData: JobFormData;
@@ -24,10 +24,12 @@ export const Step1BasicInfo = ({
   useOriginalPdf,
   actions
 }: Step1BasicInfoProps) => {
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+
   const handlePdfUpload = (content: string, fileName: string) => {
     actions.setUploadedPdfContent(content);
     actions.setPdfFileName(fileName);
-    actions.updateFormData('description', content);
+    // Don't automatically update the description field - let user choose
     actions.setUseOriginalPdf(null);
   };
 
@@ -35,7 +37,23 @@ export const Step1BasicInfo = ({
     actions.setUploadedPdfContent(null);
     actions.setPdfFileName(null);
     actions.setUseOriginalPdf(null);
-    actions.updateFormData('description', "");
+    // Only clear description if it was set from PDF
+    if (uploadedPdfContent && formData.description === uploadedPdfContent) {
+      actions.updateFormData('description', "");
+    }
+  };
+
+  const handleKeepOriginal = () => {
+    actions.setUseOriginalPdf(true);
+    // Don't update the description field - keep original PDF content separate
+  };
+
+  const handleAiRewrite = () => {
+    actions.setUseOriginalPdf(false);
+    // Update description field with PDF content for AI to rewrite
+    if (uploadedPdfContent) {
+      actions.updateFormData('description', uploadedPdfContent);
+    }
   };
 
   return (
@@ -74,7 +92,12 @@ export const Step1BasicInfo = ({
 
         <div>
           <Label htmlFor="description" className="text-sm">Job Description *</Label>
-          <p className="text-xs text-gray-500 mb-1">Basic info for AI to generate professional job description</p>
+          <p className="text-xs text-gray-500 mb-1">
+            {uploadedPdfContent && useOriginalPdf === true 
+              ? "PDF content will be used as job description"
+              : "Basic info for AI to generate professional job description"
+            }
+          </p>
           <Textarea
             id="description"
             value={formData.description}
@@ -83,6 +106,7 @@ export const Step1BasicInfo = ({
             rows={8}
             className="mt-1"
             required
+            disabled={uploadedPdfContent && useOriginalPdf === true}
           />
         </div>
 
@@ -95,16 +119,33 @@ export const Step1BasicInfo = ({
           
           {uploadedPdfContent && useOriginalPdf === null && (
             <div className="bg-blue-50 border border-blue-200 rounded p-2">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-medium text-blue-800">PDF Content Loaded</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPdfPreview(!showPdfPreview)}
+                  className="text-xs h-5 px-1 text-blue-600 hover:text-blue-800"
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  {showPdfPreview ? 'Hide' : 'Preview'}
+                </Button>
               </div>
+              
+              {showPdfPreview && (
+                <div className="mb-2 p-2 bg-white border rounded text-xs max-h-32 overflow-y-auto">
+                  {uploadedPdfContent.substring(0, 500)}
+                  {uploadedPdfContent.length > 500 && '...'}
+                </div>
+              )}
+              
               <p className="text-xs text-blue-700 mb-2">How would you like to use this content?</p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => actions.setUseOriginalPdf(true)}
+                  onClick={handleKeepOriginal}
                   className="text-xs h-6 px-2"
                 >
                   Keep Original
@@ -112,7 +153,7 @@ export const Step1BasicInfo = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => actions.setUseOriginalPdf(false)}
+                  onClick={handleAiRewrite}
                   className="text-xs h-6 px-2"
                 >
                   Have AI Rewrite
@@ -125,7 +166,10 @@ export const Step1BasicInfo = ({
             <div className="bg-green-50 border border-green-200 rounded p-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-green-800">
-                  {useOriginalPdf ? "Using original PDF content - will skip AI generation" : "AI will rewrite PDF content"}
+                  {useOriginalPdf 
+                    ? "Using original PDF content - will skip AI generation" 
+                    : "AI will rewrite PDF content"
+                  }
                 </span>
                 <Button
                   variant="ghost"

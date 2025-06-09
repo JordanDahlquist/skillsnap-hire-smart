@@ -7,9 +7,10 @@ export const generateJobPost = async (
   uploadedPdfContent: string | null,
   useOriginalPdf: boolean | null
 ) => {
-  // If user chose to use original PDF content, skip generation
+  // If user chose to use original PDF content, return it directly
   if (uploadedPdfContent && useOriginalPdf === true) {
-    return { jobPost: formData.description };
+    console.log('Using original PDF content as job post');
+    return { jobPost: uploadedPdfContent };
   }
 
   const jobDataPayload = {
@@ -20,7 +21,9 @@ export const generateJobPost = async (
     budget: formData.budget,
     skills: formData.skills,
     location: formData.location,
-    description: formData.description
+    description: formData.description,
+    // Include PDF content for AI rewriting if available
+    pdfContent: uploadedPdfContent && useOriginalPdf === false ? uploadedPdfContent : null
   };
 
   console.log('Sending job data to AI:', jobDataPayload);

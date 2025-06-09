@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -64,7 +63,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
   };
 
   const handleGenerateJobPost = async () => {
-    if (!state.formData.title || !state.formData.description) {
+    if (!state.formData.title || (!state.formData.description && !(state.uploadedPdfContent && state.useOriginalPdf === true))) {
       toast({
         title: "Missing Information",
         description: "Please fill in the job title and description first.",
@@ -82,14 +81,24 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
       );
       
       actions.setGeneratedJobPost(data.jobPost);
-      toast({
-        title: "Job Post Generated!",
-        description: state.uploadedPdfContent && state.useOriginalPdf === false 
-          ? "Your PDF content has been rewritten by AI." 
-          : state.uploadedPdfContent && state.useOriginalPdf === true
-          ? "Using your uploaded job description as-is."
-          : "Your AI-powered job posting is ready for review."
-      });
+      
+      // Improved toast messages based on the actual workflow
+      if (state.uploadedPdfContent && state.useOriginalPdf === true) {
+        toast({
+          title: "Original Content Ready!",
+          description: "Using your uploaded PDF content as the job post."
+        });
+      } else if (state.uploadedPdfContent && state.useOriginalPdf === false) {
+        toast({
+          title: "Job Post Generated!",
+          description: "AI has rewritten your PDF content into a professional job posting."
+        });
+      } else {
+        toast({
+          title: "Job Post Generated!",
+          description: "Your AI-powered job posting is ready for review."
+        });
+      }
     } catch (error) {
       console.error('Error generating job post:', error);
       toast({
@@ -182,11 +191,12 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
   const nextStep = () => {
     // Special case: Skip Step 2 if using original PDF content
     if (state.currentStep === 1 && state.uploadedPdfContent && state.useOriginalPdf === true) {
-      actions.setGeneratedJobPost(state.formData.description);
+      // Set the job post content directly from PDF
+      actions.setGeneratedJobPost(state.uploadedPdfContent);
       actions.setCurrentStep(3);
       toast({
         title: "Using Original Content",
-        description: "Skipping AI generation, using your uploaded job description as-is."
+        description: "Skipping AI generation, proceeding to skills test creation."
       });
       return;
     }
@@ -204,7 +214,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
     if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
   };
 
-  const canProceedToStep2 = state.formData.title && state.formData.description;
+  const canProceedToStep2 = state.formData.title && (state.formData.description || (state.uploadedPdfContent && state.useOriginalPdf === true));
   const canProceedToStep3 = state.generatedJobPost || (state.uploadedPdfContent && state.useOriginalPdf === true);
   const canActivate = state.generatedJobPost && state.generatedSkillsTest;
 
