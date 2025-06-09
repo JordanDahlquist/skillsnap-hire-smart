@@ -3,12 +3,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScoutMessage } from './ScoutMessage';
+import { ChatInput } from './ChatInput';
 import { logger } from '@/services/loggerService';
 
 interface Message {
@@ -174,13 +173,6 @@ export const ScoutChat = ({ conversationId, onConversationUpdate }: ScoutChatPro
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
   if (!user) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -190,50 +182,39 @@ export const ScoutChat = ({ conversationId, onConversationUpdate }: ScoutChatPro
   }
 
   return (
-    <Card className="h-full flex flex-col border-0 shadow-none">
-      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-        <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
-          <div className="px-6 py-4 space-y-4" ref={messagesContainerRef}>
-            {messages.map((message) => (
-              <ScoutMessage 
-                key={message.id} 
-                message={message}
-              />
-            ))}
-            {isLoading && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Bot className="w-5 h-5" />
-                <span className="text-sm">Scout is thinking...</span>
-                <div className="flex gap-1">
-                  <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce"></div>
-                  <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+    <div className="h-full flex flex-col">
+      <Card className="flex-1 flex flex-col border-0 shadow-none min-h-0">
+        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+          <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
+            <div className="px-6 py-4 space-y-6 pb-8" ref={messagesContainerRef}>
+              {messages.map((message) => (
+                <ScoutMessage 
+                  key={message.id} 
+                  message={message}
+                />
+              ))}
+              {isLoading && (
+                <div className="flex items-center gap-3 text-muted-foreground px-4 py-3 rounded-lg bg-muted/30">
+                  <Bot className="w-5 h-5 shrink-0" />
+                  <span className="text-sm font-medium">Scout is thinking...</span>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-        
-        <div className="border-t p-4 flex-shrink-0">
-          <div className="flex gap-2">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask Scout anything about your hiring pipeline..."
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button 
-              onClick={sendMessage} 
-              disabled={!inputValue.trim() || isLoading}
-              size="icon"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+              )}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+      
+      <ChatInput
+        value={inputValue}
+        onChange={setInputValue}
+        onSubmit={sendMessage}
+        isLoading={isLoading}
+      />
+    </div>
   );
 };
