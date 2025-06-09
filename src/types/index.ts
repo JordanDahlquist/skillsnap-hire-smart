@@ -1,4 +1,3 @@
-
 export interface Application {
   id: string;
   name: string;
@@ -14,6 +13,7 @@ export interface Application {
   answer_3: string | null;
   manual_rating: number | null;
   rejection_reason: string | null;
+  pipeline_stage: string | null;
 }
 
 export interface Job {

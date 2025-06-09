@@ -1,5 +1,8 @@
+
+import { useState } from "react";
 import { ApplicationsList } from "./ApplicationsList";
 import { ApplicationDetail } from "./ApplicationDetail";
+import { HiringStagesNav } from "./HiringStagesNav";
 import { getTimeAgo } from "@/utils/dateUtils";
 
 interface Application {
@@ -53,6 +56,8 @@ export const ApplicationsManager = ({
   onApplicationUpdate,
   job
 }: ApplicationsManagerProps) => {
+  const [selectedStage, setSelectedStage] = useState<string | null>(null);
+
   const getStatusColor = (status: string, manualRating: number | null = null) => {
     // If status is "reviewed" but there's no manual rating, show as pending
     if (status === "reviewed" && !manualRating) {
@@ -81,31 +86,51 @@ export const ApplicationsManager = ({
     ));
   };
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-1">
-        <ApplicationsList 
-          applications={applications}
-          selectedApplication={selectedApplication}
-          onSelectApplication={onSelectApplication}
-          getStatusColor={getStatusColor}
-          getTimeAgo={getTimeAgo}
-          selectedApplications={selectedApplications}
-          onSelectApplications={onSelectApplications}
-          onSendEmail={onSendEmail}
-        />
-      </div>
+  // Filter applications by selected stage
+  const filteredApplications = selectedStage 
+    ? applications.filter(app => {
+        const appStage = app.pipeline_stage || 'applied';
+        return appStage === selectedStage;
+      })
+    : applications;
 
-      <div className="lg:col-span-2">
-        <ApplicationDetail 
-          selectedApplication={selectedApplication}
-          applications={applications}
-          job={job}
-          getStatusColor={(status: string) => getStatusColor(status, selectedApplication?.manual_rating)}
-          getRatingStars={getRatingStars}
-          getTimeAgo={getTimeAgo}
-          onApplicationUpdate={onApplicationUpdate}
-        />
+  return (
+    <div className="space-y-0">
+      {/* Hiring Stages Navigation */}
+      <HiringStagesNav
+        jobId={job.id}
+        applications={applications}
+        selectedStage={selectedStage}
+        onStageSelect={setSelectedStage}
+      />
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6">
+        <div className="lg:col-span-1">
+          <ApplicationsList 
+            applications={filteredApplications}
+            selectedApplication={selectedApplication}
+            onSelectApplication={onSelectApplication}
+            getStatusColor={getStatusColor}
+            getTimeAgo={getTimeAgo}
+            selectedApplications={selectedApplications}
+            onSelectApplications={onSelectApplications}
+            onSendEmail={onSendEmail}
+            jobId={job.id}
+          />
+        </div>
+
+        <div className="lg:col-span-2">
+          <ApplicationDetail 
+            selectedApplication={selectedApplication}
+            applications={filteredApplications}
+            job={job}
+            getStatusColor={(status: string) => getStatusColor(status, selectedApplication?.manual_rating)}
+            getRatingStars={getRatingStars}
+            getTimeAgo={getTimeAgo}
+            onApplicationUpdate={onApplicationUpdate}
+          />
+        </div>
       </div>
     </div>
   );

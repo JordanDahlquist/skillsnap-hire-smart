@@ -31,6 +31,7 @@ export type Database = {
           name: string
           parsed_resume_data: Json | null
           phone: string | null
+          pipeline_stage: string | null
           portfolio: string | null
           portfolio_url: string | null
           rejection_reason: string | null
@@ -61,6 +62,7 @@ export type Database = {
           name: string
           parsed_resume_data?: Json | null
           phone?: string | null
+          pipeline_stage?: string | null
           portfolio?: string | null
           portfolio_url?: string | null
           rejection_reason?: string | null
@@ -91,6 +93,7 @@ export type Database = {
           name?: string
           parsed_resume_data?: Json | null
           phone?: string | null
+          pipeline_stage?: string | null
           portfolio?: string | null
           portfolio_url?: string | null
           rejection_reason?: string | null
@@ -352,6 +355,47 @@ export type Database = {
           },
           {
             foreignKeyName: "email_threads_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hiring_stages: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_default: boolean | null
+          job_id: string | null
+          name: string
+          order_index: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          job_id?: string | null
+          name: string
+          order_index: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          job_id?: string | null
+          name?: string
+          order_index?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hiring_stages_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"

@@ -2,6 +2,7 @@
 import React, { memo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { StageSelector } from './StageSelector';
 import { logger } from '@/services/loggerService';
 import { renderManualRating, renderAIRating } from './utils/ratingUtils';
 
@@ -30,6 +31,7 @@ interface ApplicationItemProps {
   getTimeAgo: (dateString: string) => string;
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
+  jobId?: string;
 }
 
 export const ApplicationItem = memo(({ 
@@ -39,7 +41,8 @@ export const ApplicationItem = memo(({
   getStatusColor, 
   getTimeAgo,
   selectedApplications = [],
-  onSelectApplications
+  onSelectApplications,
+  jobId
 }: ApplicationItemProps) => {
   const handleSelectApplication = useCallback((applicationId: string, checked: boolean) => {
     if (onSelectApplications) {
@@ -91,12 +94,24 @@ export const ApplicationItem = memo(({
               {application.email}
             </p>
             
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <Badge className={getStatusColor(application.status, application.manual_rating)}>
                   {displayStatus}
                 </Badge>
               </div>
+              
+              {/* Stage Selector */}
+              {jobId && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <StageSelector
+                    jobId={jobId}
+                    currentStage={application.pipeline_stage}
+                    applicationId={application.id}
+                    size="sm"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Rating Section */}

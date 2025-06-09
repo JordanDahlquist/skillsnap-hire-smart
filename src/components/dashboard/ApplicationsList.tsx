@@ -29,6 +29,7 @@ interface ApplicationsListProps {
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
   onSendEmail?: () => void;
+  jobId?: string;
 }
 
 export const ApplicationsList = memo(({
@@ -39,7 +40,8 @@ export const ApplicationsList = memo(({
   getTimeAgo,
   selectedApplications = [],
   onSelectApplications,
-  onSendEmail
+  onSendEmail,
+  jobId
 }: ApplicationsListProps) => {
   return (
     <div className="bg-white rounded-lg border border-gray-200">
@@ -54,7 +56,7 @@ export const ApplicationsList = memo(({
       <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
         {applications.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
-            No applications yet for this job.
+            No applications in this stage yet.
           </div>
         ) : (
           applications.map((application) => (
@@ -67,6 +69,7 @@ export const ApplicationsList = memo(({
               getTimeAgo={getTimeAgo}
               selectedApplications={selectedApplications}
               onSelectApplications={onSelectApplications}
+              jobId={jobId}
             />
           ))
         )}
