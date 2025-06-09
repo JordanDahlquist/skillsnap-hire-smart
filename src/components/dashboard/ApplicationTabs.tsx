@@ -1,5 +1,3 @@
-
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,25 +5,21 @@ import { Separator } from "@/components/ui/separator";
 import { User, FileText, MessageSquare, Brain, Video } from "lucide-react";
 import { Application } from "@/types";
 import { safeParseSkillsTestResponses } from "@/utils/typeGuards";
-
 interface ApplicationTabsProps {
   application: Application;
   getStatusColor: (status: string, manualRating?: number | null) => string;
   getRatingStars: (rating: number | null) => JSX.Element[];
   getTimeAgo: (dateString: string) => string;
 }
-
 export const ApplicationTabs = ({
   application,
   getStatusColor,
   getRatingStars,
-  getTimeAgo,
+  getTimeAgo
 }: ApplicationTabsProps) => {
   const skillsTestResponses = safeParseSkillsTestResponses(application.skills_test_responses);
   const hasSkillsTest = skillsTestResponses.length > 0;
-
-  return (
-    <Tabs defaultValue="overview" className="w-full">
+  return <Tabs defaultValue="overview" className="w-full">
       <TabsList className={`grid w-full grid-cols-2 ${hasSkillsTest ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
         <TabsTrigger value="overview" className="flex items-center gap-1">
           <User className="w-4 h-4" />
@@ -35,14 +29,12 @@ export const ApplicationTabs = ({
           <MessageSquare className="w-4 h-4" />
           Responses
         </TabsTrigger>
-        {hasSkillsTest && (
-          <TabsTrigger value="skills" className="flex items-center gap-1">
+        {hasSkillsTest && <TabsTrigger value="skills" className="flex items-center gap-1">
             <Brain className="w-4 h-4" />
             Skills Test
-          </TabsTrigger>
-        )}
+          </TabsTrigger>}
         <TabsTrigger value="video" className="flex items-center gap-1">
-          <Video className="w-4 h-4" />
+          <Video className="w-5 h-5" />
           Video Interview
         </TabsTrigger>
         <TabsTrigger value="files" className="flex items-center gap-1">
@@ -71,44 +63,32 @@ export const ApplicationTabs = ({
               </span>
             </div>
 
-            {application.ai_rating && (
-              <div className="flex justify-between items-center">
+            {application.ai_rating && <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">AI Rating</span>
                 <div className="flex items-center gap-1">
                   {getRatingStars(application.ai_rating)}
                   <span className="text-sm ml-1">({application.ai_rating}/3)</span>
                 </div>
-              </div>
-            )}
+              </div>}
 
-            {application.manual_rating && (
-              <div className="flex justify-between items-center">
+            {application.manual_rating && <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Manual Rating</span>
                 <div className="flex items-center gap-1">
                   {getRatingStars(application.manual_rating)}
                   <span className="text-sm ml-1">({application.manual_rating}/3)</span>
                 </div>
-              </div>
-            )}
+              </div>}
 
-            {application.portfolio && (
-              <div className="flex justify-between items-center">
+            {application.portfolio && <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Portfolio</span>
-                <a
-                  href={application.portfolio}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline max-w-[200px] truncate"
-                >
+                <a href={application.portfolio} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline max-w-[200px] truncate">
                   View Portfolio
                 </a>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
 
-        {application.ai_summary && (
-          <Card>
+        {application.ai_summary && <Card>
             <CardHeader>
               <CardTitle className="text-sm">AI Analysis</CardTitle>
             </CardHeader>
@@ -117,18 +97,20 @@ export const ApplicationTabs = ({
                 {application.ai_summary}
               </p>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
       </TabsContent>
 
       <TabsContent value="responses" className="space-y-4">
-        {[
-          { label: "Why are you a good fit for this role?", value: application.answer_1 },
-          { label: "What is your experience in this field?", value: application.answer_2 },
-          { label: "What are your salary expectations?", value: application.answer_3 },
-        ].map((item, index) => (
-          item.value && (
-            <Card key={index}>
+        {[{
+        label: "Why are you a good fit for this role?",
+        value: application.answer_1
+      }, {
+        label: "What is your experience in this field?",
+        value: application.answer_2
+      }, {
+        label: "What are your salary expectations?",
+        value: application.answer_3
+      }].map((item, index) => item.value && <Card key={index}>
               <CardHeader>
                 <CardTitle className="text-sm">{item.label}</CardTitle>
               </CardHeader>
@@ -137,13 +119,10 @@ export const ApplicationTabs = ({
                   {item.value}
                 </p>
               </CardContent>
-            </Card>
-          )
-        ))}
+            </Card>)}
       </TabsContent>
 
-      {hasSkillsTest && (
-        <TabsContent value="skills" className="space-y-4">
+      {hasSkillsTest && <TabsContent value="skills" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
@@ -152,8 +131,7 @@ export const ApplicationTabs = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {skillsTestResponses.map((response, index) => (
-                <div key={index} className="space-y-2">
+              {skillsTestResponses.map((response, index) => <div key={index} className="space-y-2">
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <h4 className="font-medium text-sm text-gray-900 mb-2">
                       Question {index + 1}
@@ -167,15 +145,11 @@ export const ApplicationTabs = ({
                       {response.answer}
                     </p>
                   </div>
-                  {index < skillsTestResponses.length - 1 && (
-                    <Separator className="my-4" />
-                  )}
-                </div>
-              ))}
+                  {index < skillsTestResponses.length - 1 && <Separator className="my-4" />}
+                </div>)}
             </CardContent>
           </Card>
-        </TabsContent>
-      )}
+        </TabsContent>}
 
       <TabsContent value="video" className="space-y-4">
         <Card>
@@ -186,31 +160,21 @@ export const ApplicationTabs = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {!application.interview_video_url ? (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+            {!application.interview_video_url ? <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
                 <Video className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                 <p className="text-sm text-gray-600 font-medium mb-1">No Video Interview Submitted</p>
                 <p className="text-xs text-gray-500">
                   The candidate has not provided a video interview link yet (e.g., Loom recording)
                 </p>
-              </div>
-            ) : application.interview_video_url === 'recorded' ? (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+              </div> : application.interview_video_url === 'recorded' ? <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                 <Video className="w-8 h-8 text-blue-500 mx-auto mb-2" />
                 <p className="text-sm text-blue-900 font-medium">Video Interview Completed</p>
                 <p className="text-xs text-blue-700 mt-1">
                   The candidate has recorded their video responses
                 </p>
-              </div>
-            ) : (
-              <video
-                src={application.interview_video_url}
-                controls
-                className="w-full rounded-lg"
-              >
+              </div> : <video src={application.interview_video_url} controls className="w-full rounded-lg">
                 Your browser does not support the video tag.
-              </video>
-            )}
+              </video>}
           </CardContent>
         </Card>
       </TabsContent>
@@ -221,8 +185,7 @@ export const ApplicationTabs = ({
             <CardTitle className="text-sm">Resume</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {application.resume_file_path ? (
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            {application.resume_file_path ? <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-gray-600" />
                   <div>
@@ -233,15 +196,11 @@ export const ApplicationTabs = ({
                   </div>
                 </div>
                 <Badge variant="outline">PDF</Badge>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500 text-center py-4">
+              </div> : <p className="text-sm text-gray-500 text-center py-4">
                 No resume uploaded
-              </p>
-            )}
+              </p>}
           </CardContent>
         </Card>
       </TabsContent>
-    </Tabs>
-  );
+    </Tabs>;
 };
