@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { ThumbsDown, RotateCcw, Mail, UserCheck } from "lucide-react";
+import { ThumbsDown, RotateCcw, Mail } from "lucide-react";
+import { StageSelector } from "../StageSelector";
 
 interface ApplicationActionButtonsProps {
   status: string;
@@ -8,6 +9,10 @@ interface ApplicationActionButtonsProps {
   onReject: () => void;
   onUnreject: () => void;
   onEmail: () => void;
+  jobId: string;
+  applicationId: string;
+  currentStage: string | null;
+  onStageChange?: (applicationId: string, newStage: string) => void;
 }
 
 export const ApplicationActionButtons = ({
@@ -15,7 +20,11 @@ export const ApplicationActionButtons = ({
   isUpdating,
   onReject,
   onUnreject,
-  onEmail
+  onEmail,
+  jobId,
+  applicationId,
+  currentStage,
+  onStageChange
 }: ApplicationActionButtonsProps) => {
   return (
     <div className="flex gap-2">
@@ -50,14 +59,13 @@ export const ApplicationActionButtons = ({
         <Mail className="w-4 h-4 mr-2" />
         Email
       </Button>
-      <Button 
-        size="sm" 
-        disabled={true}
-        className="bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed"
-      >
-        <UserCheck className="w-4 h-4 mr-2" />
-        Hire (Coming Soon)
-      </Button>
+      <StageSelector
+        jobId={jobId}
+        currentStage={currentStage}
+        applicationId={applicationId}
+        onStageChange={onStageChange}
+        size="sm"
+      />
     </div>
   );
 };

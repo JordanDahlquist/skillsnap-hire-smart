@@ -20,6 +20,7 @@ interface Application {
   answer_3: string | null;
   manual_rating: number | null;
   rejection_reason: string | null;
+  pipeline_stage: string | null;
 }
 
 interface ApplicationDetailContentProps {
@@ -32,6 +33,8 @@ interface ApplicationDetailContentProps {
   onReject: () => void;
   onUnreject: () => void;
   onEmail: () => void;
+  jobId: string;
+  onStageChange?: (applicationId: string, newStage: string) => void;
 }
 
 export const ApplicationDetailContent = ({
@@ -43,7 +46,9 @@ export const ApplicationDetailContent = ({
   onManualRating,
   onReject,
   onUnreject,
-  onEmail
+  onEmail,
+  jobId,
+  onStageChange
 }: ApplicationDetailContentProps) => {
   return (
     <Card>
@@ -64,6 +69,10 @@ export const ApplicationDetailContent = ({
               onReject={onReject}
               onUnreject={onUnreject}
               onEmail={onEmail}
+              jobId={jobId}
+              applicationId={application.id}
+              currentStage={application.pipeline_stage}
+              onStageChange={onStageChange}
             />
           </div>
           

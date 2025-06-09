@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { EmailComposerModal } from "./EmailComposerModal";
 import { ApplicationDetailContent } from "./components/ApplicationDetailContent";
@@ -195,6 +194,14 @@ export const ApplicationDetail = ({
     setCustomReason("");
   };
 
+  const handleStageChange = (applicationId: string, newStage: string) => {
+    // The StageSelector component handles the database update automatically
+    // We just need to trigger a refresh of the applications list
+    if (onApplicationUpdate) {
+      onApplicationUpdate();
+    }
+  };
+
   if (selectedApplication) {
     return (
       <>
@@ -208,6 +215,8 @@ export const ApplicationDetail = ({
           onReject={handleReject}
           onUnreject={handleUnreject}
           onEmail={() => setShowEmailModal(true)}
+          jobId={job.id}
+          onStageChange={handleStageChange}
         />
 
         <EmailComposerModal
