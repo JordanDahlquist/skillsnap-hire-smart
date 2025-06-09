@@ -23,9 +23,9 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
     if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
   };
 
-  const canProceedToStep2 = state.formData.title && state.formData.description;
-  const canProceedToStep3 = state.generatedJobPost;
-  const canActivate = state.generatedJobPost; // Only require job post, skills test is optional
+  const canProceedToStep2 = Boolean(state.formData.title && state.formData.description);
+  const canProceedToStep3 = Boolean(state.generatedJobPost);
+  const canActivate = Boolean(state.generatedJobPost); // Only require job post, skills test is optional
 
   if (!open) return null;
 

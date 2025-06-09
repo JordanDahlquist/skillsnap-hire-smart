@@ -40,9 +40,17 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
     setGeneratedSkillsTest: (content: string) => 
       setState(prev => ({ ...prev, generatedSkillsTest: content })),
     setIsEditingJobPost: (editing: boolean) => 
-      setState(prev => ({ ...prev, isEditingJobPost: editing })),
+      setState(prev => ({ 
+        ...prev, 
+        isEditingJobPost: editing,
+        currentStep: editing ? 2 : prev.currentStep
+      })),
     setIsEditingSkillsTest: (editing: boolean) => 
-      setState(prev => ({ ...prev, isEditingSkillsTest: editing })),
+      setState(prev => ({ 
+        ...prev, 
+        isEditingSkillsTest: editing,
+        currentStep: editing ? 3 : prev.currentStep
+      })),
   };
 
   const handleGenerateJobPost = async () => {
