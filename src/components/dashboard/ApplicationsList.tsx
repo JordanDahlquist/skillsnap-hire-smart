@@ -51,7 +51,7 @@ export const ApplicationsList = memo(({
         onSearchChange={onSearchChange}
       />
 
-      <div className="divide-y divide-gray-200 overflow-y-auto" style={{ height: 'calc(100vh - 400px)' }}>
+      <div className="divide-y divide-gray-200 overflow-y-auto" style={{ height: 'calc(100vh - 350px)' }}>
         {filteredApplications.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <div className="text-lg font-medium mb-2">
