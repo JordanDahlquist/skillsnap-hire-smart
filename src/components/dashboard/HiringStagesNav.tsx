@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -163,7 +162,6 @@ export const HiringStagesNav = ({
                   }`}
                   style={{
                     borderColor: isSelected ? stage.color : undefined,
-                    ringColor: isSelected ? `${stage.color}40` : undefined,
                   }}
                 >
                   <div className="p-5">
