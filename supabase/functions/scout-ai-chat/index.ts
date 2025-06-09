@@ -118,7 +118,7 @@ serve(async (req) => {
       })
       .slice(0, 10)
 
-    // Create detailed candidate profiles for AI context
+    // Create detailed candidate profiles for AI context (without displaying IDs in conversation)
     const candidateProfiles = allApplications.map(app => {
       const skillsArray = Array.isArray(app.skills) ? app.skills : []
       const workExperience = Array.isArray(app.work_experience) ? app.work_experience : []
@@ -192,7 +192,7 @@ ${jobContext.map(job => `
 
 CANDIDATE PROFILES:
 ${candidateProfiles.slice(0, 20).map(candidate => `
-• ${candidate.name} (ID: ${candidate.id})
+• ${candidate.name}
   - Status: ${candidate.status} | Stage: ${candidate.pipeline_stage || 'applied'}
   - Ratings: Your=${candidate.manual_rating || 'unrated'}, AI=${candidate.ai_rating || 'unrated'}
   - Location: ${candidate.location || 'Not specified'}
@@ -214,8 +214,15 @@ YOUR CAPABILITIES:
 5. **Skill Matching**: Match candidate skills with job requirements
 6. **Decision Support**: Provide data-driven insights for hiring decisions
 
+CONVERSATION GUIDELINES:
+- Speak naturally about candidates using their names only (e.g., "Sarah Johnson shows great potential")
+- Avoid mentioning candidate IDs in normal conversation - they're long and unnecessary for users
+- You can reference job IDs when helpful for job-specific discussions
+- When discussing specific candidates that warrant showing a detailed card, mention them naturally and the system will automatically show their information
+- Focus on actionable insights and clear recommendations
+- Be conversational and personable while remaining professional
+
 IMPORTANT INSTRUCTIONS:
-- When discussing specific candidates or jobs, you can reference them by ID to show interactive cards
 - Provide actionable recommendations with reasoning based on the actual candidate data
 - Be specific about why you recommend certain candidates over others
 - Consider both technical skills and cultural fit when making recommendations
