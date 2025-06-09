@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +27,45 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus }: Applica
   const [answer2, setAnswer2] = useState("");
   const [answer3, setAnswer3] = useState("");
 
+  const triggerAiAnalysis = async (applicationId: string, applicationData: any, jobData: any) => {
+    try {
+      console.log('Triggering AI analysis for application:', applicationId);
+      
+      const { data, error } = await supabase.functions.invoke('analyze-application', {
+        body: {
+          applicationData,
+          jobData
+        }
+      });
+
+      if (error) {
+        console.error('Error in AI analysis:', error);
+        return;
+      }
+
+      if (data?.rating && data?.summary) {
+        // Update the application with AI analysis results
+        const { error: updateError } = await supabase
+          .from('applications')
+          .update({
+            ai_rating: data.rating,
+            ai_summary: data.summary,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', applicationId);
+
+        if (updateError) {
+          console.error('Error updating application with AI analysis:', updateError);
+        } else {
+          console.log('AI analysis completed successfully for application:', applicationId);
+        }
+      }
+    } catch (error) {
+      console.error('Error triggering AI analysis:', error);
+      // Don't show error to user - AI analysis is optional
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -39,7 +77,8 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus }: Applica
     }
 
     try {
-      const { error } = await supabase
+      // First, insert the application
+      const { data: applicationData, error: insertError } = await supabase
         .from('applications')
         .insert({
           job_id: jobId,
@@ -52,11 +91,38 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus }: Applica
           answer_3: answer3,
           status: 'pending',
           created_at: new Date().toISOString(),
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       toast.success("Application submitted successfully!");
+
+      // Fetch job data for AI analysis
+      const { data: jobData, error: jobError } = await supabase
+        .from('jobs')
+        .select('title, description, role_type, experience_level, required_skills')
+        .eq('id', jobId)
+        .single();
+
+      // Trigger AI analysis in the background (don't wait for it)
+      if (applicationData && jobData && !jobError) {
+        const analysisData = {
+          name,
+          email,
+          portfolio,
+          experience: '', // No experience field in current form
+          answer_1: answer1,
+          answer_2: answer2,
+          answer_3: answer3
+        };
+
+        // Don't await this - let it run in background
+        triggerAiAnalysis(applicationData.id, analysisData, jobData);
+      }
+
+      // Reset form
       setName("");
       setEmail("");
       setPortfolio("");
