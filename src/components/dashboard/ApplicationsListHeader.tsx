@@ -44,15 +44,15 @@ export const ApplicationsListHeader = memo(({
   const isSomeSelected = selectedApplications.length > 0 && selectedApplications.length < applicationsCount;
 
   return (
-    <div className="p-6 border-b border-gray-200">
+    <div className="p-4 border-b border-gray-200">
       {/* Applications Title */}
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">
         Applications ({applicationsCount})
       </h2>
 
       {/* Search Bar */}
       {onSearchChange && (
-        <div className="mb-4">
+        <div className="mb-3">
           <SearchBar
             searchTerm={searchTerm}
             onSearchChange={onSearchChange}
@@ -62,7 +62,7 @@ export const ApplicationsListHeader = memo(({
 
       {/* Select All Checkbox */}
       {onSelectApplications && (
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           <Checkbox
             checked={isAllSelected}
             onCheckedChange={handleSelectAll}
