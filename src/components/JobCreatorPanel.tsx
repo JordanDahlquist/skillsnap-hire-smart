@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -69,10 +68,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
       const data = await generateJobPost(state.formData, null, null);
       actions.setGeneratedJobPost(data.jobPost);
       
-      toast({
-        title: "Job Post Generated!",
-        description: "Your AI-powered job posting is ready for review."
-      });
+      // Removed routine success toast - the user can see the content was generated
     } catch (error) {
       console.error('Error generating job post:', error);
       toast({
@@ -99,10 +95,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
     try {
       const data = await generateSkillsTest(state.generatedJobPost);
       actions.setGeneratedSkillsTest(data.test);
-      toast({
-        title: "Skills Test Generated!",
-        description: "Your AI-powered skills assessment is ready for review."
-      });
+      // Removed routine success toast - the user can see the content was generated
     } catch (error) {
       toast({
         title: "Generation Failed",
