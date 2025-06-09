@@ -6,32 +6,30 @@ import { Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ChatInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (message: string) => void;
   isLoading?: boolean;
   placeholder?: string;
 }
 
 export const ChatInput = ({
-  value,
-  onChange,
   onSubmit,
   isLoading = false,
   placeholder = "Ask Scout anything about your hiring pipeline..."
 }: ChatInputProps) => {
+  const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSubmit();
+      handleSubmit();
     }
   };
 
   const handleSubmit = () => {
     if (!value.trim() || isLoading) return;
-    onSubmit();
+    onSubmit(value.trim());
+    setValue('');
   };
 
   return (
@@ -48,7 +46,7 @@ export const ChatInput = ({
           <div className="flex-1 min-w-0">
             <Textarea
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
