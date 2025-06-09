@@ -27,10 +27,10 @@ export const StageCard = ({
   const stageKey = getStageKey(stage.name);
 
   return (
-    <div className="flex items-center gap-2 w-32 md:flex-1 flex-shrink-0">
+    <div className="flex items-center gap-3">
       <div
         onClick={() => onStageSelect(stageKey)}
-        className={`group relative bg-white rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden w-full ${
+        className={`group relative bg-white rounded-xl border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden flex-1 ${
           isSelected
             ? 'border-2 ring-2 ring-opacity-20 scale-105'
             : 'border-gray-200 hover:border-gray-300'
@@ -39,29 +39,37 @@ export const StageCard = ({
           borderColor: isSelected ? stage.color : undefined,
         }}
       >
-        <div className="p-2 md:p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <div 
-              className="w-2 h-2 rounded-full transition-all duration-200"
-              style={{ backgroundColor: stage.color }}
-            ></div>
-            <h3 className={`font-semibold text-xs md:text-sm flex-1 transition-colors duration-200 truncate ${
-              isSelected ? 'text-gray-800' : 'text-gray-700'
-            }`} title={stage.name}>
-              {stage.name}
-            </h3>
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-full transition-all duration-200"
+                style={{ backgroundColor: stage.color }}
+              ></div>
+              <h3 className={`font-semibold text-sm transition-colors duration-200 ${
+                isSelected ? 'text-gray-800' : 'text-gray-700'
+              }`}>
+                {stage.name}
+              </h3>
+            </div>
           </div>
           
-          <Badge 
-            variant={isSelected ? "default" : "secondary"}
-            className="text-sm font-bold px-2 py-1 transition-all duration-200 w-full justify-center"
-            style={{
-              backgroundColor: isSelected ? stage.color : undefined,
-              color: isSelected ? 'white' : undefined,
-            }}
-          >
-            {count}
-          </Badge>
+          <div className="flex items-center justify-between">
+            <Badge 
+              variant={isSelected ? "default" : "secondary"}
+              className="text-lg font-bold px-3 py-1 transition-all duration-200"
+              style={{
+                backgroundColor: isSelected ? stage.color : undefined,
+                color: isSelected ? 'white' : undefined,
+              }}
+            >
+              {count}
+            </Badge>
+            
+            <div className="text-xs text-gray-500 font-medium">
+              {count === 1 ? 'Application' : 'Applications'}
+            </div>
+          </div>
         </div>
         
         {/* Colored accent bar */}
@@ -85,9 +93,9 @@ export const StageCard = ({
         ></div>
       </div>
       
-      {/* Arrow connector - only show on mobile and when it's not the last stage */}
+      {/* Arrow connector */}
       {isNextStage && (
-        <ArrowRight className="w-3 h-3 text-gray-300 flex-shrink-0 md:hidden" />
+        <ArrowRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
       )}
     </div>
   );

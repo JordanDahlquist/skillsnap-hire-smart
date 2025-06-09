@@ -16,37 +16,45 @@ export const AllApplicationsCard = ({
   return (
     <div
       onClick={() => onStageSelect(null)}
-      className={`group relative bg-white rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden w-32 md:flex-1 flex-shrink-0 ${
+      className={`group relative bg-white rounded-xl border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden ${
         selectedStage === null
           ? 'border-blue-500 ring-2 ring-blue-100 scale-105'
           : 'border-gray-200 hover:border-gray-300'
       }`}
     >
-      <div className="p-2 md:p-3">
-        <div className="flex items-center gap-2 mb-1">
-          <div className={`w-2 h-2 rounded-full ${
-            selectedStage === null ? 'bg-blue-500' : 'bg-gray-400'
-          } transition-colors duration-200`}></div>
-          <h3 className={`font-semibold text-xs md:text-sm flex-1 ${
-            selectedStage === null ? 'text-blue-700' : 'text-gray-700'
-          } transition-colors duration-200 truncate`}>
-            All Applications
-          </h3>
-          <Users className={`w-3 h-3 md:w-4 md:h-4 ${
+      <div className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full ${
+              selectedStage === null ? 'bg-blue-500' : 'bg-gray-400'
+            } transition-colors duration-200`}></div>
+            <h3 className={`font-semibold text-sm ${
+              selectedStage === null ? 'text-blue-700' : 'text-gray-700'
+            } transition-colors duration-200`}>
+              All Applications
+            </h3>
+          </div>
+          <Users className={`w-4 h-4 ${
             selectedStage === null ? 'text-blue-500' : 'text-gray-400'
           } transition-colors duration-200`} />
         </div>
         
-        <Badge 
-          variant={selectedStage === null ? "default" : "secondary"}
-          className={`text-sm font-bold px-2 py-1 w-full justify-center ${
-            selectedStage === null 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-gray-100 text-gray-600'
-          } transition-all duration-200`}
-        >
-          {totalApplications}
-        </Badge>
+        <div className="flex items-center justify-between">
+          <Badge 
+            variant={selectedStage === null ? "default" : "secondary"}
+            className={`text-lg font-bold px-3 py-1 ${
+              selectedStage === null 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-100 text-gray-600'
+            } transition-all duration-200`}
+          >
+            {totalApplications}
+          </Badge>
+          
+          <div className="text-xs text-gray-500 font-medium">
+            Total
+          </div>
+        </div>
       </div>
       
       {/* Subtle gradient overlay on hover */}
