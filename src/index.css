@@ -164,6 +164,20 @@
   }
 }
 
+/* Conversation Item Hover Isolation */
+.conversation-item {
+  position: relative;
+}
+
+.conversation-item .conversation-delete-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.conversation-item:hover .conversation-delete-btn {
+  opacity: 1;
+}
+
 /* Rich Text Message Display Styles */
 .rich-message-content a {
   color: #3b82f6;
