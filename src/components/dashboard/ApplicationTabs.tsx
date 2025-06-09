@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +41,7 @@ export const ApplicationTabs = ({
           </TabsTrigger>
         )}
         <TabsTrigger value="video" className="flex items-center gap-1">
-          <Video className="w-3 h-3" />
+          <Video className="w-4 h-4" />
           Video Interview
         </TabsTrigger>
         <TabsTrigger value="files" className="flex items-center gap-1">
