@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -162,6 +161,18 @@
   .bg-attention {
     background-color: hsl(var(--attention-color));
   }
+  
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+  
+  .animate-spin-slower {
+    animation: spin-slower 30s linear infinite;
+  }
+  
+  .animate-spin-slowest {
+    animation: spin-slowest 45s linear infinite;
+  }
 }
 
 /* Conversation Item Hover Isolation */
@@ -280,4 +291,32 @@
 
 .rich-text-editor [contenteditable] li {
   margin-bottom: 5px;
+}
+
+/* Solar System Animations */
+@keyframes spin-slow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes spin-slower {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes spin-slowest {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
