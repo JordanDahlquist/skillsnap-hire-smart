@@ -1,79 +1,76 @@
 
+export interface Job {
+  id: string;
+  title: string;
+  description: string;
+  ai_mini_description?: string | null;
+  role_type: string;
+  experience_level: string;
+  location_type?: string | null;
+  country?: string | null;
+  state?: string | null;
+  region?: string | null;
+  city?: string | null;
+  budget?: string | null;
+  duration?: string | null;
+  created_at: string;
+  updated_at: string;
+  status: string;
+  user_id: string;
+  view_count?: number;
+  required_skills: string;
+  employment_type: string;
+  company_name?: string | null;
+  generated_job_post?: string | null;
+  generated_test?: string | null;
+}
+
 export interface Application {
   id: string;
   job_id: string;
   name: string;
   email: string;
-  phone: string | null;
-  location: string | null;
   portfolio: string | null;
-  portfolio_url: string | null;
-  linkedin_url: string | null;
-  github_url: string | null;
   resume_file_path: string | null;
   cover_letter: string | null;
-  available_start_date: string | null;
+  github_url: string | null;
+  linkedin_url: string | null;
+  portfolio_url: string | null;
+  pipeline_stage: string | null;
+  rejection_reason: string | null;
+  location: string | null;
+  phone: string | null;
+  status: string;
   created_at: string;
   updated_at: string;
+  available_start_date: string | null;
   ai_rating: number | null;
+  parsed_resume_data: any;
+  work_experience: any;
+  education: any;
+  skills: any;
+  manual_rating: number | null;
   ai_summary: string | null;
-  status: string;
-  experience: string | null;
   answer_1: string | null;
   answer_2: string | null;
   answer_3: string | null;
-  manual_rating: number | null;
-  rejection_reason: string | null;
-  pipeline_stage: string | null;
-  parsed_resume_data: any | null;
-  work_experience: any | null;
-  education: any | null;
-  skills: any | null;
+  experience: string | null;
 }
 
-export interface Job {
+export interface Profile {
   id: string;
-  title: string;
-  description: string;
-  role_type: string;
-  employment_type: string;
-  experience_level: string;
-  budget: string;
-  duration: string;
-  status: string;
+  full_name: string | null;
+  company_name: string;
+  email: string | null;
+  unique_email: string;
+  industry: string | null;
+  default_location: string | null;
+  company_website: string | null;
+  profile_picture_url: string | null;
+  phone: string | null;
+  job_title: string | null;
   created_at: string;
   updated_at: string;
-  ai_mini_description?: string;
-  applications?: { count: number }[];
-  applicationStatusCounts?: {
-    pending: number;
-    approved: number;
-    rejected: number;
-  };
-  location_type?: string;
-  country?: string;
-  state?: string;
-  region?: string;
-  city?: string;
-  required_skills: string;
-  user_id: string;
-}
-
-export interface JobFilters {
-  employmentType: string;
-  locationType: string;
-  experienceLevel: string;
-  country: string;
-  state: string;
-  budgetRange: number[];
-  duration: string;
-}
-
-export interface AvailableOptions {
-  employmentTypes: string[];
-  locationTypes: string[];
-  experienceLevels: string[];
-  countries: string[];
-  states: string[];
-  durations: string[];
+  last_regeneration_date: string | null;
+  daily_briefing_regenerations: number | null;
 }
