@@ -1,6 +1,5 @@
 
 import { Badge } from "@/components/ui/badge";
-import { XCircle } from "lucide-react";
 
 interface RejectedStageCardProps {
   count: number;
@@ -16,23 +15,21 @@ export const RejectedStageCard = ({
   return (
     <div
       onClick={() => onStageSelect('rejected')}
-      className={`group relative bg-white rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden w-32 md:w-full flex-shrink-0 ${
+      className={`group relative bg-white rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden w-28 md:w-32 flex-shrink-0 ${
         isSelected
           ? 'border-red-500 ring-2 ring-red-500 ring-opacity-20 scale-105'
           : 'border-gray-200 hover:border-red-300'
       }`}
     >
-      <div className="p-3 md:p-4">
-        <div className="flex items-center justify-between mb-2">
+      <div className="p-2 md:p-3">
+        <div className="flex items-center gap-2 mb-1">
           <div className="w-2 h-2 rounded-full bg-red-500 transition-all duration-200"></div>
-          <XCircle className="w-3 h-3 md:w-4 md:h-4 text-red-500" />
+          <h3 className={`font-semibold text-xs md:text-sm flex-1 transition-colors duration-200 truncate ${
+            isSelected ? 'text-gray-800' : 'text-gray-700'
+          }`}>
+            Rejected
+          </h3>
         </div>
-        
-        <h3 className={`font-semibold text-xs md:text-sm mb-2 transition-colors duration-200 truncate ${
-          isSelected ? 'text-gray-800' : 'text-gray-700'
-        }`}>
-          Rejected
-        </h3>
         
         <Badge 
           variant={isSelected ? "default" : "secondary"}

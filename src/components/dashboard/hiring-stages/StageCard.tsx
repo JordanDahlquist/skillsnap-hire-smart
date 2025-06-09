@@ -27,7 +27,7 @@ export const StageCard = ({
   const stageKey = getStageKey(stage.name);
 
   return (
-    <div className="flex items-center gap-2 w-32 md:w-full flex-shrink-0">
+    <div className="flex items-center gap-2 w-32 md:flex-1 flex-shrink-0">
       <div
         onClick={() => onStageSelect(stageKey)}
         className={`group relative bg-white rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden w-full ${
@@ -39,19 +39,18 @@ export const StageCard = ({
           borderColor: isSelected ? stage.color : undefined,
         }}
       >
-        <div className="p-3 md:p-4">
-          <div className="flex items-center justify-between mb-2">
+        <div className="p-2 md:p-3">
+          <div className="flex items-center gap-2 mb-1">
             <div 
               className="w-2 h-2 rounded-full transition-all duration-200"
               style={{ backgroundColor: stage.color }}
             ></div>
+            <h3 className={`font-semibold text-xs md:text-sm flex-1 transition-colors duration-200 truncate ${
+              isSelected ? 'text-gray-800' : 'text-gray-700'
+            }`} title={stage.name}>
+              {stage.name}
+            </h3>
           </div>
-          
-          <h3 className={`font-semibold text-xs md:text-sm mb-2 transition-colors duration-200 truncate ${
-            isSelected ? 'text-gray-800' : 'text-gray-700'
-          }`} title={stage.name}>
-            {stage.name}
-          </h3>
           
           <Badge 
             variant={isSelected ? "default" : "secondary"}
