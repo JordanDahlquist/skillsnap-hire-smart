@@ -2,6 +2,7 @@
 import { Bot, User } from 'lucide-react';
 import { ScoutJobCard } from './ScoutJobCard';
 import { ScoutCandidateCard } from './ScoutCandidateCard';
+import { parseMarkdown } from '@/utils/markdownParser';
 
 interface Message {
   id: string;
@@ -25,6 +26,11 @@ export const ScoutMessage = ({ message }: ScoutMessageProps) => {
     });
   };
 
+  // Parse markdown content to HTML for AI messages
+  const messageContent = message.isAi 
+    ? parseMarkdown(message.content)
+    : message.content;
+
   return (
     <div className={`flex gap-3 ${message.isAi ? 'flex-row' : 'flex-row-reverse'}`}>
       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
@@ -39,7 +45,14 @@ export const ScoutMessage = ({ message }: ScoutMessageProps) => {
             ? 'bg-white border border-gray-200 text-gray-900' 
             : 'bg-blue-600 text-white'
         }`}>
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          {message.isAi ? (
+            <div 
+              className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:mt-2 prose-headings:mb-1 prose-p:mb-2 prose-ul:mb-2 prose-ol:mb-2"
+              dangerouslySetInnerHTML={{ __html: messageContent }}
+            />
+          ) : (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          )}
         </div>
         
         {/* Job Cards */}
