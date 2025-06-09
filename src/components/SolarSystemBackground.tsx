@@ -4,17 +4,19 @@ import React from 'react';
 export const SolarSystemBackground = () => {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
-      {/* Deep space background with nebula effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-950/40 to-indigo-950/30" />
-      <div className="absolute inset-0 bg-gradient-radial from-transparent via-purple-900/10 to-black opacity-60" />
+      {/* Pure black space background */}
+      <div className="absolute inset-0 bg-black" />
       
-      {/* Nebula clouds */}
+      {/* Subtle depth gradient - very minimal */}
+      <div className="absolute inset-0 bg-gradient-radial from-transparent via-black to-black opacity-20" />
+      
+      {/* Minimal nebula clouds - much more subtle */}
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-blue-900/20 via-purple-800/10 to-transparent rounded-full blur-3xl animate-pulse" 
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-gray-800/10 via-gray-900/5 to-transparent rounded-full blur-3xl animate-pulse" 
              style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-gradient-radial from-indigo-800/15 via-blue-900/8 to-transparent rounded-full blur-3xl animate-pulse" 
+        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-gradient-radial from-gray-700/8 via-gray-800/4 to-transparent rounded-full blur-3xl animate-pulse" 
              style={{ animationDelay: '3s', animationDuration: '12s' }} />
-        <div className="absolute top-2/3 left-1/6 w-64 h-64 bg-gradient-radial from-purple-700/10 via-indigo-800/5 to-transparent rounded-full blur-2xl animate-pulse" 
+        <div className="absolute top-2/3 left-1/6 w-64 h-64 bg-gradient-radial from-gray-600/6 via-gray-700/3 to-transparent rounded-full blur-2xl animate-pulse" 
              style={{ animationDelay: '6s', animationDuration: '10s' }} />
       </div>
 
