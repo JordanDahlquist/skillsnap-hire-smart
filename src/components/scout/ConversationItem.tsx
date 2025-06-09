@@ -26,7 +26,7 @@ export const ConversationItem = ({
   return (
     <div
       className={cn(
-        "group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent",
+        "conversation-item-group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent",
         isActive && "bg-accent"
       )}
       onClick={onClick}
@@ -48,7 +48,7 @@ export const ConversationItem = ({
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+        className="h-6 w-6 opacity-0 conversation-item-group:hover:opacity-100 transition-opacity flex-shrink-0"
         onClick={handleDelete}
       >
         <Trash2 className="w-3 h-3" />
