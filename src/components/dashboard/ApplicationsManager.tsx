@@ -6,10 +6,11 @@ import { HiringStagesNav } from './HiringStagesNav';
 import { ApplicationsList } from './ApplicationsList';
 import { ApplicationDetail } from './ApplicationDetail';
 import { EmailComposerModal } from './EmailComposerModal';
-import { getStatusColor } from '@/utils/statusUtils';
+import { getApplicationStatusColor } from '@/utils/statusUtils';
 import { getTimeAgo } from '@/utils/dateUtils';
 import { exportApplicationsToCSV } from '@/utils/exportUtils';
 import { Application, Job } from '@/types';
+import { Star } from 'lucide-react';
 
 interface ApplicationsManagerProps {
   applications: Application[];
@@ -37,6 +38,26 @@ export const ApplicationsManager = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Create getRatingStars helper function
+  const getRatingStars = useCallback((rating: number | null) => {
+    const stars = [];
+    const ratingValue = rating || 0;
+    
+    for (let i = 1; i <= 3; i++) {
+      stars.push(
+        <Star
+          key={i}
+          className={`w-4 h-4 ${
+            i <= ratingValue 
+              ? 'fill-yellow-400 text-yellow-400' 
+              : 'text-gray-300'
+          }`}
+        />
+      );
+    }
+    return stars;
+  }, []);
 
   // Filter applications by stage
   const filteredApplications = useMemo(() => {
@@ -204,7 +225,7 @@ export const ApplicationsManager = ({
             applications={filteredApplications}
             selectedApplication={selectedApplication}
             onSelectApplication={onSelectApplication}
-            getStatusColor={getStatusColor}
+            getStatusColor={getApplicationStatusColor}
             getTimeAgo={getTimeAgo}
             selectedApplications={selectedApplications}
             onSelectApplications={onSelectApplications}
@@ -222,9 +243,13 @@ export const ApplicationsManager = ({
 
           {selectedApplication && (
             <ApplicationDetail
-              application={selectedApplication}
-              onUpdate={onApplicationUpdate}
-              jobId={job.id}
+              selectedApplication={selectedApplication}
+              applications={applications}
+              job={job}
+              getStatusColor={getApplicationStatusColor}
+              getRatingStars={getRatingStars}
+              getTimeAgo={getTimeAgo}
+              onApplicationUpdate={onApplicationUpdate}
             />
           )}
         </div>
