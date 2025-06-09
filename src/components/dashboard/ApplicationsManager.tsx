@@ -63,6 +63,11 @@ export const ApplicationsManager = ({
   const filteredApplications = useMemo(() => {
     if (selectedStage === 'all') return applications;
     
+    // Handle rejected stage specially - filter by status instead of pipeline_stage
+    if (selectedStage === 'rejected') {
+      return applications.filter(app => app.status === 'rejected');
+    }
+    
     return applications.filter(app => {
       const appStage = app.pipeline_stage || 'applied';
       return appStage === selectedStage;
