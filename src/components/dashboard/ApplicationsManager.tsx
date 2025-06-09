@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ApplicationsList } from "./ApplicationsList";
 import { ApplicationDetail } from "./ApplicationDetail";
@@ -6,7 +5,6 @@ import { HiringStagesNav } from "./HiringStagesNav";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { useSearchFilter } from "@/hooks/filtering/useSearchFilter";
 import { Application, Job } from "@/types";
-
 interface ApplicationsManagerProps {
   applications: Application[];
   selectedApplication: Application | null;
@@ -17,7 +15,6 @@ interface ApplicationsManagerProps {
   onApplicationUpdate: () => void;
   job: Job;
 }
-
 export const ApplicationsManager = ({
   applications,
   selectedApplication,
@@ -29,84 +26,59 @@ export const ApplicationsManager = ({
   job
 }: ApplicationsManagerProps) => {
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
-  const { searchTerm, setSearchTerm } = useSearchFilter();
-
+  const {
+    searchTerm,
+    setSearchTerm
+  } = useSearchFilter();
   const getStatusColor = (status: string, manualRating: number | null = null) => {
     // If status is "reviewed" but there's no manual rating, show as pending
     if (status === "reviewed" && !manualRating) {
       return "bg-yellow-100 text-yellow-800";
     }
-    
     switch (status) {
-      case "pending": return "bg-yellow-100 text-yellow-800";
-      case "reviewed": return "bg-blue-100 text-blue-800";
-      case "approved": return "bg-green-100 text-green-800";
-      case "rejected": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "reviewed":
+        return "bg-blue-100 text-blue-800";
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   // Simple 3-star rating function
   const getRatingStars = (rating: number | null) => {
     if (!rating) {
-      return Array.from({ length: 3 }, (_, i) => (
-        <span key={i} className="text-gray-300">★</span>
-      ));
+      return Array.from({
+        length: 3
+      }, (_, i) => <span key={i} className="text-gray-300">★</span>);
     }
-    
-    return Array.from({ length: 3 }, (_, i) => (
-      <span key={i} className={i < rating ? "text-yellow-400" : "text-gray-300"}>★</span>
-    ));
+    return Array.from({
+      length: 3
+    }, (_, i) => <span key={i} className={i < rating ? "text-yellow-400" : "text-gray-300"}>★</span>);
   };
 
   // Filter applications by selected stage
-  const filteredApplications = selectedStage 
-    ? applications.filter(app => {
-        const appStage = app.pipeline_stage || 'applied';
-        return appStage === selectedStage;
-      })
-    : applications;
-
-  return (
-    <div className="space-y-0">
+  const filteredApplications = selectedStage ? applications.filter(app => {
+    const appStage = app.pipeline_stage || 'applied';
+    return appStage === selectedStage;
+  }) : applications;
+  return <div className="space-y-0">
       {/* Hiring Stages Navigation */}
-      <HiringStagesNav
-        jobId={job.id}
-        applications={applications}
-        selectedStage={selectedStage}
-        onStageSelect={setSelectedStage}
-      />
+      <HiringStagesNav jobId={job.id} applications={applications} selectedStage={selectedStage} onStageSelect={setSelectedStage} />
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 py-[9px]">
         <div className="lg:col-span-1">
-          <ApplicationsList 
-            applications={filteredApplications}
-            selectedApplication={selectedApplication}
-            onSelectApplication={onSelectApplication}
-            getStatusColor={getStatusColor}
-            getTimeAgo={getTimeAgo}
-            selectedApplications={selectedApplications}
-            onSelectApplications={onSelectApplications}
-            onSendEmail={onSendEmail}
-            jobId={job.id}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-          />
+          <ApplicationsList applications={filteredApplications} selectedApplication={selectedApplication} onSelectApplication={onSelectApplication} getStatusColor={getStatusColor} getTimeAgo={getTimeAgo} selectedApplications={selectedApplications} onSelectApplications={onSelectApplications} onSendEmail={onSendEmail} jobId={job.id} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </div>
 
         <div className="lg:col-span-2">
-          <ApplicationDetail 
-            selectedApplication={selectedApplication}
-            applications={filteredApplications}
-            job={job}
-            getStatusColor={(status: string) => getStatusColor(status, selectedApplication?.manual_rating)}
-            getRatingStars={getRatingStars}
-            getTimeAgo={getTimeAgo}
-            onApplicationUpdate={onApplicationUpdate}
-          />
+          <ApplicationDetail selectedApplication={selectedApplication} applications={filteredApplications} job={job} getStatusColor={(status: string) => getStatusColor(status, selectedApplication?.manual_rating)} getRatingStars={getRatingStars} getTimeAgo={getTimeAgo} onApplicationUpdate={onApplicationUpdate} />
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
