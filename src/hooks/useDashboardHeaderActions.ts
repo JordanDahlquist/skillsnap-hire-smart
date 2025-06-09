@@ -25,7 +25,7 @@ export const useDashboardHeaderActions = (
     setIsUpdating(true);
     
     try {
-      // Check authentication first
+      // Enhanced authentication validation
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
@@ -38,7 +38,7 @@ export const useDashboardHeaderActions = (
         throw new Error('You must be logged in to update job status');
       }
 
-      console.log('User authenticated:', session.user.id);
+      console.log('Authentication validated:', { userId: session.user.id, jobUserId: job.user_id });
 
       // Verify job ownership
       if (job.user_id !== session.user.id) {
@@ -46,9 +46,9 @@ export const useDashboardHeaderActions = (
         throw new Error('You can only update jobs that you own');
       }
 
-      console.log('Attempting database update...');
+      console.log('Attempting database update with enhanced error handling...');
 
-      // Perform the status update
+      // Perform the status update with proper error handling
       const { data, error } = await supabase
         .from('jobs')
         .update({ 
@@ -56,19 +56,28 @@ export const useDashboardHeaderActions = (
           updated_at: new Date().toISOString() 
         })
         .eq('id', job.id)
+        .eq('user_id', session.user.id) // Double-check ownership in query
         .select();
 
       if (error) {
         console.error('Database update error:', error);
         
-        // Check for specific error types
+        // Enhanced error handling with specific error types
         if (error.code === 'PGRST116') {
           throw new Error('Job not found or access denied');
         } else if (error.message.includes('row-level security')) {
           throw new Error('You do not have permission to update this job');
+        } else if (error.code === '42501') {
+          throw new Error('Insufficient permissions to update job status');
+        } else if (error.message.includes('JWT')) {
+          throw new Error('Authentication token expired. Please refresh and try again.');
         } else {
-          throw new Error(`Database error: ${error.message}`);
+          throw new Error(`Update failed: ${error.message}`);
         }
+      }
+
+      if (!data || data.length === 0) {
+        throw new Error('No job was updated. Please check your permissions.');
       }
 
       console.log('Status update successful:', data);
@@ -91,6 +100,16 @@ export const useDashboardHeaderActions = (
         description: errorMessage,
         variant: "destructive",
       });
+
+      // If authentication error, suggest refresh
+      if (errorMessage.includes('token') || errorMessage.includes('Authentication')) {
+        setTimeout(() => {
+          toast({
+            title: "Try refreshing",
+            description: "Your session may have expired. Try refreshing the page.",
+          });
+        }, 2000);
+      }
     } finally {
       setIsUpdating(false);
     }

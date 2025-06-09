@@ -55,7 +55,14 @@ export const StatusDropdown = ({
   const CurrentIcon = currentConfig?.icon || FileText;
 
   const handleStatusSelect = (newStatus: string) => {
-    console.log('Status selected from dropdown:', newStatus);
+    console.log('Status selected from dropdown:', { from: currentStatus, to: newStatus });
+    
+    // Don't proceed if disabled or same status
+    if (disabled || newStatus === currentStatus) {
+      console.log('Status change blocked:', { disabled, sameStatus: newStatus === currentStatus });
+      return;
+    }
+    
     setIsOpen(false);
     onStatusChange(newStatus);
   };
@@ -87,7 +94,7 @@ export const StatusDropdown = ({
             <DropdownMenuItem
               key={status}
               onClick={() => handleStatusSelect(status)}
-              className={`${isCurrentStatus ? "bg-gray-50" : ""} hover:bg-gray-100 cursor-pointer`}
+              className={`${isCurrentStatus ? "bg-gray-50" : ""} hover:bg-gray-100 cursor-pointer ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
               disabled={disabled}
             >
               <Icon className="w-4 h-4 mr-2" />
