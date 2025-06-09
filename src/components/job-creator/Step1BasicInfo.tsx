@@ -4,10 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Eye } from "lucide-react";
+import { FileText, Eye, AlertTriangle } from "lucide-react";
 import { PdfUpload } from "@/components/PdfUpload";
 import { JobFormData, JobCreatorActions } from "./types";
 import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Step1BasicInfoProps {
   formData: JobFormData;
@@ -27,13 +28,14 @@ export const Step1BasicInfo = ({
   const [showPdfPreview, setShowPdfPreview] = useState(false);
 
   const handlePdfUpload = (content: string, fileName: string) => {
+    console.log('PDF upload successful:', { fileName, contentLength: content.length });
     actions.setUploadedPdfContent(content);
     actions.setPdfFileName(fileName);
-    // Don't automatically update the description field - let user choose
-    actions.setUseOriginalPdf(null);
+    actions.setUseOriginalPdf(null); // Reset choice so user can decide
   };
 
   const handlePdfRemove = () => {
+    console.log('Removing PDF content');
     actions.setUploadedPdfContent(null);
     actions.setPdfFileName(null);
     actions.setUseOriginalPdf(null);
@@ -44,11 +46,13 @@ export const Step1BasicInfo = ({
   };
 
   const handleKeepOriginal = () => {
+    console.log('User chose to keep original PDF content');
     actions.setUseOriginalPdf(true);
     // Don't update the description field - keep original PDF content separate
   };
 
   const handleAiRewrite = () => {
+    console.log('User chose to have AI rewrite PDF content');
     actions.setUseOriginalPdf(false);
     // Update description field with PDF content for AI to rewrite
     if (uploadedPdfContent) {
@@ -121,7 +125,7 @@ export const Step1BasicInfo = ({
             <div className="bg-blue-50 border border-blue-200 rounded p-2">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">PDF Content Loaded</span>
+                <span className="text-sm font-medium text-blue-800">PDF Content Loaded Successfully</span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -135,8 +139,13 @@ export const Step1BasicInfo = ({
               
               {showPdfPreview && (
                 <div className="mb-2 p-2 bg-white border rounded text-xs max-h-32 overflow-y-auto">
-                  {uploadedPdfContent.substring(0, 500)}
-                  {uploadedPdfContent.length > 500 && '...'}
+                  <div className="whitespace-pre-wrap">
+                    {uploadedPdfContent.substring(0, 500)}
+                    {uploadedPdfContent.length > 500 && '...'}
+                  </div>
+                  <div className="text-gray-500 text-xs mt-1">
+                    Total length: {uploadedPdfContent.length} characters
+                  </div>
                 </div>
               )}
               
@@ -181,6 +190,15 @@ export const Step1BasicInfo = ({
                 </Button>
               </div>
             </div>
+          )}
+
+          {!uploadedPdfContent && (
+            <Alert className="bg-yellow-50 border-yellow-200">
+              <AlertTriangle className="h-3 w-3 text-yellow-600" />
+              <AlertDescription className="text-xs text-yellow-800">
+                <strong>Tip:</strong> Upload an existing job description PDF to speed up the process, or write your own description above.
+              </AlertDescription>
+            </Alert>
           )}
         </div>
 
