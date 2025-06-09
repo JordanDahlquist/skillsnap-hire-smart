@@ -15,9 +15,6 @@ export interface JobCreatorState {
   isGenerating: boolean;
   isSaving: boolean;
   formData: JobFormData;
-  uploadedPdfContent: string | null;
-  pdfFileName: string | null;
-  useOriginalPdf: boolean | null;
   generatedJobPost: string;
   generatedSkillsTest: string;
   isEditingJobPost: boolean;
@@ -29,9 +26,6 @@ export interface JobCreatorActions {
   setIsGenerating: (loading: boolean) => void;
   setIsSaving: (saving: boolean) => void;
   updateFormData: (field: keyof JobFormData, value: string) => void;
-  setUploadedPdfContent: (content: string | null) => void;
-  setPdfFileName: (fileName: string | null) => void;
-  setUseOriginalPdf: (use: boolean | null) => void;
   setGeneratedJobPost: (content: string) => void;
   setGeneratedSkillsTest: (content: string) => void;
   setIsEditingJobPost: (editing: boolean) => void;

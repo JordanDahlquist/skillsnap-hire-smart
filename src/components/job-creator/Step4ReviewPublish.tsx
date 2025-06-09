@@ -16,8 +16,6 @@ interface Step4ReviewPublishProps {
 
 export const Step4ReviewPublish = ({
   formData,
-  pdfFileName,
-  useOriginalPdf,
   generatedJobPost,
   generatedSkillsTest,
   actions
@@ -34,7 +32,7 @@ export const Step4ReviewPublish = ({
 
       <div className="flex-shrink-0 mb-4">
         <div className="bg-gray-50 rounded-lg p-3">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
             <div>
               <span className="font-medium text-gray-700">Title:</span>
               <p className="text-gray-900 truncate">{formData.title}</p>
@@ -47,14 +45,6 @@ export const Step4ReviewPublish = ({
               <span className="font-medium text-gray-700">Level:</span>
               <p className="text-gray-900">{formData.experienceLevel}</p>
             </div>
-            {pdfFileName && (
-              <div>
-                <span className="font-medium text-gray-700">Source:</span>
-                <p className="text-xs text-gray-600 truncate">
-                  {pdfFileName} {useOriginalPdf === true ? "(original)" : "(AI rewritten)"}
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>

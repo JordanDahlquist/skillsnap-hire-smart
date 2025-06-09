@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -24,34 +25,25 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // State management
+  // Simplified state management without PDF functionality
   const [state, setState] = useState<JobCreatorState>({
     currentStep: 1,
     isGenerating: false,
     isSaving: false,
     formData: getInitialFormData(),
-    uploadedPdfContent: null,
-    pdfFileName: null,
-    useOriginalPdf: null,
     generatedJobPost: "",
     generatedSkillsTest: "",
     isEditingJobPost: false,
     isEditingSkillsTest: false,
   });
 
-  // Actions for state management
+  // Simplified actions without PDF functionality
   const actions: JobCreatorActions = {
     setCurrentStep: (step: number) => setState(prev => ({ ...prev, currentStep: step })),
     setIsGenerating: (loading: boolean) => setState(prev => ({ ...prev, isGenerating: loading })),
     setIsSaving: (saving: boolean) => setState(prev => ({ ...prev, isSaving: saving })),
     updateFormData: (field: keyof JobFormData, value: string) => 
       setState(prev => ({ ...prev, formData: { ...prev.formData, [field]: value } })),
-    setUploadedPdfContent: (content: string | null) => 
-      setState(prev => ({ ...prev, uploadedPdfContent: content })),
-    setPdfFileName: (fileName: string | null) => 
-      setState(prev => ({ ...prev, pdfFileName: fileName })),
-    setUseOriginalPdf: (use: boolean | null) => 
-      setState(prev => ({ ...prev, useOriginalPdf: use })),
     setGeneratedJobPost: (content: string) => 
       setState(prev => ({ ...prev, generatedJobPost: content })),
     setGeneratedSkillsTest: (content: string) => 
@@ -63,7 +55,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
   };
 
   const handleGenerateJobPost = async () => {
-    if (!state.formData.title || (!state.formData.description && !(state.uploadedPdfContent && state.useOriginalPdf === true))) {
+    if (!state.formData.title || !state.formData.description) {
       toast({
         title: "Missing Information",
         description: "Please fill in the job title and description first.",
@@ -74,31 +66,13 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
 
     actions.setIsGenerating(true);
     try {
-      const data = await generateJobPost(
-        state.formData, 
-        state.uploadedPdfContent, 
-        state.useOriginalPdf
-      );
-      
+      const data = await generateJobPost(state.formData, null, null);
       actions.setGeneratedJobPost(data.jobPost);
       
-      // Improved toast messages based on the actual workflow
-      if (state.uploadedPdfContent && state.useOriginalPdf === true) {
-        toast({
-          title: "Original Content Ready!",
-          description: "Using your uploaded PDF content as the job post."
-        });
-      } else if (state.uploadedPdfContent && state.useOriginalPdf === false) {
-        toast({
-          title: "Job Post Generated!",
-          description: "AI has rewritten your PDF content into a professional job posting."
-        });
-      } else {
-        toast({
-          title: "Job Post Generated!",
-          description: "Your AI-powered job posting is ready for review."
-        });
-      }
+      toast({
+        title: "Job Post Generated!",
+        description: "Your AI-powered job posting is ready for review."
+      });
     } catch (error) {
       console.error('Error generating job post:', error);
       toast({
@@ -169,9 +143,6 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
         isGenerating: false,
         isSaving: false,
         formData: getInitialFormData(),
-        uploadedPdfContent: null,
-        pdfFileName: null,
-        useOriginalPdf: null,
         generatedJobPost: "",
         generatedSkillsTest: "",
         isEditingJobPost: false,
@@ -189,33 +160,15 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
   };
 
   const nextStep = () => {
-    // Special case: Skip Step 2 if using original PDF content
-    if (state.currentStep === 1 && state.uploadedPdfContent && state.useOriginalPdf === true) {
-      // Set the job post content directly from PDF
-      actions.setGeneratedJobPost(state.uploadedPdfContent);
-      actions.setCurrentStep(3);
-      toast({
-        title: "Using Original Content",
-        description: "Skipping AI generation, proceeding to skills test creation."
-      });
-      return;
-    }
-    
     if (state.currentStep < 4) actions.setCurrentStep(state.currentStep + 1);
   };
 
   const prevStep = () => {
-    // Special case: If we're on Step 3 and came from Step 1 (skipped Step 2), go back to Step 1
-    if (state.currentStep === 3 && state.uploadedPdfContent && state.useOriginalPdf === true) {
-      actions.setCurrentStep(1);
-      return;
-    }
-    
     if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
   };
 
-  const canProceedToStep2 = state.formData.title && (state.formData.description || (state.uploadedPdfContent && state.useOriginalPdf === true));
-  const canProceedToStep3 = state.generatedJobPost || (state.uploadedPdfContent && state.useOriginalPdf === true);
+  const canProceedToStep2 = state.formData.title && state.formData.description;
+  const canProceedToStep3 = state.generatedJobPost;
   const canActivate = state.generatedJobPost && state.generatedSkillsTest;
 
   if (!open) return null;
@@ -226,9 +179,6 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
         return (
           <Step1BasicInfo
             formData={state.formData}
-            uploadedPdfContent={state.uploadedPdfContent}
-            pdfFileName={state.pdfFileName}
-            useOriginalPdf={state.useOriginalPdf}
             actions={actions}
           />
         );
@@ -236,8 +186,8 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
         return (
           <Step2JobPostGenerator
             formData={state.formData}
-            uploadedPdfContent={state.uploadedPdfContent}
-            useOriginalPdf={state.useOriginalPdf}
+            uploadedPdfContent={null}
+            useOriginalPdf={null}
             generatedJobPost={state.generatedJobPost}
             isGenerating={state.isGenerating}
             isEditingJobPost={state.isEditingJobPost}
@@ -260,8 +210,8 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
         return (
           <Step4ReviewPublish
             formData={state.formData}
-            pdfFileName={state.pdfFileName}
-            useOriginalPdf={state.useOriginalPdf}
+            pdfFileName={null}
+            useOriginalPdf={null}
             generatedJobPost={state.generatedJobPost}
             generatedSkillsTest={state.generatedSkillsTest}
             actions={actions}
@@ -287,26 +237,20 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
 
         {/* Step Indicator */}
         <div className="flex items-center justify-center py-2 px-4 border-b flex-shrink-0">
-          {[1, 2, 3, 4].map((step) => {
-            const isCompleted = state.currentStep >= step || 
-              (step === 2 && state.uploadedPdfContent && state.useOriginalPdf === true && state.currentStep >= 3);
-            
-            return (
-              <div key={step} className="flex items-center">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                  isCompleted ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {step}
-                </div>
-                {step < 4 && (
-                  <div className={`w-8 h-1 mx-1 ${
-                    state.currentStep > step || (step === 2 && state.uploadedPdfContent && state.useOriginalPdf === true && state.currentStep >= 3)
-                      ? 'bg-blue-600' : 'bg-gray-200'
-                  }`} />
-                )}
+          {[1, 2, 3, 4].map((step) => (
+            <div key={step} className="flex items-center">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                state.currentStep >= step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                {step}
               </div>
-            );
-          })}
+              {step < 4 && (
+                <div className={`w-8 h-1 mx-1 ${
+                  state.currentStep > step ? 'bg-blue-600' : 'bg-gray-200'
+                }`} />
+              )}
+            </div>
+          ))}
         </div>
 
         {/* Content Area */}
@@ -358,7 +302,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
                 }
                 size="sm"
               >
-                {state.currentStep === 1 && state.uploadedPdfContent && state.useOriginalPdf === true ? 'Skip to Skills Test' : 'Next'}
+                Next
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             )}
