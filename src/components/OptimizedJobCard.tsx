@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { EditJobModal } from "./EditJobModal";
 import { useJobDescription } from "@/hooks/useJobDescription";
 import { useJobActions } from "@/hooks/useJobActions";
+import { useViewTracking } from "@/hooks/useViewTracking";
 import { JobCardHeader } from "./job-card/JobCardHeader";
 import { JobCardDetails } from "./job-card/JobCardDetails";
 import { JobCardActions } from "./job-card/JobCardActions";
@@ -22,6 +23,9 @@ export const OptimizedJobCard = memo(({
   getTimeAgo 
 }: OptimizedJobCardProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
+  // Track views when card is rendered
+  useViewTracking(job.id, true);
   
   const needsAttention = useMemo(() => 
     (job.applicationStatusCounts?.pending || 0) >= 10,

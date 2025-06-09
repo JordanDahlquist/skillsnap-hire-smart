@@ -1,6 +1,7 @@
 
 import { MapPin, Eye, TrendingUp, Calendar } from "lucide-react";
 import { Job } from "@/types";
+import { useJobMetrics } from "@/hooks/useJobMetrics";
 
 interface JobCardDetailsProps {
   job: Job;
@@ -15,10 +16,16 @@ export const JobCardDetails = ({
   getTimeAgo, 
   applicationsCount 
 }: JobCardDetailsProps) => {
+  const { data: metrics } = useJobMetrics(job.id);
+  
   const displayEmploymentType = job.employment_type || job.role_type;
   
   // Use the real view_count from the database
   const viewCount = job.view_count || 0;
+  
+  // Use real metrics or defaults
+  const responseRate = metrics?.responseRate ?? 0;
+  const weeklyApplications = metrics?.weeklyApplications ?? 0;
 
   return (
     <>
@@ -34,7 +41,7 @@ export const JobCardDetails = ({
         </div>
         <div className="flex items-center gap-1">
           <TrendingUp className="w-4 h-4" />
-          <span>12% response rate</span>
+          <span>{responseRate}% response rate</span>
         </div>
         {job.budget && (
           <div className="flex items-center gap-1 text-green-600">
@@ -46,9 +53,9 @@ export const JobCardDetails = ({
       <div className="flex items-center gap-4 text-sm">
         <div className="flex items-center gap-1 text-blue-600">
           <span className="font-medium">{applicationsCount} applications</span>
-          {applicationsCount > 0 && (
+          {weeklyApplications > 0 && (
             <span className="text-gray-500">
-              (+{Math.floor(Math.random() * 5) + 1} this week)
+              (+{weeklyApplications} this week)
             </span>
           )}
         </div>
