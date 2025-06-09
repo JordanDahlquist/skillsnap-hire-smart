@@ -1,8 +1,10 @@
+
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bold, Italic, Link, List, Save, X } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -55,17 +57,14 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
   const handleLinkClick = () => {
     if (!editorRef.current) return;
     
-    // Focus the editor first
     editorRef.current.focus();
     
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       const range = saveSelection();
       if (range && !range.collapsed) {
-        // Text is selected
         setLinkText(range.toString());
       } else {
-        // No text selected
         setLinkText('');
       }
     }
@@ -76,13 +75,11 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
   const insertLink = () => {
     if (!linkUrl || !editorRef.current) return;
 
-    // Focus the editor and restore selection
     editorRef.current.focus();
     restoreSelection();
 
     const selection = window.getSelection();
     if (selection && savedRange) {
-      // Remove any existing ranges and add our saved range
       selection.removeAllRanges();
       selection.addRange(savedRange);
 
@@ -90,21 +87,18 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
       const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${finalLinkText}</a>`;
 
       if (savedRange.collapsed) {
-        // No text was selected, insert the link at cursor position
         const linkElement = document.createElement('div');
         linkElement.innerHTML = linkHtml;
         const linkNode = linkElement.firstChild;
         
         if (linkNode) {
           savedRange.insertNode(linkNode);
-          // Move cursor after the inserted link
           savedRange.setStartAfter(linkNode);
           savedRange.setEndAfter(linkNode);
           selection.removeAllRanges();
           selection.addRange(savedRange);
         }
       } else {
-        // Replace selected text with link
         savedRange.deleteContents();
         const linkElement = document.createElement('div');
         linkElement.innerHTML = linkHtml;
@@ -112,7 +106,6 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
         
         if (linkNode) {
           savedRange.insertNode(linkNode);
-          // Move cursor after the inserted link
           savedRange.setStartAfter(linkNode);
           savedRange.setEndAfter(linkNode);
           selection.removeAllRanges();
@@ -120,11 +113,9 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
         }
       }
 
-      // Update the content
       onChange(editorRef.current.innerHTML);
     }
 
-    // Close dialog and reset state
     setShowLinkDialog(false);
     setLinkUrl('');
     setLinkText('');
@@ -138,7 +129,6 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
   };
 
   const convertToHtml = (text: string) => {
-    // Convert plain text or basic markdown to HTML
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -151,9 +141,20 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
     setLinkUrl('');
     setLinkText('');
     setSavedRange(null);
-    // Return focus to editor
     if (editorRef.current) {
       editorRef.current.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 's') {
+        e.preventDefault();
+        onSave();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onCancel();
+      }
     }
   };
 
@@ -164,7 +165,6 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
     }
   }, [value]);
 
-  // Add custom CSS styles directly to the component
   useEffect(() => {
     const styleElement = document.createElement('style');
     styleElement.textContent = `
@@ -196,78 +196,92 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
   }, []);
 
   return (
-    <div className="rich-text-editor space-y-4">
-      {/* Toolbar */}
-      <div className="flex items-center gap-2 p-2 border rounded-lg bg-gray-50">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleBold}
-          className="h-8 w-8"
-          title="Bold"
-        >
-          <Bold className="w-4 h-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleItalic}
-          className="h-8 w-8"
-          title="Italic"
-        >
-          <Italic className="w-4 h-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleLinkClick}
-          className="h-8 w-8"
-          title="Add Link"
-        >
-          <Link className="w-4 h-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleList}
-          className="h-8 w-8"
-          title="Bullet List"
-        >
-          <List className="w-4 h-4" />
-        </Button>
+    <div className="rich-text-editor h-full flex flex-col" onKeyDown={handleKeyDown}>
+      {/* Fixed Header - Toolbar */}
+      <div className="flex-shrink-0 border-b bg-gray-50">
+        <div className="flex items-center justify-between p-3">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleBold}
+              className="h-8 w-8"
+              title="Bold (Ctrl+B)"
+            >
+              <Bold className="w-4 h-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleItalic}
+              className="h-8 w-8"
+              title="Italic (Ctrl+I)"
+            >
+              <Italic className="w-4 h-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleLinkClick}
+              className="h-8 w-8"
+              title="Add Link"
+            >
+              <Link className="w-4 h-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleList}
+              className="h-8 w-8"
+              title="Bullet List"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          {/* Action Buttons in Header */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCancel}
+              className="flex items-center gap-1"
+            >
+              <X className="w-4 h-4" />
+              Cancel
+            </Button>
+            <Button
+              onClick={onSave}
+              size="sm"
+              className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Save className="w-4 h-4" />
+              Save
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Editor */}
-      <div
-        ref={editorRef}
-        contentEditable
-        onInput={handleInput}
-        className="min-h-[400px] w-full p-4 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-        style={{ wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}
-        data-placeholder={placeholder}
-      />
-
-      {/* Save/Cancel buttons */}
-      <div className="flex gap-2">
-        <Button
-          onClick={onSave}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-        >
-          <Save className="w-4 h-4" />
-          Save Changes
-        </Button>
-        <Button
-          variant="outline"
-          onClick={onCancel}
-          className="flex items-center gap-2"
-        >
-          <X className="w-4 h-4" />
-          Cancel
-        </Button>
+      {/* Flexible Content Area - Scrollable Editor */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ScrollArea className="h-full w-full">
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
+            className="w-full p-4 min-h-full focus:outline-none bg-white"
+            style={{ 
+              wordWrap: 'break-word', 
+              whiteSpace: 'pre-wrap',
+              lineHeight: '1.6'
+            }}
+            data-placeholder={placeholder}
+          />
+        </ScrollArea>
       </div>
 
       {/* Link Dialog */}

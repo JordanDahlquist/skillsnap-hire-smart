@@ -474,16 +474,16 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
 
           {/* Step 2: Generate Job Post - REDESIGNED */}
           {currentStep === 2 && (
-            <Card className="h-full flex flex-col overflow-hidden">
-              <CardHeader className="pb-3 flex-shrink-0">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Sparkles className="w-5 h-5 text-blue-600" />
-                  {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "AI Job Post Generator"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
-                {!generatedJobPost ? (
-                  <div className="flex-1 flex items-center justify-center">
+            <div className="h-full flex flex-col overflow-hidden">
+              {!generatedJobPost ? (
+                <Card className="h-full">
+                  <CardHeader className="pb-3 flex-shrink-0">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Sparkles className="w-5 h-5 text-blue-600" />
+                      {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "AI Job Post Generator"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex items-center justify-center">
                     <div className="text-center max-w-md">
                       <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
                         <Sparkles className="w-8 h-8 text-blue-600" />
@@ -512,64 +512,65 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                         <Sparkles className="w-4 h-4 ml-2" />
                       </Button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-                    <div className="flex items-center justify-between mb-3 flex-shrink-0">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-900">
-                          {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
-                        </Label>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {isEditingJobPost ? "Edit your content below" : "Click to edit or use the buttons on the right"}
-                        </p>
-                      </div>
-                      <div className="flex gap-2 flex-shrink-0">
-                        {!isEditingJobPost && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setIsEditingJobPost(true)}
-                            className="flex items-center gap-1 text-xs h-8 px-3"
-                          >
-                            <Edit3 className="w-3 h-3" />
-                            Edit
-                          </Button>
-                        )}
-                        {!(uploadedPdfContent && useOriginalPdf === true) && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={generateJobPost}
-                            disabled={isGenerating}
-                            className="text-xs h-8 px-3"
-                          >
-                            {isGenerating ? 'Regenerating...' : 'Regenerate'}
-                          </Button>
-                        )}
-                      </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="h-full flex flex-col overflow-hidden">
+                  <CardHeader className="pb-3 flex-shrink-0">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Sparkles className="w-5 h-5 text-blue-600" />
+                        {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
+                      </CardTitle>
+                      {!isEditingJobPost && !(uploadedPdfContent && useOriginalPdf === true) && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={generateJobPost}
+                          disabled={isGenerating}
+                          className="text-xs h-8 px-3"
+                        >
+                          {isGenerating ? 'Regenerating...' : 'Regenerate'}
+                        </Button>
+                      )}
                     </div>
-                    
-                    <div className="flex-1 min-h-0 overflow-hidden">
-                      {isEditingJobPost ? (
-                        <RichTextEditor
-                          value={generatedJobPost}
-                          onChange={setGeneratedJobPost}
-                          onSave={handleJobPostSave}
-                          onCancel={handleJobPostCancel}
-                          placeholder="Enter your job posting content here..."
-                        />
-                      ) : (
-                        <div className="h-full border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                  </CardHeader>
+                  <CardContent className="flex-1 overflow-hidden p-0">
+                    {isEditingJobPost ? (
+                      <RichTextEditor
+                        value={generatedJobPost}
+                        onChange={setGeneratedJobPost}
+                        onSave={handleJobPostSave}
+                        onCancel={handleJobPostCancel}
+                        placeholder="Enter your job posting content here..."
+                      />
+                    ) : (
+                      <div className="h-full flex flex-col">
+                        <div className="flex-shrink-0 p-4 border-b bg-gray-50">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-gray-600">
+                              Click to edit or use the buttons on the right
+                            </p>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setIsEditingJobPost(true)}
+                              className="flex items-center gap-1 text-xs h-8 px-3"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                              Edit
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex-1 overflow-hidden">
                           <ScrollArea className="h-full w-full">
                             <div 
-                              className="p-4 cursor-pointer hover:bg-gray-100 transition-colors min-h-full"
+                              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-full"
                               onClick={() => setIsEditingJobPost(true)}
                               style={{
                                 lineHeight: '1.6',
                                 fontSize: '14px',
-                                wordWrap: 'break-word',
-                                overflow: 'hidden'
+                                wordWrap: 'break-word'
                               }}
                               dangerouslySetInnerHTML={{ 
                                 __html: parseMarkdown(generatedJobPost) 
@@ -577,26 +578,26 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                             />
                           </ScrollArea>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
 
           {/* Step 3: Generate Skills Test - REDESIGNED */}
           {currentStep === 3 && (
-            <Card className="h-full flex flex-col overflow-hidden">
-              <CardHeader className="pb-3 flex-shrink-0">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Sparkles className="w-5 h-5 text-blue-600" />
-                  Skills Assessment Generator
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
-                {!generatedSkillsTest ? (
-                  <div className="flex-1 flex items-center justify-center">
+            <div className="h-full flex flex-col overflow-hidden">
+              {!generatedSkillsTest ? (
+                <Card className="h-full">
+                  <CardHeader className="pb-3 flex-shrink-0">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Sparkles className="w-5 h-5 text-blue-600" />
+                      Skills Assessment Generator
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex items-center justify-center">
                     <div className="text-center max-w-md">
                       <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
                         <Sparkles className="w-8 h-8 text-blue-600" />
@@ -617,28 +618,17 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                         <Sparkles className="w-4 h-4 ml-2" />
                       </Button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-                    <div className="flex items-center justify-between mb-3 flex-shrink-0">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-900">Generated Skills Test</Label>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {isEditingSkillsTest ? "Edit your assessment below" : "Click to edit or use the buttons on the right"}
-                        </p>
-                      </div>
-                      <div className="flex gap-2 flex-shrink-0">
-                        {!isEditingSkillsTest && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setIsEditingSkillsTest(true)}
-                            className="flex items-center gap-1 text-xs h-8 px-3"
-                          >
-                            <Edit3 className="w-3 h-3" />
-                            Edit
-                          </Button>
-                        )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="h-full flex flex-col overflow-hidden">
+                  <CardHeader className="pb-3 flex-shrink-0">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Sparkles className="w-5 h-5 text-blue-600" />
+                        Generated Skills Test
+                      </CardTitle>
+                      {!isEditingSkillsTest && (
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -648,29 +638,45 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                         >
                           {isGenerating ? 'Regenerating...' : 'Regenerate'}
                         </Button>
-                      </div>
+                      )}
                     </div>
-                    
-                    <div className="flex-1 min-h-0 overflow-hidden">
-                      {isEditingSkillsTest ? (
-                        <RichTextEditor
-                          value={generatedSkillsTest}
-                          onChange={setGeneratedSkillsTest}
-                          onSave={handleSkillsTestSave}
-                          onCancel={handleSkillsTestCancel}
-                          placeholder="Enter your skills test questions here..."
-                        />
-                      ) : (
-                        <div className="h-full border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                  </CardHeader>
+                  <CardContent className="flex-1 overflow-hidden p-0">
+                    {isEditingSkillsTest ? (
+                      <RichTextEditor
+                        value={generatedSkillsTest}
+                        onChange={setGeneratedSkillsTest}
+                        onSave={handleSkillsTestSave}
+                        onCancel={handleSkillsTestCancel}
+                        placeholder="Enter your skills test questions here..."
+                      />
+                    ) : (
+                      <div className="h-full flex flex-col">
+                        <div className="flex-shrink-0 p-4 border-b bg-gray-50">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-gray-600">
+                              Click to edit or use the buttons on the right
+                            </p>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setIsEditingSkillsTest(true)}
+                              className="flex items-center gap-1 text-xs h-8 px-3"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                              Edit
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex-1 overflow-hidden">
                           <ScrollArea className="h-full w-full">
                             <div 
-                              className="p-4 cursor-pointer hover:bg-gray-100 transition-colors min-h-full"
+                              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-full"
                               onClick={() => setIsEditingSkillsTest(true)}
                               style={{
                                 lineHeight: '1.6',
                                 fontSize: '14px',
-                                wordWrap: 'break-word',
-                                overflow: 'hidden'
+                                wordWrap: 'break-word'
                               }}
                               dangerouslySetInnerHTML={{ 
                                 __html: parseMarkdown(generatedSkillsTest) 
@@ -678,12 +684,12 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                             />
                           </ScrollArea>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
 
           {/* Step 4: Review & Publish */}
