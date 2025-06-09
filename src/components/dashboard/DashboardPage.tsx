@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
+import { useAuth } from "@/hooks/useAuth"; // Updated import
 import { useOptimizedJob } from "@/hooks/useOptimizedJobs";
 import { useOptimizedApplications } from "@/hooks/useOptimizedApplications";
 import { UnifiedHeader } from "../UnifiedHeader";
@@ -11,16 +11,12 @@ import { JobCreatorPanel } from "../JobCreatorPanel";
 import { DashboardSkeleton } from "./DashboardSkeleton";
 import { logger } from "@/services/loggerService";
 import { Application, Job } from "@/types";
+
 export const DashboardPage = () => {
-  const {
-    jobId
-  } = useParams<{
-    jobId: string;
-  }>();
+  const { jobId } = useParams<{ jobId: string; }>();
   const [searchParams] = useSearchParams();
-  const {
-    user
-  } = useOptimizedAuth(); // Use optimized auth
+  const { user } = useAuth(); // Updated hook usage
+
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [emailModalOpen, setEmailModalOpen] = useState(false);

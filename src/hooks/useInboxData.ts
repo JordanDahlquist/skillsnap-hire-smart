@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { useOptimizedAuth } from './useOptimizedAuth';
+import { useAuth } from './useAuth'; // Updated import
 import type { EmailThread, EmailMessage } from '@/types/inbox';
 
 interface AttachmentFile {
@@ -16,7 +15,7 @@ interface AttachmentFile {
 }
 
 export const useInboxData = () => {
-  const { user, profile } = useOptimizedAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const subscriptionRef = useRef<any>(null);

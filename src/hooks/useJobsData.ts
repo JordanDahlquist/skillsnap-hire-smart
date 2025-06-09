@@ -1,15 +1,16 @@
 import { useMemo, useCallback, useState } from "react";
-import { useOptimizedJobs } from "./useOptimizedJobs"; // Use optimized hook
+import { useOptimizedJobs } from "./useOptimizedJobs";
 import { useRecentApplications } from "./useApplications";
 import { useJobStats } from "./useJobStats";
-import { useOptimizedAuth } from "./useOptimizedAuth"; // Use optimized auth
+import { useAuth } from "./useAuth"; // Updated import
 import { JobFilters, defaultFilters } from "./job-filtering/types";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
 import { applyJobFiltersOptimized, sortJobs } from "./job-filtering/optimizedFilterUtils";
 import { useDebounce } from "./useDebounce";
 
 export const useJobsData = () => {
-  const { user } = useOptimizedAuth(); // Use optimized auth
+  const { user } = useAuth(); // Updated hook usage
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<JobFilters>(defaultFilters);
   const [sortBy, setSortBy] = useState("updated_at");

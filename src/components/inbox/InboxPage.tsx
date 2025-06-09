@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useInboxData } from "@/hooks/useInboxData";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { InboxContent } from "./InboxContent";
@@ -9,7 +9,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProcessedEmailSubjects } from "@/hooks/useProcessedEmailSubjects";
 
 export const InboxPage = () => {
-  const { user } = useOptimizedAuth();
+  const { user } = useAuth();
+
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const { 
     threads, 

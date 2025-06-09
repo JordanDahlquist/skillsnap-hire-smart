@@ -1,10 +1,9 @@
-
 import React, { useState, useRef } from 'react';
 import { Upload, X, File, Image, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
+import { useAuth } from '@/hooks/useAuth'; // Updated import
 
 interface AttachmentFile {
   id: string;
@@ -22,7 +21,7 @@ interface AttachmentUploadProps {
 }
 
 export const AttachmentUpload = ({ attachments, onAttachmentsChange, disabled }: AttachmentUploadProps) => {
-  const { user } = useOptimizedAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);

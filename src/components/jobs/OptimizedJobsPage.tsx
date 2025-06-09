@@ -1,5 +1,5 @@
 import { useState, memo, useCallback } from "react";
-import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
+import { useAuth } from "@/hooks/useAuth"; // Updated import
 import { useToast } from "@/components/ui/use-toast";
 import { useJobSelection } from "@/hooks/useJobSelection";
 import { useAsyncOperation } from "@/hooks/useAsyncOperation";
@@ -15,7 +15,8 @@ import { OptimizedJobsContent } from "./OptimizedJobsContent";
 import { LOADING_MESSAGES, SUCCESS_MESSAGES } from "@/constants/messages";
 
 export const OptimizedJobsPage = memo(() => {
-  const { user, profile } = useOptimizedAuth(); // Use optimized auth
+  const { user, profile } = useAuth(); // Updated hook usage
+
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const { toast } = useToast();
   const { execute: executeAsync } = useAsyncOperation();
