@@ -148,8 +148,8 @@ export const OptimizedJobsContent = memo(({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-8">
-      <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-8 py-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
             Showing <span className="font-semibold text-gray-900">{filteredJobs.length}</span> of <span className="font-semibold text-gray-900">{jobs.length}</span> total jobs
@@ -168,7 +168,7 @@ export const OptimizedJobsContent = memo(({
 
         {filteredJobs.length > 0 && (
           <Card className="border-0 shadow-sm">
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center gap-4">
                 <Checkbox
                   checked={allSelected}
