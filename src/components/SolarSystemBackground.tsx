@@ -4,25 +4,25 @@ import React from 'react';
 export const SolarSystemBackground = () => {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
-      {/* Charcoal space background */}
-      <div className="absolute inset-0 bg-gray-800" />
+      {/* Nearly pure black space background */}
+      <div className="absolute inset-0 bg-gray-950" />
       
-      {/* Subtle depth gradient for charcoal */}
-      <div className="absolute inset-0 bg-gradient-radial from-transparent via-gray-800 to-gray-900 opacity-30" />
+      {/* Subtle depth gradient for nearly pure black */}
+      <div className="absolute inset-0 bg-gradient-radial from-transparent via-gray-950 to-black opacity-40" />
       
-      {/* Minimal nebula clouds - adjusted for charcoal background */}
+      {/* Minimal nebula clouds - adjusted for nearly pure black background */}
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-gray-600/15 via-gray-700/8 to-transparent rounded-full blur-3xl animate-pulse" 
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-gray-700/10 via-gray-800/5 to-transparent rounded-full blur-3xl animate-pulse" 
              style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-gradient-radial from-gray-500/12 via-gray-600/6 to-transparent rounded-full blur-3xl animate-pulse" 
+        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-gradient-radial from-gray-600/8 via-gray-700/4 to-transparent rounded-full blur-3xl animate-pulse" 
              style={{ animationDelay: '3s', animationDuration: '12s' }} />
-        <div className="absolute top-2/3 left-1/6 w-64 h-64 bg-gradient-radial from-gray-400/10 via-gray-500/5 to-transparent rounded-full blur-2xl animate-pulse" 
+        <div className="absolute top-2/3 left-1/6 w-64 h-64 bg-gradient-radial from-gray-500/6 via-gray-600/3 to-transparent rounded-full blur-2xl animate-pulse" 
              style={{ animationDelay: '6s', animationDuration: '10s' }} />
       </div>
 
-      {/* Enhanced star field with multiple layers */}
+      {/* Enhanced star field with consistent animations */}
       <div className="absolute inset-0">
-        {/* Bright prominent stars */}
+        {/* Bright prominent stars - consistent timing */}
         {Array.from({ length: 80 }).map((_, i) => (
           <div
             key={`bright-${i}`}
@@ -32,15 +32,15 @@ export const SolarSystemBackground = () => {
               top: `${Math.random() * 100}%`,
               width: `${2 + Math.random() * 2}px`,
               height: `${2 + Math.random() * 2}px`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`,
+              animationDelay: `${(i * 0.1) % 5}s`,
+              animationDuration: '4s',
               opacity: 0.7 + Math.random() * 0.3,
               boxShadow: `0 0 ${4 + Math.random() * 8}px rgba(255, 255, 255, 0.8)`,
             }}
           />
         ))}
         
-        {/* Medium twinkling stars */}
+        {/* Medium twinkling stars - standardized timing */}
         {Array.from({ length: 120 }).map((_, i) => (
           <div
             key={`medium-${i}`}
@@ -50,18 +50,18 @@ export const SolarSystemBackground = () => {
               top: `${Math.random() * 100}%`,
               width: `${1 + Math.random()}px`,
               height: `${1 + Math.random()}px`,
-              animationDelay: `${Math.random() * 4}s`,
-              animationDuration: `${2 + Math.random() * 3}s`,
+              animationDelay: `${(i * 0.05) % 3}s`,
+              animationDuration: '3s',
               opacity: 0.4 + Math.random() * 0.4,
             }}
           />
         ))}
         
-        {/* Distant small stars */}
+        {/* Distant small stars - static for stability */}
         {Array.from({ length: 200 }).map((_, i) => (
           <div
             key={`small-${i}`}
-            className="absolute w-px h-px bg-gray-300 rounded-full opacity-30"
+            className="absolute w-px h-px bg-gray-300 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -71,7 +71,7 @@ export const SolarSystemBackground = () => {
         ))}
       </div>
 
-      {/* Enhanced meteors with gravitational pull effects */}
+      {/* Enhanced meteors with gravitational pull effects - smooth timing */}
       <div className="absolute inset-0">
         {/* Meteors that spiral into the solar system */}
         {Array.from({ length: 6 }).map((_, i) => (
@@ -81,7 +81,7 @@ export const SolarSystemBackground = () => {
             style={{
               left: `${Math.random() * 20}%`,
               top: `${Math.random() * 20}%`,
-              animationDelay: `${3 + Math.random() * 8}s`,
+              animationDelay: `${i * 2}s`,
               animationDuration: '4s',
               boxShadow: '0 0 8px 3px rgba(255, 255, 255, 0.8)',
             }}
@@ -96,7 +96,7 @@ export const SolarSystemBackground = () => {
             style={{
               right: `${Math.random() * 30}%`,
               top: `${Math.random() * 30}%`,
-              animationDelay: `${5 + Math.random() * 10}s`,
+              animationDelay: `${i * 3}s`,
               animationDuration: '6s',
               boxShadow: '0 0 6px 2px rgba(191, 219, 254, 0.8)',
             }}
@@ -111,7 +111,7 @@ export const SolarSystemBackground = () => {
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDelay: `${8 + Math.random() * 12}s`,
+              animationDelay: `${i * 4}s`,
               animationDuration: '3s',
               boxShadow: '0 0 4px 1px rgba(254, 240, 138, 0.8)',
             }}
@@ -225,7 +225,7 @@ export const SolarSystemBackground = () => {
         </div>
       </div>
 
-      {/* Floating cosmic dust particles */}
+      {/* Floating cosmic dust particles - smooth consistent movement */}
       <div className="absolute inset-0">
         {Array.from({ length: 30 }).map((_, i) => (
           <div
@@ -234,8 +234,8 @@ export const SolarSystemBackground = () => {
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${8 + Math.random() * 6}s`,
+              animationDelay: `${i * 0.5}s`,
+              animationDuration: '10s',
             }}
           />
         ))}

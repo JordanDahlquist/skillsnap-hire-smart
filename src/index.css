@@ -180,7 +180,7 @@
   }
 
   .animate-float {
-    animation: float 12s ease-in-out infinite;
+    animation: float 10s ease-in-out infinite;
   }
 
   .animate-spiral-in {
@@ -188,7 +188,7 @@
   }
 
   .animate-gravitational-capture {
-    animation: gravitational-capture 6s ease-out infinite;
+    animation: gravitational-capture 6s ease-in-out infinite;
   }
 
   .animate-gravitational-deflect {
@@ -318,7 +318,7 @@
   margin-bottom: 5px;
 }
 
-/* Enhanced Solar System Animations */
+/* Enhanced Solar System Animations - Smooth and Consistent */
 @keyframes spin-slow {
   from {
     transform: translate(-50%, -50%) rotate(0deg);
@@ -369,20 +369,20 @@
     opacity: 0.3;
   }
   25% {
-    transform: translateY(-20px) translateX(10px);
-    opacity: 0.6;
+    transform: translateY(-15px) translateX(8px);
+    opacity: 0.5;
   }
   50% {
-    transform: translateY(-10px) translateX(-15px);
+    transform: translateY(-8px) translateX(-12px);
     opacity: 0.4;
   }
   75% {
-    transform: translateY(-25px) translateX(5px);
-    opacity: 0.7;
+    transform: translateY(-20px) translateX(4px);
+    opacity: 0.6;
   }
 }
 
-/* New Gravitational Effect Animations */
+/* Enhanced Gravitational Effect Animations - Smoother Curves */
 @keyframes spiral-in {
   0% {
     opacity: 0;
