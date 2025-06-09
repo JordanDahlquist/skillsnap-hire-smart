@@ -1,4 +1,3 @@
-
 interface ExportableJob {
   title: string;
   status: string;
@@ -34,20 +33,45 @@ export const exportJobsToCSV = (jobs: ExportableJob[], filename: string = 'jobs-
   downloadCSV(csvContent, filename);
 };
 
-export const exportApplicationsToCSV = (applications: ExportableApplication[], jobTitle: string): void => {
+export const exportApplicationsToCSV = (applications: any[], jobTitle: string) => {
+  const headers = [
+    'Name',
+    'Email',
+    'Status',
+    'Manual Rating',
+    'AI Rating',
+    'Pipeline Stage',
+    'Applied Date',
+    'Experience',
+    'Location',
+    'Phone'
+  ];
+
   const csvContent = [
-    ['Name', 'Email', 'Applied Date', 'AI Rating', 'Status'].join(','),
+    headers.join(','),
     ...applications.map(app => [
-      app.name,
-      app.email,
-      new Date(app.created_at).toLocaleDateString(),
-      app.ai_rating || 'N/A',
-      app.status
+      `"${app.name || ''}"`,
+      `"${app.email || ''}"`,
+      `"${app.status || ''}"`,
+      app.manual_rating || '',
+      app.ai_rating || '',
+      `"${app.pipeline_stage || 'applied'}"`,
+      app.created_at ? new Date(app.created_at).toLocaleDateString() : '',
+      `"${app.experience || ''}"`,
+      `"${app.location || ''}"`,
+      `"${app.phone || ''}"`
     ].join(','))
   ].join('\n');
 
-  const filename = `${jobTitle.replace(/[^a-zA-Z0-9]/g, '_')}_applications.csv`;
-  downloadCSV(csvContent, filename);
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `${jobTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_applications.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 const downloadCSV = (content: string, filename: string): void => {

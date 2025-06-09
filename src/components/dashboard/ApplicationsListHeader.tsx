@@ -1,28 +1,44 @@
+
 import React, { memo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '@/components/ui/button';
-import { Mail } from 'lucide-react';
 import { SearchBar } from '@/components/toolbar/SearchBar';
+import { ApplicationBulkActions } from './bulk-actions';
 import { logger } from '@/services/loggerService';
+
 interface ApplicationsListHeaderProps {
   applicationsCount: number;
   selectedApplications: string[];
   onSelectApplications?: (ids: string[]) => void;
   onSendEmail?: () => void;
+  onBulkUpdateStatus?: (status: string) => void;
+  onBulkSetRating?: (rating: number) => void;
+  onBulkMoveToStage?: (stage: string) => void;
+  onBulkExport?: () => void;
+  onBulkReject?: () => void;
   applications: Array<{
     id: string;
   }>;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
+  jobId?: string;
+  isLoading?: boolean;
 }
+
 export const ApplicationsListHeader = memo(({
   applicationsCount,
   selectedApplications,
   onSelectApplications,
   onSendEmail,
+  onBulkUpdateStatus,
+  onBulkSetRating,
+  onBulkMoveToStage,
+  onBulkExport,
+  onBulkReject,
   applications,
   searchTerm = '',
-  onSearchChange
+  onSearchChange,
+  jobId,
+  isLoading = false
 }: ApplicationsListHeaderProps) => {
   const handleSelectAll = useCallback((checked: boolean) => {
     if (onSelectApplications) {
@@ -33,43 +49,60 @@ export const ApplicationsListHeader = memo(({
       });
     }
   }, [onSelectApplications, applications, applicationsCount]);
-  const handleSendEmail = useCallback(() => {
-    if (onSendEmail) {
-      logger.info('Bulk email action triggered', {
-        selectedCount: selectedApplications.length
-      });
-      onSendEmail();
+
+  const handleClearSelection = useCallback(() => {
+    if (onSelectApplications) {
+      onSelectApplications([]);
+      logger.info('Cleared application selection');
     }
-  }, [onSendEmail, selectedApplications.length]);
+  }, [onSelectApplications]);
+
   const isAllSelected = applicationsCount > 0 && selectedApplications.length === applicationsCount;
   const isSomeSelected = selectedApplications.length > 0 && selectedApplications.length < applicationsCount;
-  return <div className="p-4 border-b border-gray-200 py-[7px]">
+
+  return (
+    <div className="p-4 border-b border-gray-200">
       {/* Applications Title */}
       <h2 className="text-lg font-semibold text-gray-900 mb-3">
         Applications ({applicationsCount})
       </h2>
 
       {/* Search Bar */}
-      {onSearchChange && <div className="mb-3">
+      {onSearchChange && (
+        <div className="mb-3">
           <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
-        </div>}
+        </div>
+      )}
 
       {/* Select All Checkbox */}
-      {onSelectApplications && <div className="flex items-center gap-2 mb-3">
-          <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} className={isSomeSelected ? "data-[state=checked]:bg-blue-600" : ""} />
+      {onSelectApplications && (
+        <div className="flex items-center gap-2 mb-3">
+          <Checkbox 
+            checked={isAllSelected} 
+            onCheckedChange={handleSelectAll}
+            className={isSomeSelected ? "data-[state=checked]:bg-blue-600" : ""}
+          />
           <span className="text-sm text-gray-600">Select All</span>
-        </div>}
-      
-      {/* Selected Applications Action Bar */}
-      {selectedApplications.length > 0 && onSendEmail && <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <span className="text-sm text-blue-700">
-            {selectedApplications.length} candidate{selectedApplications.length > 1 ? 's' : ''} selected
-          </span>
-          <Button size="sm" onClick={handleSendEmail}>
-            <Mail className="w-4 h-4 mr-1" />
-            Send Email
-          </Button>
-        </div>}
-    </div>;
+        </div>
+      )}
+
+      {/* Bulk Actions */}
+      {jobId && (
+        <ApplicationBulkActions
+          selectedCount={selectedApplications.length}
+          onSendEmail={onSendEmail || (() => {})}
+          onUpdateStatus={onBulkUpdateStatus || (() => {})}
+          onSetRating={onBulkSetRating || (() => {})}
+          onMoveToStage={onBulkMoveToStage || (() => {})}
+          onExport={onBulkExport || (() => {})}
+          onReject={onBulkReject || (() => {})}
+          onClearSelection={handleClearSelection}
+          jobId={jobId}
+          isLoading={isLoading}
+        />
+      )}
+    </div>
+  );
 });
+
 ApplicationsListHeader.displayName = 'ApplicationsListHeader';

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { useApplications } from "@/hooks/useApplications";
 import { useJobs } from "@/hooks/useJobs";
-import { useSelection } from "@/hooks/useSelection";
 import { DashboardSkeleton } from "./dashboard/DashboardSkeleton";
 import { ApplicationsManager } from "./dashboard/ApplicationsManager";
 import { EnhancedDashboardHeader } from "./dashboard/EnhancedDashboardHeader";
@@ -15,7 +14,7 @@ export const Dashboard = () => {
   const location = useLocation();
   const { data: applications, isLoading: applicationsLoading, refetch: refetchApplications } = useApplications(jobId);
   const { data: jobs, isLoading: jobsLoading } = useJobs();
-  const { selectedItems: selectedApplications, handleSelection } = useSelection<string>();
+  const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
   const job = jobs?.find(j => j.id === jobId);
@@ -54,12 +53,6 @@ export const Dashboard = () => {
     console.log("Send email to selected applications:", selectedApplications);
   };
 
-  const handleApplicationSelection = (applicationIds: string[]) => {
-    // Clear current selection and set new selection
-    // Since useSelection expects individual items, we need to handle this differently
-    // For now, we'll work with the selectedApplications directly in ApplicationsManager
-  };
-
   if (isLoading) {
     return <DashboardSkeleton />;
   }
@@ -89,7 +82,7 @@ export const Dashboard = () => {
         selectedApplication={selectedApplication}
         onSelectApplication={handleSelectApplication}
         selectedApplications={selectedApplications}
-        onSelectApplications={handleApplicationSelection}
+        onSelectApplications={setSelectedApplications}
         onSendEmail={handleSendEmail}
         onApplicationUpdate={refetchApplications}
         job={job}

@@ -1,20 +1,27 @@
-import { useState } from "react";
-import { ApplicationsList } from "./ApplicationsList";
-import { ApplicationDetail } from "./ApplicationDetail";
-import { HiringStagesNav } from "./HiringStagesNav";
-import { getTimeAgo } from "@/utils/dateUtils";
-import { useSearchFilter } from "@/hooks/filtering/useSearchFilter";
-import { Application, Job } from "@/types";
+
+import React, { useState, useMemo, useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { applicationService } from '@/services/applicationService';
+import { HiringStagesNav } from './HiringStagesNav';
+import { ApplicationsList } from './ApplicationsList';
+import { ApplicationDetail } from './ApplicationDetail';
+import { EmailComposerModal } from './EmailComposerModal';
+import { getStatusColor } from '@/utils/statusUtils';
+import { getTimeAgo } from '@/utils/dateUtils';
+import { exportApplicationsToCSV } from '@/utils/exportUtils';
+import { Application, Job } from '@/types';
+
 interface ApplicationsManagerProps {
   applications: Application[];
   selectedApplication: Application | null;
   onSelectApplication: (application: Application) => void;
   selectedApplications: string[];
-  onSelectApplications: (applications: string[]) => void;
+  onSelectApplications: (ids: string[]) => void;
   onSendEmail: () => void;
   onApplicationUpdate: () => void;
   job: Job;
 }
+
 export const ApplicationsManager = ({
   applications,
   selectedApplication,
@@ -25,60 +32,210 @@ export const ApplicationsManager = ({
   onApplicationUpdate,
   job
 }: ApplicationsManagerProps) => {
-  const [selectedStage, setSelectedStage] = useState<string | null>(null);
-  const {
-    searchTerm,
-    setSearchTerm
-  } = useSearchFilter();
-  const getStatusColor = (status: string, manualRating: number | null = null) => {
-    // If status is "reviewed" but there's no manual rating, show as pending
-    if (status === "reviewed" && !manualRating) {
-      return "bg-yellow-100 text-yellow-800";
+  const { toast } = useToast();
+  const [selectedStage, setSelectedStage] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Filter applications by stage
+  const filteredApplications = useMemo(() => {
+    if (selectedStage === 'all') return applications;
+    
+    return applications.filter(app => {
+      const appStage = app.pipeline_stage || 'applied';
+      return appStage === selectedStage;
+    });
+  }, [applications, selectedStage]);
+
+  // Get selected application objects for email modal
+  const selectedApplicationObjects = useMemo(() => {
+    return applications.filter(app => selectedApplications.includes(app.id));
+  }, [applications, selectedApplications]);
+
+  const handleEmailComposer = useCallback(() => {
+    if (selectedApplications.length === 0) {
+      toast({
+        title: "No applications selected",
+        description: "Please select at least one application to send emails.",
+        variant: "destructive",
+      });
+      return;
     }
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "reviewed":
-        return "bg-blue-100 text-blue-800";
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+    setIsEmailModalOpen(true);
+  }, [selectedApplications.length, toast]);
+
+  const handleBulkUpdateStatus = useCallback(async (status: string) => {
+    if (selectedApplications.length === 0) return;
+
+    setIsUpdating(true);
+    try {
+      await applicationService.bulkUpdateApplications(selectedApplications, { status });
+      
+      toast({
+        title: "Status updated",
+        description: `Updated ${selectedApplications.length} application${selectedApplications.length > 1 ? 's' : ''} to ${status}`,
+      });
+      
+      onSelectApplications([]);
+      onApplicationUpdate();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update application status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
     }
-  };
+  }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
 
-  // Simple 3-star rating function
-  const getRatingStars = (rating: number | null) => {
-    if (!rating) {
-      return Array.from({
-        length: 3
-      }, (_, i) => <span key={i} className="text-gray-300">★</span>);
+  const handleBulkSetRating = useCallback(async (rating: number) => {
+    if (selectedApplications.length === 0) return;
+
+    setIsUpdating(true);
+    try {
+      await applicationService.bulkUpdateApplications(selectedApplications, { 
+        manual_rating: rating,
+        status: 'reviewed'
+      });
+      
+      toast({
+        title: "Rating set",
+        description: `Set ${rating} star${rating > 1 ? 's' : ''} for ${selectedApplications.length} application${selectedApplications.length > 1 ? 's' : ''}`,
+      });
+      
+      onSelectApplications([]);
+      onApplicationUpdate();
+    } catch (error) {
+      console.error('Error setting rating:', error);
+      toast({
+        title: "Error",
+        description: "Failed to set application rating",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
     }
-    return Array.from({
-      length: 3
-    }, (_, i) => <span key={i} className={i < rating ? "text-yellow-400" : "text-gray-300"}>★</span>);
-  };
+  }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
 
-  // Filter applications by selected stage
-  const filteredApplications = selectedStage ? applications.filter(app => {
-    const appStage = app.pipeline_stage || 'applied';
-    return appStage === selectedStage;
-  }) : applications;
-  return <div className="space-y-0">
-      {/* Hiring Stages Navigation */}
-      <HiringStagesNav jobId={job.id} applications={applications} selectedStage={selectedStage} onStageSelect={setSelectedStage} />
+  const handleBulkMoveToStage = useCallback(async (stage: string) => {
+    if (selectedApplications.length === 0) return;
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 py-[9px]">
-        <div className="lg:col-span-1">
-          <ApplicationsList applications={filteredApplications} selectedApplication={selectedApplication} onSelectApplication={onSelectApplication} getStatusColor={getStatusColor} getTimeAgo={getTimeAgo} selectedApplications={selectedApplications} onSelectApplications={onSelectApplications} onSendEmail={onSendEmail} jobId={job.id} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-        </div>
+    setIsUpdating(true);
+    try {
+      await applicationService.bulkUpdateApplications(selectedApplications, { 
+        pipeline_stage: stage 
+      });
+      
+      toast({
+        title: "Stage updated",
+        description: `Moved ${selectedApplications.length} application${selectedApplications.length > 1 ? 's' : ''} to ${stage.replace('_', ' ')}`,
+      });
+      
+      onSelectApplications([]);
+      onApplicationUpdate();
+    } catch (error) {
+      console.error('Error moving to stage:', error);
+      toast({
+        title: "Error",
+        description: "Failed to move applications to stage",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
 
-        <div className="lg:col-span-2">
-          <ApplicationDetail selectedApplication={selectedApplication} applications={filteredApplications} job={job} getStatusColor={(status: string) => getStatusColor(status, selectedApplication?.manual_rating)} getRatingStars={getRatingStars} getTimeAgo={getTimeAgo} onApplicationUpdate={onApplicationUpdate} />
+  const handleBulkExport = useCallback(() => {
+    if (selectedApplications.length === 0) return;
+
+    const selectedApps = applications.filter(app => selectedApplications.includes(app.id));
+    exportApplicationsToCSV(selectedApps, job.title);
+    
+    toast({
+      title: "Export completed",
+      description: `Exported ${selectedApplications.length} application${selectedApplications.length > 1 ? 's' : ''} to CSV`,
+    });
+  }, [selectedApplications, applications, job.title, toast]);
+
+  const handleBulkReject = useCallback(async () => {
+    if (selectedApplications.length === 0) return;
+
+    setIsUpdating(true);
+    try {
+      await applicationService.bulkUpdateApplications(selectedApplications, { 
+        status: 'rejected',
+        rejection_reason: 'Bulk rejection'
+      });
+      
+      toast({
+        title: "Applications rejected",
+        description: `Rejected ${selectedApplications.length} application${selectedApplications.length > 1 ? 's' : ''}`,
+      });
+      
+      onSelectApplications([]);
+      onApplicationUpdate();
+    } catch (error) {
+      console.error('Error rejecting applications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reject applications",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
+
+  return (
+    <div className="flex-1 bg-gray-50">
+      <HiringStagesNav
+        jobId={job.id}
+        applications={applications}
+        selectedStage={selectedStage}
+        onStageSelect={setSelectedStage}
+      />
+
+      <div className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
+          <ApplicationsList
+            applications={filteredApplications}
+            selectedApplication={selectedApplication}
+            onSelectApplication={onSelectApplication}
+            getStatusColor={getStatusColor}
+            getTimeAgo={getTimeAgo}
+            selectedApplications={selectedApplications}
+            onSelectApplications={onSelectApplications}
+            onSendEmail={handleEmailComposer}
+            onBulkUpdateStatus={handleBulkUpdateStatus}
+            onBulkSetRating={handleBulkSetRating}
+            onBulkMoveToStage={handleBulkMoveToStage}
+            onBulkExport={handleBulkExport}
+            onBulkReject={handleBulkReject}
+            jobId={job.id}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            isLoading={isUpdating}
+          />
+
+          {selectedApplication && (
+            <ApplicationDetail
+              application={selectedApplication}
+              onUpdate={onApplicationUpdate}
+              jobId={job.id}
+            />
+          )}
         </div>
       </div>
-    </div>;
+
+      <EmailComposerModal
+        open={isEmailModalOpen}
+        onOpenChange={setIsEmailModalOpen}
+        selectedApplications={selectedApplicationObjects}
+        job={job}
+      />
+    </div>
+  );
 };

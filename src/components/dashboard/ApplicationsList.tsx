@@ -13,9 +13,15 @@ interface ApplicationsListProps {
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
   onSendEmail?: () => void;
+  onBulkUpdateStatus?: (status: string) => void;
+  onBulkSetRating?: (rating: number) => void;
+  onBulkMoveToStage?: (stage: string) => void;
+  onBulkExport?: () => void;
+  onBulkReject?: () => void;
   jobId?: string;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
+  isLoading?: boolean;
 }
 
 export const ApplicationsList = memo(({
@@ -27,9 +33,15 @@ export const ApplicationsList = memo(({
   selectedApplications = [],
   onSelectApplications,
   onSendEmail,
+  onBulkUpdateStatus,
+  onBulkSetRating,
+  onBulkMoveToStage,
+  onBulkExport,
+  onBulkReject,
   jobId,
   searchTerm = '',
-  onSearchChange
+  onSearchChange,
+  isLoading = false
 }: ApplicationsListProps) => {
   // Filter applications based on search term
   const filteredApplications = useMemo(() => {
@@ -51,9 +63,16 @@ export const ApplicationsList = memo(({
         selectedApplications={selectedApplications}
         onSelectApplications={onSelectApplications}
         onSendEmail={onSendEmail}
+        onBulkUpdateStatus={onBulkUpdateStatus}
+        onBulkSetRating={onBulkSetRating}
+        onBulkMoveToStage={onBulkMoveToStage}
+        onBulkExport={onBulkExport}
+        onBulkReject={onBulkReject}
         applications={filteredApplications}
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
+        jobId={jobId}
+        isLoading={isLoading}
       />
 
       <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
