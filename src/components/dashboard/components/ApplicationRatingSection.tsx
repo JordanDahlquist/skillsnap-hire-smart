@@ -1,3 +1,4 @@
+
 import { Star } from "lucide-react";
 
 interface ApplicationRatingSectionProps {
@@ -25,7 +26,7 @@ export const ApplicationRatingSection = ({
   const renderAIRating = (rating: number | null) => {
     if (!rating) {
       return Array.from({ length: 3 }, (_, i) => (
-        <Star key={i} className="w-5 h-5 text-gray-300" />
+        <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" />
       ));
     }
     
@@ -38,7 +39,7 @@ export const ApplicationRatingSection = ({
       return (
         <Star
           key={i}
-          className={`w-5 h-5 ${
+          className={`w-4 h-4 sm:w-5 sm:h-5 ${
             isActive ? 'text-purple-500 fill-current' : 'text-gray-300'
           }`}
         />
@@ -63,7 +64,7 @@ export const ApplicationRatingSection = ({
               }`}
             >
               <Star 
-                className={`w-6 h-6 ${isActive ? 'fill-current' : ''}`}
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? 'fill-current' : ''}`}
               />
             </button>
           );
@@ -73,11 +74,11 @@ export const ApplicationRatingSection = ({
   };
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-      <div className="flex justify-between items-start gap-6">
-        {/* Manual Rating Section - Left */}
-        <div className="flex flex-col items-start gap-2">
-          <span className="text-sm font-semibold text-gray-800">Your Rating</span>
+    <div className="bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 sm:gap-6">
+        {/* Manual Rating Section */}
+        <div className="flex flex-col items-start gap-2 flex-1">
+          <span className="text-xs sm:text-sm font-semibold text-gray-800">Your Rating</span>
           {renderManualRatingStars(manualRating)}
           <span className="text-xs text-gray-500 min-h-[16px]">
             {manualRating 
@@ -87,12 +88,12 @@ export const ApplicationRatingSection = ({
           </span>
         </div>
 
-        {/* Visual Divider */}
-        <div className="w-px h-16 bg-gray-300"></div>
+        {/* Visual Divider - hidden on mobile */}
+        <div className="hidden sm:block w-px h-16 bg-gray-300"></div>
 
-        {/* AI Rating Section - Right */}
-        <div className="flex flex-col items-end gap-2">
-          <span className="text-sm font-semibold text-gray-800">AI Rating</span>
+        {/* AI Rating Section */}
+        <div className="flex flex-col items-start sm:items-end gap-2 flex-1">
+          <span className="text-xs sm:text-sm font-semibold text-gray-800">AI Rating</span>
           <div className="flex gap-1">
             {renderAIRating(aiRating)}
           </div>

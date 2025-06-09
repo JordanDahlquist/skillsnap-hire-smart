@@ -39,35 +39,39 @@ export const ApplicationDetailContent = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <CardTitle>{application.name}</CardTitle>
+        <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+              <CardTitle className="text-lg sm:text-xl truncate">{application.name}</CardTitle>
               <Badge className={getStatusColor(application.status)}>
                 {application.status}
               </Badge>
             </div>
-            <p className="text-gray-600 mb-4">{application.email}</p>
+            <p className="text-gray-600 mb-4 text-sm sm:text-base truncate">{application.email}</p>
             
-            <ApplicationActionButtons
-              status={application.status}
-              isUpdating={isUpdating}
-              onReject={onReject}
-              onUnreject={onUnreject}
-              onEmail={onEmail}
-              jobId={jobId}
-              applicationId={application.id}
-              currentStage={pipelineStage}
-              onStageChange={onStageChange}
-            />
+            <div className="space-y-3 lg:space-y-0">
+              <ApplicationActionButtons
+                status={application.status}
+                isUpdating={isUpdating}
+                onReject={onReject}
+                onUnreject={onUnreject}
+                onEmail={onEmail}
+                jobId={jobId}
+                applicationId={application.id}
+                currentStage={pipelineStage}
+                onStageChange={onStageChange}
+              />
+            </div>
           </div>
           
-          <ApplicationRatingSection
-            manualRating={application.manual_rating}
-            aiRating={application.ai_rating}
-            onManualRating={onManualRating}
-            isUpdating={isUpdating}
-          />
+          <div className="flex-shrink-0 w-full lg:w-auto lg:max-w-sm">
+            <ApplicationRatingSection
+              manualRating={application.manual_rating}
+              aiRating={application.ai_rating}
+              onManualRating={onManualRating}
+              isUpdating={isUpdating}
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent>
