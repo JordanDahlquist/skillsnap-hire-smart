@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -499,7 +500,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                     </Button>
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col">
+                  <div className="h-full flex flex-col overflow-hidden">
                     <div className="flex items-center justify-between mb-2">
                       <Label className="text-sm">
                         {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
@@ -530,7 +531,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                       </div>
                     </div>
                     
-                    <div className="flex-1 min-h-0">
+                    <div className="flex-1 min-h-0 overflow-hidden">
                       {isEditingJobPost ? (
                         <RichTextEditor
                           value={generatedJobPost}
@@ -540,9 +541,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                           placeholder="Enter your job posting content here..."
                         />
                       ) : (
-                        <ScrollArea className="h-full">
+                        <ScrollArea className="h-full w-full">
                           <div 
-                            className="p-3 border rounded-lg bg-gray-50 prose max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                            className="p-3 border rounded-lg bg-gray-50 prose prose-sm max-w-full w-full overflow-hidden cursor-pointer hover:bg-gray-100 transition-colors"
                             onClick={() => setIsEditingJobPost(true)}
                             dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }}
                           />
@@ -581,7 +582,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                     </Button>
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col">
+                  <div className="h-full flex flex-col overflow-hidden">
                     <div className="flex items-center justify-between mb-2">
                       <Label className="text-sm">Generated Skills Test</Label>
                       <div className="flex gap-2">
@@ -608,7 +609,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                       </div>
                     </div>
                     
-                    <div className="flex-1 min-h-0">
+                    <div className="flex-1 min-h-0 overflow-hidden">
                       {isEditingSkillsTest ? (
                         <RichTextEditor
                           value={generatedSkillsTest}
@@ -618,9 +619,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                           placeholder="Enter your skills test questions here..."
                         />
                       ) : (
-                        <ScrollArea className="h-full">
+                        <ScrollArea className="h-full w-full">
                           <div 
-                            className="p-3 border rounded-lg bg-gray-50 prose max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                            className="p-3 border rounded-lg bg-gray-50 prose prose-sm max-w-full w-full overflow-hidden cursor-pointer hover:bg-gray-100 transition-colors"
                             onClick={() => setIsEditingSkillsTest(true)}
                             dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }}
                           />
