@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScoutMessage } from './ScoutMessage';
 import { logger } from '@/services/loggerService';
@@ -27,11 +27,16 @@ export const ScoutChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId] = useState(() => crypto.randomUUID());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
   }, [messages]);
 
   // Load conversation history on mount
@@ -149,8 +154,8 @@ export const ScoutChat = () => {
   }
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
+    <Card className="h-full flex flex-col max-h-full">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Bot className="w-6 h-6 text-blue-600" />
           <h2 className="text-xl font-semibold">Scout AI</h2>
@@ -158,9 +163,9 @@ export const ScoutChat = () => {
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 px-6" ref={scrollAreaRef}>
-          <div className="space-y-4 py-4">
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
+          <div className="px-6 py-4 space-y-4" ref={messagesContainerRef}>
             {messages.map((message) => (
               <ScoutMessage 
                 key={message.id} 
@@ -178,11 +183,10 @@ export const ScoutChat = () => {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
         
-        <div className="border-t p-4">
+        <div className="border-t p-4 flex-shrink-0">
           <div className="flex gap-2">
             <Input
               value={inputValue}
