@@ -31,6 +31,7 @@ export const CompactDashboardHeader = ({
 
   const {
     isUpdating,
+    isRefreshingAI,
     isEditModalOpen,
     setIsEditModalOpen,
     handleStatusChange,
@@ -38,12 +39,13 @@ export const CompactDashboardHeader = ({
     handleExportApplications,
     handleEditJob,
     handleArchiveJob,
-    handleUnarchiveJob
+    handleUnarchiveJob,
+    handleRefreshAI
   } = useDashboardHeaderActions(job, applications, onJobUpdate);
 
   return (
     <>
-      <DashboardHeaderLoader isVisible={isUpdating} />
+      <DashboardHeaderLoader isVisible={isUpdating || isRefreshingAI} />
 
       <div className={`bg-background/80 backdrop-blur-sm border-b border-border sticky ${DASHBOARD_HEADER_CONSTANTS.STICKY_TOP_OFFSET} ${DASHBOARD_HEADER_CONSTANTS.Z_INDEX}`}>
         <div className={`${DASHBOARD_HEADER_CONSTANTS.MAX_WIDTH} mx-auto ${DASHBOARD_HEADER_CONSTANTS.PADDING.HORIZONTAL} ${DASHBOARD_HEADER_CONSTANTS.PADDING.VERTICAL}`}>
@@ -65,12 +67,14 @@ export const CompactDashboardHeader = ({
             <DashboardHeaderActions
               job={job}
               isUpdating={isUpdating}
+              isRefreshingAI={isRefreshingAI}
               onStatusChange={handleStatusChange}
               onShareJob={handleShareJob}
               onEditJob={handleEditJob}
               onExportApplications={handleExportApplications}
               onArchiveJob={handleArchiveJob}
               onUnarchiveJob={handleUnarchiveJob}
+              onRefreshAI={handleRefreshAI}
             />
           </div>
         </div>

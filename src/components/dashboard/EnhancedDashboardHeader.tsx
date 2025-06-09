@@ -24,33 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface Job {
-  id: string;
-  title: string;
-  created_at: string;
-  status: string;
-  view_count?: number;
-  user_id: string;
-  description?: string;
-  role_type?: string;
-  experience_level?: string;
-  required_skills?: string;
-}
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  created_at: string;
-  ai_rating: number | null;
-  status: string;
-  portfolio?: string | null;
-  experience?: string | null;
-  answer_1?: string | null;
-  answer_2?: string | null;
-  answer_3?: string | null;
-}
+import { Job, Application } from "@/types";
 
 interface EnhancedDashboardHeaderProps {
   job: Job;
