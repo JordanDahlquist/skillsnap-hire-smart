@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Eye, EyeOff, Check, X } from "lucide-react";
+import { Loader2, Mail, Eye, EyeOff, Check, X, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthModalProps {
@@ -59,6 +58,8 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
   const [companyName, setCompanyName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
     hasMinLength: false,
     hasUppercase: false,
@@ -104,6 +105,52 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
     return emailValid && passwordValid && nameValid && companyValid;
   };
 
+  const resetModalState = () => {
+    setEmail("");
+    setPassword("");
+    setFullName("");
+    setCompanyName("");
+    setShowForgotPassword(false);
+    setResetEmailSent(false);
+    setEmailError("");
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setResetEmailSent(true);
+      toast({
+        title: "Reset email sent!",
+        description: "Check your email for password reset instructions.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Reset failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -137,11 +184,7 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
       });
 
       onOpenChange(false);
-      // Clear form
-      setEmail("");
-      setPassword("");
-      setFullName("");
-      setCompanyName("");
+      resetModalState();
     } catch (error: any) {
       toast({
         title: "Sign in failed",
@@ -193,11 +236,7 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
       });
 
       onOpenChange(false);
-      // Clear form
-      setEmail("");
-      setPassword("");
-      setFullName("");
-      setCompanyName("");
+      resetModalState();
     } catch (error: any) {
       toast({
         title: "Sign up failed",
@@ -253,137 +292,211 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      onOpenChange(newOpen);
+      if (!newOpen) {
+        resetModalState();
+      }
+    }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-purple-600" />
-            Welcome to Atract
+            {showForgotPassword ? "Reset Password" : "Welcome to Atract"}
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="signin">
-            <form onSubmit={handleSignIn} className="space-y-4">
-              <div>
-                <Label htmlFor="signin-email">Email</Label>
-                <Input
-                  id="signin-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => handleEmailChange(e.target.value)}
-                  required
-                  className={emailError ? "border-red-500" : ""}
-                />
-                {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
+        {showForgotPassword ? (
+          <div className="space-y-4">
+            {resetEmailSent ? (
+              <div className="text-center space-y-4">
+                <div className="text-green-600 text-sm">
+                  Password reset email sent! Check your inbox and follow the instructions to reset your password.
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetEmailSent(false);
+                  }}
+                  className="w-full"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Sign In
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="signin-password">Password</Label>
-                <div className="relative">
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="text-sm text-gray-600 text-center">
+                  Enter your email address and we'll send you a link to reset your password.
+                </div>
+                <div>
+                  <Label htmlFor="reset-email">Email</Label>
                   <Input
-                    id="signin-password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    id="reset-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
                     required
-                    minLength={6}
+                    placeholder="Enter your email"
+                    className={emailError ? "border-red-500" : ""}
                   />
+                  {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-purple-600 hover:bg-purple-700" 
+                  disabled={loading || !email || !!emailError}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Send Reset Email
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowForgotPassword(false)}
+                  className="w-full"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Sign In
+                </Button>
+              </form>
+            )}
+          </div>
+        ) : (
+          <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div>
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    required
+                    className={emailError ? "border-red-500" : ""}
+                  />
+                  {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="signin-password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="signin-password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-purple-600 hover:bg-purple-700" 
+                  disabled={loading || !isFormValid()}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Sign In
+                </Button>
+                <div className="text-center">
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    variant="link"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-purple-600 hover:text-purple-700"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    Forgot your password?
                   </Button>
                 </div>
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-purple-600 hover:bg-purple-700" 
-                disabled={loading || !isFormValid()}
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Sign In
-              </Button>
-            </form>
-          </TabsContent>
+              </form>
+            </TabsContent>
 
-          <TabsContent value="signup">
-            <form onSubmit={handleSignUp} className="space-y-4">
-              <div>
-                <Label htmlFor="signup-name">Full Name</Label>
-                <Input
-                  id="signup-name"
-                  value={fullName}
-                  onChange={(e) => handleFullNameChange(e.target.value)}
-                  required
-                  minLength={2}
-                />
-              </div>
-              <div>
-                <Label htmlFor="signup-company">Company Name</Label>
-                <Input
-                  id="signup-company"
-                  value={companyName}
-                  onChange={(e) => handleCompanyNameChange(e.target.value)}
-                  required
-                  minLength={2}
-                  placeholder="Your company name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="signup-email">Email</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => handleEmailChange(e.target.value)}
-                  required
-                  className={emailError ? "border-red-500" : ""}
-                />
-                {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
-              </div>
-              <div>
-                <Label htmlFor="signup-password">Password</Label>
-                <div className="relative">
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div>
+                  <Label htmlFor="signup-name">Full Name</Label>
                   <Input
-                    id="signup-password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    id="signup-name"
+                    value={fullName}
+                    onChange={(e) => handleFullNameChange(e.target.value)}
                     required
-                    minLength={8}
+                    minLength={2}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
                 </div>
-                {password && <PasswordStrengthIndicator />}
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-purple-600 hover:bg-purple-700" 
-                disabled={loading || !isFormValid(true)}
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Create Account
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+                <div>
+                  <Label htmlFor="signup-company">Company Name</Label>
+                  <Input
+                    id="signup-company"
+                    value={companyName}
+                    onChange={(e) => handleCompanyNameChange(e.target.value)}
+                    required
+                    minLength={2}
+                    placeholder="Your company name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    required
+                    className={emailError ? "border-red-500" : ""}
+                  />
+                  {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="signup-password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => handlePasswordChange(e.target.value)}
+                      required
+                      minLength={8}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  {password && <PasswordStrengthIndicator />}
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-purple-600 hover:bg-purple-700" 
+                  disabled={loading || !isFormValid(true)}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Create Account
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        )}
       </DialogContent>
     </Dialog>
   );

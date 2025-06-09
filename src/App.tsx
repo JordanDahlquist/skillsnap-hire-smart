@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster"
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/AuthGuard";
@@ -19,7 +20,6 @@ import { LinkedInCallback } from "./pages/LinkedInCallback";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
 import Scout from "./pages/Scout";
-
 import { Inbox } from "./pages/Inbox";
 
 const queryClient = new QueryClient();
@@ -32,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/jobs" element={
               <AuthGuard>
                 <OptimizedJobsPage />
