@@ -57,6 +57,13 @@ export const EnhancedDashboardHeader = ({
     return { text: "Building Interest", color: "bg-yellow-100 text-yellow-800" };
   };
 
+  // Determine the loading message based on the operation
+  const getLoadingMessage = () => {
+    if (isRefreshingAI) return "Updating job rankings...";
+    if (isUpdating) return "Updating job status...";
+    return "Loading...";
+  };
+
   const performanceIndicator = getPerformanceIndicator();
   const isArchived = job.status === 'closed';
 
@@ -67,10 +74,7 @@ export const EnhancedDashboardHeader = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 flex items-center gap-3">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>
-              {isUpdating && "Updating job status..."}
-              {isRefreshingAI && "Refreshing AI rankings..."}
-            </span>
+            <span>{getLoadingMessage()}</span>
           </div>
         </div>
       )}

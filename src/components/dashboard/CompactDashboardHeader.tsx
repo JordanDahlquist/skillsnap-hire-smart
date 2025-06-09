@@ -43,9 +43,19 @@ export const CompactDashboardHeader = ({
     handleRefreshAI
   } = useDashboardHeaderActions(job, applications, onJobUpdate);
 
+  // Determine the loading message based on the operation
+  const getLoadingMessage = () => {
+    if (isRefreshingAI) return "Updating job rankings...";
+    if (isUpdating) return "Updating job status...";
+    return "Loading...";
+  };
+
   return (
     <>
-      <DashboardHeaderLoader isVisible={isUpdating || isRefreshingAI} />
+      <DashboardHeaderLoader 
+        isVisible={isUpdating || isRefreshingAI} 
+        message={getLoadingMessage()}
+      />
 
       <div className={`bg-background/80 backdrop-blur-sm border-b border-border sticky ${DASHBOARD_HEADER_CONSTANTS.STICKY_TOP_OFFSET} ${DASHBOARD_HEADER_CONSTANTS.Z_INDEX}`}>
         <div className={`${DASHBOARD_HEADER_CONSTANTS.MAX_WIDTH} mx-auto ${DASHBOARD_HEADER_CONSTANTS.PADDING.HORIZONTAL} ${DASHBOARD_HEADER_CONSTANTS.PADDING.VERTICAL}`}>
