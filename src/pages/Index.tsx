@@ -40,66 +40,75 @@ const Index = () => {
         {/* Enhanced Hero Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
           <div className="text-center max-w-5xl mx-auto">
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="flex items-center gap-1">
-                <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                <Star className="w-5 h-5 text-yellow-400 fill-current" />
-              </div>
-              <span className="text-gray-300 text-sm">Trusted by 500+ companies</span>
-            </div>
-            
-            <h1 className="text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight drop-shadow-lg">
-              AI-Powered Hiring That
-              <span className="text-[#007af6] drop-shadow-lg"> Actually Works</span>
-            </h1>
-            
-            <p className="text-2xl text-gray-200 mb-6 leading-relaxed drop-shadow-sm max-w-4xl mx-auto">
-              Create jobs in 2 minutes. Get AI-generated skill tests. Filter out 90% of bad applicants automatically. 
-              Hire top talent in days, not weeks.
-            </p>
-            
-            <div className="flex items-center justify-center gap-8 mb-8 text-sm text-gray-300">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <span>5x faster hiring</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <span>90% fewer bad applicants</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <span>Zero manual screening</span>
-              </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                onClick={handleCreateRole}
-                size="lg" 
-                className="bg-[#007af6] hover:bg-[#0056b3] text-white px-10 py-5 text-xl font-semibold shadow-2xl hover:shadow-3xl transition-all duration-200 hover:scale-105 rounded-xl"
-              >
-                <Rocket className="mr-3 w-6 h-6" />
-                Start Hiring Smarter
-                <ArrowRight className="ml-3 w-6 h-6" />
-              </Button>
+            {/* Hero Content with Subtle Dark Haze */}
+            <div className="relative">
+              {/* Subtle dark haze background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-black/20 backdrop-blur-sm rounded-3xl -m-8 md:-m-12"></div>
               
-              {!user && (
-                <Button 
-                  variant="outline"
-                  asChild
-                  size="lg" 
-                  className="px-10 py-5 text-xl font-semibold border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-xl"
-                >
-                  <a href="/auth">
-                    <LogIn className="mr-3 w-6 h-6" />
-                    Sign In
-                  </a>
-                </Button>
-              )}
+              {/* Hero content */}
+              <div className="relative z-10 px-8 md:px-12 py-8">
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  <div className="flex items-center gap-1">
+                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                  </div>
+                  <span className="text-gray-300 text-sm">Trusted by 500+ companies</span>
+                </div>
+                
+                <h1 className="text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight drop-shadow-lg">
+                  AI-Powered Hiring That
+                  <span className="text-[#007af6] drop-shadow-lg"> Actually Works</span>
+                </h1>
+                
+                <p className="text-2xl text-gray-200 mb-6 leading-relaxed drop-shadow-sm max-w-4xl mx-auto">
+                  Create jobs in 2 minutes. Get AI-generated skill tests. Filter out 90% of bad applicants automatically. 
+                  Hire top talent in days, not weeks.
+                </p>
+                
+                <div className="flex items-center justify-center gap-8 mb-8 text-sm text-gray-300">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span>5x faster hiring</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span>90% fewer bad applicants</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span>Zero manual screening</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <Button 
+                    onClick={handleCreateRole}
+                    size="lg" 
+                    className="bg-[#007af6] hover:bg-[#0056b3] text-white px-10 py-5 text-xl font-semibold shadow-2xl hover:shadow-3xl transition-all duration-200 hover:scale-105 rounded-xl"
+                  >
+                    <Rocket className="mr-3 w-6 h-6" />
+                    Start Hiring Smarter
+                    <ArrowRight className="ml-3 w-6 h-6" />
+                  </Button>
+                  
+                  {!user && (
+                    <Button 
+                      variant="outline"
+                      asChild
+                      size="lg" 
+                      className="px-10 py-5 text-xl font-semibold border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-xl"
+                    >
+                      <a href="/auth">
+                        <LogIn className="mr-3 w-6 h-6" />
+                        Sign In
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </section>
