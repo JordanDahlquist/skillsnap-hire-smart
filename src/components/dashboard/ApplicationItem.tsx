@@ -5,23 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { StageSelector } from './StageSelector';
 import { logger } from '@/services/loggerService';
 import { renderManualRating, renderAIRating } from './utils/ratingUtils';
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  portfolio: string | null;
-  created_at: string;
-  ai_rating: number | null;
-  ai_summary: string | null;
-  status: string;
-  experience: string | null;
-  answer_1: string | null;
-  answer_2: string | null;
-  answer_3: string | null;
-  manual_rating: number | null;
-  rejection_reason: string | null;
-}
+import { Application } from '@/types';
 
 interface ApplicationItemProps {
   application: Application;

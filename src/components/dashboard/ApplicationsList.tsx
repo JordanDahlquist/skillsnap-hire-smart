@@ -2,23 +2,7 @@
 import React, { memo } from 'react';
 import { ApplicationsListHeader } from './ApplicationsListHeader';
 import { ApplicationItem } from './ApplicationItem';
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  portfolio: string | null;
-  created_at: string;
-  ai_rating: number | null;
-  ai_summary: string | null;
-  status: string;
-  experience: string | null;
-  answer_1: string | null;
-  answer_2: string | null;
-  answer_3: string | null;
-  manual_rating: number | null;
-  rejection_reason: string | null;
-}
+import { Application } from '@/types';
 
 interface ApplicationsListProps {
   applications: Application[];

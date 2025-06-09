@@ -4,36 +4,7 @@ import { ApplicationsList } from "./ApplicationsList";
 import { ApplicationDetail } from "./ApplicationDetail";
 import { HiringStagesNav } from "./HiringStagesNav";
 import { getTimeAgo } from "@/utils/dateUtils";
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  portfolio: string | null;
-  created_at: string;
-  ai_rating: number | null;
-  ai_summary: string | null;
-  status: string;
-  experience: string | null;
-  answer_1: string | null;
-  answer_2: string | null;
-  answer_3: string | null;
-  manual_rating: number | null;
-  rejection_reason: string | null;
-}
-
-interface Job {
-  id: string;
-  title: string;
-  description: string;
-  role_type: string;
-  experience_level: string;
-  required_skills: string;
-  budget: string;
-  duration: string;
-  status: string;
-  created_at: string;
-}
+import { Application, Job } from "@/types";
 
 interface ApplicationsManagerProps {
   applications: Application[];
