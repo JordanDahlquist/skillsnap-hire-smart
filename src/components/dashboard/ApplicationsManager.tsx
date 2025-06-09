@@ -34,7 +34,7 @@ export const ApplicationsManager = ({
   job
 }: ApplicationsManagerProps) => {
   const { toast } = useToast();
-  const [selectedStage, setSelectedStage] = useState<string>('all');
+  const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -61,7 +61,7 @@ export const ApplicationsManager = ({
 
   // Filter applications by stage
   const filteredApplications = useMemo(() => {
-    if (selectedStage === 'all') return applications;
+    if (selectedStage === null) return applications;
     
     return applications.filter(app => {
       const appStage = app.pipeline_stage || 'applied';
