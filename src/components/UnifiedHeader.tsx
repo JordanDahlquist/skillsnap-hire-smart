@@ -1,6 +1,6 @@
 
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useConsolidatedAuth } from "@/hooks/useConsolidatedAuth";
 import { useLocation } from "react-router-dom";
 import { HeaderLogo } from "./header/HeaderLogo";
 import { MainNavigation } from "./header/MainNavigation";
@@ -22,7 +22,7 @@ export const UnifiedHeader = ({
   onCreateRole,
   showCreateButton = true
 }: UnifiedHeaderProps) => {
-  const { user, profile, profileLoading, signOut, loading, isAuthenticated } = useAuth();
+  const { user, profile, profileLoading, signOut, loading, isAuthenticated } = useConsolidatedAuth();
   const location = useLocation();
   
   // Check if current location is the dashboard or any subdirectory of /jobs (except /jobs/public)
