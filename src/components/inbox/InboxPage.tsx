@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useInboxData } from "@/hooks/useInboxData";
@@ -7,6 +6,7 @@ import { InboxContent } from "./InboxContent";
 import { ThreadDetail } from "./ThreadDetail";
 import { InboxSkeleton } from "./InboxSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useProcessedEmailSubjects } from "@/hooks/useProcessedEmailSubjects";
 
 export const InboxPage = () => {
   const { user } = useOptimizedAuth();
@@ -21,7 +21,10 @@ export const InboxPage = () => {
     sendReply
   } = useInboxData();
 
-  if (isLoading) {
+  // Process email subjects to replace template variables
+  const { processedThreads, isProcessing } = useProcessedEmailSubjects(threads);
+
+  if (isLoading || isProcessing) {
     return <InboxSkeleton />;
   }
 
@@ -48,7 +51,7 @@ export const InboxPage = () => {
   ];
 
   const selectedThread = selectedThreadId 
-    ? threads.find(thread => thread.id === selectedThreadId) 
+    ? processedThreads.find(thread => thread.id === selectedThreadId) 
     : null;
 
   const threadMessages = selectedThreadId 
@@ -68,7 +71,7 @@ export const InboxPage = () => {
             {/* Thread List */}
             <div className="lg:col-span-1">
               <InboxContent
-                threads={threads}
+                threads={processedThreads}
                 selectedThreadId={selectedThreadId}
                 onSelectThread={setSelectedThreadId}
                 onMarkAsRead={markThreadAsRead}

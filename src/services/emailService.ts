@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { processEmailSubject } from "@/utils/emailTemplateUtils";
 
 export interface EmailThreadData {
   userId: string;
@@ -34,13 +35,21 @@ export interface SendEmailData {
 export const emailService = {
   async createEmailThread(data: EmailThreadData): Promise<string> {
     console.log('Creating email thread:', data);
+    
+    // Process the subject to replace template variables
+    const processedSubject = await processEmailSubject(
+      data.subject,
+      data.applicationId,
+      data.jobId
+    );
+    
     const { data: thread, error } = await supabase
       .from('email_threads')
       .insert({
         user_id: data.userId,
         application_id: data.applicationId || null,
         job_id: data.jobId || null,
-        subject: data.subject,
+        subject: processedSubject,
         participants: data.participants,
         reply_to_email: data.userUniqueEmail,
         last_message_at: new Date().toISOString(),
@@ -60,13 +69,21 @@ export const emailService = {
     const user = await supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
 
+    // Process the subject to replace template variables
+    const processedSubject = await processEmailSubject(
+      data.subject,
+      data.applicationId,
+      data.jobId,
+      { candidateName: data.recipientName }
+    );
+
     // Create thread if it doesn't exist
     if (!threadId) {
       threadId = await this.createEmailThread({
         userId: user.data.user.id,
         applicationId: data.applicationId,
         jobId: data.jobId,
-        subject: data.subject,
+        subject: processedSubject,
         participants: [data.userUniqueEmail, data.recipientEmail],
         userUniqueEmail: data.userUniqueEmail
       });
@@ -93,7 +110,7 @@ export const emailService = {
         thread_id: threadId,
         sender_email: data.userUniqueEmail,
         recipient_email: data.recipientEmail,
-        subject: data.subject,
+        subject: processedSubject,
         content: data.content,
         direction: 'outbound',
         message_type: 'original',
@@ -112,7 +129,7 @@ export const emailService = {
           name: data.recipientName
         }],
         job: { title: 'Email' },
-        subject: `${data.subject} [Thread:${threadId}]`,
+        subject: `${processedSubject} [Thread:${threadId}]`,
         content: plainTextContent,
         reply_to_email: data.userUniqueEmail,
         thread_id: threadId
@@ -130,7 +147,7 @@ export const emailService = {
         thread_id: threadId,
         recipient_email: data.recipientEmail,
         recipient_name: data.recipientName,
-        subject: data.subject,
+        subject: processedSubject,
         content: plainTextContent,
         status: 'sent'
       });
