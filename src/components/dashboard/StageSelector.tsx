@@ -40,12 +40,30 @@ export const StageSelector = ({
       onValueChange={handleStageChange}
       disabled={isUpdating}
     >
-      <SelectTrigger className={size === "sm" ? "h-7 text-xs" : "h-8 text-sm"}>
+      <SelectTrigger 
+        className={`
+          ${size === "sm" ? "h-9" : "h-10"} 
+          w-auto min-w-[120px] 
+          border border-input 
+          bg-background 
+          hover:bg-accent 
+          hover:text-accent-foreground 
+          text-sm 
+          px-3
+          focus:ring-2 
+          focus:ring-ring 
+          focus:ring-offset-2
+        `}
+      >
         <SelectValue placeholder={getCurrentStageName()} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-popover border border-border shadow-md z-50">
         {stages.map((stage) => (
-          <SelectItem key={stage.id} value={getStageKey(stage.name)}>
+          <SelectItem 
+            key={stage.id} 
+            value={getStageKey(stage.name)}
+            className="hover:bg-accent hover:text-accent-foreground cursor-pointer"
+          >
             <div className="flex items-center gap-2">
               <div 
                 className="w-2 h-2 rounded-full" 
