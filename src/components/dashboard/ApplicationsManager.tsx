@@ -1,4 +1,3 @@
-
 import { ApplicationsList } from "./ApplicationsList";
 import { ApplicationDetail } from "./ApplicationDetail";
 import { getTimeAgo } from "@/utils/dateUtils";
@@ -89,11 +88,7 @@ export const ApplicationsManager = ({
           applications={applications}
           selectedApplication={selectedApplication}
           onSelectApplication={onSelectApplication}
-          getStatusColor={(status: string) => {
-            // Find the application to get its manual_rating
-            const app = applications.find(a => a.status === status);
-            return getStatusColor(status, app?.manual_rating);
-          }}
+          getStatusColor={getStatusColor}
           getTimeAgo={getTimeAgo}
           selectedApplications={selectedApplications}
           onSelectApplications={onSelectApplications}
