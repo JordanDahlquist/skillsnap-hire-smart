@@ -1,4 +1,3 @@
-
 export interface Job {
   id: string;
   title: string;
@@ -23,6 +22,12 @@ export interface Job {
   company_name?: string | null;
   generated_job_post?: string | null;
   generated_test?: string | null;
+  applications?: { count: number }[];
+  applicationStatusCounts?: {
+    pending?: number;
+    approved?: number;
+    rejected?: number;
+  };
 }
 
 export interface Application {

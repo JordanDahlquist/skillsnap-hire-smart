@@ -26,11 +26,17 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
   const today = new Date();
   const daysRunning = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  // Format start date
+  // Format start date with time
   const startDateFormatted = startDate.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: startDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+  });
+  
+  const startTimeFormatted = startDate.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
   });
 
   const getStatusBadgeClasses = (status: string) => {
@@ -58,9 +64,7 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
         </Badge>
       </div>
       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-        <span>Posted {getTimeAgo(job.created_at)}</span>
-        <span>•</span>
-        <span>Started {startDateFormatted}</span>
+        <span>Started {startDateFormatted}, {startTimeFormatted}</span>
         <span>•</span>
         <span>{daysRunning} day{daysRunning !== 1 ? 's' : ''} running</span>
         <span>•</span>
