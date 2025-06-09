@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
@@ -28,10 +28,6 @@ export const useConsolidatedAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Performance optimization: prevent duplicate calls
-  const initializingRef = useRef(false);
-  const initializedRef = useRef(false);
 
   // Profile query - only runs when user is available
   const { 
@@ -52,13 +48,7 @@ export const useConsolidatedAuth = () => {
       });
 
       try {
-        // Use Promise.race for timeout handling
-        const profileData = await Promise.race([
-          authService.fetchProfile(user.id),
-          new Promise<null>((_, reject) => 
-            setTimeout(() => reject(new Error('Profile loading timeout')), environment.profileTimeout)
-          )
-        ]);
+        const profileData = await authService.fetchProfile(user.id);
 
         const duration = Date.now() - startTime;
         
@@ -86,13 +76,11 @@ export const useConsolidatedAuth = () => {
           action: 'LOAD_ERROR',
           metadata: { userId: user.id, error: (error as Error).message, duration }
         });
-        // Return null instead of throwing to prevent auth chain breaks
         return null;
       }
     },
     enabled: !!user?.id,
     ...getProfileQueryDefaults(),
-    // Prevent refetching on every mount
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -137,20 +125,17 @@ export const useConsolidatedAuth = () => {
   }, [user?.id, refreshProfile]);
 
   useEffect(() => {
-    // Prevent duplicate initialization
-    if (initializingRef.current || initializedRef.current) {
-      return;
-    }
-
-    initializingRef.current = true;
-    productionLogger.debug('Consolidated auth hook initializing...', {
-      component: 'useConsolidatedAuth',
-      action: 'INIT'
-    });
+    console.log('useConsolidatedAuth: Initializing auth hook...');
     
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        if (!mounted) return;
+        
+        console.log('useConsolidatedAuth: Auth state change:', event, session?.user?.id || 'No session');
+        
         productionLogger.info('Auth state change', {
           component: 'useConsolidatedAuth',
           action: 'AUTH_STATE_CHANGE',
@@ -159,54 +144,55 @@ export const useConsolidatedAuth = () => {
         
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Set loading to false after first auth state change
-        if (initializingRef.current) {
-          setLoading(false);
-          initializingRef.current = false;
-          initializedRef.current = true;
-        }
+        setLoading(false);
       }
     );
 
-    // Check for existing session with timeout
-    const sessionTimeout = setTimeout(() => {
-      productionLogger.warn('Session check timeout reached', {
-        component: 'useConsolidatedAuth',
-        action: 'SESSION_TIMEOUT'
-      });
-      setLoading(false);
-      initializingRef.current = false;
-      initializedRef.current = true;
-    }, environment.apiTimeout / 2);
+    // Check for existing session
+    const initializeAuth = async () => {
+      try {
+        console.log('useConsolidatedAuth: Checking for existing session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('useConsolidatedAuth: Error getting session:', error);
+          productionLogger.error('Failed to get initial session', {
+            component: 'useConsolidatedAuth',
+            action: 'INITIAL_SESSION_CHECK',
+            metadata: { error }
+          });
+        } else {
+          console.log('useConsolidatedAuth: Initial session check completed:', session?.user?.id || 'No session');
+          productionLogger.info('Initial session check completed', {
+            component: 'useConsolidatedAuth',
+            action: 'INITIAL_SESSION_CHECK',
+            metadata: { userId: session?.user?.id || 'No session' }
+          });
+        }
+        
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('useConsolidatedAuth: Failed to initialize auth:', error);
+        productionLogger.error('Failed to initialize auth', {
+          component: 'useConsolidatedAuth',
+          action: 'INITIAL_SESSION_CHECK',
+          metadata: { error }
+        });
+        
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-    authService.getSession().then((session) => {
-      clearTimeout(sessionTimeout);
-      productionLogger.info('Initial session check completed', {
-        component: 'useConsolidatedAuth',
-        action: 'INITIAL_SESSION_CHECK',
-        metadata: { userId: session?.user?.id || 'No session' }
-      });
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      initializingRef.current = false;
-      initializedRef.current = true;
-    }).catch((error) => {
-      clearTimeout(sessionTimeout);
-      productionLogger.error('Failed to get initial session', {
-        component: 'useConsolidatedAuth',
-        action: 'INITIAL_SESSION_CHECK',
-        metadata: { error }
-      });
-      setLoading(false);
-      initializingRef.current = false;
-      initializedRef.current = true;
-    });
+    initializeAuth();
 
     return () => {
-      clearTimeout(sessionTimeout);
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
