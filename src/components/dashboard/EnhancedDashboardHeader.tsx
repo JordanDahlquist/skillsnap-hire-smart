@@ -31,6 +31,7 @@ interface Job {
   title: string;
   created_at: string;
   status: string;
+  view_count?: number;
 }
 
 interface Application {
@@ -202,7 +203,6 @@ export const EnhancedDashboardHeader = ({
   };
 
   const performanceIndicator = getPerformanceIndicator();
-
   const isArchived = job.status === 'closed';
 
   return (
@@ -250,7 +250,7 @@ export const EnhancedDashboardHeader = ({
                 <span>•</span>
                 <div className="flex items-center gap-1">
                   <BarChart3 className="w-4 h-4" />
-                  <span>342 views</span>
+                  <span>{job.view_count || 0} views</span>
                 </div>
               </div>
             </div>

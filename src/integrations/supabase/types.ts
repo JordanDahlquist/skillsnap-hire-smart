@@ -403,6 +403,44 @@ export type Database = {
           },
         ]
       }
+      job_views: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          job_id: string
+          referrer: string | null
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          job_id: string
+          referrer?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          job_id?: string
+          referrer?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_views_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           ai_mini_description: string | null
@@ -427,6 +465,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          view_count: number
         }
         Insert: {
           ai_mini_description?: string | null
@@ -451,6 +490,7 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          view_count?: number
         }
         Update: {
           ai_mini_description?: string | null
@@ -475,6 +515,7 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          view_count?: number
         }
         Relationships: []
       }
@@ -540,6 +581,15 @@ export type Database = {
       generate_unique_email: {
         Args: { user_id: string; full_name: string; email: string }
         Returns: string
+      }
+      track_job_view: {
+        Args: {
+          p_job_id: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_referrer?: string
+        }
+        Returns: boolean
       }
     }
     Enums: {

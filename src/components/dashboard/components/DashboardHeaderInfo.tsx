@@ -46,8 +46,8 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
     }
   };
 
-  // Use view_count from job if available, otherwise show simulated count
-  const viewCount = job.view_count || Math.floor(Math.random() * 500) + 50;
+  // Use the real view_count from the database
+  const viewCount = job.view_count || 0;
 
   return (
     <div>

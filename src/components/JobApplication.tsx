@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -224,7 +223,7 @@ export const JobApplication = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <Eye className="w-4 h-4" />
-                    <span>{job.view_count || Math.floor(Math.random() * 500) + 50} view{(job.view_count || 0) !== 1 ? 's' : ''}</span>
+                    <span>{job.view_count || 0} view{(job.view_count || 0) !== 1 ? 's' : ''}</span>
                   </div>
                   <div className="flex items-center gap-1 text-gray-500">
                     <Calendar className="w-4 h-4" />
