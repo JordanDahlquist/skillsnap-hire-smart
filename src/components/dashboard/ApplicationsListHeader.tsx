@@ -3,6 +3,7 @@ import React, { memo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';
+import { SearchBar } from '@/components/toolbar/SearchBar';
 import { logger } from '@/services/loggerService';
 
 interface ApplicationsListHeaderProps {
@@ -11,6 +12,8 @@ interface ApplicationsListHeaderProps {
   onSelectApplications?: (ids: string[]) => void;
   onSendEmail?: () => void;
   applications: Array<{ id: string }>;
+  searchTerm?: string;
+  onSearchChange?: (term: string) => void;
 }
 
 export const ApplicationsListHeader = memo(({
@@ -18,7 +21,9 @@ export const ApplicationsListHeader = memo(({
   selectedApplications,
   onSelectApplications,
   onSendEmail,
-  applications
+  applications,
+  searchTerm = '',
+  onSearchChange
 }: ApplicationsListHeaderProps) => {
   const handleSelectAll = useCallback((checked: boolean) => {
     if (onSelectApplications) {
@@ -40,6 +45,16 @@ export const ApplicationsListHeader = memo(({
 
   return (
     <div className="p-6 border-b border-gray-200">
+      {/* Search Bar */}
+      {onSearchChange && (
+        <div className="mb-4">
+          <SearchBar
+            searchTerm={searchTerm}
+            onSearchChange={onSearchChange}
+          />
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">
           Applications ({applicationsCount})

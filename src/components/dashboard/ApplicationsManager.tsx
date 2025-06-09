@@ -4,6 +4,7 @@ import { ApplicationsList } from "./ApplicationsList";
 import { ApplicationDetail } from "./ApplicationDetail";
 import { HiringStagesNav } from "./HiringStagesNav";
 import { getTimeAgo } from "@/utils/dateUtils";
+import { useSearchFilter } from "@/hooks/filtering/useSearchFilter";
 import { Application, Job } from "@/types";
 
 interface ApplicationsManagerProps {
@@ -28,6 +29,7 @@ export const ApplicationsManager = ({
   job
 }: ApplicationsManagerProps) => {
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
+  const { searchTerm, setSearchTerm } = useSearchFilter();
 
   const getStatusColor = (status: string, manualRating: number | null = null) => {
     // If status is "reviewed" but there's no manual rating, show as pending
@@ -88,6 +90,8 @@ export const ApplicationsManager = ({
             onSelectApplications={onSelectApplications}
             onSendEmail={onSendEmail}
             jobId={job.id}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
           />
         </div>
 

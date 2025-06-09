@@ -1,5 +1,5 @@
 
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { ApplicationsListHeader } from './ApplicationsListHeader';
 import { ApplicationItem } from './ApplicationItem';
 import { Application } from '@/types';
@@ -14,6 +14,8 @@ interface ApplicationsListProps {
   onSelectApplications?: (ids: string[]) => void;
   onSendEmail?: () => void;
   jobId?: string;
+  searchTerm?: string;
+  onSearchChange?: (term: string) => void;
 }
 
 export const ApplicationsList = memo(({
@@ -25,25 +27,42 @@ export const ApplicationsList = memo(({
   selectedApplications = [],
   onSelectApplications,
   onSendEmail,
-  jobId
+  jobId,
+  searchTerm = '',
+  onSearchChange
 }: ApplicationsListProps) => {
+  // Filter applications based on search term
+  const filteredApplications = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return applications;
+    }
+    
+    const searchLower = searchTerm.toLowerCase();
+    return applications.filter(application => 
+      application.name.toLowerCase().includes(searchLower) ||
+      application.email.toLowerCase().includes(searchLower)
+    );
+  }, [applications, searchTerm]);
+
   return (
     <div className="bg-white rounded-lg border border-gray-200">
       <ApplicationsListHeader
-        applicationsCount={applications.length}
+        applicationsCount={filteredApplications.length}
         selectedApplications={selectedApplications}
         onSelectApplications={onSelectApplications}
         onSendEmail={onSendEmail}
-        applications={applications}
+        applications={filteredApplications}
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
       />
 
       <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
-        {applications.length === 0 ? (
+        {filteredApplications.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
-            No applications in this stage yet.
+            {searchTerm ? 'No candidates found matching your search.' : 'No applications in this stage yet.'}
           </div>
         ) : (
-          applications.map((application) => (
+          filteredApplications.map((application) => (
             <ApplicationItem
               key={application.id}
               application={application}
