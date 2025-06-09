@@ -692,63 +692,133 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
             </div>
           )}
 
-          {/* Step 4: Review & Publish */}
+          {/* Step 4: Review & Publish - REDESIGNED */}
           {currentStep === 4 && (
-            <Card className="h-full">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="h-full flex flex-col overflow-hidden">
+              <div className="flex-shrink-0 mb-4">
+                <h2 className="text-xl font-bold flex items-center gap-2 mb-2">
                   <Eye className="w-5 h-5 text-green-600" />
                   Review & Publish
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 h-full overflow-y-auto">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <h3 className="font-semibold mb-1 text-sm">Job Title</h3>
-                    <p className="text-gray-700 text-sm">{formData.title}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1 text-sm">Employment Type</h3>
-                    <p className="text-gray-700 text-sm">{formData.employmentType}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1 text-sm">Experience Level</h3>
-                    <p className="text-gray-700 text-sm">{formData.experienceLevel}</p>
-                  </div>
-                  {pdfFileName && (
+                </h2>
+                <p className="text-sm text-gray-600">Review your job details and generated content before publishing</p>
+              </div>
+
+              {/* Job Details Summary - Compact */}
+              <div className="flex-shrink-0 mb-4">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                     <div>
-                      <h3 className="font-semibold mb-1 text-sm">Source Content</h3>
-                      <p className="text-xs text-gray-600">
-                        From PDF: {pdfFileName} 
-                        {useOriginalPdf === true ? " (used as-is)" : " (rewritten by AI)"}
-                      </p>
+                      <span className="font-medium text-gray-700">Title:</span>
+                      <p className="text-gray-900 truncate">{formData.title}</p>
                     </div>
-                  )}
+                    <div>
+                      <span className="font-medium text-gray-700">Type:</span>
+                      <p className="text-gray-900">{formData.employmentType}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Level:</span>
+                      <p className="text-gray-900">{formData.experienceLevel}</p>
+                    </div>
+                    {pdfFileName && (
+                      <div>
+                        <span className="font-medium text-gray-700">Source:</span>
+                        <p className="text-xs text-gray-600 truncate">
+                          {pdfFileName} {useOriginalPdf === true ? "(original)" : "(AI rewritten)"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </div>
 
+              {/* Content Previews - Main Area */}
+              <div className="flex-1 space-y-4 overflow-hidden">
+                {/* Job Post Preview */}
                 {generatedJobPost && (
-                  <div>
-                    <h3 className="font-semibold mb-2 text-sm">Job Post Preview</h3>
-                    <ScrollArea className="h-[120px]">
-                      <div className="bg-gray-50 p-3 rounded border prose max-w-none text-sm">
-                        <div dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }} />
+                  <Card className="flex-1 flex flex-col overflow-hidden">
+                    <CardHeader className="pb-3 flex-shrink-0">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-semibold text-gray-900">
+                          Job Post Preview
+                        </CardTitle>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setIsEditingJobPost(true)}
+                          className="text-xs h-8 px-3"
+                        >
+                          <Edit3 className="w-3 h-3 mr-1" />
+                          Edit
+                        </Button>
                       </div>
-                    </ScrollArea>
-                  </div>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-hidden p-0">
+                      <ScrollArea className="h-full w-full">
+                        <div 
+                          className="p-4 prose max-w-none text-sm leading-relaxed"
+                          style={{
+                            lineHeight: '1.7',
+                            fontSize: '14px',
+                            wordWrap: 'break-word'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: parseMarkdown(generatedJobPost) 
+                          }}
+                        />
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
                 )}
 
+                {/* Skills Test Preview */}
                 {generatedSkillsTest && (
-                  <div>
-                    <h3 className="font-semibold mb-2 text-sm">Skills Test Preview</h3>
-                    <ScrollArea className="h-[120px]">
-                      <div className="bg-gray-50 p-3 rounded border prose max-w-none text-sm">
-                        <div dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }} />
+                  <Card className="flex-1 flex flex-col overflow-hidden">
+                    <CardHeader className="pb-3 flex-shrink-0">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-semibold text-gray-900">
+                          Skills Test Preview
+                        </CardTitle>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setIsEditingSkillsTest(true)}
+                          className="text-xs h-8 px-3"
+                        >
+                          <Edit3 className="w-3 h-3 mr-1" />
+                          Edit
+                        </Button>
                       </div>
-                    </ScrollArea>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-hidden p-0">
+                      <ScrollArea className="h-full w-full">
+                        <div 
+                          className="p-4 prose max-w-none text-sm leading-relaxed"
+                          style={{
+                            lineHeight: '1.7',
+                            fontSize: '14px',
+                            wordWrap: 'break-word'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: parseMarkdown(generatedSkillsTest) 
+                          }}
+                        />
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* No Content Message */}
+                {!generatedJobPost && !generatedSkillsTest && (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Content Generated Yet</h3>
+                      <p className="text-sm">Please go back to previous steps to generate your job post and skills test.</p>
+                    </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
 
