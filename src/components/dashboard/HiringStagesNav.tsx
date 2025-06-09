@@ -32,7 +32,7 @@ export const HiringStagesNav = ({
     return <HiringStagesLoadingSkeleton />;
   }
   return <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
-      <div className="p-6 py-[3px]">
+      <div className="p-6 py-[9px]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-auto-fit gap-4" style={{
         gridTemplateColumns: `repeat(${stages.length + 1}, minmax(200px, 1fr))`
       }}>
