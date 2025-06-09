@@ -1,105 +1,240 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  portfolio: string | null;
-  created_at: string;
-  ai_rating: number | null;
-  ai_summary: string | null;
-  status: string;
-  experience: string | null;
-  answer_1: string | null;
-  answer_2: string | null;
-  answer_3: string | null;
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { User, FileText, MessageSquare, Brain, Video } from "lucide-react";
+import { Application } from "@/types";
 
 interface ApplicationTabsProps {
   application: Application;
-  getStatusColor: (status: string) => string;
+  getStatusColor: (status: string, manualRating?: number | null) => string;
   getRatingStars: (rating: number | null) => JSX.Element[];
   getTimeAgo: (dateString: string) => string;
 }
 
-export const ApplicationTabs = ({ 
-  application, 
-  getStatusColor, 
-  getRatingStars, 
-  getTimeAgo 
+export const ApplicationTabs = ({
+  application,
+  getStatusColor,
+  getRatingStars,
+  getTimeAgo,
 }: ApplicationTabsProps) => {
+  const hasSkillsTest = application.skills_test_responses && Array.isArray(application.skills_test_responses) && application.skills_test_responses.length > 0;
+  const hasVideoInterview = application.interview_video_url;
+
   return (
-    <Tabs defaultValue="summary" className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="summary">AI Summary</TabsTrigger>
-        <TabsTrigger value="answers">Test Answers</TabsTrigger>
-        <TabsTrigger value="profile">Profile</TabsTrigger>
+    <Tabs defaultValue="overview" className="w-full">
+      <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+        <TabsTrigger value="overview" className="flex items-center gap-1">
+          <User className="w-3 h-3" />
+          Overview
+        </TabsTrigger>
+        <TabsTrigger value="responses" className="flex items-center gap-1">
+          <MessageSquare className="w-3 h-3" />
+          Responses
+        </TabsTrigger>
+        {hasSkillsTest && (
+          <TabsTrigger value="skills" className="flex items-center gap-1">
+            <Brain className="w-3 h-3" />
+            Skills Test
+          </TabsTrigger>
+        )}
+        {hasVideoInterview && (
+          <TabsTrigger value="video" className="flex items-center gap-1">
+            <Video className="w-3 h-3" />
+            Video Interview
+          </TabsTrigger>
+        )}
+        <TabsTrigger value="files" className="flex items-center gap-1">
+          <FileText className="w-3 h-3" />
+          Files
+        </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="summary" className="space-y-4">
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-2">AI Assessment Summary</h4>
-          <p className="text-gray-700 leading-relaxed">
-            {application.ai_summary || "AI analysis is being processed..."}
-          </p>
-        </div>
+      <TabsContent value="overview" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Application Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Status</span>
+              <Badge className={getStatusColor(application.status)}>
+                {application.status}
+              </Badge>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Applied</span>
+              <span className="text-sm font-medium">
+                {getTimeAgo(application.created_at)}
+              </span>
+            </div>
+
+            {application.ai_rating && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">AI Rating</span>
+                <div className="flex items-center gap-1">
+                  {getRatingStars(application.ai_rating)}
+                  <span className="text-sm ml-1">({application.ai_rating}/3)</span>
+                </div>
+              </div>
+            )}
+
+            {application.manual_rating && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Manual Rating</span>
+                <div className="flex items-center gap-1">
+                  {getRatingStars(application.manual_rating)}
+                  <span className="text-sm ml-1">({application.manual_rating}/3)</span>
+                </div>
+              </div>
+            )}
+
+            {application.portfolio && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Portfolio</span>
+                <a
+                  href={application.portfolio}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:underline max-w-[200px] truncate"
+                >
+                  View Portfolio
+                </a>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {application.ai_summary && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">AI Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {application.ai_summary}
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </TabsContent>
 
-      <TabsContent value="answers" className="space-y-6">
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-2">Answer 1</h4>
-          <p className="text-gray-700 text-sm leading-relaxed">
-            {application.answer_1 || "No answer provided"}
-          </p>
-        </div>
-        
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-2">Answer 2</h4>
-          <p className="text-gray-700 text-sm leading-relaxed">
-            {application.answer_2 || "No answer provided"}
-          </p>
-        </div>
-        
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-2">Answer 3</h4>
-          <p className="text-gray-700 text-sm leading-relaxed">
-            {application.answer_3 || "No answer provided"}
-          </p>
-        </div>
+      <TabsContent value="responses" className="space-y-4">
+        {[
+          { label: "Why are you a good fit for this role?", value: application.answer_1 },
+          { label: "What is your experience in this field?", value: application.answer_2 },
+          { label: "What are your salary expectations?", value: application.answer_3 },
+        ].map((item, index) => (
+          item.value && (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle className="text-sm">{item.label}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {item.value}
+                </p>
+              </CardContent>
+            </Card>
+          )
+        ))}
       </TabsContent>
 
-      <TabsContent value="profile" className="space-y-4">
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-2">Contact Information</h4>
-          <p className="text-gray-700">{application.email}</p>
-        </div>
-        
-        {application.portfolio && (
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">Portfolio</h4>
-            <a 
-              href={application.portfolio} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:text-purple-700 underline"
-            >
-              {application.portfolio}
-            </a>
-          </div>
-        )}
-        
-        {application.experience && (
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">Experience</h4>
-            <p className="text-gray-700">{application.experience}</p>
-          </div>
-        )}
-        
-        <div>
-          <h4 className="font-semibold text-gray-900 mb-2">Submitted</h4>
-          <p className="text-gray-700">{getTimeAgo(application.created_at)}</p>
-        </div>
+      {hasSkillsTest && (
+        <TabsContent value="skills" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Brain className="w-4 h-4" />
+                Skills Assessment Results
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {application.skills_test_responses.map((response: any, index: number) => (
+                <div key={index} className="space-y-2">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <h4 className="font-medium text-sm text-gray-900 mb-2">
+                      Question {index + 1}
+                    </h4>
+                    <p className="text-sm text-gray-700">
+                      {response.question}
+                    </p>
+                  </div>
+                  <div className="pl-4 border-l-2 border-blue-200">
+                    <p className="text-sm text-gray-800 leading-relaxed">
+                      {response.answer}
+                    </p>
+                  </div>
+                  {index < application.skills_test_responses.length - 1 && (
+                    <Separator className="my-4" />
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      )}
+
+      {hasVideoInterview && (
+        <TabsContent value="video" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Video className="w-4 h-4" />
+                Video Interview Response
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {application.interview_video_url === 'recorded' ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                  <Video className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                  <p className="text-sm text-blue-900 font-medium">Video Interview Completed</p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    The candidate has recorded their video responses
+                  </p>
+                </div>
+              ) : (
+                <video
+                  src={application.interview_video_url}
+                  controls
+                  className="w-full rounded-lg"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      )}
+
+      <TabsContent value="files" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Uploaded Files</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {application.resume_file_path ? (
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <p className="text-sm font-medium">Resume</p>
+                    <p className="text-xs text-gray-500">
+                      {application.resume_file_path.split('/').pop()}
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="outline">PDF</Badge>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No files uploaded
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </TabsContent>
     </Tabs>
   );

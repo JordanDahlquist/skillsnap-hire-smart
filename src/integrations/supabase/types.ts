@@ -38,6 +38,7 @@ export type Database = {
           rejection_reason: string | null
           resume_file_path: string | null
           skills: Json | null
+          skills_test_responses: Json | null
           status: string
           updated_at: string
           work_experience: Json | null
@@ -70,6 +71,7 @@ export type Database = {
           rejection_reason?: string | null
           resume_file_path?: string | null
           skills?: Json | null
+          skills_test_responses?: Json | null
           status?: string
           updated_at?: string
           work_experience?: Json | null
@@ -102,6 +104,7 @@ export type Database = {
           rejection_reason?: string | null
           resume_file_path?: string | null
           skills?: Json | null
+          skills_test_responses?: Json | null
           status?: string
           updated_at?: string
           work_experience?: Json | null

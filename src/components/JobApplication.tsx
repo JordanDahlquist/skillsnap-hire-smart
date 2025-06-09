@@ -115,6 +115,7 @@ export const JobApplication = () => {
 
         {/* Application Form */}
         <ApplicationForm 
+          job={job}
           jobId={jobId!} 
           isApplicationOpen={isApplicationOpen}
           jobStatus={job.status}
