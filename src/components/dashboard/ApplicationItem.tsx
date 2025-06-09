@@ -48,6 +48,9 @@ export const ApplicationItem = memo(({
   // Get the display status - if status is "reviewed" but no manual rating, show as "pending"
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
 
+  // Ensure pipeline_stage defaults to "applied" if null or undefined
+  const pipelineStage = application.pipeline_stage || 'applied';
+
   return (
     <div
       className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
@@ -90,7 +93,7 @@ export const ApplicationItem = memo(({
                 <div onClick={(e) => e.stopPropagation()}>
                   <StageSelector
                     jobId={jobId}
-                    currentStage={application.pipeline_stage}
+                    currentStage={pipelineStage}
                     applicationId={application.id}
                     size="sm"
                   />

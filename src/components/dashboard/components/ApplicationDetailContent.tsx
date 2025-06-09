@@ -50,6 +50,9 @@ export const ApplicationDetailContent = ({
   jobId,
   onStageChange
 }: ApplicationDetailContentProps) => {
+  // Ensure pipeline_stage defaults to "applied" if null or undefined
+  const pipelineStage = application.pipeline_stage || 'applied';
+
   return (
     <Card>
       <CardHeader>
@@ -71,7 +74,7 @@ export const ApplicationDetailContent = ({
               onEmail={onEmail}
               jobId={jobId}
               applicationId={application.id}
-              currentStage={application.pipeline_stage}
+              currentStage={pipelineStage}
               onStageChange={onStageChange}
             />
           </div>
