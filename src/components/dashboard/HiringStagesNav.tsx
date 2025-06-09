@@ -7,6 +7,7 @@ import { AllApplicationsCard } from "./hiring-stages/AllApplicationsCard";
 import { StageCard } from "./hiring-stages/StageCard";
 import { RejectedStageCard } from "./hiring-stages/RejectedStageCard";
 import { getStageCounts, getStageKey } from "./hiring-stages/utils";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export const HiringStagesNav = ({
   jobId,
@@ -38,31 +39,47 @@ export const HiringStagesNav = ({
     return <HiringStagesLoadingSkeleton />;
   }
   
-  return <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
-      <div className="p-6 py-[17px]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-auto-fit gap-4" style={{
-        gridTemplateColumns: `repeat(${stages.length + 2}, minmax(200px, 1fr))`
-      }}>
-          
-          {/* All Applications Card */}
-          <AllApplicationsCard totalApplications={totalApplications} selectedStage={selectedStage} onStageSelect={onStageSelect} />
+  return (
+    <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
+      <div className="p-4">
+        <ScrollArea className="w-full">
+          <div className="flex gap-3 pb-2">
+            {/* All Applications Card */}
+            <AllApplicationsCard 
+              totalApplications={totalApplications} 
+              selectedStage={selectedStage} 
+              onStageSelect={onStageSelect} 
+            />
 
-          {/* Stage Cards */}
-          {stages.map((stage, index) => {
-          const stageKey = getStageKey(stage.name);
-          const count = stageCounts[stageKey] || 0;
-          const isSelected = selectedStage === stageKey;
-          const isNextStage = index < stages.length - 1;
-          return <StageCard key={stage.id} stage={stage} count={count} isSelected={isSelected} isNextStage={isNextStage} selectedStage={selectedStage} onStageSelect={onStageSelect} />;
-        })}
+            {/* Stage Cards */}
+            {stages.map((stage, index) => {
+              const stageKey = getStageKey(stage.name);
+              const count = stageCounts[stageKey] || 0;
+              const isSelected = selectedStage === stageKey;
+              const isNextStage = index < stages.length - 1;
+              return (
+                <StageCard 
+                  key={stage.id} 
+                  stage={stage} 
+                  count={count} 
+                  isSelected={isSelected} 
+                  isNextStage={isNextStage} 
+                  selectedStage={selectedStage} 
+                  onStageSelect={onStageSelect} 
+                />
+              );
+            })}
 
-          {/* Rejected Stage Card */}
-          <RejectedStageCard
-            count={rejectedCount}
-            isSelected={selectedStage === 'rejected'}
-            onStageSelect={onStageSelect}
-          />
-        </div>
+            {/* Rejected Stage Card */}
+            <RejectedStageCard
+              count={rejectedCount}
+              isSelected={selectedStage === 'rejected'}
+              onStageSelect={onStageSelect}
+            />
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
-    </div>;
+    </div>
+  );
 };
