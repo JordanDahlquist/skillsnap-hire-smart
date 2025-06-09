@@ -692,9 +692,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
             </div>
           )}
 
-          {/* Step 4: Review & Publish - REDESIGNED */}
+          {/* Step 4: Review & Publish - FIXED SCROLLING */}
           {currentStep === 4 && (
-            <div className="h-full flex flex-col overflow-hidden">
+            <div className="h-full flex flex-col">
               <div className="flex-shrink-0 mb-4">
                 <h2 className="text-xl font-bold flex items-center gap-2 mb-2">
                   <Eye className="w-5 h-5 text-green-600" />
@@ -731,12 +731,12 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                 </div>
               </div>
 
-              {/* Content Previews - Main Area */}
-              <div className="flex-1 space-y-4 overflow-hidden">
+              {/* Content Previews - Main Area with Fixed Scrolling */}
+              <div className="flex-1 space-y-6 overflow-y-auto pr-2">
                 {/* Job Post Preview */}
                 {generatedJobPost && (
-                  <Card className="flex-1 flex flex-col overflow-hidden">
-                    <CardHeader className="pb-3 flex-shrink-0">
+                  <Card>
+                    <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg font-semibold text-gray-900">
                           Job Post Preview
@@ -752,28 +752,26 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="flex-1 overflow-hidden p-0">
-                      <ScrollArea className="h-full w-full">
-                        <div 
-                          className="p-4 prose max-w-none text-sm leading-relaxed"
-                          style={{
-                            lineHeight: '1.7',
-                            fontSize: '14px',
-                            wordWrap: 'break-word'
-                          }}
-                          dangerouslySetInnerHTML={{ 
-                            __html: parseMarkdown(generatedJobPost) 
-                          }}
-                        />
-                      </ScrollArea>
+                    <CardContent>
+                      <div 
+                        className="prose max-w-none text-sm leading-relaxed bg-gray-50 rounded-lg p-4 border"
+                        style={{
+                          lineHeight: '1.7',
+                          fontSize: '14px',
+                          wordWrap: 'break-word'
+                        }}
+                        dangerouslySetInnerHTML={{ 
+                          __html: parseMarkdown(generatedJobPost) 
+                        }}
+                      />
                     </CardContent>
                   </Card>
                 )}
 
                 {/* Skills Test Preview */}
                 {generatedSkillsTest && (
-                  <Card className="flex-1 flex flex-col overflow-hidden">
-                    <CardHeader className="pb-3 flex-shrink-0">
+                  <Card>
+                    <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg font-semibold text-gray-900">
                           Skills Test Preview
@@ -789,27 +787,25 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="flex-1 overflow-hidden p-0">
-                      <ScrollArea className="h-full w-full">
-                        <div 
-                          className="p-4 prose max-w-none text-sm leading-relaxed"
-                          style={{
-                            lineHeight: '1.7',
-                            fontSize: '14px',
-                            wordWrap: 'break-word'
-                          }}
-                          dangerouslySetInnerHTML={{ 
-                            __html: parseMarkdown(generatedSkillsTest) 
-                          }}
-                        />
-                      </ScrollArea>
+                    <CardContent>
+                      <div 
+                        className="prose max-w-none text-sm leading-relaxed bg-gray-50 rounded-lg p-4 border"
+                        style={{
+                          lineHeight: '1.7',
+                          fontSize: '14px',
+                          wordWrap: 'break-word'
+                        }}
+                        dangerouslySetInnerHTML={{ 
+                          __html: parseMarkdown(generatedSkillsTest) 
+                        }}
+                      />
                     </CardContent>
                   </Card>
                 )}
 
                 {/* No Content Message */}
                 {!generatedJobPost && !generatedSkillsTest && (
-                  <div className="flex-1 flex items-center justify-center">
+                  <div className="flex items-center justify-center py-12">
                     <div className="text-center text-gray-500">
                       <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <h3 className="text-lg font-medium text-gray-900 mb-2">No Content Generated Yet</h3>
