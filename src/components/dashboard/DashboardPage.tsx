@@ -108,16 +108,9 @@ export const DashboardPage = () => {
 
   const selectedApplicationsData = applications.filter(app => selectedApplications.includes(app.id));
 
-  // Breadcrumbs
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/jobs" },
-    { label: job.title, isCurrentPage: true },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50">
       <UnifiedHeader 
-        breadcrumbs={breadcrumbs} 
         onCreateRole={handleCreateJob}
         showCreateButton={true} 
       />

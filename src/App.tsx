@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,7 +10,7 @@ import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/AuthGuard";
-import { Dashboard } from "./components/Dashboard";
+import { DashboardPage } from "./components/dashboard/DashboardPage";
 import { JobApplicationPage } from "./pages/JobApplicationPage";
 import PublicJobs from "./pages/PublicJobs";
 import ProfileSettings from "./pages/ProfileSettings";
@@ -38,12 +39,12 @@ function App() {
             } />
             <Route path="/jobs/:jobId" element={
               <AuthGuard>
-                <Dashboard />
+                <DashboardPage />
               </AuthGuard>
             } />
             <Route path="/dashboard/:jobId" element={
               <AuthGuard>
-                <Dashboard />
+                <DashboardPage />
               </AuthGuard>
             } />
             <Route path="/scout" element={
