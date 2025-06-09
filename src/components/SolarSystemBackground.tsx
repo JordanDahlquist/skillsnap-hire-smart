@@ -32,9 +32,9 @@ export const SolarSystemBackground = () => {
               top: `${Math.random() * 100}%`,
               width: `${2 + Math.random() * 2}px`,
               height: `${2 + Math.random() * 2}px`,
-              animationDelay: `${(i * 0.1) % 5}s`,
-              animationDuration: '4s',
-              opacity: 0.7 + Math.random() * 0.3,
+              animationDelay: `${(i * 0.2) % 6}s`,
+              animationDuration: '6s',
+              opacity: 0.6 + Math.random() * 0.3,
               boxShadow: `0 0 ${4 + Math.random() * 8}px rgba(255, 255, 255, 0.8)`,
             }}
           />
@@ -50,8 +50,8 @@ export const SolarSystemBackground = () => {
               top: `${Math.random() * 100}%`,
               width: `${1 + Math.random()}px`,
               height: `${1 + Math.random()}px`,
-              animationDelay: `${(i * 0.05) % 3}s`,
-              animationDuration: '3s',
+              animationDelay: `${(i * 0.1) % 4}s`,
+              animationDuration: '4s',
               opacity: 0.4 + Math.random() * 0.4,
             }}
           />
@@ -66,54 +66,6 @@ export const SolarSystemBackground = () => {
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               opacity: 0.2 + Math.random() * 0.3,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Enhanced meteors with gravitational pull effects - smooth timing */}
-      <div className="absolute inset-0">
-        {/* Meteors that spiral into the solar system */}
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={`spiral-meteor-${i}`}
-            className="absolute w-1 h-1 bg-white rounded-full opacity-0 animate-spiral-in"
-            style={{
-              left: `${Math.random() * 20}%`,
-              top: `${Math.random() * 20}%`,
-              animationDelay: `${i * 2}s`,
-              animationDuration: '4s',
-              boxShadow: '0 0 8px 3px rgba(255, 255, 255, 0.8)',
-            }}
-          />
-        ))}
-        
-        {/* Meteors that get captured into orbit */}
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={`orbit-meteor-${i}`}
-            className="absolute w-1.5 h-1.5 bg-blue-200 rounded-full opacity-0 animate-gravitational-capture"
-            style={{
-              right: `${Math.random() * 30}%`,
-              top: `${Math.random() * 30}%`,
-              animationDelay: `${i * 3}s`,
-              animationDuration: '6s',
-              boxShadow: '0 0 6px 2px rgba(191, 219, 254, 0.8)',
-            }}
-          />
-        ))}
-        
-        {/* Fast meteors that pass by with slight deflection */}
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={`deflect-meteor-${i}`}
-            className="absolute w-0.5 h-0.5 bg-yellow-200 rounded-full opacity-0 animate-gravitational-deflect"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${i * 4}s`,
-              animationDuration: '3s',
-              boxShadow: '0 0 4px 1px rgba(254, 240, 138, 0.8)',
             }}
           />
         ))}

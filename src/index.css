@@ -175,24 +175,8 @@
     animation: spin-slowest 45s linear infinite;
   }
 
-  .animate-meteor {
-    animation: meteor 2s ease-out infinite;
-  }
-
   .animate-float {
     animation: float 10s ease-in-out infinite;
-  }
-
-  .animate-spiral-in {
-    animation: spiral-in 4s ease-in-out infinite;
-  }
-
-  .animate-gravitational-capture {
-    animation: gravitational-capture 6s ease-in-out infinite;
-  }
-
-  .animate-gravitational-deflect {
-    animation: gravitational-deflect 3s ease-in-out infinite;
   }
 
   .bg-gradient-radial {
@@ -346,23 +330,6 @@
   }
 }
 
-@keyframes meteor {
-  0% {
-    opacity: 0;
-    transform: translateX(-100px) translateY(-100px);
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(300px) translateY(300px);
-  }
-}
-
 @keyframes float {
   0%, 100% {
     transform: translateY(0px) translateX(0px);
@@ -379,83 +346,5 @@
   75% {
     transform: translateY(-20px) translateX(4px);
     opacity: 0.6;
-  }
-}
-
-/* Enhanced Gravitational Effect Animations - Smoother Curves */
-@keyframes spiral-in {
-  0% {
-    opacity: 0;
-    transform: translateX(-200px) translateY(-200px) scale(0.5);
-  }
-  10% {
-    opacity: 1;
-    transform: translateX(-150px) translateY(-150px) scale(0.7);
-  }
-  30% {
-    opacity: 1;
-    transform: translateX(-80px) translateY(-80px) scale(0.9);
-  }
-  60% {
-    opacity: 1;
-    transform: translateX(-20px) translateY(-20px) scale(1.1) rotate(180deg);
-  }
-  90% {
-    opacity: 0.8;
-    transform: translateX(10px) translateY(10px) scale(0.8) rotate(360deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(50px) translateY(50px) scale(0.3) rotate(540deg);
-  }
-}
-
-@keyframes gravitational-capture {
-  0% {
-    opacity: 0;
-    transform: translateX(300px) translateY(-100px) scale(0.8);
-  }
-  15% {
-    opacity: 1;
-    transform: translateX(200px) translateY(-50px) scale(1);
-  }
-  40% {
-    opacity: 1;
-    transform: translateX(100px) translateY(20px) scale(1.1) rotate(90deg);
-  }
-  70% {
-    opacity: 1;
-    transform: translateX(20px) translateY(80px) scale(0.9) rotate(270deg);
-  }
-  90% {
-    opacity: 0.6;
-    transform: translateX(-50px) translateY(120px) scale(0.7) rotate(450deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-120px) translateY(150px) scale(0.4) rotate(630deg);
-  }
-}
-
-@keyframes gravitational-deflect {
-  0% {
-    opacity: 0;
-    transform: translateX(-150px) translateY(200px);
-  }
-  20% {
-    opacity: 1;
-    transform: translateX(-80px) translateY(100px);
-  }
-  50% {
-    opacity: 1;
-    transform: translateX(0px) translateY(20px);
-  }
-  80% {
-    opacity: 1;
-    transform: translateX(100px) translateY(-40px);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(250px) translateY(-120px);
   }
 }
