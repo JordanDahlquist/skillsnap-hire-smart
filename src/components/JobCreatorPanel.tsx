@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -466,52 +465,65 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
             </Card>
           )}
 
-          {/* Step 2: Generate Job Post */}
+          {/* Step 2: Generate Job Post - REDESIGNED */}
           {currentStep === 2 && (
-            <Card className="h-full">
-              <CardHeader className="pb-2">
+            <Card className="h-full flex flex-col overflow-hidden">
+              <CardHeader className="pb-3 flex-shrink-0">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Sparkles className="w-5 h-5 text-blue-600" />
                   {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "AI Job Post Generator"}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 h-full overflow-y-auto">
+              <CardContent className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
                 {!generatedJobPost ? (
-                  <div className="text-center py-6">
-                    <p className="text-gray-600 mb-3 text-sm">
-                      {uploadedPdfContent && useOriginalPdf === true
-                        ? "Use your uploaded job description as the final job post"
-                        : uploadedPdfContent && useOriginalPdf === false
-                        ? "Generate an improved version of your uploaded job description"
-                        : "Generate a professional job posting based on your details"
-                      }
-                    </p>
-                    <Button 
-                      onClick={generateJobPost}
-                      disabled={isGenerating}
-                      className="bg-blue-600 hover:bg-blue-700"
-                      size="sm"
-                    >
-                      {isGenerating ? 'Processing...' : 
-                       uploadedPdfContent && useOriginalPdf === true ? 'Use Original Content' :
-                       uploadedPdfContent && useOriginalPdf === false ? 'Rewrite with AI' :
-                       'Generate Job Post'}
-                      <Sparkles className="w-4 h-4 ml-2" />
-                    </Button>
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center max-w-md">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Ready to Generate Your Job Post
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-6">
+                        {uploadedPdfContent && useOriginalPdf === true
+                          ? "Use your uploaded job description as the final job post"
+                          : uploadedPdfContent && useOriginalPdf === false
+                          ? "Generate an improved version of your uploaded job description"
+                          : "Create a professional job posting based on your details"
+                        }
+                      </p>
+                      <Button 
+                        onClick={generateJobPost}
+                        disabled={isGenerating}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        size="default"
+                      >
+                        {isGenerating ? 'Processing...' : 
+                         uploadedPdfContent && useOriginalPdf === true ? 'Use Original Content' :
+                         uploadedPdfContent && useOriginalPdf === false ? 'Rewrite with AI' :
+                         'Generate Job Post'}
+                        <Sparkles className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col overflow-hidden">
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-sm">
-                        {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
-                      </Label>
-                      <div className="flex gap-2">
+                  <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+                    <div className="flex items-center justify-between mb-3 flex-shrink-0">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-900">
+                          {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
+                        </Label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {isEditingJobPost ? "Edit your content below" : "Click to edit or use the buttons on the right"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
                         {!isEditingJobPost && (
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => setIsEditingJobPost(true)}
-                            className="flex items-center gap-1 text-xs h-6 px-2"
+                            className="flex items-center gap-1 text-xs h-8 px-3"
                           >
                             <Edit3 className="w-3 h-3" />
                             Edit
@@ -523,9 +535,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                             size="sm"
                             onClick={generateJobPost}
                             disabled={isGenerating}
-                            className="text-xs h-6 px-2"
+                            className="text-xs h-8 px-3"
                           >
-                            Regenerate
+                            {isGenerating ? 'Regenerating...' : 'Regenerate'}
                           </Button>
                         )}
                       </div>
@@ -541,13 +553,23 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                           placeholder="Enter your job posting content here..."
                         />
                       ) : (
-                        <ScrollArea className="h-full w-full">
-                          <div 
-                            className="p-3 border rounded-lg bg-gray-50 prose prose-sm max-w-full w-full overflow-hidden cursor-pointer hover:bg-gray-100 transition-colors"
-                            onClick={() => setIsEditingJobPost(true)}
-                            dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }}
-                          />
-                        </ScrollArea>
+                        <div className="h-full border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                          <ScrollArea className="h-full w-full">
+                            <div 
+                              className="p-4 cursor-pointer hover:bg-gray-100 transition-colors min-h-full"
+                              onClick={() => setIsEditingJobPost(true)}
+                              style={{
+                                lineHeight: '1.6',
+                                fontSize: '14px',
+                                wordWrap: 'break-word',
+                                overflow: 'hidden'
+                              }}
+                              dangerouslySetInnerHTML={{ 
+                                __html: parseMarkdown(generatedJobPost) 
+                              }}
+                            />
+                          </ScrollArea>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -556,42 +578,55 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
             </Card>
           )}
 
-          {/* Step 3: Generate Skills Test */}
+          {/* Step 3: Generate Skills Test - REDESIGNED */}
           {currentStep === 3 && (
-            <Card className="h-full">
-              <CardHeader className="pb-2">
+            <Card className="h-full flex flex-col overflow-hidden">
+              <CardHeader className="pb-3 flex-shrink-0">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Sparkles className="w-5 h-5 text-blue-600" />
                   Skills Assessment Generator
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 h-full overflow-y-auto">
+              <CardContent className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
                 {!generatedSkillsTest ? (
-                  <div className="text-center py-6">
-                    <p className="text-gray-600 mb-3 text-sm">
-                      Generate skills assessment questions based on your job post
-                    </p>
-                    <Button 
-                      onClick={generateSkillsTest}
-                      disabled={isGenerating || !generatedJobPost}
-                      className="bg-blue-600 hover:bg-blue-700"
-                      size="sm"
-                    >
-                      {isGenerating ? 'Generating...' : 'Generate Skills Test'}
-                      <Sparkles className="w-4 h-4 ml-2" />
-                    </Button>
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center max-w-md">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Create Skills Assessment
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-6">
+                        Generate targeted assessment questions based on your job post to evaluate candidate skills effectively
+                      </p>
+                      <Button 
+                        onClick={generateSkillsTest}
+                        disabled={isGenerating || !generatedJobPost}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        size="default"
+                      >
+                        {isGenerating ? 'Generating...' : 'Generate Skills Test'}
+                        <Sparkles className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col overflow-hidden">
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-sm">Generated Skills Test</Label>
-                      <div className="flex gap-2">
+                  <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+                    <div className="flex items-center justify-between mb-3 flex-shrink-0">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-900">Generated Skills Test</Label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {isEditingSkillsTest ? "Edit your assessment below" : "Click to edit or use the buttons on the right"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
                         {!isEditingSkillsTest && (
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => setIsEditingSkillsTest(true)}
-                            className="flex items-center gap-1 text-xs h-6 px-2"
+                            className="flex items-center gap-1 text-xs h-8 px-3"
                           >
                             <Edit3 className="w-3 h-3" />
                             Edit
@@ -602,9 +637,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                           size="sm"
                           onClick={generateSkillsTest}
                           disabled={isGenerating}
-                          className="text-xs h-6 px-2"
+                          className="text-xs h-8 px-3"
                         >
-                          Regenerate
+                          {isGenerating ? 'Regenerating...' : 'Regenerate'}
                         </Button>
                       </div>
                     </div>
@@ -619,13 +654,23 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
                           placeholder="Enter your skills test questions here..."
                         />
                       ) : (
-                        <ScrollArea className="h-full w-full">
-                          <div 
-                            className="p-3 border rounded-lg bg-gray-50 prose prose-sm max-w-full w-full overflow-hidden cursor-pointer hover:bg-gray-100 transition-colors"
-                            onClick={() => setIsEditingSkillsTest(true)}
-                            dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }}
-                          />
-                        </ScrollArea>
+                        <div className="h-full border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                          <ScrollArea className="h-full w-full">
+                            <div 
+                              className="p-4 cursor-pointer hover:bg-gray-100 transition-colors min-h-full"
+                              onClick={() => setIsEditingSkillsTest(true)}
+                              style={{
+                                lineHeight: '1.6',
+                                fontSize: '14px',
+                                wordWrap: 'break-word',
+                                overflow: 'hidden'
+                              }}
+                              dangerouslySetInnerHTML={{ 
+                                __html: parseMarkdown(generatedSkillsTest) 
+                              }}
+                            />
+                          </ScrollArea>
+                        </div>
                       )}
                     </div>
                   </div>
