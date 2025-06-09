@@ -1,8 +1,6 @@
 
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +18,7 @@ interface Job {
 }
 
 interface BulkEmailRequest {
-  user_id: string; // Accept user ID from request body
+  user_id: string;
   applications: Application[];
   job: Job;
   subject: string;
@@ -38,7 +36,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+    const mailersendApiKey = Deno.env.get("MAILERSEND_API_KEY");
+    if (!mailersendApiKey) {
+      throw new Error('MAILERSEND_API_KEY is not configured');
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -61,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('User ID is required');
     }
 
-    console.log('Sending bulk emails:', { 
+    console.log('Sending bulk emails via MailerSend:', { 
       user_id,
       count: applications.length, 
       subject, 
@@ -70,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const results = [];
-    const fromEmail = reply_to_email || 'hiring@atract.ai'; // Use verified domain as fallback
+    const fromEmail = reply_to_email || 'hiring@atract.ai';
     const companyName = company_name || 'Our Company';
 
     for (const application of applications) {
@@ -82,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
           const { data: thread, error: threadError } = await supabase
             .from('email_threads')
             .insert({
-              user_id: user_id, // Use the passed user ID
+              user_id: user_id,
               subject: subject,
               participants: [fromEmail, application.email],
               reply_to_email: fromEmail,
@@ -120,20 +122,45 @@ const handler = async (req: Request): Promise<Response> => {
           ? `${processedSubject} [Thread:${finalThreadId}]`
           : processedSubject;
 
-        // Send email via Resend
-        const emailResult = await resend.emails.send({
-          from: `${companyName} <${fromEmail}>`,
-          to: [application.email],
+        // Send email via MailerSend API
+        const emailPayload = {
+          from: {
+            email: fromEmail,
+            name: companyName
+          },
+          to: [{
+            email: application.email,
+            name: application.name
+          }],
           subject: finalSubject,
           html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
               ${processedContent.replace(/\n/g, '<br>')}
             </div>
           `,
-          reply_to: fromEmail,
+          reply_to: {
+            email: fromEmail,
+            name: companyName
+          }
+        };
+
+        const emailResponse = await fetch('https://api.mailersend.com/v1/email', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${mailersendApiKey}`,
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(emailPayload)
         });
 
-        console.log('Email sent successfully:', emailResult);
+        if (!emailResponse.ok) {
+          const errorText = await emailResponse.text();
+          throw new Error(`MailerSend API error: ${emailResponse.status} - ${errorText}`);
+        }
+
+        const emailResult = await emailResponse.json();
+        console.log('Email sent successfully via MailerSend:', emailResult);
 
         // Store message in database if we have a thread
         if (finalThreadId) {
@@ -159,7 +186,7 @@ const handler = async (req: Request): Promise<Response> => {
         const { error: logError } = await supabase
           .from('email_logs')
           .insert({
-            user_id: user_id, // Use the passed user ID
+            user_id: user_id,
             thread_id: finalThreadId,
             recipient_email: application.email,
             recipient_name: application.name,
@@ -178,7 +205,7 @@ const handler = async (req: Request): Promise<Response> => {
           email: application.email,
           success: true,
           thread_id: finalThreadId,
-          message_id: emailResult.data?.id
+          message_id: emailResult.message_id || emailResult.id
         });
 
       } catch (error) {
@@ -227,4 +254,3 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
-
