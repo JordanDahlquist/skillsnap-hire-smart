@@ -4,24 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ApplicationTabs } from "../ApplicationTabs";
 import { ApplicationRatingSection } from "./ApplicationRatingSection";
 import { ApplicationActionButtons } from "./ApplicationActionButtons";
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  portfolio: string | null;
-  created_at: string;
-  ai_rating: number | null;
-  ai_summary: string | null;
-  status: string;
-  experience: string | null;
-  answer_1: string | null;
-  answer_2: string | null;
-  answer_3: string | null;
-  manual_rating: number | null;
-  rejection_reason: string | null;
-  pipeline_stage: string | null;
-}
+import { Application } from "@/types";
 
 interface ApplicationDetailContentProps {
   application: Application;

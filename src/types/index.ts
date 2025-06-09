@@ -1,3 +1,4 @@
+
 export interface Job {
   id: string;
   title: string;
@@ -22,6 +23,8 @@ export interface Job {
   company_name?: string | null;
   generated_job_post?: string | null;
   generated_test?: string | null;
+  generated_interview_questions?: string | null;
+  interview_video_max_length?: number | null;
   applications?: { count: number }[];
   applicationStatusCounts?: {
     pending?: number;
@@ -60,6 +63,8 @@ export interface Application {
   answer_2: string | null;
   answer_3: string | null;
   experience: string | null;
+  skills_test_responses: any[] | null;
+  interview_video_url: string | null;
 }
 
 export interface Profile {
