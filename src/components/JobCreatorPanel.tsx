@@ -278,9 +278,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2">
-      <div className="bg-white rounded-lg max-w-4xl w-full h-[95vh] flex flex-col">
+      <div className="bg-white rounded-lg max-w-4xl w-full h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b">
+        <div className="p-3 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">Create New Job</h2>
             <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
@@ -290,7 +290,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
         </div>
 
         {/* Step Indicator */}
-        <div className="flex items-center justify-center py-3 px-4 border-b">
+        <div className="flex items-center justify-center py-2 px-4 border-b flex-shrink-0">
           {[1, 2, 3, 4].map((step) => (
             <div key={step} className="flex items-center">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
@@ -307,400 +307,394 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
           ))}
         </div>
 
-        {/* Content Area - Scrollable */}
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="p-4">
-              {/* Step 1: Basic Information */}
-              {currentStep === 1 && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">Job Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="title" className="text-sm">Job Title *</Label>
-                        <Input
-                          id="title"
-                          value={formData.title}
-                          onChange={(e) => updateFormData('title', e.target.value)}
-                          placeholder="e.g. Senior React Developer"
-                          className="mt-1"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="employmentType" className="text-sm">Employment Type</Label>
-                        <Select value={formData.employmentType} onValueChange={(value) => updateFormData('employmentType', value)}>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="full-time">Full-time</SelectItem>
-                            <SelectItem value="part-time">Part-time</SelectItem>
-                            <SelectItem value="contract">Contract</SelectItem>
-                            <SelectItem value="project">Project</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+        {/* Content Area - Flexible */}
+        <div className="flex-1 overflow-hidden p-3">
+          {/* Step 1: Basic Information */}
+          {currentStep === 1 && (
+            <Card className="h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Job Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 h-full overflow-y-auto">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="title" className="text-sm">Job Title *</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => updateFormData('title', e.target.value)}
+                      placeholder="e.g. Senior React Developer"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="employmentType" className="text-sm">Employment Type</Label>
+                    <Select value={formData.employmentType} onValueChange={(value) => updateFormData('employmentType', value)}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="full-time">Full-time</SelectItem>
+                        <SelectItem value="part-time">Part-time</SelectItem>
+                        <SelectItem value="contract">Contract</SelectItem>
+                        <SelectItem value="project">Project</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-                    <div>
-                      <Label htmlFor="description" className="text-sm">Job Description *</Label>
-                      <p className="text-xs text-gray-500 mb-1">Basic info for AI to generate professional job description</p>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => updateFormData('description', e.target.value)}
-                        placeholder="Describe the role, responsibilities, and requirements..."
-                        rows={3}
-                        className="mt-1"
-                        required
-                      />
-                    </div>
+                <div>
+                  <Label htmlFor="description" className="text-sm">Job Description *</Label>
+                  <p className="text-xs text-gray-500 mb-1">Basic info for AI to generate professional job description</p>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => updateFormData('description', e.target.value)}
+                    placeholder="Describe the role, responsibilities, and requirements..."
+                    rows={8}
+                    className="mt-1"
+                    required
+                  />
+                </div>
 
-                    {/* PDF Upload Section */}
-                    <div className="space-y-2">
-                      <PdfUpload
-                        onFileUpload={handlePdfUpload}
-                        onRemove={handlePdfRemove}
-                        uploadedFile={pdfFileName}
-                      />
-                      
-                      {/* PDF Choice Section */}
-                      {uploadedPdfContent && useOriginalPdf === null && (
-                        <div className="bg-blue-50 border border-blue-200 rounded p-2">
-                          <div className="flex items-center gap-2 mb-1">
-                            <FileText className="w-4 h-4 text-blue-600" />
-                            <span className="text-sm font-medium text-blue-800">PDF Content Loaded</span>
-                          </div>
-                          <p className="text-xs text-blue-700 mb-2">How would you like to use this content?</p>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setUseOriginalPdf(true)}
-                              className="text-xs h-7 px-2"
-                            >
-                              Keep Original
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setUseOriginalPdf(false)}
-                              className="text-xs h-7 px-2"
-                            >
-                              Have AI Rewrite
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Show choice made */}
-                      {uploadedPdfContent && useOriginalPdf !== null && (
-                        <div className="bg-green-50 border border-green-200 rounded p-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-green-800">
-                              {useOriginalPdf ? "Using original PDF content" : "AI will rewrite PDF content"}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setUseOriginalPdf(null)}
-                              className="text-xs h-5 px-1 text-green-600 hover:text-green-800"
-                            >
-                              Change
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="experienceLevel" className="text-sm">Experience Level</Label>
-                        <Select value={formData.experienceLevel} onValueChange={(value) => updateFormData('experienceLevel', value)}>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="entry-level">Entry Level</SelectItem>
-                            <SelectItem value="mid-level">Mid Level</SelectItem>
-                            <SelectItem value="senior-level">Senior Level</SelectItem>
-                          </SelectContent>
-                        </Select>
+                {/* PDF Upload Section - More Compact */}
+                <div className="space-y-1">
+                  <PdfUpload
+                    onFileUpload={handlePdfUpload}
+                    onRemove={handlePdfRemove}
+                    uploadedFile={pdfFileName}
+                  />
+                  
+                  {/* PDF Choice Section */}
+                  {uploadedPdfContent && useOriginalPdf === null && (
+                    <div className="bg-blue-50 border border-blue-200 rounded p-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-800">PDF Content Loaded</span>
                       </div>
-                      <div>
-                        <Label htmlFor="skills" className="text-sm">Required Skills</Label>
-                        <Input
-                          id="skills"
-                          value={formData.skills}
-                          onChange={(e) => updateFormData('skills', e.target.value)}
-                          placeholder="React, TypeScript, Node.js..."
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="budget" className="text-sm">Budget</Label>
-                        <Input
-                          id="budget"
-                          value={formData.budget}
-                          onChange={(e) => updateFormData('budget', e.target.value)}
-                          placeholder="$50-100/hr or $5000"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="duration" className="text-sm">Duration</Label>
-                        <Input
-                          id="duration"
-                          value={formData.duration}
-                          onChange={(e) => updateFormData('duration', e.target.value)}
-                          placeholder="3 months, Ongoing..."
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Step 2: Generate Job Post */}
-              {currentStep === 2 && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Sparkles className="w-5 h-5 text-blue-600" />
-                      {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "AI Job Post Generator"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {!generatedJobPost ? (
-                      <div className="text-center py-6">
-                        <p className="text-gray-600 mb-3 text-sm">
-                          {uploadedPdfContent && useOriginalPdf === true
-                            ? "Use your uploaded job description as the final job post"
-                            : uploadedPdfContent && useOriginalPdf === false
-                            ? "Generate an improved version of your uploaded job description"
-                            : "Generate a professional job posting based on your details"
-                          }
-                        </p>
-                        <Button 
-                          onClick={generateJobPost}
-                          disabled={isGenerating}
-                          className="bg-blue-600 hover:bg-blue-700"
+                      <p className="text-xs text-blue-700 mb-2">How would you like to use this content?</p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
                           size="sm"
+                          onClick={() => setUseOriginalPdf(true)}
+                          className="text-xs h-6 px-2"
                         >
-                          {isGenerating ? 'Processing...' : 
-                           uploadedPdfContent && useOriginalPdf === true ? 'Use Original Content' :
-                           uploadedPdfContent && useOriginalPdf === false ? 'Rewrite with AI' :
-                           'Generate Job Post'}
-                          <Sparkles className="w-4 h-4 ml-2" />
+                          Keep Original
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setUseOriginalPdf(false)}
+                          className="text-xs h-6 px-2"
+                        >
+                          Have AI Rewrite
                         </Button>
                       </div>
-                    ) : (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label className="text-sm">
-                            {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
-                          </Label>
-                          <div className="flex gap-2">
-                            {!isEditingJobPost && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setIsEditingJobPost(true)}
-                                className="flex items-center gap-1 text-xs h-7 px-2"
-                              >
-                                <Edit3 className="w-3 h-3" />
-                                Edit
-                              </Button>
-                            )}
-                            {!(uploadedPdfContent && useOriginalPdf === true) && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={generateJobPost}
-                                disabled={isGenerating}
-                                className="text-xs h-7 px-2"
-                              >
-                                Regenerate
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {isEditingJobPost ? (
-                          <div className="h-[250px]">
-                            <RichTextEditor
-                              value={generatedJobPost}
-                              onChange={setGeneratedJobPost}
-                              onSave={handleJobPostSave}
-                              onCancel={handleJobPostCancel}
-                              placeholder="Enter your job posting content here..."
-                            />
-                          </div>
-                        ) : (
-                          <ScrollArea className="h-[250px]">
-                            <div 
-                              className="p-3 border rounded-lg bg-gray-50 prose max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
-                              onClick={() => setIsEditingJobPost(true)}
-                              dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }}
-                            />
-                          </ScrollArea>
+                    </div>
+                  )}
+
+                  {/* Show choice made */}
+                  {uploadedPdfContent && useOriginalPdf !== null && (
+                    <div className="bg-green-50 border border-green-200 rounded p-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-green-800">
+                          {useOriginalPdf ? "Using original PDF content" : "AI will rewrite PDF content"}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUseOriginalPdf(null)}
+                          className="text-xs h-5 px-1 text-green-600 hover:text-green-800"
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <Label htmlFor="experienceLevel" className="text-sm">Experience Level</Label>
+                    <Select value={formData.experienceLevel} onValueChange={(value) => updateFormData('experienceLevel', value)}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="entry-level">Entry Level</SelectItem>
+                        <SelectItem value="mid-level">Mid Level</SelectItem>
+                        <SelectItem value="senior-level">Senior Level</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="budget" className="text-sm">Budget</Label>
+                    <Input
+                      id="budget"
+                      value={formData.budget}
+                      onChange={(e) => updateFormData('budget', e.target.value)}
+                      placeholder="$50-100/hr"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="duration" className="text-sm">Duration</Label>
+                    <Input
+                      id="duration"
+                      value={formData.duration}
+                      onChange={(e) => updateFormData('duration', e.target.value)}
+                      placeholder="3 months"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="skills" className="text-sm">Required Skills</Label>
+                  <Input
+                    id="skills"
+                    value={formData.skills}
+                    onChange={(e) => updateFormData('skills', e.target.value)}
+                    placeholder="React, TypeScript, Node.js..."
+                    className="mt-1"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Step 2: Generate Job Post */}
+          {currentStep === 2 && (
+            <Card className="h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="w-5 h-5 text-blue-600" />
+                  {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "AI Job Post Generator"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 h-full overflow-y-auto">
+                {!generatedJobPost ? (
+                  <div className="text-center py-6">
+                    <p className="text-gray-600 mb-3 text-sm">
+                      {uploadedPdfContent && useOriginalPdf === true
+                        ? "Use your uploaded job description as the final job post"
+                        : uploadedPdfContent && useOriginalPdf === false
+                        ? "Generate an improved version of your uploaded job description"
+                        : "Generate a professional job posting based on your details"
+                      }
+                    </p>
+                    <Button 
+                      onClick={generateJobPost}
+                      disabled={isGenerating}
+                      className="bg-blue-600 hover:bg-blue-700"
+                      size="sm"
+                    >
+                      {isGenerating ? 'Processing...' : 
+                       uploadedPdfContent && useOriginalPdf === true ? 'Use Original Content' :
+                       uploadedPdfContent && useOriginalPdf === false ? 'Rewrite with AI' :
+                       'Generate Job Post'}
+                      <Sparkles className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-sm">
+                        {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
+                      </Label>
+                      <div className="flex gap-2">
+                        {!isEditingJobPost && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setIsEditingJobPost(true)}
+                            className="flex items-center gap-1 text-xs h-6 px-2"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            Edit
+                          </Button>
+                        )}
+                        {!(uploadedPdfContent && useOriginalPdf === true) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={generateJobPost}
+                            disabled={isGenerating}
+                            className="text-xs h-6 px-2"
+                          >
+                            Regenerate
+                          </Button>
                         )}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                    </div>
+                    
+                    <div className="flex-1 min-h-0">
+                      {isEditingJobPost ? (
+                        <RichTextEditor
+                          value={generatedJobPost}
+                          onChange={setGeneratedJobPost}
+                          onSave={handleJobPostSave}
+                          onCancel={handleJobPostCancel}
+                          placeholder="Enter your job posting content here..."
+                        />
+                      ) : (
+                        <ScrollArea className="h-full">
+                          <div 
+                            className="p-3 border rounded-lg bg-gray-50 prose max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsEditingJobPost(true)}
+                            dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }}
+                          />
+                        </ScrollArea>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-              {/* Step 3: Generate Skills Test */}
-              {currentStep === 3 && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Sparkles className="w-5 h-5 text-blue-600" />
-                      Skills Assessment Generator
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {!generatedSkillsTest ? (
-                      <div className="text-center py-6">
-                        <p className="text-gray-600 mb-3 text-sm">
-                          Generate skills assessment questions based on your job post
-                        </p>
+          {/* Step 3: Generate Skills Test */}
+          {currentStep === 3 && (
+            <Card className="h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="w-5 h-5 text-blue-600" />
+                  Skills Assessment Generator
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 h-full overflow-y-auto">
+                {!generatedSkillsTest ? (
+                  <div className="text-center py-6">
+                    <p className="text-gray-600 mb-3 text-sm">
+                      Generate skills assessment questions based on your job post
+                    </p>
+                    <Button 
+                      onClick={generateSkillsTest}
+                      disabled={isGenerating || !generatedJobPost}
+                      className="bg-blue-600 hover:bg-blue-700"
+                      size="sm"
+                    >
+                      {isGenerating ? 'Generating...' : 'Generate Skills Test'}
+                      <Sparkles className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-sm">Generated Skills Test</Label>
+                      <div className="flex gap-2">
+                        {!isEditingSkillsTest && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setIsEditingSkillsTest(true)}
+                            className="flex items-center gap-1 text-xs h-6 px-2"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            Edit
+                          </Button>
+                        )}
                         <Button 
+                          variant="outline" 
+                          size="sm"
                           onClick={generateSkillsTest}
-                          disabled={isGenerating || !generatedJobPost}
-                          className="bg-blue-600 hover:bg-blue-700"
-                          size="sm"
+                          disabled={isGenerating}
+                          className="text-xs h-6 px-2"
                         >
-                          {isGenerating ? 'Generating...' : 'Generate Skills Test'}
-                          <Sparkles className="w-4 h-4 ml-2" />
+                          Regenerate
                         </Button>
                       </div>
-                    ) : (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label className="text-sm">Generated Skills Test</Label>
-                          <div className="flex gap-2">
-                            {!isEditingSkillsTest && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setIsEditingSkillsTest(true)}
-                                className="flex items-center gap-1 text-xs h-7 px-2"
-                              >
-                                <Edit3 className="w-3 h-3" />
-                                Edit
-                              </Button>
-                            )}
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={generateSkillsTest}
-                              disabled={isGenerating}
-                              className="text-xs h-7 px-2"
-                            >
-                              Regenerate
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {isEditingSkillsTest ? (
-                          <div className="h-[250px]">
-                            <RichTextEditor
-                              value={generatedSkillsTest}
-                              onChange={setGeneratedSkillsTest}
-                              onSave={handleSkillsTestSave}
-                              onCancel={handleSkillsTestCancel}
-                              placeholder="Enter your skills test questions here..."
-                            />
-                          </div>
-                        ) : (
-                          <ScrollArea className="h-[250px]">
-                            <div 
-                              className="p-3 border rounded-lg bg-gray-50 prose max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
-                              onClick={() => setIsEditingSkillsTest(true)}
-                              dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }}
-                            />
-                          </ScrollArea>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Step 4: Review & Publish */}
-              {currentStep === 4 && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Eye className="w-5 h-5 text-green-600" />
-                      Review & Publish
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="font-semibold mb-1 text-sm">Job Title</h3>
-                        <p className="text-gray-700 text-sm">{formData.title}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-1 text-sm">Employment Type</h3>
-                        <p className="text-gray-700 text-sm">{formData.employmentType}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-1 text-sm">Experience Level</h3>
-                        <p className="text-gray-700 text-sm">{formData.experienceLevel}</p>
-                      </div>
-                      {pdfFileName && (
-                        <div>
-                          <h3 className="font-semibold mb-1 text-sm">Source Content</h3>
-                          <p className="text-xs text-gray-600">
-                            From PDF: {pdfFileName} 
-                            {useOriginalPdf === true ? " (used as-is)" : " (rewritten by AI)"}
-                          </p>
-                        </div>
+                    </div>
+                    
+                    <div className="flex-1 min-h-0">
+                      {isEditingSkillsTest ? (
+                        <RichTextEditor
+                          value={generatedSkillsTest}
+                          onChange={setGeneratedSkillsTest}
+                          onSave={handleSkillsTestSave}
+                          onCancel={handleSkillsTestCancel}
+                          placeholder="Enter your skills test questions here..."
+                        />
+                      ) : (
+                        <ScrollArea className="h-full">
+                          <div 
+                            className="p-3 border rounded-lg bg-gray-50 prose max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsEditingSkillsTest(true)}
+                            dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }}
+                          />
+                        </ScrollArea>
                       )}
                     </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-                    {generatedJobPost && (
-                      <div>
-                        <h3 className="font-semibold mb-2 text-sm">Job Post Preview</h3>
-                        <ScrollArea className="h-[120px]">
-                          <div className="bg-gray-50 p-3 rounded border prose max-w-none text-sm">
-                            <div dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }} />
-                          </div>
-                        </ScrollArea>
-                      </div>
-                    )}
+          {/* Step 4: Review & Publish */}
+          {currentStep === 4 && (
+            <Card className="h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Eye className="w-5 h-5 text-green-600" />
+                  Review & Publish
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 h-full overflow-y-auto">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <h3 className="font-semibold mb-1 text-sm">Job Title</h3>
+                    <p className="text-gray-700 text-sm">{formData.title}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1 text-sm">Employment Type</h3>
+                    <p className="text-gray-700 text-sm">{formData.employmentType}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1 text-sm">Experience Level</h3>
+                    <p className="text-gray-700 text-sm">{formData.experienceLevel}</p>
+                  </div>
+                  {pdfFileName && (
+                    <div>
+                      <h3 className="font-semibold mb-1 text-sm">Source Content</h3>
+                      <p className="text-xs text-gray-600">
+                        From PDF: {pdfFileName} 
+                        {useOriginalPdf === true ? " (used as-is)" : " (rewritten by AI)"}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                    {generatedSkillsTest && (
-                      <div>
-                        <h3 className="font-semibold mb-2 text-sm">Skills Test Preview</h3>
-                        <ScrollArea className="h-[120px]">
-                          <div className="bg-gray-50 p-3 rounded border prose max-w-none text-sm">
-                            <div dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }} />
-                          </div>
-                        </ScrollArea>
+                {generatedJobPost && (
+                  <div>
+                    <h3 className="font-semibold mb-2 text-sm">Job Post Preview</h3>
+                    <ScrollArea className="h-[120px]">
+                      <div className="bg-gray-50 p-3 rounded border prose max-w-none text-sm">
+                        <div dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedJobPost) }} />
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </ScrollArea>
+                    </ScrollArea>
+                  </div>
+                )}
+
+                {generatedSkillsTest && (
+                  <div>
+                    <h3 className="font-semibold mb-2 text-sm">Skills Test Preview</h3>
+                    <ScrollArea className="h-[120px]">
+                      <div className="bg-gray-50 p-3 rounded border prose max-w-none text-sm">
+                        <div dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }} />
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Navigation Footer */}
-        <div className="flex justify-between items-center p-4 border-t bg-gray-50">
+        <div className="flex justify-between items-center p-3 border-t bg-gray-50 flex-shrink-0">
           <Button 
             variant="outline" 
             onClick={prevStep}
