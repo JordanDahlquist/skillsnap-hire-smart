@@ -17,32 +17,10 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
   try {
     console.log(`Processing PDF with AI: ${fileName}`);
     
-    // First, upload the PDF file to OpenAI
-    const formData = new FormData();
-    const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
-    formData.append('file', pdfBlob, fileName);
-    formData.append('purpose', 'assistants');
-
-    console.log('Uploading PDF to OpenAI...');
-    const uploadResponse = await fetch('https://api.openai.com/v1/files', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-      },
-      body: formData,
-    });
-
-    if (!uploadResponse.ok) {
-      const errorData = await uploadResponse.text();
-      console.error('OpenAI file upload error:', errorData);
-      throw new Error(`Failed to upload PDF to OpenAI: ${uploadResponse.status}`);
-    }
-
-    const uploadData = await uploadResponse.json();
-    const fileId = uploadData.id;
-    console.log('PDF uploaded successfully, file ID:', fileId);
-
-    // Now use the uploaded file in a chat completion
+    // Convert PDF to base64
+    const base64Pdf = btoa(String.fromCharCode(...pdfBuffer));
+    
+    // Use OpenAI's document understanding capability with gpt-4o
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -54,33 +32,27 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
         messages: [
           {
             role: 'system',
-            content: `You are an expert at reading and reformatting job descriptions from PDF documents. Your task is to:
-            1. Read the provided PDF document carefully
-            2. Extract all the job description content
-            3. Reformat it as a clean, professional job posting
-            4. Preserve all important information including: job title, responsibilities, requirements, qualifications, benefits, company info, etc.
-            5. Remove any irrelevant formatting artifacts or metadata
-            6. Return ONLY the clean job description text, nothing else
-            7. If the PDF contains multiple jobs, focus on the main job description
-            8. Format the output with proper paragraphs and structure`
+            content: 'You are an expert at extracting text content from PDF documents. Extract ALL the text content from the provided PDF exactly as written, preserving the structure and formatting as much as possible. Do not summarize or rewrite - just extract the complete text content.'
           },
           {
             role: 'user',
-            content: `Please extract and reformat the job description from the uploaded PDF file (${fileName}). Return a clean, professional job posting with all the key information preserved.`
+            content: [
+              {
+                type: 'text',
+                text: `Please extract all the text content from this PDF file (${fileName}) exactly as written. Return the complete text content without any modifications.`
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:application/pdf;base64,${base64Pdf}`,
+                  detail: 'high'
+                }
+              }
+            ]
           }
         ],
         max_tokens: 4000,
-        temperature: 0.3,
-        tools: [
-          {
-            type: 'file_search'
-          }
-        ],
-        tool_resources: {
-          file_search: {
-            file_ids: [fileId]
-          }
-        }
+        temperature: 0.1
       }),
     });
 
@@ -98,25 +70,11 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
 
     const extractedText = data.choices[0].message.content.trim();
     
-    if (!extractedText || extractedText.length < 50) {
+    if (!extractedText || extractedText.length < 10) {
       throw new Error('Could not extract meaningful content from the PDF. The document may be corrupted or contain only images.');
     }
 
     console.log(`Successfully extracted ${extractedText.length} characters using AI`);
-    
-    // Clean up: delete the uploaded file
-    try {
-      await fetch(`https://api.openai.com/v1/files/${fileId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-        },
-      });
-      console.log('Temporary file cleaned up');
-    } catch (cleanupError) {
-      console.warn('Could not clean up temporary file:', cleanupError);
-    }
-
     return extractedText;
 
   } catch (error) {
@@ -155,7 +113,7 @@ serve(async (req) => {
         success: true, 
         text: extractedText,
         fileName: pdfFile.name,
-        method: 'ai-powered'
+        method: 'ai-direct'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
