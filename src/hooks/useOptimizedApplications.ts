@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/services/loggerService";
 import { environment } from "@/config/environment";
 import { Application } from "@/types";
+import { DatabaseApplication } from "@/types/supabase";
 
 export const useOptimizedApplications = (jobId: string | undefined) => {
   return useQuery({
@@ -37,7 +38,10 @@ export const useOptimizedApplications = (jobId: string | undefined) => {
           });
         }
         
-        return (data || []) as Application[];
+        // Transform Supabase data to Application type
+        return (data || []).map((app: DatabaseApplication): Application => ({
+          ...app,
+        }));
       } catch (error) {
         logger.error('Optimized applications fetch failed:', error);
         throw error;

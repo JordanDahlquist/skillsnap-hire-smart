@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { User, FileText, MessageSquare, Brain, Video } from "lucide-react";
 import { Application } from "@/types";
+import { safeParseSkillsTestResponses } from "@/utils/typeGuards";
 
 interface ApplicationTabsProps {
   application: Application;
@@ -19,7 +20,8 @@ export const ApplicationTabs = ({
   getRatingStars,
   getTimeAgo,
 }: ApplicationTabsProps) => {
-  const hasSkillsTest = application.skills_test_responses && Array.isArray(application.skills_test_responses) && application.skills_test_responses.length > 0;
+  const skillsTestResponses = safeParseSkillsTestResponses(application.skills_test_responses);
+  const hasSkillsTest = skillsTestResponses.length > 0;
   const hasVideoInterview = application.interview_video_url;
 
   return (
@@ -152,7 +154,7 @@ export const ApplicationTabs = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {application.skills_test_responses.map((response: any, index: number) => (
+              {skillsTestResponses.map((response, index) => (
                 <div key={index} className="space-y-2">
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <h4 className="font-medium text-sm text-gray-900 mb-2">
@@ -167,7 +169,7 @@ export const ApplicationTabs = ({
                       {response.answer}
                     </p>
                   </div>
-                  {index < application.skills_test_responses.length - 1 && (
+                  {index < skillsTestResponses.length - 1 && (
                     <Separator className="my-4" />
                   )}
                 </div>
