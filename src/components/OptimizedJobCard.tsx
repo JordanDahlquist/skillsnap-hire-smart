@@ -8,7 +8,6 @@ import { useJobActions } from "@/hooks/useJobActions";
 import { JobCardHeader } from "./job-card/JobCardHeader";
 import { JobCardDetails } from "./job-card/JobCardDetails";
 import { JobCardActions } from "./job-card/JobCardActions";
-import { JobCardStatus } from "./job-card/JobCardStatus";
 import { Job } from "@/types";
 
 interface OptimizedJobCardProps {
@@ -69,7 +68,14 @@ export const OptimizedJobCard = memo(({
     <>
       <Card className="hover:shadow-lg transition-shadow">
         <CardHeader>
-          <JobCardHeader job={job} needsAttention={needsAttention} />
+          <JobCardHeader 
+            job={job} 
+            needsAttention={needsAttention}
+            status={job.status}
+            onStatusChange={handleStatusChange}
+            isUpdating={isUpdating}
+            applicationsCount={applicationsCount}
+          />
           
           <JobCardDetails 
             job={job} 
@@ -88,14 +94,6 @@ export const OptimizedJobCard = memo(({
               <p className="text-gray-700 line-clamp-2">{getDisplayDescription()}</p>
             )}
           </div>
-          
-          <JobCardStatus 
-            status={job.status}
-            onStatusChange={handleStatusChange}
-            isUpdating={isUpdating}
-            applicationsCount={applicationsCount}
-            needsAttention={needsAttention}
-          />
         </CardHeader>
         
         <CardContent>
