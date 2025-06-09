@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getStartOfWeek } from "@/utils/dateUtils";
 import { Application } from "@/types";
+import { DatabaseApplication } from "@/types/supabase";
 
 export const useApplications = (jobId: string | undefined) => {
   return useQuery({
@@ -17,7 +18,11 @@ export const useApplications = (jobId: string | undefined) => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Application[];
+      
+      // Transform Supabase data to Application type
+      return (data || []).map((app: DatabaseApplication): Application => ({
+        ...app,
+      }));
     },
     enabled: !!jobId,
   });

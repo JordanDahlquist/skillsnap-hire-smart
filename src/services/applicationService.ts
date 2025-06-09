@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "./apiClient";
 import { logger } from "./loggerService";
 import { Application } from "@/types";
+import { DatabaseApplication } from "@/types/supabase";
 
 export const applicationService = {
   async fetchApplications(jobId: string): Promise<Application[]> {
@@ -20,8 +21,13 @@ export const applicationService = {
         return { data: [], error: null };
       }
       
-      logger.debug('Fetched applications:', data?.length || 0);
-      return { data: data || [], error: null };
+      // Transform Supabase data to Application type
+      const applications: Application[] = (data || []).map((app: DatabaseApplication) => ({
+        ...app,
+      }));
+      
+      logger.debug('Fetched applications:', applications.length);
+      return { data: applications, error: null };
     });
   },
 

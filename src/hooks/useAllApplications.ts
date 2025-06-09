@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Application } from "@/types";
+import { DatabaseApplication } from "@/types/supabase";
 
 export const useAllApplications = () => {
   const { user } = useAuth();
@@ -31,7 +32,11 @@ export const useAllApplications = () => {
         .order('created_at', { ascending: false });
       
       if (appsError) throw appsError;
-      return applications as Application[];
+      
+      // Transform Supabase data to Application type
+      return (applications || []).map((app: DatabaseApplication): Application => ({
+        ...app,
+      }));
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
