@@ -54,7 +54,12 @@ export const ApplicationsManager = ({
   onApplicationUpdate,
   job
 }: ApplicationsManagerProps) => {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, manualRating: number | null = null) => {
+    // If status is "reviewed" but there's no manual rating, show as pending
+    if (status === "reviewed" && !manualRating) {
+      return "bg-yellow-100 text-yellow-800";
+    }
+    
     switch (status) {
       case "pending": return "bg-yellow-100 text-yellow-800";
       case "reviewed": return "bg-blue-100 text-blue-800";
@@ -84,7 +89,11 @@ export const ApplicationsManager = ({
           applications={applications}
           selectedApplication={selectedApplication}
           onSelectApplication={onSelectApplication}
-          getStatusColor={getStatusColor}
+          getStatusColor={(status: string) => {
+            // Find the application to get its manual_rating
+            const app = applications.find(a => a.status === status);
+            return getStatusColor(status, app?.manual_rating);
+          }}
           getTimeAgo={getTimeAgo}
           selectedApplications={selectedApplications}
           onSelectApplications={onSelectApplications}
@@ -97,7 +106,7 @@ export const ApplicationsManager = ({
           selectedApplication={selectedApplication}
           applications={applications}
           job={job}
-          getStatusColor={getStatusColor}
+          getStatusColor={(status: string) => getStatusColor(status, selectedApplication?.manual_rating)}
           getRatingStars={getRatingStars}
           getTimeAgo={getTimeAgo}
           onApplicationUpdate={onApplicationUpdate}

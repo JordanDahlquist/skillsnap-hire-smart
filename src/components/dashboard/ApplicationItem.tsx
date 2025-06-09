@@ -26,7 +26,7 @@ interface ApplicationItemProps {
   application: Application;
   selectedApplication: Application | null;
   onSelectApplication: (application: Application) => void;
-  getStatusColor: (status: string) => string;
+  getStatusColor: (status: string, manualRating?: number | null) => string;
   getTimeAgo: (dateString: string) => string;
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
@@ -57,6 +57,9 @@ export const ApplicationItem = memo(({
     onSelectApplication(application);
     logger.debug('Application clicked for detail view', { applicationId: application.id });
   }, [onSelectApplication, application]);
+
+  // Get the display status - if status is "reviewed" but no manual rating, show as "pending"
+  const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
 
   return (
     <div
@@ -90,8 +93,8 @@ export const ApplicationItem = memo(({
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Badge className={getStatusColor(application.status)}>
-                  {application.status}
+                <Badge className={getStatusColor(application.status, application.manual_rating)}>
+                  {displayStatus}
                 </Badge>
               </div>
             </div>

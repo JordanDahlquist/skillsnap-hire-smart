@@ -24,7 +24,7 @@ interface ApplicationsListProps {
   applications: Application[];
   selectedApplication: Application | null;
   onSelectApplication: (application: Application) => void;
-  getStatusColor: (status: string) => string;
+  getStatusColor: (status: string, manualRating?: number | null) => string;
   getTimeAgo: (dateString: string) => string;
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
