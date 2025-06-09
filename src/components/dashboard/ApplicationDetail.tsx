@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { EmailComposerModal } from "./EmailComposerModal";
 import { ApplicationDetailContent } from "./components/ApplicationDetailContent";
@@ -17,7 +18,7 @@ interface ApplicationDetailProps {
   selectedApplication: Application | null;
   applications: Application[];
   job: JobForApplicationDetail;
-  getStatusColor: (status: string) => string;
+  getStatusColor: (status: string, manualRating?: number | null) => string;
   getRatingStars: (rating: number | null) => JSX.Element[];
   getTimeAgo: (dateString: string) => string;
   onApplicationUpdate?: () => void;
@@ -199,7 +200,7 @@ export const ApplicationDetail = ({
       <>
         <ApplicationDetailContent
           application={selectedApplication}
-          getStatusColor={getStatusColor}
+          getStatusColor={(status: string) => getStatusColor(status, selectedApplication.manual_rating)}
           getRatingStars={getRatingStars}
           getTimeAgo={getTimeAgo}
           isUpdating={isUpdating}
