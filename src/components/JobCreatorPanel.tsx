@@ -162,7 +162,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
 
   const canProceedToStep2 = state.formData.title && state.formData.description;
   const canProceedToStep3 = state.generatedJobPost;
-  const canActivate = state.generatedJobPost && state.generatedSkillsTest;
+  const canActivate = state.generatedJobPost; // Only require job post, skills test is optional
 
   if (!open) return null;
 
