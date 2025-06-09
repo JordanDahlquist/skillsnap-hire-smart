@@ -583,6 +583,7 @@ export type Database = {
           message_type: string
           related_application_ids: string[] | null
           related_job_ids: string[] | null
+          title: string | null
           user_id: string
         }
         Insert: {
@@ -594,6 +595,7 @@ export type Database = {
           message_type?: string
           related_application_ids?: string[] | null
           related_job_ids?: string[] | null
+          title?: string | null
           user_id: string
         }
         Update: {
@@ -605,6 +607,7 @@ export type Database = {
           message_type?: string
           related_application_ids?: string[] | null
           related_job_ids?: string[] | null
+          title?: string | null
           user_id?: string
         }
         Relationships: []

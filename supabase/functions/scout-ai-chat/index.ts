@@ -12,6 +12,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const triggerTitleGeneration = async (supabase: any, conversationId: string, messageCount: number) => {
+  // Only generate title after the first AI response (when we have 2+ messages)
+  if (messageCount === 2) {
+    try {
+      console.log('Triggering title generation for conversation:', conversationId)
+      
+      // Call the title generation function asynchronously
+      await supabase.functions.invoke('generate-conversation-title', {
+        body: { conversation_id: conversationId }
+      })
+      
+      console.log('Title generation triggered successfully')
+    } catch (error) {
+      console.error('Error triggering title generation:', error)
+      // Don't throw - title generation failure shouldn't break the main chat flow
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -87,6 +106,10 @@ serve(async (req) => {
       jobIds,
       applicationIds
     )
+
+    // Get current message count and trigger title generation if needed
+    const currentMessageCount = conversationHistory.length + 2 // +2 for user message and AI response
+    await triggerTitleGeneration(supabase, conversation_id, currentMessageCount)
 
     // Get card data for response
     const { jobCards, candidateCards } = await getCardData(

@@ -23,7 +23,7 @@ export const useConversations = () => {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('scout_conversations')
-        .select('conversation_id, message_content, created_at, is_ai_response')
+        .select('conversation_id, message_content, created_at, is_ai_response, title')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -36,10 +36,13 @@ export const useConversations = () => {
         const existing = conversationMap.get(msg.conversation_id);
         
         if (!existing) {
-          // Create new conversation entry with first user message as title
-          const title = !msg.is_ai_response && msg.message_content 
-            ? msg.message_content.substring(0, 50) + (msg.message_content.length > 50 ? '...' : '')
-            : 'New Conversation';
+          // Determine title: use AI-generated title if available, otherwise use first user message
+          let title = 'New Conversation';
+          if (msg.title) {
+            title = msg.title;
+          } else if (!msg.is_ai_response && msg.message_content) {
+            title = msg.message_content.substring(0, 50) + (msg.message_content.length > 50 ? '...' : '');
+          }
             
           conversationMap.set(msg.conversation_id, {
             id: msg.conversation_id,
@@ -55,7 +58,10 @@ export const useConversations = () => {
             existing.lastMessage = msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : '');
             existing.lastMessageAt = new Date(msg.created_at);
           }
-          // Keep original title (first user message)
+          // Use AI-generated title if available, otherwise keep original title
+          if (msg.title && !existing.title.includes('New Conversation')) {
+            existing.title = msg.title;
+          }
         }
       });
 
