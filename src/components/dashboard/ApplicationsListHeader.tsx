@@ -45,6 +45,11 @@ export const ApplicationsListHeader = memo(({
 
   return (
     <div className="p-6 border-b border-gray-200">
+      {/* Applications Title */}
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        Applications ({applicationsCount})
+      </h2>
+
       {/* Search Bar */}
       {onSearchChange && (
         <div className="mb-4">
@@ -55,22 +60,19 @@ export const ApplicationsListHeader = memo(({
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Applications ({applicationsCount})
-        </h2>
-        {onSelectApplications && (
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={isAllSelected}
-              onCheckedChange={handleSelectAll}
-              className={isSomeSelected ? "data-[state=checked]:bg-blue-600" : ""}
-            />
-            <span className="text-sm text-gray-600">Select All</span>
-          </div>
-        )}
-      </div>
+      {/* Select All Checkbox */}
+      {onSelectApplications && (
+        <div className="flex items-center gap-2 mb-4">
+          <Checkbox
+            checked={isAllSelected}
+            onCheckedChange={handleSelectAll}
+            className={isSomeSelected ? "data-[state=checked]:bg-blue-600" : ""}
+          />
+          <span className="text-sm text-gray-600">Select All</span>
+        </div>
+      )}
       
+      {/* Selected Applications Action Bar */}
       {selectedApplications.length > 0 && onSendEmail && (
         <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <span className="text-sm text-blue-700">
