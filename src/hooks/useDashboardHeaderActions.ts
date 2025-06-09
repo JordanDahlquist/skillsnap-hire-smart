@@ -2,21 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-interface Job {
-  id: string;
-  title: string;
-  status: string;
-}
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  created_at: string;
-  ai_rating: number | null;
-  status: string;
-}
+import { Job, Application } from "@/types";
 
 export const useDashboardHeaderActions = (
   job: Job, 

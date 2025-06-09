@@ -8,36 +8,7 @@ import { DashboardHeaderActions } from "./components/DashboardHeaderActions";
 import { DashboardHeaderLoader } from "./components/DashboardHeaderLoader";
 import { useDashboardHeaderActions } from "@/hooks/useDashboardHeaderActions";
 import { DASHBOARD_HEADER_CONSTANTS } from "./constants/dashboardHeaderConstants";
-
-interface Job {
-  id: string;
-  title: string;
-  description: string;
-  role_type: string;
-  employment_type?: string;
-  experience_level: string;
-  duration?: string;
-  budget: string;
-  required_skills: string;
-  location_type?: string;
-  country?: string;
-  state?: string;
-  region?: string;
-  city?: string;
-  generated_job_post?: string;
-  generated_test?: string;
-  created_at: string;
-  status: string;
-}
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  created_at: string;
-  ai_rating: number | null;
-  status: string;
-}
+import { Job, Application } from "@/types";
 
 interface CompactDashboardHeaderProps {
   job: Job;

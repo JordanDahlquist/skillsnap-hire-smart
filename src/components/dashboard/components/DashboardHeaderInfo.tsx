@@ -1,11 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
-import { Job } from "@/types";
-
-interface Application {
-  id: string;
-}
+import { Job, Application } from "@/types";
 
 interface DashboardHeaderInfoProps {
   job: Job;

@@ -15,11 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DashboardHeaderDropdown } from "./DashboardHeaderDropdown";
-
-interface Job {
-  id: string;
-  status: string;
-}
+import { Job } from "@/types";
 
 interface DashboardHeaderActionsProps {
   job: Job;
