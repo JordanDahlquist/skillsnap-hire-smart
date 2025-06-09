@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +21,6 @@ export const ApplicationTabs = ({
 }: ApplicationTabsProps) => {
   const skillsTestResponses = safeParseSkillsTestResponses(application.skills_test_responses);
   const hasSkillsTest = skillsTestResponses.length > 0;
-  const hasVideoInterview = application.interview_video_url;
 
   return (
     <Tabs defaultValue="overview" className="w-full">
@@ -41,12 +39,10 @@ export const ApplicationTabs = ({
             Skills Test
           </TabsTrigger>
         )}
-        {hasVideoInterview && (
-          <TabsTrigger value="video" className="flex items-center gap-1">
-            <Video className="w-3 h-3" />
-            Video Interview
-          </TabsTrigger>
-        )}
+        <TabsTrigger value="video" className="flex items-center gap-1">
+          <Video className="w-3 h-3" />
+          Video Interview
+        </TabsTrigger>
         <TabsTrigger value="files" className="flex items-center gap-1">
           <FileText className="w-3 h-3" />
           Files
@@ -179,37 +175,43 @@ export const ApplicationTabs = ({
         </TabsContent>
       )}
 
-      {hasVideoInterview && (
-        <TabsContent value="video" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Video className="w-4 h-4" />
-                Video Interview Response
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {application.interview_video_url === 'recorded' ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                  <Video className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                  <p className="text-sm text-blue-900 font-medium">Video Interview Completed</p>
-                  <p className="text-xs text-blue-700 mt-1">
-                    The candidate has recorded their video responses
-                  </p>
-                </div>
-              ) : (
-                <video
-                  src={application.interview_video_url}
-                  controls
-                  className="w-full rounded-lg"
-                >
-                  Your browser does not support the video tag.
-                </video>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      )}
+      <TabsContent value="video" className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Video className="w-4 h-4" />
+              Video Interview Response
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!application.interview_video_url ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                <Video className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-sm text-gray-600 font-medium mb-1">No Video Interview Submitted</p>
+                <p className="text-xs text-gray-500">
+                  The candidate has not provided a video interview link yet (e.g., Loom recording)
+                </p>
+              </div>
+            ) : application.interview_video_url === 'recorded' ? (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                <Video className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                <p className="text-sm text-blue-900 font-medium">Video Interview Completed</p>
+                <p className="text-xs text-blue-700 mt-1">
+                  The candidate has recorded their video responses
+                </p>
+              </div>
+            ) : (
+              <video
+                src={application.interview_video_url}
+                controls
+                className="w-full rounded-lg"
+              >
+                Your browser does not support the video tag.
+              </video>
+            )}
+          </CardContent>
+        </Card>
+      </TabsContent>
 
       <TabsContent value="files" className="space-y-4">
         <Card>
