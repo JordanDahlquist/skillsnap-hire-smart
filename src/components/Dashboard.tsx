@@ -12,8 +12,8 @@ import { Application } from "@/types";
 export const Dashboard = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const location = useLocation();
-  const { applications, isLoading: applicationsLoading, refetch: refetchApplications } = useApplications(jobId);
-  const { jobs, isLoading: jobsLoading } = useJobs();
+  const { data: applications, isLoading: applicationsLoading, refetch: refetchApplications } = useApplications(jobId);
+  const { data: jobs, isLoading: jobsLoading } = useJobs();
   const { selectedItems: selectedApplications, handleSelection } = useSelection();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
@@ -39,6 +39,10 @@ export const Dashboard = () => {
     console.log("Send email to selected applications:", selectedApplications);
   };
 
+  const handleApplicationSelection = (applicationIds: string[]) => {
+    handleSelection(applicationIds);
+  };
+
   if (isLoading) {
     return <DashboardSkeleton />;
   }
@@ -59,8 +63,6 @@ export const Dashboard = () => {
       <EnhancedDashboardHeader
         job={job}
         applications={applications || []}
-        selectedApplications={selectedApplications}
-        onSendEmail={handleSendEmail}
         onApplicationUpdate={refetchApplications}
       />
 
@@ -69,7 +71,7 @@ export const Dashboard = () => {
         selectedApplication={selectedApplication}
         onSelectApplication={handleSelectApplication}
         selectedApplications={selectedApplications}
-        onSelectApplications={handleSelection}
+        onSelectApplications={handleApplicationSelection}
         onSendEmail={handleSendEmail}
         onApplicationUpdate={refetchApplications}
         job={job}
