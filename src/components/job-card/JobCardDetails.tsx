@@ -27,7 +27,7 @@ export const JobCardDetails = ({
         </div>
         <div className="flex items-center gap-1">
           <Eye className="w-4 h-4" />
-          <span>42 views</span>
+          <span>{(job as any).view_count || 0} views</span>
         </div>
         <div className="flex items-center gap-1">
           <TrendingUp className="w-4 h-4" />

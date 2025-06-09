@@ -64,7 +64,7 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
         <span>•</span>
         <div className="flex items-center gap-1">
           <Eye className="w-3 h-3 text-muted-foreground" />
-          <span>342 views</span>
+          <span>{(job as any).view_count || 0} views</span>
         </div>
       </div>
     </div>
