@@ -5,7 +5,6 @@ import { applicationService } from '@/services/applicationService';
 import { HiringStagesNav } from './HiringStagesNav';
 import { ApplicationsList } from './ApplicationsList';
 import { ApplicationDetail } from './ApplicationDetail';
-import { BulkActionsPanel } from './BulkActionsPanel';
 import { EmailComposerModal } from './EmailComposerModal';
 import { getApplicationStatusColor } from '@/utils/statusUtils';
 import { getTimeAgo } from '@/utils/dateUtils';
@@ -173,10 +172,6 @@ export const ApplicationsManager = ({
     }
   }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
 
-  const handleClearSelection = useCallback(() => {
-    onSelectApplications([]);
-  }, [onSelectApplications]);
-
   return (
     <div className="flex-1 bg-gray-50">
       <HiringStagesNav
@@ -188,18 +183,6 @@ export const ApplicationsManager = ({
 
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
-          {/* Bulk Actions Panel */}
-          <BulkActionsPanel
-            selectedCount={selectedApplications.length}
-            onSendEmail={handleEmailComposer}
-            onSetRating={handleBulkSetRating}
-            onMoveToStage={handleBulkMoveToStage}
-            onReject={handleBulkReject}
-            onClearSelection={handleClearSelection}
-            jobId={job.id}
-            isLoading={isUpdating}
-          />
-
           {/* Applications Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ApplicationsList
@@ -212,6 +195,12 @@ export const ApplicationsManager = ({
               onSelectApplications={onSelectApplications}
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
+              onSendEmail={handleEmailComposer}
+              onSetRating={handleBulkSetRating}
+              onMoveToStage={handleBulkMoveToStage}
+              onReject={handleBulkReject}
+              jobId={job.id}
+              isLoading={isUpdating}
             />
 
             {selectedApplication && (

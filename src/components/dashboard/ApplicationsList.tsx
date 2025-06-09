@@ -14,6 +14,13 @@ interface ApplicationsListProps {
   onSelectApplications?: (ids: string[]) => void;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
+  // Bulk action props
+  onSendEmail?: () => void;
+  onSetRating?: (rating: number) => void;
+  onMoveToStage?: (stage: string) => void;
+  onReject?: () => void;
+  jobId?: string;
+  isLoading?: boolean;
 }
 
 export const ApplicationsList = memo(({
@@ -26,6 +33,12 @@ export const ApplicationsList = memo(({
   onSelectApplications,
   searchTerm = '',
   onSearchChange,
+  onSendEmail,
+  onSetRating,
+  onMoveToStage,
+  onReject,
+  jobId,
+  isLoading = false,
 }: ApplicationsListProps) => {
   // Filter applications based on search term
   const filteredApplications = useMemo(() => {
@@ -49,6 +62,12 @@ export const ApplicationsList = memo(({
         applications={filteredApplications}
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
+        onSendEmail={onSendEmail}
+        onSetRating={onSetRating}
+        onMoveToStage={onMoveToStage}
+        onReject={onReject}
+        jobId={jobId}
+        isLoading={isLoading}
       />
 
       <div className="divide-y divide-gray-200 overflow-y-auto" style={{ height: 'calc(100vh - 350px)' }}>
