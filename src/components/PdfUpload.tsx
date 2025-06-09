@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, Upload, X, AlertCircle, Brain, RefreshCw } from "lucide-react";
+import { FileText, Upload, X, AlertCircle, Brain, RefreshCw, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,6 +17,9 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [extractedPreview, setExtractedPreview] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [pendingContent, setPendingContent] = useState<{ content: string; fileName: string } | null>(null);
   const { toast } = useToast();
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -72,6 +75,10 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
     if (file.size === 0) {
       return { valid: false, error: 'File appears to be empty' };
     }
+
+    if (file.size < 100) {
+      return { valid: false, error: 'File appears to be too small to contain meaningful content' };
+    }
     
     if (!file.name.toLowerCase().endsWith('.pdf')) {
       return { valid: false, error: 'File must have a .pdf extension' };
@@ -81,8 +88,11 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
   };
 
   const processPdfFile = async (file: File, isRetry = false) => {
-    // Clear previous errors
+    // Clear previous states
     setLastError(null);
+    setExtractedPreview(null);
+    setPendingContent(null);
+    setShowPreview(false);
     
     // Validate file before processing
     const validation = validateFile(file);
@@ -101,7 +111,7 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
     try {
       console.log('Processing PDF file:', file.name, 'Size:', file.size, 'bytes');
       
-      // Create form data for the AI-powered edge function
+      // Create form data for the enhanced AI-powered edge function
       const formData = new FormData();
       formData.append('pdf', file);
       
@@ -125,27 +135,32 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
           data
         });
         
-        // Provide specific error messages based on error code
+        // Provide specific error messages and guidance
         let userMessage = errorMessage;
         let suggestions: string[] = [];
         
         switch (errorCode) {
-          case 'VALIDATION_ERROR':
-            suggestions = ['Check that your file is a valid PDF', 'Try a smaller file (under 10MB)'];
-            break;
-          case 'EXTRACTION_ERROR':
+          case 'EXTRACTION_FAILED':
+          case 'POOR_QUALITY_TEXT':
             suggestions = [
-              'The PDF may be image-based (scanned document)',
-              'Try a text-based PDF instead',
-              'Consider copying and pasting the text manually'
+              'This PDF may be image-based (scanned document)',
+              'Try a text-based PDF with selectable text',
+              'Consider manually copying and pasting the text',
+              'Use OCR software to convert the PDF first'
             ];
             break;
           case 'INSUFFICIENT_TEXT':
             suggestions = [
-              'The PDF may contain mostly images',
-              'Try a different PDF with more text content',
+              'The PDF may contain mostly images or graphics',
+              'Try a PDF with more text content',
               'Consider manually entering the job description'
             ];
+            break;
+          case 'FILE_TOO_LARGE':
+            suggestions = ['Try compressing the PDF or use a smaller file'];
+            break;
+          case 'FILE_TOO_SMALL':
+            suggestions = ['The PDF file may be corrupted or empty'];
             break;
           default:
             suggestions = ['Try a different PDF file', 'Check your internet connection'];
@@ -158,19 +173,21 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
       console.log('PDF processing successful:', {
         textLength: data.text.length,
         fileName: data.fileName,
-        method: data.method
+        qualityScore: data.qualityScore
       });
       
       // Reset retry count on success
       setRetryCount(0);
       setLastError(null);
       
-      // Call the callback with the extracted text
-      onFileUpload(data.text, file.name);
+      // Set extracted content for preview
+      setExtractedPreview(data.text);
+      setPendingContent({ content: data.text, fileName: file.name });
+      setShowPreview(true);
       
       toast({
-        title: "PDF processed successfully",
-        description: `Extracted ${data.text.length} characters from ${file.name}. You can now choose to keep it as-is or have AI rewrite it.`,
+        title: "PDF text extracted successfully!",
+        description: `Extracted ${data.text.length} characters. Please review the preview below.`,
         duration: 5000
       });
       
@@ -207,19 +224,100 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
     }
   };
 
+  const handleAcceptExtracted = () => {
+    if (pendingContent) {
+      onFileUpload(pendingContent.content, pendingContent.fileName);
+      setExtractedPreview(null);
+      setPendingContent(null);
+      setShowPreview(false);
+    }
+  };
+
+  const handleRejectExtracted = () => {
+    setExtractedPreview(null);
+    setPendingContent(null);
+    setShowPreview(false);
+    toast({
+      title: "Text extraction rejected",
+      description: "You can try uploading a different PDF or enter the text manually.",
+    });
+  };
+
   const handleRetry = () => {
     setRetryCount(0);
     setLastError(null);
+    setExtractedPreview(null);
+    setPendingContent(null);
+    setShowPreview(false);
     // Trigger file selection again
     document.getElementById('pdf-upload')?.click();
   };
+
+  // If we have pending content awaiting user approval
+  if (extractedPreview && pendingContent) {
+    return (
+      <div className="space-y-3">
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Brain className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">Text Extracted Successfully!</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+              className="text-blue-600 hover:text-blue-800 h-6 px-2"
+            >
+              {showPreview ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+              {showPreview ? 'Hide' : 'Preview'}
+            </Button>
+          </div>
+          
+          {showPreview && (
+            <div className="mb-3 p-2 bg-white border rounded text-xs max-h-40 overflow-y-auto">
+              <div className="whitespace-pre-wrap">
+                {extractedPreview.substring(0, 800)}
+                {extractedPreview.length > 800 && '...'}
+              </div>
+              <div className="text-gray-500 text-xs mt-2">
+                Total length: {extractedPreview.length} characters
+              </div>
+            </div>
+          )}
+          
+          <p className="text-xs text-blue-700 mb-2">
+            Does this text look correct? You can accept it or try a different PDF.
+          </p>
+          
+          <div className="flex gap-2">
+            <Button
+              onClick={handleAcceptExtracted}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white h-7 px-3 text-xs"
+            >
+              Accept & Use This Text
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleRejectExtracted}
+              size="sm"
+              className="h-7 px-3 text-xs"
+            >
+              Try Different PDF
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (uploadedFile) {
     return (
       <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded text-sm">
         <div className="flex items-center gap-2">
           <Brain className="w-3 h-3 text-green-600" />
-          <span className="text-green-800 font-medium">PDF content extracted with AI</span>
+          <span className="text-green-800 font-medium">PDF content extracted and accepted</span>
         </div>
         <Button
           variant="ghost"
@@ -247,13 +345,13 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
           <div className="flex items-center justify-center gap-2">
             <Brain className="w-3 h-3 text-purple-600 animate-pulse" />
             <span className="text-xs text-gray-600">
-              AI is reading your PDF{retryCount > 0 ? ` (attempt ${retryCount + 1})` : ''}...
+              AI is analyzing your PDF{retryCount > 0 ? ` (attempt ${retryCount + 1})` : ''}...
             </span>
           </div>
         ) : (
           <div className="flex items-center justify-center gap-2">
             <Upload className="w-3 h-3 text-gray-400" />
-            <span className="text-xs text-gray-600">Upload existing job description (PDF)</span>
+            <span className="text-xs text-gray-600">Upload job description (PDF)</span>
             <input
               type="file"
               accept=".pdf"
@@ -287,7 +385,7 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
                 className="h-6 px-2 text-xs"
               >
                 <RefreshCw className="w-3 h-3 mr-1" />
-                Try Again
+                Try Different PDF
               </Button>
               <Button
                 variant="ghost"
