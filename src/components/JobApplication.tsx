@@ -9,25 +9,7 @@ import { JobApplicationHeader } from "./job-application/JobApplicationHeader";
 import { JobDescription } from "./job-application/JobDescription";
 import { ApplicationForm } from "./job-application/ApplicationForm";
 import { JobApplicationLoading, JobNotFound } from "./job-application/LoadingStates";
-
-interface Job {
-  id: string;
-  title: string;
-  description: string;
-  ai_mini_description?: string | null;
-  role_type: string;
-  experience_level: string;
-  location_type?: string | null;
-  country?: string | null;
-  state?: string | null;
-  region?: string | null;
-  city?: string | null;
-  budget?: string | null;
-  duration?: string | null;
-  created_at: string;
-  view_count?: number;
-  applications?: { count: number }[];
-}
+import { Job } from "@/types";
 
 export const JobApplication = () => {
   const { jobId } = useParams<{ jobId: string }>();

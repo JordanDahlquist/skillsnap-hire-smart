@@ -1,14 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
-
-interface Job {
-  id: string;
-  title: string;
-  status: string;
-  created_at: string;
-  view_count?: number;
-}
+import { Job } from "@/types";
 
 interface Application {
   id: string;

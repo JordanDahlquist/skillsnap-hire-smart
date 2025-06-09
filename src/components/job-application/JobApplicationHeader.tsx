@@ -1,22 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, DollarSign, Clock, Users, Eye } from "lucide-react";
-
-interface Job {
-  id: string;
-  title: string;
-  role_type: string;
-  experience_level: string;
-  location_type?: string | null;
-  country?: string | null;
-  state?: string | null;
-  region?: string | null;
-  city?: string | null;
-  budget?: string | null;
-  duration?: string | null;
-  created_at: string;
-  view_count?: number;
-}
+import { Job } from "@/types";
 
 interface JobApplicationHeaderProps {
   job: Job;

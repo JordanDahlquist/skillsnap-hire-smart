@@ -1,8 +1,5 @@
 
-interface Job {
-  description: string;
-  ai_mini_description?: string | null;
-}
+import { Job } from "@/types";
 
 interface JobDescriptionProps {
   job: Job;

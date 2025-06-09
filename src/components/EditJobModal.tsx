@@ -13,25 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LocationSelector } from "./LocationSelector";
 import { RichTextEditor } from "./RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
-
-interface Job {
-  id: string;
-  title: string;
-  description: string;
-  role_type: string;
-  employment_type?: string;
-  experience_level: string;
-  duration?: string;
-  budget: string;
-  required_skills: string;
-  location_type?: string;
-  country?: string;
-  state?: string;
-  region?: string;
-  city?: string;
-  generated_job_post?: string;
-  generated_test?: string;
-}
+import { Job } from "@/types";
 
 interface EditJobModalProps {
   open: boolean;
