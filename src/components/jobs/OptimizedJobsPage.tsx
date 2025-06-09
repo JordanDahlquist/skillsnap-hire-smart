@@ -193,7 +193,8 @@ export const OptimizedJobsPage = memo(() => {
 
         <JobCreatorPanel 
           open={isCreatePanelOpen} 
-          onOpenChange={setIsCreatePanelOpen} 
+          onOpenChange={setIsCreatePanelOpen}
+          onJobCreated={refetch}
         />
       </div>
     </ErrorBoundary>

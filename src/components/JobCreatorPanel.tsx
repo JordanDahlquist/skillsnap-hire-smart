@@ -28,9 +28,10 @@ interface JobFormData {
 interface JobCreatorPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onJobCreated?: () => void;
 }
 
-export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) => {
+export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreatorPanelProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
@@ -236,6 +237,9 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
           ? "Your job posting is now live and accepting applications."
           : "Your job has been saved as a draft."
       });
+
+      // Call the onJobCreated callback to refresh the jobs list
+      onJobCreated?.();
 
       onOpenChange(false);
       
