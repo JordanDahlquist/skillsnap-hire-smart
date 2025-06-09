@@ -1,9 +1,19 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useOptimizedAuth } from './useOptimizedAuth';
 import type { EmailThread, EmailMessage } from '@/types/inbox';
+
+interface AttachmentFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+  file?: File;
+}
 
 export const useInboxData = () => {
   const { user, profile } = useOptimizedAuth();
@@ -95,9 +105,17 @@ export const useInboxData = () => {
     }
   });
 
-  // Send reply mutation
+  // Send reply mutation with attachment support
   const sendReplyMutation = useMutation({
-    mutationFn: async ({ threadId, content }: { threadId: string; content: string }) => {
+    mutationFn: async ({ 
+      threadId, 
+      content, 
+      attachments = [] 
+    }: { 
+      threadId: string; 
+      content: string; 
+      attachments?: AttachmentFile[] 
+    }) => {
       const thread = threads.find(t => t.id === threadId);
       if (!thread || !user?.email || !profile?.unique_email) throw new Error('Thread, user, or unique email not found');
 
@@ -111,6 +129,15 @@ export const useInboxData = () => {
       
       const recipientEmail = recipients[0] || '';
 
+      // Prepare attachments data for database
+      const attachmentsData = attachments.map(att => ({
+        id: att.id,
+        name: att.name,
+        size: att.size,
+        type: att.type,
+        url: att.url
+      }));
+
       // Store the outbound message first
       const { error: messageError } = await supabase
         .from('email_messages')
@@ -122,10 +149,16 @@ export const useInboxData = () => {
           content,
           direction: 'outbound',
           message_type: 'reply',
-          is_read: true
+          is_read: true,
+          attachments: attachmentsData
         });
 
       if (messageError) throw messageError;
+
+      // Convert rich text to plain text for email
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = content;
+      const plainTextContent = tempDiv.textContent || tempDiv.innerText || content;
 
       // Send actual email via edge function
       const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
@@ -137,7 +170,7 @@ export const useInboxData = () => {
           }],
           job: { title: 'Reply' },
           subject: `Re: ${thread.subject} [Thread:${threadId}]`,
-          content: content,
+          content: plainTextContent,
           reply_to_email: profile.unique_email
         }
       });
@@ -282,7 +315,7 @@ export const useInboxData = () => {
     error: threadsError || messagesError,
     refetchThreads: handleRefresh,
     markThreadAsRead: markAsReadMutation.mutate,
-    sendReply: (threadId: string, content: string) => 
-      sendReplyMutation.mutateAsync({ threadId, content })
+    sendReply: (threadId: string, content: string, attachments?: AttachmentFile[]) => 
+      sendReplyMutation.mutateAsync({ threadId, content, attachments })
   };
 };

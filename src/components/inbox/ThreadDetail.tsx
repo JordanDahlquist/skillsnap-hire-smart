@@ -1,16 +1,26 @@
 
 import { useState } from "react";
-import { Send, ArrowLeft } from "lucide-react";
+import { Send, ArrowLeft, Paperclip } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { MessageList } from "./MessageList";
+import { EmailRichTextEditor } from "./EmailRichTextEditor";
+import { AttachmentUpload } from "./AttachmentUpload";
 import type { EmailThread, EmailMessage } from "@/types/inbox";
+
+interface AttachmentFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+  file?: File;
+}
 
 interface ThreadDetailProps {
   thread: EmailThread | null;
   messages: EmailMessage[];
-  onSendReply: (threadId: string, content: string) => Promise<void>;
+  onSendReply: (threadId: string, content: string, attachments?: AttachmentFile[]) => Promise<void>;
   onMarkAsRead: (threadId: string) => void;
 }
 
@@ -21,7 +31,9 @@ export const ThreadDetail = ({
   onMarkAsRead
 }: ThreadDetailProps) => {
   const [replyContent, setReplyContent] = useState("");
+  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
   const [isSending, setIsSending] = useState(false);
+  const [showAttachments, setShowAttachments] = useState(false);
 
   if (!thread) {
     return (
@@ -35,12 +47,14 @@ export const ThreadDetail = ({
   }
 
   const handleSendReply = async () => {
-    if (!replyContent.trim() || isSending) return;
+    if ((!replyContent.trim() && attachments.length === 0) || isSending) return;
 
     setIsSending(true);
     try {
-      await onSendReply(thread.id, replyContent);
+      await onSendReply(thread.id, replyContent, attachments);
       setReplyContent("");
+      setAttachments([]);
+      setShowAttachments(false);
     } catch (error) {
       console.error('Failed to send reply:', error);
     } finally {
@@ -51,6 +65,8 @@ export const ThreadDetail = ({
   const participants = Array.isArray(thread.participants)
     ? thread.participants.filter(p => typeof p === 'string').join(', ')
     : 'No participants';
+
+  const hasContent = replyContent.trim() || attachments.length > 0;
 
   return (
     <Card className="h-full flex flex-col">
@@ -70,16 +86,43 @@ export const ThreadDetail = ({
         {/* Reply Composer */}
         <div className="border-t p-4">
           <div className="space-y-3">
-            <Textarea
-              placeholder="Type your reply..."
+            {/* Rich Text Editor */}
+            <EmailRichTextEditor
               value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              className="min-h-[100px] resize-none"
+              onChange={setReplyContent}
+              placeholder="Type your reply..."
+              disabled={isSending}
             />
+
+            {/* Attachment Toggle */}
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAttachments(!showAttachments)}
+                disabled={isSending}
+                className="flex items-center gap-2"
+              >
+                <Paperclip className="w-4 h-4" />
+                Attachments {attachments.length > 0 && `(${attachments.length})`}
+              </Button>
+            </div>
+
+            {/* Attachments */}
+            {showAttachments && (
+              <AttachmentUpload
+                attachments={attachments}
+                onAttachmentsChange={setAttachments}
+                disabled={isSending}
+              />
+            )}
+
+            {/* Send Button */}
             <div className="flex justify-end">
               <Button
                 onClick={handleSendReply}
-                disabled={!replyContent.trim() || isSending}
+                disabled={!hasContent || isSending}
                 className="flex items-center gap-2"
               >
                 <Send className="w-4 h-4" />

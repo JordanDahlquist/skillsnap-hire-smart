@@ -212,6 +212,7 @@ export type Database = {
       }
       email_messages: {
         Row: {
+          attachments: Json | null
           content: string
           created_at: string
           direction: string
@@ -225,6 +226,7 @@ export type Database = {
           thread_id: string
         }
         Insert: {
+          attachments?: Json | null
           content: string
           created_at?: string
           direction: string
@@ -238,6 +240,7 @@ export type Database = {
           thread_id: string
         }
         Update: {
+          attachments?: Json | null
           content?: string
           created_at?: string
           direction?: string

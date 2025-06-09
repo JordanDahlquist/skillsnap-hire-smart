@@ -10,6 +10,15 @@ export interface EmailThreadData {
   userUniqueEmail: string;
 }
 
+interface AttachmentFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+  file?: File;
+}
+
 export interface SendEmailData {
   threadId?: string;
   recipientEmail: string;
@@ -19,6 +28,7 @@ export interface SendEmailData {
   applicationId?: string;
   jobId?: string;
   userUniqueEmail: string;
+  attachments?: AttachmentFile[];
 }
 
 export const emailService = {
@@ -62,6 +72,20 @@ export const emailService = {
       });
     }
 
+    // Prepare attachments data for database
+    const attachmentsData = data.attachments ? data.attachments.map(att => ({
+      id: att.id,
+      name: att.name,
+      size: att.size,
+      type: att.type,
+      url: att.url
+    })) : [];
+
+    // Convert rich text to plain text for email
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = data.content;
+    const plainTextContent = tempDiv.textContent || tempDiv.innerText || data.content;
+
     // Store the outbound message
     const { error: messageError } = await supabase
       .from('email_messages')
@@ -73,7 +97,8 @@ export const emailService = {
         content: data.content,
         direction: 'outbound',
         message_type: 'original',
-        is_read: true
+        is_read: true,
+        attachments: attachmentsData
       });
 
     if (messageError) throw messageError;
@@ -88,7 +113,7 @@ export const emailService = {
         }],
         job: { title: 'Email' },
         subject: `${data.subject} [Thread:${threadId}]`,
-        content: data.content,
+        content: plainTextContent,
         reply_to_email: data.userUniqueEmail,
         thread_id: threadId
       }
@@ -106,7 +131,7 @@ export const emailService = {
         recipient_email: data.recipientEmail,
         recipient_name: data.recipientName,
         subject: data.subject,
-        content: data.content,
+        content: plainTextContent,
         status: 'sent'
       });
 
