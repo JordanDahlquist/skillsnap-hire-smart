@@ -7,19 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Convert PDF to base64 images using pdf-lib
-async function pdfToImages(pdfBuffer: Uint8Array): Promise<string[]> {
-  try {
-    // For now, we'll work with the PDF as a single image
-    // In a production environment, you'd want to use a proper PDF-to-image conversion
-    const base64 = btoa(String.fromCharCode(...pdfBuffer));
-    return [`data:application/pdf;base64,${base64}`];
-  } catch (error) {
-    console.error('Error converting PDF to images:', error);
-    throw new Error('Failed to process PDF for AI analysis');
-  }
-}
-
 async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promise<string> {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -28,11 +15,34 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
   }
 
   try {
-    // Convert PDF to base64 for AI processing
-    const base64Pdf = btoa(String.fromCharCode(...pdfBuffer));
-    
     console.log(`Processing PDF with AI: ${fileName}`);
     
+    // First, upload the PDF file to OpenAI
+    const formData = new FormData();
+    const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
+    formData.append('file', pdfBlob, fileName);
+    formData.append('purpose', 'assistants');
+
+    console.log('Uploading PDF to OpenAI...');
+    const uploadResponse = await fetch('https://api.openai.com/v1/files', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+      },
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      const errorData = await uploadResponse.text();
+      console.error('OpenAI file upload error:', errorData);
+      throw new Error(`Failed to upload PDF to OpenAI: ${uploadResponse.status}`);
+    }
+
+    const uploadData = await uploadResponse.json();
+    const fileId = uploadData.id;
+    console.log('PDF uploaded successfully, file ID:', fileId);
+
+    // Now use the uploaded file in a chat completion
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -44,7 +54,7 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
         messages: [
           {
             role: 'system',
-            content: `You are an expert at extracting and reformatting job descriptions from PDFs. Your task is to:
+            content: `You are an expert at reading and reformatting job descriptions from PDF documents. Your task is to:
             1. Read the provided PDF document carefully
             2. Extract all the job description content
             3. Reformat it as a clean, professional job posting
@@ -56,23 +66,21 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
           },
           {
             role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Please extract and reformat the job description from this PDF file (${fileName}). Return a clean, professional job posting with all the key information preserved.`
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:application/pdf;base64,${base64Pdf}`,
-                  detail: 'high'
-                }
-              }
-            ]
+            content: `Please extract and reformat the job description from the uploaded PDF file (${fileName}). Return a clean, professional job posting with all the key information preserved.`
           }
         ],
         max_tokens: 4000,
-        temperature: 0.3
+        temperature: 0.3,
+        tools: [
+          {
+            type: 'file_search'
+          }
+        ],
+        tool_resources: {
+          file_search: {
+            file_ids: [fileId]
+          }
+        }
       }),
     });
 
@@ -95,6 +103,20 @@ async function extractTextWithAI(pdfBuffer: Uint8Array, fileName: string): Promi
     }
 
     console.log(`Successfully extracted ${extractedText.length} characters using AI`);
+    
+    // Clean up: delete the uploaded file
+    try {
+      await fetch(`https://api.openai.com/v1/files/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+        },
+      });
+      console.log('Temporary file cleaned up');
+    } catch (cleanupError) {
+      console.warn('Could not clean up temporary file:', cleanupError);
+    }
+
     return extractedText;
 
   } catch (error) {
