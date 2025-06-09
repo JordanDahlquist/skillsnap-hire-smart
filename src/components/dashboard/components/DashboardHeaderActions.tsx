@@ -40,19 +40,43 @@ export const DashboardHeaderActions = ({
 }: DashboardHeaderActionsProps) => {
   const isArchived = job.status === 'closed';
 
+  console.log('DashboardHeaderActions render:', { 
+    jobId: job.id, 
+    status: job.status, 
+    isUpdating,
+    isArchived 
+  });
+
+  const handleStatusChange = (newStatus: string) => {
+    console.log('Status change triggered from actions:', { from: job.status, to: newStatus });
+    onStatusChange(newStatus);
+  };
+
   return (
     <div className="flex items-center gap-2">
       <StatusDropdown
         currentStatus={job.status}
-        onStatusChange={onStatusChange}
+        onStatusChange={handleStatusChange}
         disabled={isUpdating}
       />
 
-      <Button variant="outline" size="sm" onClick={onShareJob} disabled={isUpdating}>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={onShareJob} 
+        disabled={isUpdating}
+        title="Share job application link"
+      >
         <Share2 className="w-4 h-4 text-muted-foreground" />
       </Button>
 
-      <Button variant="outline" size="sm" asChild disabled={isUpdating}>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        asChild 
+        disabled={isUpdating}
+        title="View public job page"
+      >
         <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
           <ExternalLink className="w-4 h-4 text-muted-foreground" />
         </a>

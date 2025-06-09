@@ -14,27 +14,81 @@ export const useDashboardHeaderActions = (
   const { toast } = useToast();
 
   const handleStatusChange = async (newStatus: string) => {
+    console.log('Status change initiated:', { jobId: job.id, from: job.status, to: newStatus });
+    
+    // Prevent multiple concurrent updates
+    if (isUpdating) {
+      console.log('Update already in progress, ignoring');
+      return;
+    }
+
     setIsUpdating(true);
     
     try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', job.id);
+      // Check authentication first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw new Error('Authentication error: Unable to verify session');
+      }
 
-      if (error) throw error;
+      if (!session?.user) {
+        console.error('No authenticated user found');
+        throw new Error('You must be logged in to update job status');
+      }
+
+      console.log('User authenticated:', session.user.id);
+
+      // Verify job ownership
+      if (job.user_id !== session.user.id) {
+        console.error('User does not own this job:', { jobUserId: job.user_id, currentUserId: session.user.id });
+        throw new Error('You can only update jobs that you own');
+      }
+
+      console.log('Attempting database update...');
+
+      // Perform the status update
+      const { data, error } = await supabase
+        .from('jobs')
+        .update({ 
+          status: newStatus, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', job.id)
+        .select();
+
+      if (error) {
+        console.error('Database update error:', error);
+        
+        // Check for specific error types
+        if (error.code === 'PGRST116') {
+          throw new Error('Job not found or access denied');
+        } else if (error.message.includes('row-level security')) {
+          throw new Error('You do not have permission to update this job');
+        } else {
+          throw new Error(`Database error: ${error.message}`);
+        }
+      }
+
+      console.log('Status update successful:', data);
 
       toast({
         title: "Status updated",
-        description: `Job is now ${newStatus}`,
+        description: `Job status changed to ${newStatus}`,
       });
       
+      // Trigger data refresh
       onJobUpdate();
+      
     } catch (error) {
-      console.error('Error updating job status:', error);
+      console.error('Status update failed:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update job status';
+      
       toast({
-        title: "Error",
-        description: "Failed to update job status",
+        title: "Update failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -51,6 +105,7 @@ export const useDashboardHeaderActions = (
         description: "Job application link copied to clipboard",
       });
     } catch (error) {
+      console.error('Failed to copy link:', error);
       toast({
         title: "Error",
         description: "Failed to copy link",
@@ -68,29 +123,38 @@ export const useDashboardHeaderActions = (
       return;
     }
 
-    const csvContent = [
-      ['Name', 'Email', 'Applied Date', 'AI Rating', 'Status'].join(','),
-      ...applications.map(app => [
-        app.name,
-        app.email,
-        new Date(app.created_at).toLocaleDateString(),
-        app.ai_rating || 'N/A',
-        app.status
-      ].join(','))
-    ].join('\n');
+    try {
+      const csvContent = [
+        ['Name', 'Email', 'Applied Date', 'AI Rating', 'Status'].join(','),
+        ...applications.map(app => [
+          app.name,
+          app.email,
+          new Date(app.created_at).toLocaleDateString(),
+          app.ai_rating || 'N/A',
+          app.status
+        ].join(','))
+      ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${job.title.replace(/[^a-zA-Z0-9]/g, '_')}_applications.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${job.title.replace(/[^a-zA-Z0-9]/g, '_')}_applications.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
 
-    toast({
-      title: "Export completed",
-      description: "Applications data exported to CSV file",
-    });
+      toast({
+        title: "Export completed",
+        description: "Applications data exported to CSV file",
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast({
+        title: "Export failed",
+        description: "Failed to export applications data",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEditJob = () => {

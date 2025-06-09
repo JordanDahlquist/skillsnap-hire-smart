@@ -23,6 +23,12 @@ export const CompactDashboardHeader = ({
   getTimeAgo, 
   onJobUpdate 
 }: CompactDashboardHeaderProps) => {
+  console.log('CompactDashboardHeader render:', { 
+    jobId: job.id, 
+    status: job.status, 
+    applicationsCount: applications.length 
+  });
+
   const {
     isUpdating,
     isEditModalOpen,

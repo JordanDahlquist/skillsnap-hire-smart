@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, FileText, Play, Pause, Archive } from "lucide-react";
+import { ChevronDown, FileText, Play, Pause, Archive, Loader2 } from "lucide-react";
 
 interface StatusDropdownProps {
   currentStatus: string;
@@ -50,35 +50,49 @@ export const StatusDropdown = ({
   disabled = false,
   size = "default"
 }: StatusDropdownProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const currentConfig = statusConfig[currentStatus as keyof typeof statusConfig];
   const CurrentIcon = currentConfig?.icon || FileText;
 
+  const handleStatusSelect = (newStatus: string) => {
+    console.log('Status selected from dropdown:', newStatus);
+    setIsOpen(false);
+    onStatusChange(newStatus);
+  };
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
           size={size}
           disabled={disabled}
-          className={`${currentConfig?.buttonColor} hover:bg-gray-50`}
+          className={`${currentConfig?.buttonColor} hover:bg-gray-50 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <CurrentIcon className="w-4 h-4 mr-2" />
+          {disabled ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <CurrentIcon className="w-4 h-4 mr-2" />
+          )}
           {currentConfig?.label || currentStatus}
           <ChevronDown className="w-4 h-4 ml-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-white border shadow-lg">
         {Object.entries(statusConfig).map(([status, config]) => {
           const Icon = config.icon;
+          const isCurrentStatus = currentStatus === status;
+          
           return (
             <DropdownMenuItem
               key={status}
-              onClick={() => onStatusChange(status)}
-              className={currentStatus === status ? "bg-gray-50" : ""}
+              onClick={() => handleStatusSelect(status)}
+              className={`${isCurrentStatus ? "bg-gray-50" : ""} hover:bg-gray-100 cursor-pointer`}
+              disabled={disabled}
             >
               <Icon className="w-4 h-4 mr-2" />
               <span>{config.label}</span>
-              {currentStatus === status && (
+              {isCurrentStatus && (
                 <Badge className={`ml-auto ${config.color} text-xs`}>
                   Current
                 </Badge>
