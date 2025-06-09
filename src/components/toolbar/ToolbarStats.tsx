@@ -17,7 +17,6 @@ export const ToolbarStats = memo(({
 }: ToolbarStatsProps) => {
   return (
     <div className="flex gap-4 items-center text-sm text-gray-600">
-      <span>{totalJobs} total jobs</span>
       {selectedCount > 0 && (
         <Badge variant="outline">
           {selectedCount} selected
