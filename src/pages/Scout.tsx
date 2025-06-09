@@ -14,10 +14,12 @@ const Scout = () => {
     setActiveConversation(conversationId);
   };
 
-  const handleNewConversation = () => {
-    const newId = startNewConversation();
-    // Reload conversations to update the sidebar
-    loadConversations();
+  const handleNewConversation = async () => {
+    const newId = await startNewConversation();
+    if (newId) {
+      // Reload conversations to update the sidebar immediately
+      loadConversations();
+    }
   };
 
   return (
