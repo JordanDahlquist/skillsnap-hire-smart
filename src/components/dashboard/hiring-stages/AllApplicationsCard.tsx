@@ -16,26 +16,26 @@ export const AllApplicationsCard = ({
   return (
     <div
       onClick={() => onStageSelect(null)}
-      className={`group relative bg-white rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden flex-shrink-0 w-32 ${
+      className={`group relative bg-white rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden w-32 md:w-full flex-shrink-0 ${
         selectedStage === null
           ? 'border-blue-500 ring-2 ring-blue-100 scale-105'
           : 'border-gray-200 hover:border-gray-300'
       }`}
     >
-      <div className="p-3">
+      <div className="p-3 md:p-4">
         <div className="flex items-center justify-between mb-2">
           <div className={`w-2 h-2 rounded-full ${
             selectedStage === null ? 'bg-blue-500' : 'bg-gray-400'
           } transition-colors duration-200`}></div>
-          <Users className={`w-3 h-3 ${
+          <Users className={`w-3 h-3 md:w-4 md:h-4 ${
             selectedStage === null ? 'text-blue-500' : 'text-gray-400'
           } transition-colors duration-200`} />
         </div>
         
-        <h3 className={`font-semibold text-xs mb-2 ${
+        <h3 className={`font-semibold text-xs md:text-sm mb-2 ${
           selectedStage === null ? 'text-blue-700' : 'text-gray-700'
         } transition-colors duration-200 truncate`}>
-          All
+          All Applications
         </h3>
         
         <Badge 

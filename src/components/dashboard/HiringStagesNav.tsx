@@ -42,43 +42,76 @@ export const HiringStagesNav = ({
   return (
     <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
       <div className="p-4">
-        <ScrollArea className="w-full">
-          <div className="flex gap-3 pb-2">
-            {/* All Applications Card */}
-            <AllApplicationsCard 
-              totalApplications={totalApplications} 
-              selectedStage={selectedStage} 
-              onStageSelect={onStageSelect} 
-            />
+        {/* Mobile: Horizontal scroll */}
+        <div className="block md:hidden">
+          <ScrollArea className="w-full">
+            <div className="flex gap-3 pb-2">
+              <AllApplicationsCard 
+                totalApplications={totalApplications} 
+                selectedStage={selectedStage} 
+                onStageSelect={onStageSelect} 
+              />
 
-            {/* Stage Cards */}
-            {stages.map((stage, index) => {
-              const stageKey = getStageKey(stage.name);
-              const count = stageCounts[stageKey] || 0;
-              const isSelected = selectedStage === stageKey;
-              const isNextStage = index < stages.length - 1;
-              return (
-                <StageCard 
-                  key={stage.id} 
-                  stage={stage} 
-                  count={count} 
-                  isSelected={isSelected} 
-                  isNextStage={isNextStage} 
-                  selectedStage={selectedStage} 
-                  onStageSelect={onStageSelect} 
-                />
-              );
-            })}
+              {stages.map((stage, index) => {
+                const stageKey = getStageKey(stage.name);
+                const count = stageCounts[stageKey] || 0;
+                const isSelected = selectedStage === stageKey;
+                const isNextStage = index < stages.length - 1;
+                return (
+                  <StageCard 
+                    key={stage.id} 
+                    stage={stage} 
+                    count={count} 
+                    isSelected={isSelected} 
+                    isNextStage={isNextStage} 
+                    selectedStage={selectedStage} 
+                    onStageSelect={onStageSelect} 
+                  />
+                );
+              })}
 
-            {/* Rejected Stage Card */}
-            <RejectedStageCard
-              count={rejectedCount}
-              isSelected={selectedStage === 'rejected'}
-              onStageSelect={onStageSelect}
-            />
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+              <RejectedStageCard
+                count={rejectedCount}
+                isSelected={selectedStage === 'rejected'}
+                onStageSelect={onStageSelect}
+              />
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
+
+        {/* Tablet and Desktop: Grid layout that fills width */}
+        <div className="hidden md:grid gap-3 auto-cols-fr grid-flow-col">
+          <AllApplicationsCard 
+            totalApplications={totalApplications} 
+            selectedStage={selectedStage} 
+            onStageSelect={onStageSelect} 
+          />
+
+          {stages.map((stage, index) => {
+            const stageKey = getStageKey(stage.name);
+            const count = stageCounts[stageKey] || 0;
+            const isSelected = selectedStage === stageKey;
+            const isNextStage = index < stages.length - 1;
+            return (
+              <StageCard 
+                key={stage.id} 
+                stage={stage} 
+                count={count} 
+                isSelected={isSelected} 
+                isNextStage={isNextStage} 
+                selectedStage={selectedStage} 
+                onStageSelect={onStageSelect} 
+              />
+            );
+          })}
+
+          <RejectedStageCard
+            count={rejectedCount}
+            isSelected={selectedStage === 'rejected'}
+            onStageSelect={onStageSelect}
+          />
+        </div>
       </div>
     </div>
   );
