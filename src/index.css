@@ -163,3 +163,107 @@
     background-color: hsl(var(--attention-color));
   }
 }
+
+/* Rich Text Message Display Styles */
+.rich-message-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.rich-message-content strong {
+  font-weight: bold;
+}
+
+.rich-message-content em {
+  font-style: italic;
+}
+
+.rich-message-content u {
+  text-decoration: underline;
+}
+
+.rich-message-content ul {
+  list-style-type: disc;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.rich-message-content ol {
+  list-style-type: decimal;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.rich-message-content blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 16px;
+  margin: 10px 0;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.rich-message-content li {
+  margin-bottom: 5px;
+}
+
+/* Dark theme styles for outbound messages */
+.rich-message-content-outbound a {
+  color: #bfdbfe;
+  text-decoration: underline;
+}
+
+.rich-message-content-outbound blockquote {
+  border-left: 4px solid #bfdbfe;
+  padding-left: 16px;
+  margin: 10px 0;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Rich Text Editor Styles */
+.rich-text-editor [contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.rich-text-editor [contenteditable] a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.rich-text-editor [contenteditable] strong {
+  font-weight: bold;
+}
+
+.rich-text-editor [contenteditable] em {
+  font-style: italic;
+}
+
+.rich-text-editor [contenteditable] u {
+  text-decoration: underline;
+}
+
+.rich-text-editor [contenteditable] ul {
+  list-style-type: disc;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.rich-text-editor [contenteditable] ol {
+  list-style-type: decimal;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.rich-text-editor [contenteditable] blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 16px;
+  margin: 10px 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.rich-text-editor [contenteditable] li {
+  margin-bottom: 5px;
+}

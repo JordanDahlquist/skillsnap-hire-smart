@@ -168,7 +168,7 @@ export const EmailRichTextEditor = ({
   ];
 
   return (
-    <div className="space-y-2">
+    <div className="rich-text-editor space-y-2">
       {/* Toolbar */}
       <div className="flex items-center gap-1 p-2 border rounded-lg bg-gray-50 flex-wrap">
         {toolbarButtons.map(({ command, icon: Icon, title, value }) => (
@@ -251,47 +251,6 @@ export const EmailRichTextEditor = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <style jsx>{`
-        [contenteditable][data-placeholder]:empty::before {
-          content: attr(data-placeholder);
-          color: #9ca3af;
-          font-style: italic;
-        }
-        [contenteditable] a {
-          color: #3b82f6;
-          text-decoration: underline;
-        }
-        [contenteditable] strong {
-          font-weight: bold;
-        }
-        [contenteditable] em {
-          font-style: italic;
-        }
-        [contenteditable] u {
-          text-decoration: underline;
-        }
-        [contenteditable] ul {
-          list-style-type: disc;
-          margin-left: 20px;
-          margin-bottom: 10px;
-        }
-        [contenteditable] ol {
-          list-style-type: decimal;
-          margin-left: 20px;
-          margin-bottom: 10px;
-        }
-        [contenteditable] blockquote {
-          border-left: 4px solid #e5e7eb;
-          padding-left: 16px;
-          margin: 10px 0;
-          font-style: italic;
-          color: #6b7280;
-        }
-        [contenteditable] li {
-          margin-bottom: 5px;
-        }
-      `}</style>
     </div>
   );
 };

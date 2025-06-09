@@ -83,8 +83,9 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
           <div 
             dangerouslySetInnerHTML={{ __html: message.content }}
             className={cn(
-              "rich-message-content",
-              message.direction === 'outbound' ? "text-white" : "text-gray-900"
+              message.direction === 'outbound' 
+                ? "rich-message-content-outbound" 
+                : "rich-message-content"
             )}
           />
         ) : (
@@ -144,42 +145,6 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
           ))}
         </div>
       )}
-
-      <style jsx>{`
-        .rich-message-content a {
-          color: ${message.direction === 'outbound' ? '#bfdbfe' : '#3b82f6'};
-          text-decoration: underline;
-        }
-        .rich-message-content strong {
-          font-weight: bold;
-        }
-        .rich-message-content em {
-          font-style: italic;
-        }
-        .rich-message-content u {
-          text-decoration: underline;
-        }
-        .rich-message-content ul {
-          list-style-type: disc;
-          margin-left: 20px;
-          margin-bottom: 10px;
-        }
-        .rich-message-content ol {
-          list-style-type: decimal;
-          margin-left: 20px;
-          margin-bottom: 10px;
-        }
-        .rich-message-content blockquote {
-          border-left: 4px solid ${message.direction === 'outbound' ? '#bfdbfe' : '#e5e7eb'};
-          padding-left: 16px;
-          margin: 10px 0;
-          font-style: italic;
-          opacity: 0.8;
-        }
-        .rich-message-content li {
-          margin-bottom: 5px;
-        }
-      `}</style>
     </div>
   );
 };
