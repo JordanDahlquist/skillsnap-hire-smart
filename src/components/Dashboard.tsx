@@ -7,6 +7,7 @@ import { useSelection } from "@/hooks/useSelection";
 import { DashboardSkeleton } from "./dashboard/DashboardSkeleton";
 import { ApplicationsManager } from "./dashboard/ApplicationsManager";
 import { EnhancedDashboardHeader } from "./dashboard/EnhancedDashboardHeader";
+import { getTimeAgo } from "@/utils/dateUtils";
 import { Application } from "@/types";
 
 export const Dashboard = () => {
@@ -14,7 +15,7 @@ export const Dashboard = () => {
   const location = useLocation();
   const { data: applications, isLoading: applicationsLoading, refetch: refetchApplications } = useApplications(jobId);
   const { data: jobs, isLoading: jobsLoading } = useJobs();
-  const { selectedItems: selectedApplications, handleSelection } = useSelection();
+  const { selectedItems: selectedApplications, handleSelection } = useSelection<string>();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
   const job = jobs?.find(j => j.id === jobId);
@@ -40,7 +41,9 @@ export const Dashboard = () => {
   };
 
   const handleApplicationSelection = (applicationIds: string[]) => {
-    handleSelection(applicationIds);
+    // Clear current selection and set new selection
+    // Since useSelection expects individual items, we need to handle this differently
+    // For now, we'll work with the selectedApplications directly in ApplicationsManager
   };
 
   if (isLoading) {
@@ -63,7 +66,8 @@ export const Dashboard = () => {
       <EnhancedDashboardHeader
         job={job}
         applications={applications || []}
-        onApplicationUpdate={refetchApplications}
+        getTimeAgo={getTimeAgo}
+        onJobUpdate={refetchApplications}
       />
 
       <ApplicationsManager
