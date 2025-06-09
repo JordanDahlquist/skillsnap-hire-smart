@@ -22,19 +22,9 @@ interface ScoutCandidateCardProps {
 
 export const ScoutCandidateCard = ({ candidate }: ScoutCandidateCardProps) => {
   const handleClick = () => {
-    // Open dashboard in new tab with selected application
-    const url = `/dashboard/${candidate.job_id}`;
-    const newWindow = window.open(url, '_blank');
-    if (newWindow) {
-      // Store the selected application ID in the new window's session storage
-      newWindow.addEventListener('load', () => {
-        try {
-          newWindow.sessionStorage.setItem('selectedApplicationId', candidate.id);
-        } catch (error) {
-          console.warn('Could not set session storage for new window:', error);
-        }
-      });
-    }
+    // Use URL parameters for more reliable candidate selection
+    const url = `/dashboard/${candidate.job_id}?selectedApp=${candidate.id}`;
+    window.open(url, '_blank');
   };
 
   const getStatusColor = (status: string, manualRating?: number | null) => {
