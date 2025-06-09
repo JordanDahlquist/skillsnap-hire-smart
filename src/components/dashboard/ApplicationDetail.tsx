@@ -49,8 +49,18 @@ export const ApplicationDetail = ({
     try {
       // Determine the new status based on current status and rating
       let newStatus = selectedApplication.status;
-      if (selectedApplication.status === 'pending' && newRating && newRating > 0) {
-        newStatus = 'reviewed';
+      
+      // If we're clearing the rating (newRating is null)
+      if (newRating === null) {
+        // If status was 'reviewed' and we're clearing the rating, go back to 'pending'
+        if (selectedApplication.status === 'reviewed') {
+          newStatus = 'pending';
+        }
+      } else {
+        // If we're setting a rating and status is 'pending', mark as 'reviewed'
+        if (selectedApplication.status === 'pending') {
+          newStatus = 'reviewed';
+        }
       }
 
       const { error } = await supabase
@@ -69,7 +79,7 @@ export const ApplicationDetail = ({
         : 'Rating cleared';
       
       const statusMessage = newStatus !== selectedApplication.status 
-        ? ` and marked as reviewed`
+        ? ` and marked as ${newStatus}`
         : '';
 
       toast({
