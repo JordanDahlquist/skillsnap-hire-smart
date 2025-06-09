@@ -92,6 +92,7 @@ export const JobApplication = () => {
   }
 
   const applicationsCount = job?.applications?.[0]?.count || 0;
+  const isApplicationOpen = job.status === 'active';
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -113,7 +114,11 @@ export const JobApplication = () => {
         </Card>
 
         {/* Application Form */}
-        <ApplicationForm jobId={jobId!} />
+        <ApplicationForm 
+          jobId={jobId!} 
+          isApplicationOpen={isApplicationOpen}
+          jobStatus={job.status}
+        />
       </div>
     </div>
   );

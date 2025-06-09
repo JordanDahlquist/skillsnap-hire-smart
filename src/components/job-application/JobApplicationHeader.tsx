@@ -1,6 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, DollarSign, Clock, Users, Eye } from "lucide-react";
+import { getJobStatusColor } from "@/utils/statusUtils";
 import { Job } from "@/types";
 
 interface JobApplicationHeaderProps {
@@ -16,12 +17,32 @@ export const JobApplicationHeader = ({
   getLocationDisplay, 
   getTimeAgo 
 }: JobApplicationHeaderProps) => {
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Open for Applications';
+      case 'paused':
+        return 'Applications Paused';
+      case 'closed':
+        return 'Applications Closed';
+      case 'draft':
+        return 'Draft - Not Published';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
   return (
     <div className="flex items-start justify-between">
       <div className="flex-1">
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">
-          {job.title}
-        </h1>
+        <div className="flex items-center gap-3 mb-3">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {job.title}
+          </h1>
+          <Badge className={getJobStatusColor(job.status)}>
+            {getStatusLabel(job.status)}
+          </Badge>
+        </div>
         
         <div className="flex items-center flex-wrap gap-2 mb-3">
           <Badge variant="secondary" className="text-sm">
