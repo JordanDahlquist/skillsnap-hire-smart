@@ -12,16 +12,8 @@ interface ApplicationsListProps {
   getTimeAgo: (dateString: string) => string;
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
-  onSendEmail?: () => void;
-  onBulkUpdateStatus?: (status: string) => void;
-  onBulkSetRating?: (rating: number) => void;
-  onBulkMoveToStage?: (stage: string) => void;
-  onBulkExport?: () => void;
-  onBulkReject?: () => void;
-  jobId?: string;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
-  isLoading?: boolean;
 }
 
 export const ApplicationsList = memo(({
@@ -32,16 +24,8 @@ export const ApplicationsList = memo(({
   getTimeAgo,
   selectedApplications = [],
   onSelectApplications,
-  onSendEmail,
-  onBulkUpdateStatus,
-  onBulkSetRating,
-  onBulkMoveToStage,
-  onBulkExport,
-  onBulkReject,
-  jobId,
   searchTerm = '',
   onSearchChange,
-  isLoading = false
 }: ApplicationsListProps) => {
   // Filter applications based on search term
   const filteredApplications = useMemo(() => {
@@ -57,28 +41,25 @@ export const ApplicationsList = memo(({
   }, [applications, searchTerm]);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-full">
       <ApplicationsListHeader
         applicationsCount={filteredApplications.length}
         selectedApplications={selectedApplications}
         onSelectApplications={onSelectApplications}
-        onSendEmail={onSendEmail}
-        onBulkUpdateStatus={onBulkUpdateStatus}
-        onBulkSetRating={onBulkSetRating}
-        onBulkMoveToStage={onBulkMoveToStage}
-        onBulkExport={onBulkExport}
-        onBulkReject={onBulkReject}
         applications={filteredApplications}
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
-        jobId={jobId}
-        isLoading={isLoading}
       />
 
-      <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+      <div className="divide-y divide-gray-200 overflow-y-auto" style={{ height: 'calc(100vh - 400px)' }}>
         {filteredApplications.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            {searchTerm ? 'No candidates found matching your search.' : 'No applications in this stage yet.'}
+          <div className="p-8 text-center text-gray-500">
+            <div className="text-lg font-medium mb-2">
+              {searchTerm ? 'No candidates found' : 'No applications yet'}
+            </div>
+            <div className="text-sm">
+              {searchTerm ? 'Try adjusting your search terms.' : 'Applications will appear here once candidates apply.'}
+            </div>
           </div>
         ) : (
           filteredApplications.map((application) => (
@@ -91,7 +72,6 @@ export const ApplicationsList = memo(({
               getTimeAgo={getTimeAgo}
               selectedApplications={selectedApplications}
               onSelectApplications={onSelectApplications}
-              jobId={jobId}
             />
           ))
         )}

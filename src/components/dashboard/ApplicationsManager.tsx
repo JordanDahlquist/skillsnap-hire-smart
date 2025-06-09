@@ -5,6 +5,7 @@ import { applicationService } from '@/services/applicationService';
 import { HiringStagesNav } from './HiringStagesNav';
 import { ApplicationsList } from './ApplicationsList';
 import { ApplicationDetail } from './ApplicationDetail';
+import { BulkActionsPanel } from './BulkActionsPanel';
 import { EmailComposerModal } from './EmailComposerModal';
 import { getApplicationStatusColor } from '@/utils/statusUtils';
 import { getTimeAgo } from '@/utils/dateUtils';
@@ -86,32 +87,6 @@ export const ApplicationsManager = ({
     setIsEmailModalOpen(true);
   }, [selectedApplications.length, toast]);
 
-  const handleBulkUpdateStatus = useCallback(async (status: string) => {
-    if (selectedApplications.length === 0) return;
-
-    setIsUpdating(true);
-    try {
-      await applicationService.bulkUpdateApplications(selectedApplications, { status });
-      
-      toast({
-        title: "Status updated",
-        description: `Updated ${selectedApplications.length} application${selectedApplications.length > 1 ? 's' : ''} to ${status}`,
-      });
-      
-      onSelectApplications([]);
-      onApplicationUpdate();
-    } catch (error) {
-      console.error('Error updating status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update application status",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
-
   const handleBulkSetRating = useCallback(async (rating: number) => {
     if (selectedApplications.length === 0) return;
 
@@ -169,18 +144,6 @@ export const ApplicationsManager = ({
     }
   }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
 
-  const handleBulkExport = useCallback(() => {
-    if (selectedApplications.length === 0) return;
-
-    const selectedApps = applications.filter(app => selectedApplications.includes(app.id));
-    exportApplicationsToCSV(selectedApps, job.title);
-    
-    toast({
-      title: "Export completed",
-      description: `Exported ${selectedApplications.length} application${selectedApplications.length > 1 ? 's' : ''} to CSV`,
-    });
-  }, [selectedApplications, applications, job.title, toast]);
-
   const handleBulkReject = useCallback(async () => {
     if (selectedApplications.length === 0) return;
 
@@ -210,6 +173,10 @@ export const ApplicationsManager = ({
     }
   }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
 
+  const handleClearSelection = useCallback(() => {
+    onSelectApplications([]);
+  }, [onSelectApplications]);
+
   return (
     <div className="flex-1 bg-gray-50">
       <HiringStagesNav
@@ -220,38 +187,45 @@ export const ApplicationsManager = ({
       />
 
       <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
-          <ApplicationsList
-            applications={filteredApplications}
-            selectedApplication={selectedApplication}
-            onSelectApplication={onSelectApplication}
-            getStatusColor={getApplicationStatusColor}
-            getTimeAgo={getTimeAgo}
-            selectedApplications={selectedApplications}
-            onSelectApplications={onSelectApplications}
+        <div className="max-w-7xl mx-auto">
+          {/* Bulk Actions Panel */}
+          <BulkActionsPanel
+            selectedCount={selectedApplications.length}
             onSendEmail={handleEmailComposer}
-            onBulkUpdateStatus={handleBulkUpdateStatus}
-            onBulkSetRating={handleBulkSetRating}
-            onBulkMoveToStage={handleBulkMoveToStage}
-            onBulkExport={handleBulkExport}
-            onBulkReject={handleBulkReject}
+            onSetRating={handleBulkSetRating}
+            onMoveToStage={handleBulkMoveToStage}
+            onReject={handleBulkReject}
+            onClearSelection={handleClearSelection}
             jobId={job.id}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
             isLoading={isUpdating}
           />
 
-          {selectedApplication && (
-            <ApplicationDetail
+          {/* Applications Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ApplicationsList
+              applications={filteredApplications}
               selectedApplication={selectedApplication}
-              applications={applications}
-              job={job}
+              onSelectApplication={onSelectApplication}
               getStatusColor={getApplicationStatusColor}
-              getRatingStars={getRatingStars}
               getTimeAgo={getTimeAgo}
-              onApplicationUpdate={onApplicationUpdate}
+              selectedApplications={selectedApplications}
+              onSelectApplications={onSelectApplications}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
             />
-          )}
+
+            {selectedApplication && (
+              <ApplicationDetail
+                selectedApplication={selectedApplication}
+                applications={applications}
+                job={job}
+                getStatusColor={getApplicationStatusColor}
+                getRatingStars={getRatingStars}
+                getTimeAgo={getTimeAgo}
+                onApplicationUpdate={onApplicationUpdate}
+              />
+            )}
+          </div>
         </div>
       </div>
 

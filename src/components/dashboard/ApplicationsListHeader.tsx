@@ -2,43 +2,26 @@
 import React, { memo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SearchBar } from '@/components/toolbar/SearchBar';
-import { CompactBulkActions } from './bulk-actions';
 import { logger } from '@/services/loggerService';
 
 interface ApplicationsListHeaderProps {
   applicationsCount: number;
   selectedApplications: string[];
   onSelectApplications?: (ids: string[]) => void;
-  onSendEmail?: () => void;
-  onBulkUpdateStatus?: (status: string) => void;
-  onBulkSetRating?: (rating: number) => void;
-  onBulkMoveToStage?: (stage: string) => void;
-  onBulkExport?: () => void;
-  onBulkReject?: () => void;
   applications: Array<{
     id: string;
   }>;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
-  jobId?: string;
-  isLoading?: boolean;
 }
 
 export const ApplicationsListHeader = memo(({
   applicationsCount,
   selectedApplications,
   onSelectApplications,
-  onSendEmail,
-  onBulkUpdateStatus,
-  onBulkSetRating,
-  onBulkMoveToStage,
-  onBulkExport,
-  onBulkReject,
   applications,
   searchTerm = '',
   onSearchChange,
-  jobId,
-  isLoading = false
 }: ApplicationsListHeaderProps) => {
   const handleSelectAll = useCallback((checked: boolean) => {
     if (onSelectApplications) {
@@ -50,54 +33,42 @@ export const ApplicationsListHeader = memo(({
     }
   }, [onSelectApplications, applications, applicationsCount]);
 
-  const handleClearSelection = useCallback(() => {
-    if (onSelectApplications) {
-      onSelectApplications([]);
-      logger.info('Cleared application selection');
-    }
-  }, [onSelectApplications]);
-
   const isAllSelected = applicationsCount > 0 && selectedApplications.length === applicationsCount;
   const isSomeSelected = selectedApplications.length > 0 && selectedApplications.length < applicationsCount;
 
   return (
-    <div className="p-4 border-b border-gray-200">
+    <div className="p-6 border-b border-gray-200 bg-white">
       {/* Applications Title */}
-      <h2 className="text-lg font-semibold text-gray-900 mb-3">
-        Applications ({applicationsCount})
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Applications ({applicationsCount})
+        </h2>
+      </div>
 
       {/* Search Bar */}
       {onSearchChange && (
-        <div className="mb-3">
+        <div className="mb-4">
           <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
         </div>
       )}
 
       {/* Select All Checkbox */}
       {onSelectApplications && (
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-3">
           <Checkbox 
             checked={isAllSelected} 
             onCheckedChange={handleSelectAll}
-            className={isSomeSelected ? "data-[state=checked]:bg-blue-600" : ""}
+            className={`${isSomeSelected ? "data-[state=checked]:bg-blue-600" : ""} w-5 h-5`}
           />
-          <span className="text-sm text-gray-600">Select All</span>
+          <span className="text-sm font-medium text-gray-700">
+            Select All Applications
+            {selectedApplications.length > 0 && (
+              <span className="ml-2 text-blue-600">
+                ({selectedApplications.length} selected)
+              </span>
+            )}
+          </span>
         </div>
-      )}
-
-      {/* Compact Bulk Actions */}
-      {jobId && (
-        <CompactBulkActions
-          selectedCount={selectedApplications.length}
-          onSendEmail={onSendEmail || (() => {})}
-          onSetRating={onBulkSetRating || (() => {})}
-          onMoveToStage={onBulkMoveToStage || (() => {})}
-          onReject={onBulkReject || (() => {})}
-          onClearSelection={handleClearSelection}
-          jobId={jobId}
-          isLoading={isLoading}
-        />
       )}
     </div>
   );
