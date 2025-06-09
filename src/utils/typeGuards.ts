@@ -21,6 +21,6 @@ export function safeParseSkillsTestResponses(data: Json): SkillsTestResponse[] {
   return [];
 }
 
-export function isValidJsonArray(data: Json): data is any[] {
+export function isValidJsonArray(data: Json): data is Json[] {
   return Array.isArray(data);
 }
