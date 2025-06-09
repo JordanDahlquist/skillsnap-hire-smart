@@ -39,8 +39,7 @@ export const ApplicationActionButtons = ({
             className="border-green-200 text-green-600 hover:bg-green-50 flex-1"
           >
             <RotateCcw className="w-4 h-4 mr-1.5" />
-            <span className="hidden xs:inline">Unreject</span>
-            <span className="xs:hidden">Undo</span>
+            Unreject
           </Button>
         ) : (
           <Button 
@@ -51,8 +50,7 @@ export const ApplicationActionButtons = ({
             className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
           >
             <ThumbsDown className="w-4 h-4 mr-1.5" />
-            <span className="hidden xs:inline">Reject</span>
-            <span className="xs:hidden">✕</span>
+            Reject
           </Button>
         )}
         <Button 
@@ -61,8 +59,7 @@ export const ApplicationActionButtons = ({
           className="bg-blue-600 hover:bg-blue-700 flex-1"
         >
           <Mail className="w-4 h-4 mr-1.5" />
-          <span className="hidden xs:inline">Email</span>
-          <span className="xs:hidden">✉</span>
+          Email
         </Button>
       </div>
       
