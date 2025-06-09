@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, Upload, X, AlertCircle } from "lucide-react";
+import { FileText, Upload, X, AlertCircle, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -60,37 +60,38 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
   const processPdfFile = async (file: File) => {
     setIsProcessing(true);
     try {
-      console.log('Processing PDF file:', file.name);
+      console.log('Processing PDF file with AI:', file.name);
       
-      // Create form data for the edge function
+      // Create form data for the AI-powered edge function
       const formData = new FormData();
       formData.append('pdf', file);
       
-      // Call the edge function to extract text
-      const { data, error } = await supabase.functions.invoke('parse-pdf-content', {
+      // Call the new AI-powered edge function
+      const { data, error } = await supabase.functions.invoke('ai-pdf-reader', {
         body: formData
       });
       
       if (error) {
-        throw new Error(error.message || 'Failed to process PDF');
+        throw new Error(error.message || 'Failed to process PDF with AI');
       }
       
       if (!data.success) {
-        throw new Error(data.error || 'Failed to extract text from PDF');
+        throw new Error(data.error || 'Failed to extract text from PDF using AI');
       }
       
-      console.log('PDF processing successful, extracted text length:', data.text.length);
+      console.log('AI PDF processing successful, extracted text length:', data.text.length);
       
-      // Call the callback with the extracted text
+      // Call the callback with the AI-extracted text
       onFileUpload(data.text, file.name);
       
       toast({
-        title: "PDF uploaded successfully",
-        description: `Extracted text from ${file.name}. You can now choose to keep it as-is or have AI rewrite it.`
+        title: "PDF processed successfully",
+        description: `AI has extracted and cleaned the content from ${file.name}. You can now choose to keep it as-is or have AI rewrite it.`,
+        duration: 5000
       });
       
     } catch (error) {
-      console.error('Error processing PDF:', error);
+      console.error('Error processing PDF with AI:', error);
       toast({
         title: "Error processing PDF",
         description: error.message || "Please try again or enter the job description manually.",
@@ -105,8 +106,8 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
     return (
       <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded text-sm">
         <div className="flex items-center gap-2">
-          <FileText className="w-3 h-3 text-green-600" />
-          <span className="text-green-800 font-medium">PDF content extracted successfully</span>
+          <Brain className="w-3 h-3 text-green-600" />
+          <span className="text-green-800 font-medium">PDF content extracted with AI</span>
         </div>
         <Button
           variant="ghost"
@@ -131,8 +132,8 @@ export const PdfUpload = ({ onFileUpload, onRemove, uploadedFile }: PdfUploadPro
     >
       {isProcessing ? (
         <div className="flex items-center justify-center gap-2">
-          <div className="animate-spin rounded-full h-3 w-3 border-b border-purple-600"></div>
-          <span className="text-xs text-gray-600">Extracting text from PDF...</span>
+          <Brain className="w-3 h-3 text-purple-600 animate-pulse" />
+          <span className="text-xs text-gray-600">AI is reading your PDF...</span>
         </div>
       ) : (
         <div className="flex items-center justify-center gap-2">
