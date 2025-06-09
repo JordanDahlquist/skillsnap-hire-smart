@@ -24,7 +24,7 @@ export const ApplicationTabs = ({
 
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
+      <TabsList className={`grid w-full grid-cols-2 ${hasSkillsTest ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
         <TabsTrigger value="overview" className="flex items-center gap-1">
           <User className="w-3 h-3" />
           Overview
@@ -45,7 +45,7 @@ export const ApplicationTabs = ({
         </TabsTrigger>
         <TabsTrigger value="files" className="flex items-center gap-1">
           <FileText className="w-3 h-3" />
-          Files
+          Resume
         </TabsTrigger>
       </TabsList>
 
@@ -216,7 +216,7 @@ export const ApplicationTabs = ({
       <TabsContent value="files" className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Uploaded Files</CardTitle>
+            <CardTitle className="text-sm">Resume</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {application.resume_file_path ? (
@@ -234,7 +234,7 @@ export const ApplicationTabs = ({
               </div>
             ) : (
               <p className="text-sm text-gray-500 text-center py-4">
-                No files uploaded
+                No resume uploaded
               </p>
             )}
           </CardContent>
