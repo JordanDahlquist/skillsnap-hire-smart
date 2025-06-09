@@ -41,6 +41,11 @@ function App() {
                 <Dashboard />
               </AuthGuard>
             } />
+            <Route path="/dashboard/:jobId" element={
+              <AuthGuard>
+                <Dashboard />
+              </AuthGuard>
+            } />
             <Route path="/inbox" element={
               <AuthGuard>
                 <Inbox />
