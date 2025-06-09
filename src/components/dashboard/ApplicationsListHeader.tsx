@@ -81,7 +81,79 @@ export const ApplicationsListHeader = memo(({
         </div>
       )}
 
-      {/* Selection Controls / Bulk Actions */}
+      {/* Bulk Actions Row (when items selected) */}
+      {hasSelection && onSelectApplications && (
+        <div className="mb-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Email Button */}
+            <Button 
+              size="sm"
+              onClick={onSendEmail}
+              disabled={isLoading}
+              className="bg-blue-600 hover:bg-blue-700 text-white gap-2 flex-shrink-0"
+            >
+              <Mail className="w-4 h-4" />
+              Email
+            </Button>
+
+            {/* Rating Buttons Group */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {[1, 2, 3].map((rating) => (
+                <Button
+                  key={rating}
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onSetRating?.(rating)}
+                  disabled={isLoading}
+                  className="gap-1 hover:bg-yellow-50 hover:border-yellow-300 min-w-[3rem]"
+                  title={`Set ${rating} star rating`}
+                >
+                  <span className="text-sm">{rating}</span>
+                  <span className="text-yellow-400">⭐</span>
+                </Button>
+              ))}
+            </div>
+
+            {/* Stage Dropdown */}
+            {jobId && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={isLoading} 
+                    className="gap-2 flex-shrink-0"
+                  >
+                    Stage
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <BulkStageSelector 
+                    jobId={jobId} 
+                    onStageChange={onMoveToStage}
+                    disabled={isLoading}
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Reject Button */}
+            <Button 
+              size="sm"
+              variant="destructive"
+              onClick={onReject}
+              disabled={isLoading}
+              className="gap-2 flex-shrink-0"
+            >
+              <X className="w-4 h-4" />
+              Reject
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Selection Controls Row */}
       {onSelectApplications && (
         <div className="flex items-center justify-between">
           {!hasSelection ? (
@@ -97,89 +169,20 @@ export const ApplicationsListHeader = memo(({
               </span>
             </div>
           ) : (
-            // Bulk Actions (when items selected)
-            <>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="text-sm font-medium">
-                  {selectedApplications.length} selected
-                </Badge>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearSelection}
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  Clear
-                </Button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {/* Email Button */}
-                <Button 
-                  size="sm"
-                  onClick={onSendEmail}
-                  disabled={isLoading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
-                >
-                  <Mail className="w-4 h-4" />
-                  Email
-                </Button>
-
-                {/* Rating Buttons */}
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3].map((rating) => (
-                    <Button
-                      key={rating}
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onSetRating?.(rating)}
-                      disabled={isLoading}
-                      className="gap-1 hover:bg-yellow-50 hover:border-yellow-300"
-                      title={`Set ${rating} star rating`}
-                    >
-                      <span className="text-sm">{rating}</span>
-                      <span className="text-yellow-400">⭐</span>
-                    </Button>
-                  ))}
-                </div>
-
-                {/* Stage Dropdown */}
-                {jobId && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        disabled={isLoading} 
-                        className="gap-2"
-                      >
-                        Stage
-                        <ChevronDown className="w-3 h-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <BulkStageSelector 
-                        jobId={jobId} 
-                        onStageChange={onMoveToStage}
-                        disabled={isLoading}
-                      />
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-
-                {/* Reject Button */}
-                <Button 
-                  size="sm"
-                  variant="destructive"
-                  onClick={onReject}
-                  disabled={isLoading}
-                  className="gap-2"
-                >
-                  <X className="w-4 h-4" />
-                  Reject
-                </Button>
-              </div>
-            </>
+            // Selection Count and Clear (when items selected)
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="text-sm font-medium">
+                {selectedApplications.length} selected
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearSelection}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                Clear
+              </Button>
+            </div>
           )}
         </div>
       )}
