@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Edit3 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Edit3, SkipForward } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,10 +38,15 @@ export const Step3SkillsTestGenerator = ({
       {!generatedSkillsTest ? (
         <Card className="h-full">
           <CardHeader className="pb-3 flex-shrink-0">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Sparkles className="w-5 h-5 text-blue-600" />
-              Skills Assessment Generator
-            </CardTitle>
+            <div className="flex items-center gap-2 mb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="w-5 h-5 text-blue-600" />
+                Skills Assessment Generator
+              </CardTitle>
+              <Badge variant="outline" className="text-xs text-gray-600 bg-gray-50">
+                Optional
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent className="flex-1 flex items-center justify-center">
             <div className="text-center max-w-md">
@@ -51,17 +57,31 @@ export const Step3SkillsTestGenerator = ({
                 Create Skills Assessment
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Generate targeted assessment questions based on your job post to evaluate candidate skills effectively
+                Generate targeted assessment questions based on your job post to evaluate candidate skills effectively. This step is optional - you can skip it and proceed directly to publishing your job.
               </p>
-              <Button 
-                onClick={onGenerateSkillsTest}
-                disabled={isGenerating || !generatedJobPost}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                size="default"
-              >
-                {isGenerating ? 'Generating...' : 'Generate Skills Test'}
-                <Sparkles className="w-4 h-4 ml-2" />
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button 
+                  onClick={onGenerateSkillsTest}
+                  disabled={isGenerating || !generatedJobPost}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  size="default"
+                >
+                  {isGenerating ? 'Generating...' : 'Generate Skills Test'}
+                  <Sparkles className="w-4 h-4 ml-2" />
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => actions.setCurrentStep(4)}
+                  className="text-gray-600 hover:text-gray-800"
+                  size="default"
+                >
+                  <SkipForward className="w-4 h-4 mr-2" />
+                  Skip Skills Test
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">
+                You can always add a skills test later after publishing your job
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -69,10 +89,15 @@ export const Step3SkillsTestGenerator = ({
         <Card className="h-full flex flex-col overflow-hidden">
           <CardHeader className="pb-3 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Sparkles className="w-5 h-5 text-blue-600" />
-                Generated Skills Test
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="w-5 h-5 text-blue-600" />
+                  Generated Skills Test
+                </CardTitle>
+                <Badge variant="outline" className="text-xs text-gray-600 bg-gray-50">
+                  Optional
+                </Badge>
+              </div>
               {!isEditingSkillsTest && (
                 <Button 
                   variant="outline" 
