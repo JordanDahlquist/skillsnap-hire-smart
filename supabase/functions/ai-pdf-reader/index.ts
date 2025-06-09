@@ -7,16 +7,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Improved PDF text extraction with better quality validation
-function extractTextFromPDF(pdfBuffer: Uint8Array): string {
+// Enhanced PDF text extraction using multiple methods
+async function extractTextFromPDF(pdfBuffer: Uint8Array): Promise<string> {
   try {
-    console.log('Starting enhanced PDF text extraction, buffer size:', pdfBuffer.length);
+    console.log('Starting PDF text extraction, buffer size:', pdfBuffer.length);
     
+    // Method 1: Try to use a more reliable PDF parsing approach
+    let extractedText = await tryAdvancedPDFExtraction(pdfBuffer);
+    
+    // Method 2: Fallback to basic extraction if advanced fails
+    if (!extractedText || !isQualityText(extractedText)) {
+      console.log('Advanced extraction failed, trying basic method');
+      extractedText = tryBasicPDFExtraction(pdfBuffer);
+    }
+    
+    if (!extractedText || !isQualityText(extractedText)) {
+      throw new Error('Could not extract readable text from this PDF. This may be an image-based PDF or use an unsupported format.');
+    }
+    
+    return cleanExtractedText(extractedText);
+    
+  } catch (error) {
+    console.error('PDF extraction error:', error);
+    throw error;
+  }
+}
+
+// Advanced PDF extraction method
+async function tryAdvancedPDFExtraction(pdfBuffer: Uint8Array): Promise<string> {
+  try {
     const pdfString = new TextDecoder('latin1').decode(pdfBuffer);
     let extractedText = '';
     
-    // Method 1: Enhanced BT...ET text block extraction
-    console.log('Attempting Method 1: Enhanced BT...ET text blocks');
+    // Look for text content in a more structured way
+    console.log('Attempting advanced PDF text extraction');
+    
+    // Method 1: Extract from text objects with better parsing
     const textObjectRegex = /BT\s+(.*?)\s+ET/gs;
     const textObjects = pdfString.match(textObjectRegex);
     
@@ -24,14 +50,14 @@ function extractTextFromPDF(pdfBuffer: Uint8Array): string {
       console.log(`Found ${textObjects.length} text objects`);
       
       for (const textObj of textObjects) {
-        // Extract text showing commands with better parsing
-        const showTextRegex = /\(((?:[^\\()]|\\.|\\[0-7]{1,3})*)\)\s*Tj/g;
-        const arrayTextRegex = /\[((?:[^\[\]]|\[[^\]]*\])*)\]\s*TJ/g;
+        // Extract text showing commands
+        const tjRegex = /\(((?:[^()]|\([^)]*\))*)\)\s*Tj/g;
+        const tjArrayRegex = /\[((?:[^\[\]]|\[[^\]]*\])*)\]\s*TJ/g;
         
         let match;
         
         // Process Tj commands
-        while ((match = showTextRegex.exec(textObj)) !== null) {
+        while ((match = tjRegex.exec(textObj)) !== null) {
           const text = decodeTextString(match[1]);
           if (text && isReadableText(text)) {
             extractedText += text + ' ';
@@ -39,9 +65,9 @@ function extractTextFromPDF(pdfBuffer: Uint8Array): string {
         }
         
         // Process TJ array commands
-        while ((match = arrayTextRegex.exec(textObj)) !== null) {
+        while ((match = tjArrayRegex.exec(textObj)) !== null) {
           const arrayContent = match[1];
-          const textParts = arrayContent.match(/\(((?:[^\\()]|\\.|\\[0-7]{1,3})*)\)/g);
+          const textParts = arrayContent.match(/\(((?:[^()]|\([^)]*\))*)\)/g);
           if (textParts) {
             for (const part of textParts) {
               const text = decodeTextString(part.slice(1, -1));
@@ -54,31 +80,38 @@ function extractTextFromPDF(pdfBuffer: Uint8Array): string {
       }
     }
     
-    // Method 2: Stream content analysis with improved filtering
-    if (!isQualityText(extractedText)) {
-      console.log('Method 1 produced poor quality, attempting Method 2: Stream analysis');
-      extractedText = '';
+    return extractedText;
+  } catch (error) {
+    console.warn('Advanced extraction failed:', error);
+    return '';
+  }
+}
+
+// Basic PDF extraction as fallback
+function tryBasicPDFExtraction(pdfBuffer: Uint8Array): string {
+  try {
+    console.log('Attempting basic PDF text extraction');
+    const pdfString = new TextDecoder('latin1').decode(pdfBuffer);
+    let extractedText = '';
+    
+    // Look for content streams
+    const streamRegex = /stream\s+(.*?)\s+endstream/gs;
+    const streams = pdfString.match(streamRegex);
+    
+    if (streams) {
+      console.log(`Found ${streams.length} content streams`);
       
-      // Look for content streams
-      const streamRegex = /stream\s+(.*?)\s+endstream/gs;
-      const streams = pdfString.match(streamRegex);
-      
-      if (streams) {
-        console.log(`Found ${streams.length} content streams`);
+      for (const stream of streams) {
+        const lines = stream.split(/[\r\n]+/);
         
-        for (const stream of streams) {
-          const lines = stream.split(/[\r\n]+/);
-          
-          for (const line of lines) {
-            // Look for text content patterns
-            if (line.includes('(') && line.includes(')')) {
-              const textMatches = line.match(/\(((?:[^\\()]|\\.|\\[0-7]{1,3})*)\)/g);
-              if (textMatches) {
-                for (const match of textMatches) {
-                  const text = decodeTextString(match.slice(1, -1));
-                  if (text && isReadableText(text)) {
-                    extractedText += text + ' ';
-                  }
+        for (const line of lines) {
+          if (line.includes('(') && line.includes(')')) {
+            const textMatches = line.match(/\(((?:[^()]|\([^)]*\))*)\)/g);
+            if (textMatches) {
+              for (const match of textMatches) {
+                const text = decodeTextString(match.slice(1, -1));
+                if (text && isReadableText(text)) {
+                  extractedText += text + ' ';
                 }
               }
             }
@@ -87,44 +120,14 @@ function extractTextFromPDF(pdfBuffer: Uint8Array): string {
       }
     }
     
-    // Method 3: Direct text pattern search as last resort
-    if (!isQualityText(extractedText)) {
-      console.log('Method 2 failed, attempting Method 3: Direct text patterns');
-      extractedText = '';
-      
-      // Look for common English words and patterns
-      const wordPattern = /\b[A-Za-z]{2,}\b/g;
-      const potentialText = pdfString.match(wordPattern);
-      
-      if (potentialText && potentialText.length > 10) {
-        // Filter and join words that form coherent text
-        const filteredWords = potentialText.filter(word => 
-          word.length > 2 && 
-          !/^[A-Z]+$/.test(word) && // Skip all caps technical terms
-          !/^\d+$/.test(word) // Skip pure numbers
-        );
-        
-        if (filteredWords.length > 20) {
-          extractedText = filteredWords.join(' ');
-        }
-      }
-    }
-    
-    // Final quality check
-    if (!isQualityText(extractedText)) {
-      throw new Error('Could not extract readable text from PDF. The PDF may be image-based, encrypted, or use an unsupported format.');
-    }
-    
-    console.log(`Successfully extracted ${extractedText.length} characters`);
-    return cleanExtractedText(extractedText);
-    
+    return extractedText;
   } catch (error) {
-    console.error('PDF extraction error:', error);
-    throw error;
+    console.warn('Basic extraction failed:', error);
+    return '';
   }
 }
 
-// Enhanced text decoding with better escape sequence handling
+// Improved text decoding
 function decodeTextString(text: string): string {
   try {
     let decoded = text;
@@ -143,12 +146,6 @@ function decodeTextString(text: string): string {
     // Handle octal escape sequences
     decoded = decoded.replace(/\\([0-7]{1,3})/g, (match, octal) => {
       const charCode = parseInt(octal, 8);
-      return (charCode >= 32 && charCode <= 126) ? String.fromCharCode(charCode) : ' ';
-    });
-    
-    // Handle hexadecimal escape sequences
-    decoded = decoded.replace(/\\x([0-9A-Fa-f]{2})/g, (match, hex) => {
-      const charCode = parseInt(hex, 16);
       return (charCode >= 32 && charCode <= 126) ? String.fromCharCode(charCode) : ' ';
     });
     
@@ -172,30 +169,30 @@ function isReadableText(text: string): boolean {
 
 // Validate if extracted text is of good quality
 function isQualityText(text: string): boolean {
-  if (!text || text.trim().length < 50) return false;
+  if (!text || text.trim().length < 20) return false;
   
   const trimmed = text.trim();
   
   // Check for minimum word count
   const words = trimmed.split(/\s+/).filter(word => /^[a-zA-Z]+$/.test(word));
-  if (words.length < 10) return false;
+  if (words.length < 5) return false;
   
   // Check for readable character ratio
   const readableChars = (trimmed.match(/[a-zA-Z0-9\s.,!?;:()\-'"]/g) || []).length;
   const readableRatio = readableChars / trimmed.length;
   
-  if (readableRatio < 0.8) return false;
+  if (readableRatio < 0.7) return false;
   
   // Check for common English words
-  const commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'will', 'would', 'could', 'should'];
+  const commonWords = ['the', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'is', 'are', 'be', 'have', 'has', 'will', 'would'];
   const foundCommonWords = words.filter(word => 
     commonWords.includes(word.toLowerCase())
   ).length;
   
-  return foundCommonWords >= 3;
+  return foundCommonWords >= 2;
 }
 
-// Enhanced text cleaning
+// Clean extracted text
 function cleanExtractedText(extractedText: string): string {
   console.log('Cleaning extracted text, original length:', extractedText.length);
   
@@ -207,7 +204,7 @@ function cleanExtractedText(extractedText: string): string {
   // Split into sentences and clean each one
   const sentences = cleanText.split(/[.!?]+/)
     .map(sentence => sentence.trim())
-    .filter(sentence => sentence.length > 10 && isReadableText(sentence))
+    .filter(sentence => sentence.length > 5 && isReadableText(sentence))
     .map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1));
   
   cleanText = sentences.join('. ');
@@ -218,68 +215,6 @@ function cleanExtractedText(extractedText: string): string {
   
   console.log('Cleaned text length:', cleanText.length);
   return cleanText;
-}
-
-// Enhanced AI text cleaning with quality focus
-async function cleanTextWithAI(rawText: string, fileName: string): Promise<string> {
-  const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-  
-  if (!openAIApiKey) {
-    console.log('No OpenAI API key found, skipping AI cleanup');
-    return rawText;
-  }
-
-  try {
-    console.log('Attempting AI text cleanup and validation');
-    
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert at cleaning up and validating text extracted from PDF documents. Your task is to take extracted text and make it clean, readable, and properly formatted while preserving ALL original content. If the text appears to be gibberish or corrupted, respond with "EXTRACTION_FAILED" instead of trying to fix it.'
-          },
-          {
-            role: 'user',
-            content: `Please clean up this text extracted from PDF file "${fileName}". If this text appears to be mostly gibberish, corrupted data, or unreadable characters, respond with exactly "EXTRACTION_FAILED". Otherwise, clean and format it properly:\n\n${rawText.substring(0, 2000)}`
-          }
-        ],
-        max_tokens: 3000,
-        temperature: 0.1
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.warn('AI cleanup API error:', response.status, errorText);
-      return rawText;
-    }
-
-    const data = await response.json();
-    const cleanedText = data.choices[0]?.message?.content?.trim();
-    
-    if (cleanedText === 'EXTRACTION_FAILED') {
-      throw new Error('AI detected that the extracted text is corrupted or unreadable');
-    }
-    
-    if (cleanedText && cleanedText.length > 0 && isQualityText(cleanedText)) {
-      console.log('AI cleanup successful');
-      return cleanedText;
-    } else {
-      console.warn('AI cleanup returned poor quality result');
-      return rawText;
-    }
-
-  } catch (error) {
-    console.warn('AI cleanup error:', error);
-    return rawText;
-  }
 }
 
 // Enhanced file validation
@@ -303,7 +238,7 @@ function validatePDFFile(file: File): { valid: boolean; error?: string; errorCod
   }
 
   if (file.size < 100) {
-    return { valid: false, error: 'File appears to be too small to contain meaningful content', errorCode: 'FILE_TOO_SMALL' };
+    return { valid: false, error: 'File appears to be too small', errorCode: 'FILE_TOO_SMALL' };
   }
   
   return { valid: true };
@@ -316,12 +251,12 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Enhanced PDF processing request received ===');
+    console.log('=== PDF processing request received ===');
     
     const formData = await req.formData();
     const pdfFile = formData.get('pdf') as File;
     
-    // Enhanced validation
+    // Validate file
     const validation = validatePDFFile(pdfFile);
     if (!validation.valid) {
       console.error('File validation failed:', validation.error);
@@ -329,7 +264,8 @@ serve(async (req) => {
         JSON.stringify({ 
           success: false, 
           error: validation.error,
-          errorCode: validation.errorCode || 'VALIDATION_ERROR'
+          errorCode: validation.errorCode || 'VALIDATION_ERROR',
+          canRetry: false
         }),
         { 
           status: 400,
@@ -338,32 +274,43 @@ serve(async (req) => {
       );
     }
     
-    console.log(`Processing PDF: ${pdfFile.name}, size: ${pdfFile.size} bytes, type: ${pdfFile.type}`);
+    console.log(`Processing PDF: ${pdfFile.name}, size: ${pdfFile.size} bytes`);
     
     // Convert file to buffer
     const arrayBuffer = await pdfFile.arrayBuffer();
     const pdfBuffer = new Uint8Array(arrayBuffer);
     
-    console.log('PDF buffer created, attempting enhanced text extraction');
-    
-    // Extract text with enhanced quality validation
-    let rawText: string;
+    // Extract text
+    let extractedText: string;
     try {
-      rawText = extractTextFromPDF(pdfBuffer);
+      extractedText = await extractTextFromPDF(pdfBuffer);
     } catch (extractionError) {
       console.error('Text extraction failed:', extractionError);
+      
+      // Provide helpful error message based on common issues
+      let errorMessage = 'Could not extract text from this PDF.';
+      let suggestions: string[] = [];
+      
+      if (pdfFile.size < 5000) {
+        errorMessage = 'This PDF appears to be very small and may not contain much text content.';
+        suggestions = ['Try a PDF with more content', 'Manually enter the job description'];
+      } else {
+        errorMessage = 'This PDF may be image-based (scanned) or use an unsupported format.';
+        suggestions = [
+          'Try a text-based PDF with selectable text',
+          'Use "Save as PDF" instead of scanning',
+          'Manually copy and paste the text below'
+        ];
+      }
+      
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: extractionError.message || 'Could not extract readable text from PDF',
+          error: errorMessage,
           errorCode: 'EXTRACTION_FAILED',
-          suggestions: [
-            'The PDF may be image-based (scanned document) - try using OCR software first',
-            'The PDF may be password protected or encrypted',
-            'The PDF may use an unsupported format or encoding',
-            'Try manually copying and pasting the text instead',
-            'Consider converting the PDF to a text-based format'
-          ]
+          suggestions,
+          canRetry: true,
+          fileName: pdfFile.name
         }),
         { 
           status: 400,
@@ -372,14 +319,19 @@ serve(async (req) => {
       );
     }
     
-    if (!rawText || rawText.length < 20) {
-      console.error('Insufficient text extracted:', rawText?.length || 0, 'characters');
+    if (!extractedText || extractedText.length < 10) {
+      console.error('Insufficient text extracted');
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'The PDF appears to contain no readable text or only minimal content. This might be an image-based PDF or contain mostly graphics.',
+          error: 'The PDF contains no readable text or very little content.',
           errorCode: 'INSUFFICIENT_TEXT',
-          extractedLength: rawText?.length || 0
+          suggestions: [
+            'This may be an image-based PDF',
+            'Try a different PDF file',
+            'Manually enter the job description'
+          ],
+          canRetry: true
         }),
         { 
           status: 400,
@@ -388,41 +340,15 @@ serve(async (req) => {
       );
     }
     
-    console.log(`Successfully extracted ${rawText.length} characters of quality text`);
-    
-    // Enhanced AI text cleaning with quality validation
-    const finalText = await cleanTextWithAI(rawText, pdfFile.name);
-    
-    // Final quality check
-    if (!isQualityText(finalText)) {
-      console.error('Final text quality check failed');
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'The extracted text appears to be corrupted or unreadable. This PDF may not be suitable for automatic text extraction.',
-          errorCode: 'POOR_QUALITY_TEXT',
-          extractedSample: finalText.substring(0, 200) + '...'
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-    
-    console.log(`=== PDF processing completed successfully ===`);
-    console.log(`Final text length: ${finalText.length} characters`);
-    console.log(`Text quality: High`);
+    console.log(`Successfully extracted ${extractedText.length} characters`);
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        text: finalText,
+        text: extractedText,
         fileName: pdfFile.name,
-        method: 'enhanced-quality-extraction',
-        extractedLength: finalText.length,
-        qualityScore: 'high',
-        processingSteps: ['validation', 'enhanced-extraction', 'quality-check', 'ai-cleanup']
+        extractedLength: extractedText.length,
+        qualityScore: 'good'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -432,13 +358,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('=== PDF processing error ===');
     console.error('Error details:', error);
-    console.error('Error stack:', error.stack);
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'An unexpected error occurred while processing the PDF',
-        errorCode: 'PROCESSING_ERROR'
+        error: 'An unexpected error occurred while processing the PDF',
+        errorCode: 'PROCESSING_ERROR',
+        canRetry: true
       }),
       { 
         status: 500,
