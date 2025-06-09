@@ -102,18 +102,24 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
 
     setIsGenerating(true);
     try {
+      // Enhanced data payload with all form fields and debugging
+      const jobDataPayload = {
+        title: formData.title,
+        employmentType: formData.employmentType, // Fixed: using employmentType consistently
+        experienceLevel: formData.experienceLevel,
+        duration: formData.duration,
+        budget: formData.budget,
+        skills: formData.skills,
+        location: formData.location, // Added: location was missing
+        description: formData.description
+      };
+
+      console.log('Sending job data to AI:', jobDataPayload);
+
       const { data, error } = await supabase.functions.invoke('generate-job-content', {
         body: {
           type: 'job-post',
-          jobData: {
-            title: formData.title,
-            employmentType: formData.employmentType,
-            experience: formData.experienceLevel,
-            duration: formData.duration,
-            budget: formData.budget,
-            skills: formData.skills,
-            description: formData.description
-          }
+          jobData: jobDataPayload
         }
       });
 
@@ -127,6 +133,7 @@ export const JobCreatorPanel = ({ open, onOpenChange }: JobCreatorPanelProps) =>
           : "Your AI-powered job posting is ready for review."
       });
     } catch (error) {
+      console.error('Error generating job post:', error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate job post. Please try again.",

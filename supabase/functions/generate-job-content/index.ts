@@ -20,20 +20,32 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured')
     }
 
+    console.log('Received job data:', JSON.stringify(jobData, null, 2))
+
     if (type === 'job-post') {
-      // Generate job post only
+      // Generate job post only - Fixed data mapping
       const jobPostPrompt = `Create a compelling job posting for a ${jobData.title} position. 
 
 Role details:
 - Title: ${jobData.title}
-- Type: ${jobData.roleType}
-- Experience: ${jobData.experience}
-- Duration: ${jobData.duration}
-- Budget: ${jobData.budget}
-- Required skills: ${jobData.skills}
+- Employment Type: ${jobData.employmentType} (IMPORTANT: This must be reflected accurately in the job posting)
+- Experience Level: ${jobData.experienceLevel}
+- Duration: ${jobData.duration || 'Not specified'}
+- Budget: ${jobData.budget || 'Not specified'}
+- Location: ${jobData.location || 'Not specified'}
+- Required skills: ${jobData.skills || 'Not specified'}
 - Description: ${jobData.description}
 
-Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates.`
+CRITICAL INSTRUCTIONS:
+1. The employment type is ${jobData.employmentType} - make sure this is clearly stated and reflected throughout the job posting
+2. If employment type is "full-time", this is a permanent full-time employee position, NOT freelance or contract work
+3. If employment type is "part-time", this is a part-time employee position
+4. If employment type is "contract", this is contract/freelance work
+5. If employment type is "project", this is project-based work
+
+Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates for a ${jobData.employmentType} position.`
+
+      console.log('Using prompt:', jobPostPrompt)
 
       const jobPostResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -46,7 +58,7 @@ Format as a professional job posting with sections for responsibilities, require
           messages: [
             {
               role: 'system',
-              content: 'You are an expert recruiter creating compelling job postings.'
+              content: 'You are an expert recruiter creating compelling job postings. Pay close attention to the employment type specified and ensure it is accurately reflected in the job posting.'
             },
             {
               role: 'user',
@@ -60,6 +72,8 @@ Format as a professional job posting with sections for responsibilities, require
 
       const jobPostData = await jobPostResponse.json()
       const generatedJobPost = jobPostData.choices[0].message.content
+
+      console.log('Generated job post preview:', generatedJobPost.substring(0, 200) + '...')
 
       return new Response(
         JSON.stringify({
@@ -120,19 +134,27 @@ Make questions specific to the role requirements mentioned in the job posting. I
         },
       )
     } else {
-      // Legacy: Generate both (for backward compatibility)
+      // Legacy: Generate both (for backward compatibility) - Fixed data mapping
       const jobPostPrompt = `Create a compelling job posting for a ${jobData.title} position. 
 
 Role details:
 - Title: ${jobData.title}
-- Type: ${jobData.roleType}
-- Experience: ${jobData.experience}
-- Duration: ${jobData.duration}
-- Budget: ${jobData.budget}
-- Required skills: ${jobData.skills}
+- Employment Type: ${jobData.employmentType} (IMPORTANT: This must be reflected accurately in the job posting)
+- Experience Level: ${jobData.experienceLevel}
+- Duration: ${jobData.duration || 'Not specified'}
+- Budget: ${jobData.budget || 'Not specified'}
+- Location: ${jobData.location || 'Not specified'}
+- Required skills: ${jobData.skills || 'Not specified'}
 - Description: ${jobData.description}
 
-Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates.`
+CRITICAL INSTRUCTIONS:
+1. The employment type is ${jobData.employmentType} - make sure this is clearly stated and reflected throughout the job posting
+2. If employment type is "full-time", this is a permanent full-time employee position, NOT freelance or contract work
+3. If employment type is "part-time", this is a part-time employee position
+4. If employment type is "contract", this is contract/freelance work
+5. If employment type is "project", this is project-based work
+
+Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates for a ${jobData.employmentType} position.`
 
       const jobPostResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -145,7 +167,7 @@ Format as a professional job posting with sections for responsibilities, require
           messages: [
             {
               role: 'system',
-              content: 'You are an expert recruiter creating compelling job postings.'
+              content: 'You are an expert recruiter creating compelling job postings. Pay close attention to the employment type specified and ensure it is accurately reflected in the job posting.'
             },
             {
               role: 'user',
@@ -165,9 +187,9 @@ Format as a professional job posting with sections for responsibilities, require
 
 Role details:
 - Title: ${jobData.title}
-- Type: ${jobData.roleType}
-- Experience: ${jobData.experience}
-- Required skills: ${jobData.skills}
+- Employment Type: ${jobData.employmentType}
+- Experience Level: ${jobData.experienceLevel}
+- Required skills: ${jobData.skills || 'Not specified'}
 - Description: ${jobData.description}
 
 Create 3 questions:
