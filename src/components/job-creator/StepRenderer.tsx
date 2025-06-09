@@ -2,7 +2,8 @@
 import { Step1BasicInfo } from "./Step1BasicInfo";
 import { Step2JobPostGenerator } from "./Step2JobPostGenerator";
 import { Step3SkillsTestGenerator } from "./Step3SkillsTestGenerator";
-import { Step4ReviewPublish } from "./Step4ReviewPublish";
+import { Step4InterviewGenerator } from "./Step4InterviewGenerator";
+import { Step5ReviewPublish } from "./Step5ReviewPublish";
 import { JobCreatorState, JobCreatorActions } from "./types";
 
 interface StepRendererProps {
@@ -11,6 +12,7 @@ interface StepRendererProps {
   actions: JobCreatorActions;
   onGenerateJobPost: () => Promise<void>;
   onGenerateSkillsTest: () => Promise<void>;
+  onGenerateInterviewQuestions: () => Promise<void>;
 }
 
 export const StepRenderer = ({
@@ -18,7 +20,8 @@ export const StepRenderer = ({
   state,
   actions,
   onGenerateJobPost,
-  onGenerateSkillsTest
+  onGenerateSkillsTest,
+  onGenerateInterviewQuestions
 }: StepRendererProps) => {
   switch (currentStep) {
     case 1:
@@ -54,12 +57,26 @@ export const StepRenderer = ({
       );
     case 4:
       return (
-        <Step4ReviewPublish
+        <Step4InterviewGenerator
+          generatedJobPost={state.generatedJobPost}
+          generatedInterviewQuestions={state.generatedInterviewQuestions}
+          interviewVideoMaxLength={state.interviewVideoMaxLength}
+          isGenerating={state.isGenerating}
+          isEditingInterviewQuestions={state.isEditingInterviewQuestions}
+          actions={actions}
+          onGenerateInterviewQuestions={onGenerateInterviewQuestions}
+        />
+      );
+    case 5:
+      return (
+        <Step5ReviewPublish
           formData={state.formData}
           pdfFileName={null}
           useOriginalPdf={null}
           generatedJobPost={state.generatedJobPost}
           generatedSkillsTest={state.generatedSkillsTest}
+          generatedInterviewQuestions={state.generatedInterviewQuestions}
+          interviewVideoMaxLength={state.interviewVideoMaxLength}
           actions={actions}
         />
       );

@@ -9,7 +9,8 @@ import {
 } from "./types";
 import { 
   generateJobPost, 
-  generateSkillsTest, 
+  generateSkillsTest,
+  generateInterviewQuestions,
   saveJob, 
   getInitialFormData 
 } from "./utils";
@@ -25,8 +26,11 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
     formData: getInitialFormData(),
     generatedJobPost: "",
     generatedSkillsTest: "",
+    generatedInterviewQuestions: "",
+    interviewVideoMaxLength: 5,
     isEditingJobPost: false,
     isEditingSkillsTest: false,
+    isEditingInterviewQuestions: false,
   });
 
   const actions: JobCreatorActions = {
@@ -39,6 +43,10 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
       setState(prev => ({ ...prev, generatedJobPost: content })),
     setGeneratedSkillsTest: (content: string) => 
       setState(prev => ({ ...prev, generatedSkillsTest: content })),
+    setGeneratedInterviewQuestions: (content: string) => 
+      setState(prev => ({ ...prev, generatedInterviewQuestions: content })),
+    setInterviewVideoMaxLength: (length: number) => 
+      setState(prev => ({ ...prev, interviewVideoMaxLength: length })),
     setIsEditingJobPost: (editing: boolean) => 
       setState(prev => ({ 
         ...prev, 
@@ -50,6 +58,12 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
         ...prev, 
         isEditingSkillsTest: editing,
         currentStep: editing ? 3 : prev.currentStep
+      })),
+    setIsEditingInterviewQuestions: (editing: boolean) => 
+      setState(prev => ({ 
+        ...prev, 
+        isEditingInterviewQuestions: editing,
+        currentStep: editing ? 4 : prev.currentStep
       })),
   };
 
@@ -104,6 +118,35 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
     }
   };
 
+  const handleGenerateInterviewQuestions = async () => {
+    if (!state.generatedJobPost) {
+      toast({
+        title: "Generate Job Post First",
+        description: "Please generate the job post before creating interview questions.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    actions.setIsGenerating(true);
+    try {
+      const data = await generateInterviewQuestions(
+        state.generatedJobPost, 
+        state.generatedSkillsTest,
+        state.formData
+      );
+      actions.setGeneratedInterviewQuestions(data.questions);
+    } catch (error) {
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate interview questions. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      actions.setIsGenerating(false);
+    }
+  };
+
   const handleSaveJob = async (status: 'draft' | 'active') => {
     if (!user?.id) return;
 
@@ -114,6 +157,8 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
         state.formData,
         state.generatedJobPost,
         state.generatedSkillsTest,
+        state.generatedInterviewQuestions,
+        state.interviewVideoMaxLength,
         status
       );
 
@@ -135,8 +180,11 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
         formData: getInitialFormData(),
         generatedJobPost: "",
         generatedSkillsTest: "",
+        generatedInterviewQuestions: "",
+        interviewVideoMaxLength: 5,
         isEditingJobPost: false,
         isEditingSkillsTest: false,
+        isEditingInterviewQuestions: false,
       });
     } catch (error) {
       toast({
@@ -154,6 +202,7 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
     actions,
     handleGenerateJobPost,
     handleGenerateSkillsTest,
+    handleGenerateInterviewQuestions,
     handleSaveJob
   };
 };

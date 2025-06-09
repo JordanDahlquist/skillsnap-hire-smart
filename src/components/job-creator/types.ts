@@ -17,8 +17,11 @@ export interface JobCreatorState {
   formData: JobFormData;
   generatedJobPost: string;
   generatedSkillsTest: string;
+  generatedInterviewQuestions: string;
+  interviewVideoMaxLength: number;
   isEditingJobPost: boolean;
   isEditingSkillsTest: boolean;
+  isEditingInterviewQuestions: boolean;
 }
 
 export interface JobCreatorActions {
@@ -28,8 +31,11 @@ export interface JobCreatorActions {
   updateFormData: (field: keyof JobFormData, value: string) => void;
   setGeneratedJobPost: (content: string) => void;
   setGeneratedSkillsTest: (content: string) => void;
+  setGeneratedInterviewQuestions: (content: string) => void;
+  setInterviewVideoMaxLength: (length: number) => void;
   setIsEditingJobPost: (editing: boolean) => void;
   setIsEditingSkillsTest: (editing: boolean) => void;
+  setIsEditingInterviewQuestions: (editing: boolean) => void;
 }
 
 export interface JobCreatorPanelProps {

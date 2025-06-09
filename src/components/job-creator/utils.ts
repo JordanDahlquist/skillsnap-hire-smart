@@ -51,11 +51,37 @@ export const generateSkillsTest = async (existingJobPost: string) => {
   return data;
 };
 
+export const generateInterviewQuestions = async (
+  existingJobPost: string, 
+  existingSkillsTest: string,
+  formData: JobFormData
+) => {
+  const { data, error } = await supabase.functions.invoke('generate-job-content', {
+    body: {
+      type: 'interview-questions',
+      existingJobPost,
+      existingSkillsTest,
+      jobData: {
+        title: formData.title,
+        employmentType: formData.employmentType,
+        experienceLevel: formData.experienceLevel,
+        skills: formData.skills,
+        description: formData.description
+      }
+    }
+  });
+
+  if (error) throw error;
+  return data;
+};
+
 export const saveJob = async (
   userId: string,
   formData: JobFormData,
   generatedJobPost: string,
   generatedSkillsTest: string,
+  generatedInterviewQuestions: string,
+  interviewVideoMaxLength: number,
   status: 'draft' | 'active'
 ) => {
   const { error } = await supabase
@@ -73,6 +99,8 @@ export const saveJob = async (
       location_type: formData.location,
       generated_job_post: generatedJobPost,
       generated_test: generatedSkillsTest,
+      generated_interview_questions: generatedInterviewQuestions,
+      interview_video_max_length: interviewVideoMaxLength,
       status: status
     });
 

@@ -24,6 +24,7 @@ export type Database = {
           experience: string | null
           github_url: string | null
           id: string
+          interview_video_url: string | null
           job_id: string
           linkedin_url: string | null
           location: string | null
@@ -55,6 +56,7 @@ export type Database = {
           experience?: string | null
           github_url?: string | null
           id?: string
+          interview_video_url?: string | null
           job_id: string
           linkedin_url?: string | null
           location?: string | null
@@ -86,6 +88,7 @@ export type Database = {
           experience?: string | null
           github_url?: string | null
           id?: string
+          interview_video_url?: string | null
           job_id?: string
           linkedin_url?: string | null
           location?: string | null
@@ -453,9 +456,11 @@ export type Database = {
           duration: string | null
           employment_type: string
           experience_level: string
+          generated_interview_questions: string | null
           generated_job_post: string | null
           generated_test: string | null
           id: string
+          interview_video_max_length: number | null
           location_type: string | null
           region: string | null
           required_skills: string
@@ -478,9 +483,11 @@ export type Database = {
           duration?: string | null
           employment_type?: string
           experience_level: string
+          generated_interview_questions?: string | null
           generated_job_post?: string | null
           generated_test?: string | null
           id?: string
+          interview_video_max_length?: number | null
           location_type?: string | null
           region?: string | null
           required_skills: string
@@ -503,9 +510,11 @@ export type Database = {
           duration?: string | null
           employment_type?: string
           experience_level?: string
+          generated_interview_questions?: string | null
           generated_job_post?: string | null
           generated_test?: string | null
           id?: string
+          interview_video_max_length?: number | null
           location_type?: string | null
           region?: string | null
           required_skills?: string

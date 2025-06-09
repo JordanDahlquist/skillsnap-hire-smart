@@ -7,6 +7,8 @@ interface NavigationFooterProps {
   totalSteps: number;
   canProceedToStep2: boolean;
   canProceedToStep3: boolean;
+  canProceedToStep4: boolean;
+  canProceedToStep5: boolean;
   canActivate: boolean;
   isSaving: boolean;
   onPrevStep: () => void;
@@ -19,12 +21,24 @@ export const NavigationFooter = ({
   totalSteps,
   canProceedToStep2,
   canProceedToStep3,
+  canProceedToStep4,
+  canProceedToStep5,
   canActivate,
   isSaving,
   onPrevStep,
   onNextStep,
   onSaveJob
 }: NavigationFooterProps) => {
+  const canProceedToNext = () => {
+    switch (currentStep) {
+      case 1: return canProceedToStep2;
+      case 2: return canProceedToStep3;
+      case 3: return canProceedToStep4;
+      case 4: return canProceedToStep5;
+      default: return false;
+    }
+  };
+
   return (
     <div className="flex justify-between items-center p-3 border-t bg-gray-50 flex-shrink-0">
       <Button 
@@ -62,11 +76,7 @@ export const NavigationFooter = ({
         ) : (
           <Button 
             onClick={onNextStep}
-            disabled={
-              (currentStep === 1 && !canProceedToStep2) ||
-              (currentStep === 2 && !canProceedToStep3) ||
-              currentStep === totalSteps
-            }
+            disabled={!canProceedToNext() || currentStep === totalSteps}
             size="sm"
           >
             Next

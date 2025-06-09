@@ -12,11 +12,12 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
     actions,
     handleGenerateJobPost,
     handleGenerateSkillsTest,
+    handleGenerateInterviewQuestions,
     handleSaveJob
   } = useJobCreatorLogic(onJobCreated, onOpenChange);
 
   const nextStep = () => {
-    if (state.currentStep < 4) actions.setCurrentStep(state.currentStep + 1);
+    if (state.currentStep < 5) actions.setCurrentStep(state.currentStep + 1);
   };
 
   const prevStep = () => {
@@ -25,7 +26,9 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
 
   const canProceedToStep2 = Boolean(state.formData.title && state.formData.description);
   const canProceedToStep3 = Boolean(state.generatedJobPost);
-  const canActivate = Boolean(state.generatedJobPost); // Only require job post, skills test is optional
+  const canProceedToStep4 = Boolean(state.generatedJobPost); // Can proceed to interview questions if job post exists
+  const canProceedToStep5 = Boolean(state.generatedJobPost); // Can proceed to review if job post exists
+  const canActivate = Boolean(state.generatedJobPost); // Only require job post
 
   if (!open) return null;
 
@@ -43,7 +46,7 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
         </div>
 
         {/* Step Indicator */}
-        <StepIndicator currentStep={state.currentStep} totalSteps={4} />
+        <StepIndicator currentStep={state.currentStep} totalSteps={5} />
 
         {/* Content Area */}
         <div className="flex-1 overflow-hidden p-3">
@@ -53,15 +56,18 @@ export const JobCreatorPanel = ({ open, onOpenChange, onJobCreated }: JobCreator
             actions={actions}
             onGenerateJobPost={handleGenerateJobPost}
             onGenerateSkillsTest={handleGenerateSkillsTest}
+            onGenerateInterviewQuestions={handleGenerateInterviewQuestions}
           />
         </div>
 
         {/* Navigation Footer */}
         <NavigationFooter
           currentStep={state.currentStep}
-          totalSteps={4}
+          totalSteps={5}
           canProceedToStep2={canProceedToStep2}
           canProceedToStep3={canProceedToStep3}
+          canProceedToStep4={canProceedToStep4}
+          canProceedToStep5={canProceedToStep5}
           canActivate={canActivate}
           isSaving={state.isSaving}
           onPrevStep={prevStep}
