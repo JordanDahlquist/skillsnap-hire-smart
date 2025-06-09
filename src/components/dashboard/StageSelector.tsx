@@ -55,7 +55,7 @@ export const StageSelector = ({
           focus:ring-offset-2
         `}
       >
-        <SelectValue placeholder={getCurrentStageName()} />
+        <SelectValue />
       </SelectTrigger>
       <SelectContent className="bg-popover border border-border shadow-md z-50">
         {stages.map((stage) => (
