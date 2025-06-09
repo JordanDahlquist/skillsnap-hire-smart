@@ -118,7 +118,7 @@ serve(async (req) => {
       })
       .slice(0, 10)
 
-    // Create detailed candidate profiles for AI context (without displaying IDs in conversation)
+    // Create detailed candidate profiles for AI context
     const candidateProfiles = allApplications.map(app => {
       const skillsArray = Array.isArray(app.skills) ? app.skills : []
       const workExperience = Array.isArray(app.work_experience) ? app.work_experience : []
@@ -215,12 +215,17 @@ YOUR CAPABILITIES:
 6. **Decision Support**: Provide data-driven insights for hiring decisions
 
 CONVERSATION GUIDELINES:
-- Speak naturally about candidates using their names only (e.g., "Sarah Johnson shows great potential")
-- Avoid mentioning candidate IDs in normal conversation - they're long and unnecessary for users
+- Speak naturally about candidates using their names (e.g., "Sarah Johnson shows great potential")
+- When discussing specific candidates in detail, I will show their candidate cards automatically
 - You can reference job IDs when helpful for job-specific discussions
-- When discussing specific candidates that warrant showing a detailed card, mention them naturally and the system will automatically show their information
 - Focus on actionable insights and clear recommendations
 - Be conversational and personable while remaining professional
+
+IMPORTANT CARD DISPLAY RULES:
+- Whenever you mention a specific candidate by name in a substantive way (analyzing them, comparing them, recommending them), their card will be displayed
+- If you discuss multiple candidates, cards for all mentioned candidates will be shown
+- Cards help users quickly access candidate details and navigate to their applications
+- Always use candidate names naturally in conversation rather than avoiding them
 
 IMPORTANT INSTRUCTIONS:
 - Provide actionable recommendations with reasoning based on the actual candidate data
@@ -265,7 +270,7 @@ Be conversational, insightful, and proactive. Ask follow-up questions to better 
 
     console.log('AI response received:', aiMessage.substring(0, 100))
 
-    // Parse AI response to extract job/candidate mentions
+    // Enhanced candidate detection - look for candidate names mentioned in AI response
     const jobIds: string[] = []
     const applicationIds: string[] = []
     
@@ -280,7 +285,35 @@ Be conversational, insightful, and proactive. Ask follow-up questions to better 
       })
     }
 
-    // Extract application IDs from response (matches: candidate ID: uuid, ID: uuid, etc.)
+    // Enhanced candidate detection by name
+    allApplications.forEach(app => {
+      const candidateName = app.name.toLowerCase()
+      const responseText = aiMessage.toLowerCase()
+      
+      // Look for full name or first/last name mentions
+      const nameParts = candidateName.split(' ')
+      const firstName = nameParts[0]
+      const lastName = nameParts[nameParts.length - 1]
+      
+      // Check for full name, first name, or last name in context
+      const namePatterns = [
+        candidateName,
+        firstName.length > 2 ? firstName : null,
+        lastName.length > 2 ? lastName : null
+      ].filter(Boolean)
+      
+      const isNameMentioned = namePatterns.some(name => {
+        // Look for name with word boundaries and context keywords
+        const nameRegex = new RegExp(`\\b${name}\\b`, 'i')
+        return nameRegex.test(responseText)
+      })
+      
+      if (isNameMentioned) {
+        applicationIds.push(app.id)
+      }
+    })
+
+    // Also check for UUID mentions (legacy support)
     const appMatches = aiMessage.match(/(?:candidate|application|ID)[:\s]+([a-f0-9-]{36})/gi)
     if (appMatches) {
       appMatches.forEach((match: string) => {
@@ -290,6 +323,9 @@ Be conversational, insightful, and proactive. Ask follow-up questions to better 
         }
       })
     }
+
+    // Remove duplicates
+    const uniqueApplicationIds = [...new Set(applicationIds)]
 
     // Store user message
     await supabase
@@ -309,10 +345,10 @@ Be conversational, insightful, and proactive. Ask follow-up questions to better 
         user_id: user.id,
         conversation_id,
         message_content: aiMessage,
-        message_type: jobIds.length > 0 || applicationIds.length > 0 ? 'with_cards' : 'text',
+        message_type: jobIds.length > 0 || uniqueApplicationIds.length > 0 ? 'with_cards' : 'text',
         is_ai_response: true,
         related_job_ids: jobIds,
-        related_application_ids: applicationIds
+        related_application_ids: uniqueApplicationIds
       })
 
     // Get full job and application data for cards
@@ -337,7 +373,7 @@ Be conversational, insightful, and proactive. Ask follow-up questions to better 
       jobCards = jobsData || []
     }
 
-    if (applicationIds.length > 0) {
+    if (uniqueApplicationIds.length > 0) {
       const { data: applicationsData } = await supabase
         .from('applications')
         .select(`
@@ -353,7 +389,7 @@ Be conversational, insightful, and proactive. Ask follow-up questions to better 
           job_id,
           jobs(title)
         `)
-        .in('id', applicationIds)
+        .in('id', uniqueApplicationIds)
       
       candidateCards = applicationsData || []
     }
@@ -361,7 +397,8 @@ Be conversational, insightful, and proactive. Ask follow-up questions to better 
     console.log('Response prepared with enhanced context:', { 
       candidateProfiles: candidateProfiles.length,
       jobCards: jobCards.length, 
-      candidateCards: candidateCards.length 
+      candidateCards: candidateCards.length,
+      detectedCandidates: uniqueApplicationIds.length
     })
 
     return new Response(

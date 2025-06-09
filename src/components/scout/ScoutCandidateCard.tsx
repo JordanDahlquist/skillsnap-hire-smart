@@ -1,8 +1,7 @@
 
-import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { User, Mail, Star, Calendar } from 'lucide-react';
+import { User, Mail, Star, Calendar, ExternalLink } from 'lucide-react';
 import { getTimeAgo } from '@/utils/dateUtils';
 
 interface ScoutCandidateCardProps {
@@ -22,12 +21,20 @@ interface ScoutCandidateCardProps {
 }
 
 export const ScoutCandidateCard = ({ candidate }: ScoutCandidateCardProps) => {
-  const navigate = useNavigate();
-  
   const handleClick = () => {
-    navigate(`/dashboard/${candidate.job_id}`, { 
-      state: { selectedApplicationId: candidate.id } 
-    });
+    // Open dashboard in new tab with selected application
+    const url = `/dashboard/${candidate.job_id}`;
+    const newWindow = window.open(url, '_blank');
+    if (newWindow) {
+      // Store the selected application ID in the new window's session storage
+      newWindow.addEventListener('load', () => {
+        try {
+          newWindow.sessionStorage.setItem('selectedApplicationId', candidate.id);
+        } catch (error) {
+          console.warn('Could not set session storage for new window:', error);
+        }
+      });
+    }
   };
 
   const getStatusColor = (status: string, manualRating?: number | null) => {
@@ -63,7 +70,7 @@ export const ScoutCandidateCard = ({ candidate }: ScoutCandidateCardProps) => {
 
   return (
     <Card 
-      className="cursor-pointer hover:shadow-md transition-shadow bg-gray-50 border-l-4 border-l-green-500"
+      className="cursor-pointer hover:shadow-md transition-shadow bg-gray-50 border-l-4 border-l-green-500 group"
       onClick={handleClick}
     >
       <CardContent className="p-4">
@@ -72,6 +79,7 @@ export const ScoutCandidateCard = ({ candidate }: ScoutCandidateCardProps) => {
             <div className="flex items-center gap-2 mb-2">
               <User className="w-4 h-4 text-gray-600 flex-shrink-0" />
               <h3 className="font-medium text-gray-900 truncate">{candidate.name}</h3>
+              <ExternalLink className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             
             <div className="flex items-center gap-1 mb-2 text-sm text-gray-600">

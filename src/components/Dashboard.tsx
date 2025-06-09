@@ -21,9 +21,23 @@ export const Dashboard = () => {
   const job = jobs?.find(j => j.id === jobId);
   const isLoading = applicationsLoading || jobsLoading;
 
-  // Handle selectedApplicationId from navigation state (from Scout)
+  // Handle selectedApplicationId from navigation state (from Scout) or session storage (from new tab)
   useEffect(() => {
-    const selectedApplicationId = location.state?.selectedApplicationId;
+    let selectedApplicationId = location.state?.selectedApplicationId;
+    
+    // Check session storage if not found in location state (for new tab opens)
+    if (!selectedApplicationId) {
+      try {
+        selectedApplicationId = sessionStorage.getItem('selectedApplicationId');
+        if (selectedApplicationId) {
+          // Clear it after use
+          sessionStorage.removeItem('selectedApplicationId');
+        }
+      } catch (error) {
+        console.warn('Could not access session storage:', error);
+      }
+    }
+    
     if (selectedApplicationId && applications) {
       const application = applications.find(app => app.id === selectedApplicationId);
       if (application) {
