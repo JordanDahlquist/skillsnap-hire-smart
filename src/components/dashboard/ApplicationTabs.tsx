@@ -1,4 +1,5 @@
 
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,16 +28,16 @@ export const ApplicationTabs = ({
     <Tabs defaultValue="overview" className="w-full">
       <TabsList className={`grid w-full grid-cols-2 ${hasSkillsTest ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
         <TabsTrigger value="overview" className="flex items-center gap-1">
-          <User className="w-3 h-3" />
+          <User className="w-4 h-4" />
           Overview
         </TabsTrigger>
         <TabsTrigger value="responses" className="flex items-center gap-1">
-          <MessageSquare className="w-3 h-3" />
+          <MessageSquare className="w-4 h-4" />
           Responses
         </TabsTrigger>
         {hasSkillsTest && (
           <TabsTrigger value="skills" className="flex items-center gap-1">
-            <Brain className="w-3 h-3" />
+            <Brain className="w-4 h-4" />
             Skills Test
           </TabsTrigger>
         )}
@@ -45,7 +46,7 @@ export const ApplicationTabs = ({
           Video Interview
         </TabsTrigger>
         <TabsTrigger value="files" className="flex items-center gap-1">
-          <FileText className="w-3 h-3" />
+          <FileText className="w-4 h-4" />
           Resume
         </TabsTrigger>
       </TabsList>
