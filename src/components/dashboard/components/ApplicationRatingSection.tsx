@@ -1,4 +1,3 @@
-
 import { Star } from "lucide-react";
 
 interface ApplicationRatingSectionProps {
@@ -14,6 +13,15 @@ export const ApplicationRatingSection = ({
   onManualRating,
   isUpdating
 }: ApplicationRatingSectionProps) => {
+  // Normalize AI rating to 1-3 scale
+  const normalizeAIRating = (rating: number | null): number | null => {
+    if (!rating) return null;
+    // Clamp to 1-3 range and round to nearest whole number
+    return Math.max(1, Math.min(3, Math.round(rating)));
+  };
+
+  const normalizedAIRating = normalizeAIRating(aiRating);
+
   const renderAIRating = (rating: number | null) => {
     if (!rating) {
       return Array.from({ length: 3 }, (_, i) => (
@@ -21,9 +29,11 @@ export const ApplicationRatingSection = ({
       ));
     }
     
+    const normalizedRating = normalizeAIRating(rating);
+    
     return Array.from({ length: 3 }, (_, i) => {
       const starValue = i + 1;
-      const isActive = starValue <= Math.round(rating);
+      const isActive = normalizedRating && starValue <= normalizedRating;
       
       return (
         <Star
@@ -87,8 +97,8 @@ export const ApplicationRatingSection = ({
             {renderAIRating(aiRating)}
           </div>
           <span className="text-xs text-purple-600 font-medium min-h-[16px]">
-            {aiRating 
-              ? `${aiRating.toFixed(1)}/3`
+            {normalizedAIRating 
+              ? `${normalizedAIRating}.0/3`
               : 'Not rated'
             }
           </span>
