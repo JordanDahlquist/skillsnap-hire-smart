@@ -2,7 +2,7 @@
 import React, { memo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SearchBar } from '@/components/toolbar/SearchBar';
-import { ApplicationBulkActions } from './bulk-actions';
+import { CompactBulkActions } from './bulk-actions';
 import { logger } from '@/services/loggerService';
 
 interface ApplicationsListHeaderProps {
@@ -86,15 +86,13 @@ export const ApplicationsListHeader = memo(({
         </div>
       )}
 
-      {/* Bulk Actions */}
+      {/* Compact Bulk Actions */}
       {jobId && (
-        <ApplicationBulkActions
+        <CompactBulkActions
           selectedCount={selectedApplications.length}
           onSendEmail={onSendEmail || (() => {})}
-          onUpdateStatus={onBulkUpdateStatus || (() => {})}
           onSetRating={onBulkSetRating || (() => {})}
           onMoveToStage={onBulkMoveToStage || (() => {})}
-          onExport={onBulkExport || (() => {})}
           onReject={onBulkReject || (() => {})}
           onClearSelection={handleClearSelection}
           jobId={jobId}
