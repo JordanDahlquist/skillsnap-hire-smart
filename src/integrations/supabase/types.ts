@@ -626,6 +626,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_default_hiring_stages: {
+        Args: { job_id: string }
+        Returns: undefined
+      }
       generate_unique_email: {
         Args: { user_id: string; full_name: string; email: string }
         Returns: string

@@ -1,92 +1,83 @@
 
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { 
-  JobCreatorState, 
-  JobCreatorActions,
-  JobFormData 
-} from "./types";
-import { 
-  generateJobPost, 
-  generateSkillsTest,
-  generateInterviewQuestions,
-  saveJob, 
-  getInitialFormData 
-} from "./utils";
+import { JobCreatorState, JobCreatorActions } from "./types";
 
-export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (open: boolean) => void) => {
-  const { user } = useAuth();
+const initialFormData = {
+  title: "",
+  description: "",
+  employmentType: "project",
+  experienceLevel: "intermediate",
+  skills: "",
+  budget: "",
+  duration: "",
+  location: ""
+};
+
+const initialState: JobCreatorState = {
+  currentStep: 1,
+  isGenerating: false,
+  isSaving: false,
+  formData: initialFormData,
+  generatedJobPost: "",
+  generatedSkillsTest: "",
+  generatedInterviewQuestions: "",
+  interviewVideoMaxLength: 5,
+  isEditingJobPost: false,
+  isEditingSkillsTest: false,
+  isEditingInterviewQuestions: false
+};
+
+export const useJobCreatorLogic = (
+  onJobCreated?: () => void,
+  onClose?: (open: boolean) => void
+) => {
+  const [state, setState] = useState<JobCreatorState>(initialState);
   const { toast } = useToast();
-
-  const [state, setState] = useState<JobCreatorState>({
-    currentStep: 1,
-    isGenerating: false,
-    isSaving: false,
-    formData: getInitialFormData(),
-    generatedJobPost: "",
-    generatedSkillsTest: "",
-    generatedInterviewQuestions: "",
-    interviewVideoMaxLength: 5,
-    isEditingJobPost: false,
-    isEditingSkillsTest: false,
-    isEditingInterviewQuestions: false,
-  });
+  const { user } = useAuth();
 
   const actions: JobCreatorActions = {
-    setCurrentStep: (step: number) => setState(prev => ({ ...prev, currentStep: step })),
-    setIsGenerating: (loading: boolean) => setState(prev => ({ ...prev, isGenerating: loading })),
-    setIsSaving: (saving: boolean) => setState(prev => ({ ...prev, isSaving: saving })),
-    updateFormData: (field: keyof JobFormData, value: string) => 
-      setState(prev => ({ ...prev, formData: { ...prev.formData, [field]: value } })),
-    setGeneratedJobPost: (content: string) => 
-      setState(prev => ({ ...prev, generatedJobPost: content })),
-    setGeneratedSkillsTest: (content: string) => 
-      setState(prev => ({ ...prev, generatedSkillsTest: content })),
-    setGeneratedInterviewQuestions: (content: string) => 
-      setState(prev => ({ ...prev, generatedInterviewQuestions: content })),
-    setInterviewVideoMaxLength: (length: number) => 
-      setState(prev => ({ ...prev, interviewVideoMaxLength: length })),
-    setIsEditingJobPost: (editing: boolean) => 
-      setState(prev => ({ 
-        ...prev, 
-        isEditingJobPost: editing,
-        currentStep: editing ? 2 : prev.currentStep
-      })),
-    setIsEditingSkillsTest: (editing: boolean) => 
-      setState(prev => ({ 
-        ...prev, 
-        isEditingSkillsTest: editing,
-        currentStep: editing ? 3 : prev.currentStep
-      })),
-    setIsEditingInterviewQuestions: (editing: boolean) => 
-      setState(prev => ({ 
-        ...prev, 
-        isEditingInterviewQuestions: editing,
-        currentStep: editing ? 4 : prev.currentStep
-      })),
+    setCurrentStep: (step) => setState(prev => ({ ...prev, currentStep: step })),
+    setIsGenerating: (loading) => setState(prev => ({ ...prev, isGenerating: loading })),
+    setIsSaving: (saving) => setState(prev => ({ ...prev, isSaving: saving })),
+    updateFormData: (field, value) => setState(prev => ({
+      ...prev,
+      formData: { ...prev.formData, [field]: value }
+    })),
+    setGeneratedJobPost: (content) => setState(prev => ({ ...prev, generatedJobPost: content })),
+    setGeneratedSkillsTest: (content) => setState(prev => ({ ...prev, generatedSkillsTest: content })),
+    setGeneratedInterviewQuestions: (content) => setState(prev => ({ ...prev, generatedInterviewQuestions: content })),
+    setInterviewVideoMaxLength: (length) => setState(prev => ({ ...prev, interviewVideoMaxLength: length })),
+    setIsEditingJobPost: (editing) => setState(prev => ({ ...prev, isEditingJobPost: editing })),
+    setIsEditingSkillsTest: (editing) => setState(prev => ({ ...prev, isEditingSkillsTest: editing })),
+    setIsEditingInterviewQuestions: (editing) => setState(prev => ({ ...prev, isEditingInterviewQuestions: editing }))
   };
 
   const handleGenerateJobPost = async () => {
-    if (!state.formData.title || !state.formData.description) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in the job title and description first.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     actions.setIsGenerating(true);
     try {
-      const data = await generateJobPost(state.formData, null, null);
-      actions.setGeneratedJobPost(data.jobPost);
+      const response = await supabase.functions.invoke('generate-job-content', {
+        body: {
+          type: 'job_post',
+          formData: state.formData
+        }
+      });
+
+      if (response.error) throw response.error;
+      
+      actions.setGeneratedJobPost(response.data.content);
+      toast({
+        title: "Job post generated!",
+        description: "Your job post has been generated successfully.",
+      });
     } catch (error) {
       console.error('Error generating job post:', error);
       toast({
-        title: "Generation Failed",
+        title: "Generation failed",
         description: "Failed to generate job post. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       actions.setIsGenerating(false);
@@ -94,24 +85,28 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
   };
 
   const handleGenerateSkillsTest = async () => {
-    if (!state.generatedJobPost) {
-      toast({
-        title: "Generate Job Post First",
-        description: "Please generate the job post before creating the skills test.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     actions.setIsGenerating(true);
     try {
-      const data = await generateSkillsTest(state.generatedJobPost);
-      actions.setGeneratedSkillsTest(data.test);
-    } catch (error) {
+      const response = await supabase.functions.invoke('generate-job-content', {
+        body: {
+          type: 'skills_test',
+          jobPost: state.generatedJobPost
+        }
+      });
+
+      if (response.error) throw response.error;
+      
+      actions.setGeneratedSkillsTest(response.data.content);
       toast({
-        title: "Generation Failed",
+        title: "Skills test generated!",
+        description: "Your skills test has been generated successfully.",
+      });
+    } catch (error) {
+      console.error('Error generating skills test:', error);
+      toast({
+        title: "Generation failed",
         description: "Failed to generate skills test. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       actions.setIsGenerating(false);
@@ -119,28 +114,28 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
   };
 
   const handleGenerateInterviewQuestions = async () => {
-    if (!state.generatedJobPost) {
-      toast({
-        title: "Generate Job Post First",
-        description: "Please generate the job post before creating interview questions.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     actions.setIsGenerating(true);
     try {
-      const data = await generateInterviewQuestions(
-        state.generatedJobPost, 
-        state.generatedSkillsTest,
-        state.formData
-      );
-      actions.setGeneratedInterviewQuestions(data.questions);
-    } catch (error) {
+      const response = await supabase.functions.invoke('generate-job-content', {
+        body: {
+          type: 'interview_questions',
+          jobPost: state.generatedJobPost
+        }
+      });
+
+      if (response.error) throw response.error;
+      
+      actions.setGeneratedInterviewQuestions(response.data.content);
       toast({
-        title: "Generation Failed",
+        title: "Interview questions generated!",
+        description: "Your interview questions have been generated successfully.",
+      });
+    } catch (error) {
+      console.error('Error generating interview questions:', error);
+      toast({
+        title: "Generation failed",
         description: "Failed to generate interview questions. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       actions.setIsGenerating(false);
@@ -148,49 +143,62 @@ export const useJobCreatorLogic = (onJobCreated?: () => void, onOpenChange?: (op
   };
 
   const handleSaveJob = async (status: 'draft' | 'active') => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to save jobs.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     actions.setIsSaving(true);
     try {
-      await saveJob(
-        user.id,
-        state.formData,
-        state.generatedJobPost,
-        state.generatedSkillsTest,
-        state.generatedInterviewQuestions,
-        state.interviewVideoMaxLength,
-        status
-      );
+      const jobData = {
+        title: state.formData.title,
+        description: state.formData.description,
+        role_type: state.formData.employmentType,
+        experience_level: state.formData.experienceLevel,
+        required_skills: state.formData.skills,
+        budget: state.formData.budget || null,
+        duration: state.formData.duration || null,
+        location_type: 'remote',
+        employment_type: state.formData.employmentType,
+        generated_job_post: state.generatedJobPost || null,
+        generated_test: state.generatedSkillsTest || null,
+        generated_interview_questions: state.generatedInterviewQuestions || null,
+        interview_video_max_length: state.interviewVideoMaxLength,
+        status,
+        user_id: user.id
+      };
+
+      // Insert the job - the trigger will automatically create default hiring stages
+      const { data: newJob, error } = await supabase
+        .from('jobs')
+        .insert(jobData)
+        .select()
+        .single();
+
+      if (error) throw error;
 
       toast({
-        title: status === 'active' ? "Job Published!" : "Job Saved!",
+        title: status === 'active' ? "Job published!" : "Job saved as draft!",
         description: status === 'active' 
-          ? "Your job posting is now live and accepting applications."
-          : "Your job has been saved as a draft."
+          ? "Your job has been published and is now live." 
+          : "Your job has been saved as a draft.",
       });
 
+      // Reset form and close modal
+      setState(initialState);
       onJobCreated?.();
-      onOpenChange?.(false);
-      
-      // Reset state
-      setState({
-        currentStep: 1,
-        isGenerating: false,
-        isSaving: false,
-        formData: getInitialFormData(),
-        generatedJobPost: "",
-        generatedSkillsTest: "",
-        generatedInterviewQuestions: "",
-        interviewVideoMaxLength: 5,
-        isEditingJobPost: false,
-        isEditingSkillsTest: false,
-        isEditingInterviewQuestions: false,
-      });
+      onClose?.(false);
+
     } catch (error) {
+      console.error('Error saving job:', error);
       toast({
-        title: "Save Failed",
+        title: "Save failed",
         description: "Failed to save job. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       actions.setIsSaving(false);
