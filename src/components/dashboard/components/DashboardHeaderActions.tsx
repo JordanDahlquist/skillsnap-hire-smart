@@ -5,7 +5,8 @@ import {
   ExternalLink, 
   Share2, 
   MoreHorizontal,
-  Loader2
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import { 
   DropdownMenu,
@@ -26,6 +27,8 @@ interface DashboardHeaderActionsProps {
   onExportApplications: () => void;
   onArchiveJob: () => void;
   onUnarchiveJob: () => void;
+  onRefreshAI: () => void;
+  isRefreshingAI: boolean;
 }
 
 export const DashboardHeaderActions = ({
@@ -36,7 +39,9 @@ export const DashboardHeaderActions = ({
   onEditJob,
   onExportApplications,
   onArchiveJob,
-  onUnarchiveJob
+  onUnarchiveJob,
+  onRefreshAI,
+  isRefreshingAI
 }: DashboardHeaderActionsProps) => {
   const isArchived = job.status === 'closed';
 
@@ -59,6 +64,17 @@ export const DashboardHeaderActions = ({
         onStatusChange={handleStatusChange}
         disabled={isUpdating}
       />
+
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={onRefreshAI}
+        disabled={isUpdating || isRefreshingAI}
+        title="Refresh AI rankings for all applications"
+        className="border-blue-200 text-blue-600 hover:bg-blue-50"
+      >
+        <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
+      </Button>
 
       <Button 
         variant="outline" 

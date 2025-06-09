@@ -12,12 +12,11 @@ import {
   BarChart3,
   Archive,
   ArchiveRestore,
-  Loader2
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useDashboardHeaderActions } from "@/hooks/useDashboardHeaderActions";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +31,11 @@ interface Job {
   created_at: string;
   status: string;
   view_count?: number;
+  user_id: string;
+  description?: string;
+  role_type?: string;
+  experience_level?: string;
+  required_skills?: string;
 }
 
 interface Application {
@@ -41,6 +45,11 @@ interface Application {
   created_at: string;
   ai_rating: number | null;
   status: string;
+  portfolio?: string | null;
+  experience?: string | null;
+  answer_1?: string | null;
+  answer_2?: string | null;
+  answer_3?: string | null;
 }
 
 interface EnhancedDashboardHeaderProps {
@@ -56,144 +65,16 @@ export const EnhancedDashboardHeader = ({
   getTimeAgo, 
   onJobUpdate 
 }: EnhancedDashboardHeaderProps) => {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const { toast } = useToast();
-
-  const handleStatusChange = async (newStatus: string) => {
-    setIsUpdating(true);
-    
-    try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', job.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Status updated",
-        description: `Job is now ${newStatus}`,
-      });
-      
-      onJobUpdate();
-    } catch (error) {
-      console.error('Error updating job status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update job status",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleShareJob = async () => {
-    const jobUrl = `${window.location.origin}/apply/${job.id}`;
-    try {
-      await navigator.clipboard.writeText(jobUrl);
-      toast({
-        title: "Link copied!",
-        description: "Job application link copied to clipboard",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy link",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleExportApplications = () => {
-    if (applications.length === 0) {
-      toast({
-        title: "No data to export",
-        description: "This job has no applications yet",
-      });
-      return;
-    }
-
-    const csvContent = [
-      ['Name', 'Email', 'Applied Date', 'AI Rating', 'Status'].join(','),
-      ...applications.map(app => [
-        app.name,
-        app.email,
-        new Date(app.created_at).toLocaleDateString(),
-        app.ai_rating || 'N/A',
-        app.status
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${job.title.replace(/[^a-zA-Z0-9]/g, '_')}_applications.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-    toast({
-      title: "Export completed",
-      description: "Applications data exported to CSV file",
-    });
-  };
-
-  const handleArchiveJob = async () => {
-    setIsUpdating(true);
-    try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({ status: 'closed', updated_at: new Date().toISOString() })
-        .eq('id', job.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Job archived",
-        description: "Job has been archived successfully",
-      });
-      
-      onJobUpdate();
-    } catch (error) {
-      console.error('Error archiving job:', error);
-      toast({
-        title: "Error",
-        description: "Failed to archive job",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleUnarchiveJob = async () => {
-    setIsUpdating(true);
-    try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({ status: 'active', updated_at: new Date().toISOString() })
-        .eq('id', job.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Job unarchived",
-        description: "Job has been unarchived and is now active",
-      });
-      
-      onJobUpdate();
-    } catch (error) {
-      console.error('Error unarchiving job:', error);
-      toast({
-        title: "Error",
-        description: "Failed to unarchive job",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  const {
+    isUpdating,
+    isRefreshingAI,
+    handleStatusChange,
+    handleShareJob,
+    handleExportApplications,
+    handleArchiveJob,
+    handleUnarchiveJob,
+    handleRefreshAI
+  } = useDashboardHeaderActions(job, applications, onJobUpdate);
 
   const getPerformanceIndicator = () => {
     if (applications.length === 0) return { text: "New", color: "bg-gray-100 text-gray-800" };
@@ -208,11 +89,14 @@ export const EnhancedDashboardHeader = ({
   return (
     <>
       {/* Loading overlay */}
-      {isUpdating && (
+      {(isUpdating || isRefreshingAI) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 flex items-center gap-3">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Updating job status...</span>
+            <span>
+              {isUpdating && "Updating job status..."}
+              {isRefreshingAI && "Refreshing AI rankings..."}
+            </span>
           </div>
         </div>
       )}
@@ -260,16 +144,28 @@ export const EnhancedDashboardHeader = ({
               <StatusDropdown
                 currentStatus={job.status}
                 onStatusChange={handleStatusChange}
-                disabled={isUpdating}
+                disabled={isUpdating || isRefreshingAI}
               />
 
+              {/* AI Refresh Button */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefreshAI}
+                disabled={isUpdating || isRefreshingAI || applications.length === 0}
+                title="Refresh AI rankings for all applications"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshingAI ? 'animate-spin' : ''}`} />
+                Refresh AI
+              </Button>
+
               {/* Main Action Buttons */}
-              <Button variant="outline" size="sm" onClick={handleShareJob} disabled={isUpdating}>
+              <Button variant="outline" size="sm" onClick={handleShareJob} disabled={isUpdating || isRefreshingAI}>
                 <Share2 className="w-4 h-4 mr-2" />
                 Share
               </Button>
 
-              <Button variant="outline" size="sm" asChild disabled={isUpdating}>
+              <Button variant="outline" size="sm" asChild disabled={isUpdating || isRefreshingAI}>
                 <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   View Public
@@ -279,8 +175,8 @@ export const EnhancedDashboardHeader = ({
               {/* More Actions Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" disabled={isUpdating}>
-                    {isUpdating ? (
+                  <Button variant="outline" size="sm" disabled={isUpdating || isRefreshingAI}>
+                    {(isUpdating || isRefreshingAI) ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <MoreHorizontal className="w-4 h-4" />
