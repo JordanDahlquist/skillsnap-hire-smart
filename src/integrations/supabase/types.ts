@@ -573,6 +573,42 @@ export type Database = {
         }
         Relationships: []
       }
+      scout_conversations: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          is_ai_response: boolean
+          message_content: string
+          message_type: string
+          related_application_ids: string[] | null
+          related_job_ids: string[] | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_ai_response?: boolean
+          message_content: string
+          message_type?: string
+          related_application_ids?: string[] | null
+          related_job_ids?: string[] | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_ai_response?: boolean
+          message_content?: string
+          message_type?: string
+          related_application_ids?: string[] | null
+          related_job_ids?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

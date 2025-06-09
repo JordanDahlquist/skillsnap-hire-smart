@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -18,6 +17,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { LinkedInCallback } from "./pages/LinkedInCallback";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
+import Scout from "./pages/Scout";
 
 import { Inbox } from "./pages/Inbox";
 
@@ -44,6 +44,11 @@ function App() {
             <Route path="/dashboard/:jobId" element={
               <AuthGuard>
                 <Dashboard />
+              </AuthGuard>
+            } />
+            <Route path="/scout" element={
+              <AuthGuard>
+                <Scout />
               </AuthGuard>
             } />
             <Route path="/inbox" element={
