@@ -183,8 +183,8 @@ export const ApplicationsManager = ({
 
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
-          {/* Applications Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Applications Grid - Optimized layout with narrower list and wider profile */}
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-6">
             <ApplicationsList
               applications={filteredApplications}
               selectedApplication={selectedApplication}
