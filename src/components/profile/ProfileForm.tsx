@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Copy, Check } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth'; // Updated import
+import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfilePictureUpload } from './ProfilePictureUpload';
@@ -30,7 +31,7 @@ const industries = [
 ];
 
 export const ProfileForm = () => {
-  const { user, profile, profileLoading } = useAuth(); // Updated import
+  const { user, profile, profileLoading } = useOptimizedAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);

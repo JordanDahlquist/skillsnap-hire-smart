@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Eye, Users, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth'; // Updated import
+import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface EmailTemplate {
@@ -48,7 +49,7 @@ export const EmailComposerModal = ({
   selectedApplications,
   job
 }: EmailComposerModalProps) => {
-  const { user, profile } = useAuth(); // Updated import
+  const { user, profile } = useOptimizedAuth();
   const { toast } = useToast();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [subject, setSubject] = useState('');

@@ -1,5 +1,5 @@
 
-import { useConsolidatedAuth } from "@/hooks/useConsolidatedAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useLocation } from "react-router-dom";
 import { ReactNode } from "react";
 
@@ -9,7 +9,7 @@ interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
-  const { isAuthenticated, loading } = useConsolidatedAuth();
+  const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
   // Only show loading for auth, not profile
