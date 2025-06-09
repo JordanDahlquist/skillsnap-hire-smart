@@ -18,6 +18,45 @@ interface UseChatMessagesProps {
   onConversationUpdate?: () => void;
 }
 
+const fetchCandidateData = async (applicationIds: string[]) => {
+  if (!applicationIds.length) return [];
+  
+  try {
+    const { data, error } = await supabase
+      .from('applications')
+      .select(`
+        *,
+        jobs:job_id (
+          title
+        )
+      `)
+      .in('id', applicationIds);
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    logger.error('Failed to fetch candidate data', { error });
+    return [];
+  }
+};
+
+const fetchJobData = async (jobIds: string[]) => {
+  if (!jobIds.length) return [];
+  
+  try {
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('*')
+      .in('id', jobIds);
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    logger.error('Failed to fetch job data', { error });
+    return [];
+  }
+};
+
 export const useChatMessages = ({ conversationId, onConversationUpdate }: UseChatMessagesProps) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -41,14 +80,32 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
         msg.message_content !== 'New conversation started'
       ) || [];
 
-      const formattedMessages: Message[] = filteredMessages.map(msg => ({
-        id: msg.id,
-        content: msg.message_content,
-        isAi: msg.is_ai_response,
-        timestamp: new Date(msg.created_at),
-        jobCards: msg.related_job_ids?.length > 0 ? [] : undefined,
-        candidateCards: msg.related_application_ids?.length > 0 ? [] : undefined
-      }));
+      // Process messages and fetch related data
+      const formattedMessages: Message[] = await Promise.all(
+        filteredMessages.map(async (msg) => {
+          let candidateCards: any[] = [];
+          let jobCards: any[] = [];
+
+          // Fetch candidate data if application IDs exist
+          if (msg.related_application_ids?.length > 0) {
+            candidateCards = await fetchCandidateData(msg.related_application_ids);
+          }
+
+          // Fetch job data if job IDs exist
+          if (msg.related_job_ids?.length > 0) {
+            jobCards = await fetchJobData(msg.related_job_ids);
+          }
+
+          return {
+            id: msg.id,
+            content: msg.message_content,
+            isAi: msg.is_ai_response,
+            timestamp: new Date(msg.created_at),
+            jobCards: jobCards.length > 0 ? jobCards : undefined,
+            candidateCards: candidateCards.length > 0 ? candidateCards : undefined
+          };
+        })
+      );
 
       setMessages(formattedMessages);
     } catch (error) {
