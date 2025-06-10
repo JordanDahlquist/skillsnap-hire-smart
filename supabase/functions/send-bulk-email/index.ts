@@ -17,15 +17,6 @@ interface Job {
   title: string;
 }
 
-interface AttachmentFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  url?: string;
-  path?: string;
-}
-
 interface BulkEmailRequest {
   user_id: string;
   applications: Application[];
@@ -37,7 +28,6 @@ interface BulkEmailRequest {
   reply_to_email?: string;
   create_threads?: boolean;
   thread_id?: string;
-  attachments?: AttachmentFile[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -51,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('MAILERSEND_API_KEY is not configured');
     }
 
-    // Create Supabase client with service role key for storage access
+    // Create Supabase client with service role key
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -67,8 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
       company_name,
       reply_to_email,
       create_threads = false,
-      thread_id,
-      attachments = []
+      thread_id
     }: BulkEmailRequest = await req.json();
 
     if (!user_id) {
@@ -80,49 +69,8 @@ const handler = async (req: Request): Promise<Response> => {
       count: applications.length, 
       subject, 
       reply_to_email,
-      create_threads,
-      attachments_count: attachments.length
+      create_threads
     });
-
-    // Process attachments if any
-    const processedAttachments = [];
-    for (const attachment of attachments) {
-      try {
-        // Construct the file path based on how it's stored
-        const filePath = `${user_id}/${attachment.id}-${attachment.name}`;
-        console.log(`Attempting to download attachment from path: ${filePath}`);
-        
-        // Download the file directly from Supabase Storage using service role
-        const { data: fileData, error: downloadError } = await supabase.storage
-          .from('email-attachments')
-          .download(filePath);
-
-        if (downloadError) {
-          console.error(`Failed to download attachment ${attachment.name}:`, downloadError);
-          continue;
-        }
-
-        if (fileData) {
-          // Convert file data to ArrayBuffer then to base64
-          const arrayBuffer = await fileData.arrayBuffer();
-          const base64Content = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-          
-          processedAttachments.push({
-            id: attachment.id,
-            name: attachment.name,
-            content: base64Content,
-            disposition: "attachment"
-          });
-          
-          console.log(`Successfully processed attachment: ${attachment.name} (${arrayBuffer.byteLength} bytes)`);
-        } else {
-          console.error(`No file data returned for attachment: ${attachment.name}`);
-        }
-      } catch (error) {
-        console.error(`Error processing attachment ${attachment.name}:`, error);
-        // Continue with other attachments even if one fails
-      }
-    }
 
     const results = [];
     const fromEmail = reply_to_email || 'hiring@atract.ai';
@@ -189,14 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
               content: processedContent,
               direction: 'outbound',
               message_type: 'original',
-              is_read: true,
-              attachments: attachments.map(att => ({
-                id: att.id,
-                name: att.name,
-                size: att.size,
-                type: att.type,
-                url: att.url
-              }))
+              is_read: true
             });
 
           if (messageError) {
@@ -209,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         // Now attempt to send email via MailerSend API
-        const emailPayload: any = {
+        const emailPayload = {
           from: {
             email: fromEmail,
             name: companyName
@@ -229,12 +170,6 @@ const handler = async (req: Request): Promise<Response> => {
             name: companyName
           }
         };
-
-        // Add attachments to the email payload if any were successfully processed
-        if (processedAttachments.length > 0) {
-          emailPayload.attachments = processedAttachments;
-          console.log(`Adding ${processedAttachments.length} attachments to email for ${application.email}`);
-        }
 
         let emailResult = null;
         let emailSendError = null;
@@ -302,8 +237,7 @@ const handler = async (req: Request): Promise<Response> => {
           thread_id: finalThreadId,
           message_id: emailResult?.message_id || emailResult?.id,
           email_sent: !emailSendError,
-          email_error: emailSendError?.message,
-          attachments_processed: processedAttachments.length
+          email_error: emailSendError?.message
         });
 
       } catch (error) {
@@ -326,8 +260,7 @@ const handler = async (req: Request): Promise<Response> => {
         summary: {
           total: applications.length,
           processed: successCount,
-          failed: applications.length - successCount,
-          attachments_processed: processedAttachments.length
+          failed: applications.length - successCount
         }
       }),
       {

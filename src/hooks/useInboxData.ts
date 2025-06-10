@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,15 +6,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { useOptimizedAuth } from './useOptimizedAuth';
 import { updateExistingEmailThreads } from '@/utils/updateEmailThreads';
 import type { EmailThread, EmailMessage } from '@/types/inbox';
-
-interface AttachmentFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  url?: string;
-  file?: File;
-}
 
 export const useInboxData = () => {
   const { user, profile } = useOptimizedAuth();
@@ -126,16 +118,14 @@ export const useInboxData = () => {
     }
   });
 
-  // Send reply mutation with attachment support
+  // Send reply mutation without attachment support
   const sendReplyMutation = useMutation({
     mutationFn: async ({ 
       threadId, 
-      content, 
-      attachments = [] 
+      content 
     }: { 
       threadId: string; 
       content: string; 
-      attachments?: AttachmentFile[] 
     }) => {
       const thread = threads.find(t => t.id === threadId);
       if (!thread || !user?.email || !profile?.unique_email) throw new Error('Thread, user, or unique email not found');
@@ -150,15 +140,6 @@ export const useInboxData = () => {
       
       const recipientEmail = recipients[0] || '';
 
-      // Prepare attachments data for database
-      const attachmentsData = attachments.map(att => ({
-        id: att.id,
-        name: att.name,
-        size: att.size,
-        type: att.type,
-        url: att.url
-      }));
-
       // Store the outbound message first
       console.log('Storing outbound message for thread:', threadId);
       const { error: messageError } = await supabase
@@ -171,8 +152,7 @@ export const useInboxData = () => {
           content,
           direction: 'outbound',
           message_type: 'reply',
-          is_read: true,
-          attachments: attachmentsData
+          is_read: true
         });
 
       if (messageError) {
@@ -363,7 +343,7 @@ export const useInboxData = () => {
     error: threadsError || messagesError,
     refetchThreads: handleRefresh,
     markThreadAsRead: markAsReadMutation.mutate,
-    sendReply: (threadId: string, content: string, attachments?: AttachmentFile[]) => 
-      sendReplyMutation.mutateAsync({ threadId, content, attachments })
+    sendReply: (threadId: string, content: string) => 
+      sendReplyMutation.mutateAsync({ threadId, content })
   };
 };

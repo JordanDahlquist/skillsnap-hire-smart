@@ -11,16 +11,6 @@ export interface EmailThreadData {
   userUniqueEmail: string;
 }
 
-interface AttachmentFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  url?: string;
-  path?: string;
-  file?: File;
-}
-
 export interface SendEmailData {
   threadId?: string;
   recipientEmail: string;
@@ -30,7 +20,6 @@ export interface SendEmailData {
   applicationId?: string;
   jobId?: string;
   userUniqueEmail: string;
-  attachments?: AttachmentFile[];
 }
 
 export const emailService = {
@@ -90,16 +79,6 @@ export const emailService = {
       });
     }
 
-    // Prepare attachments data for database (include both URL and path)
-    const attachmentsData = data.attachments ? data.attachments.map(att => ({
-      id: att.id,
-      name: att.name,
-      size: att.size,
-      type: att.type,
-      url: att.url,
-      path: att.path // Include path for backend access
-    })) : [];
-
     // Convert rich text to plain text for email
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = data.content;
@@ -116,13 +95,12 @@ export const emailService = {
         content: data.content,
         direction: 'outbound',
         message_type: 'original',
-        is_read: true,
-        attachments: attachmentsData
+        is_read: true
       });
 
     if (messageError) throw messageError;
 
-    // Send the actual email via existing edge function with thread tracking and attachments
+    // Send the actual email via existing edge function with thread tracking
     const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
       body: {
         user_id: user.data.user.id,
@@ -134,8 +112,7 @@ export const emailService = {
         subject: `${processedSubject} [Thread:${threadId}]`,
         content: plainTextContent,
         reply_to_email: data.userUniqueEmail,
-        thread_id: threadId,
-        attachments: attachmentsData
+        thread_id: threadId
       }
     });
 

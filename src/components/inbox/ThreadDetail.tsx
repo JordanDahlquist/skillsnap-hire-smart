@@ -1,26 +1,16 @@
 
 import { useState } from "react";
-import { Send, Paperclip } from "lucide-react";
+import { Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConversationContainer } from "./ConversationContainer";
 import { EmailRichTextEditor } from "./EmailRichTextEditor";
-import { AttachmentUpload } from "./AttachmentUpload";
 import type { EmailThread, EmailMessage } from "@/types/inbox";
-
-interface AttachmentFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  url?: string;
-  file?: File;
-}
 
 interface ThreadDetailProps {
   thread: EmailThread | null;
   messages: EmailMessage[];
-  onSendReply: (threadId: string, content: string, attachments?: AttachmentFile[]) => Promise<void>;
+  onSendReply: (threadId: string, content: string) => Promise<void>;
   onMarkAsRead: (threadId: string) => void;
 }
 
@@ -31,9 +21,7 @@ export const ThreadDetail = ({
   onMarkAsRead
 }: ThreadDetailProps) => {
   const [replyContent, setReplyContent] = useState("");
-  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
   const [isSending, setIsSending] = useState(false);
-  const [showAttachments, setShowAttachments] = useState(false);
 
   if (!thread) {
     return (
@@ -47,14 +35,12 @@ export const ThreadDetail = ({
   }
 
   const handleSendReply = async () => {
-    if ((!replyContent.trim() && attachments.length === 0) || isSending) return;
+    if (!replyContent.trim() || isSending) return;
 
     setIsSending(true);
     try {
-      await onSendReply(thread.id, replyContent, attachments);
+      await onSendReply(thread.id, replyContent);
       setReplyContent("");
-      setAttachments([]);
-      setShowAttachments(false);
     } catch (error) {
       console.error('Failed to send reply:', error);
     } finally {
@@ -66,7 +52,7 @@ export const ThreadDetail = ({
     ? thread.participants.filter(p => typeof p === 'string').join(', ')
     : 'No participants';
 
-  const hasContent = replyContent.trim() || attachments.length > 0;
+  const hasContent = replyContent.trim();
 
   return (
     <Card className="h-full flex flex-col">
@@ -97,30 +83,6 @@ export const ThreadDetail = ({
               placeholder="Type your reply..."
               disabled={isSending}
             />
-
-            {/* Attachment Toggle */}
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAttachments(!showAttachments)}
-                disabled={isSending}
-                className="flex items-center gap-2"
-              >
-                <Paperclip className="w-4 h-4" />
-                Attachments {attachments.length > 0 && `(${attachments.length})`}
-              </Button>
-            </div>
-
-            {/* Attachments */}
-            {showAttachments && (
-              <AttachmentUpload
-                attachments={attachments}
-                onAttachmentsChange={setAttachments}
-                disabled={isSending}
-              />
-            )}
 
             {/* Send Button */}
             <div className="flex justify-end">

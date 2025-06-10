@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,16 +6,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { useOptimizedAuth } from './useOptimizedAuth';
 import { updateExistingEmailThreads } from '@/utils/updateEmailThreads';
 import type { EmailThread, EmailMessage } from '@/types/inbox';
-
-interface AttachmentFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  url?: string;
-  path?: string;
-  file?: File;
-}
 
 export const useOptimizedInboxData = () => {
   const { user, profile } = useOptimizedAuth();
@@ -55,8 +46,8 @@ export const useOptimizedInboxData = () => {
       return data as EmailThread[];
     },
     enabled: !!user?.id,
-    staleTime: 30000, // Keep data fresh for 30 seconds
-    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    staleTime: 30000,
+    gcTime: 5 * 60 * 1000,
   });
 
   // Fetch all messages with optimized caching
@@ -92,8 +83,8 @@ export const useOptimizedInboxData = () => {
       return data as EmailMessage[];
     },
     enabled: !!user?.id,
-    staleTime: 15000, // Keep data fresh for 15 seconds
-    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    staleTime: 15000,
+    gcTime: 5 * 60 * 1000,
   });
 
   // Memoize stable threads to prevent unnecessary re-renders
@@ -123,7 +114,6 @@ export const useOptimizedInboxData = () => {
       return threadId;
     },
     onSuccess: (threadId) => {
-      // Use targeted updates instead of full invalidation
       queryClient.setQueryData(['email-threads', user?.id], (oldThreads: EmailThread[] | undefined) => {
         if (!oldThreads) return oldThreads;
         
@@ -158,12 +148,10 @@ export const useOptimizedInboxData = () => {
   const sendReplyMutation = useMutation({
     mutationFn: async ({ 
       threadId, 
-      content, 
-      attachments = [] 
+      content 
     }: { 
       threadId: string; 
       content: string; 
-      attachments?: AttachmentFile[] 
     }) => {
       const thread = stableThreads.find(t => t.id === threadId);
       if (!thread || !user?.email || !profile?.unique_email) throw new Error('Thread, user, or unique email not found');
@@ -177,16 +165,6 @@ export const useOptimizedInboxData = () => {
       
       const recipientEmail = recipients[0] || '';
 
-      // Prepare attachments data for database (include both URL and path)
-      const attachmentsData = attachments.map(att => ({
-        id: att.id,
-        name: att.name,
-        size: att.size,
-        type: att.type,
-        url: att.url,
-        path: att.path // Include path for backend access
-      }));
-
       const newMessage = {
         id: crypto.randomUUID(),
         thread_id: threadId,
@@ -197,7 +175,6 @@ export const useOptimizedInboxData = () => {
         direction: 'outbound' as const,
         message_type: 'reply' as const,
         is_read: true,
-        attachments: attachmentsData,
         created_at: new Date().toISOString()
       };
 
@@ -213,8 +190,7 @@ export const useOptimizedInboxData = () => {
           content,
           direction: 'outbound',
           message_type: 'reply',
-          is_read: true,
-          attachments: attachmentsData
+          is_read: true
         });
 
       if (messageError) {
@@ -222,7 +198,7 @@ export const useOptimizedInboxData = () => {
         throw messageError;
       }
 
-      // Send actual email via edge function with attachments
+      // Send actual email via edge function
       try {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = content;
@@ -238,8 +214,7 @@ export const useOptimizedInboxData = () => {
             job: { title: 'Reply' },
             subject: `Re: ${thread.subject} [Thread:${threadId}]`,
             content: plainTextContent,
-            reply_to_email: profile.unique_email,
-            attachments: attachmentsData
+            reply_to_email: profile.unique_email
           }
         });
 
@@ -255,13 +230,11 @@ export const useOptimizedInboxData = () => {
     onSuccess: ({ threadId, newMessage }) => {
       console.log('Reply sent successfully, updating cache');
       
-      // Optimistically update messages cache
       queryClient.setQueryData(['email-messages', user?.id], (oldMessages: EmailMessage[] | undefined) => {
         if (!oldMessages) return [newMessage];
         return [...oldMessages, newMessage];
       });
 
-      // Update thread's last_message_at
       queryClient.setQueryData(['email-threads', user?.id], (oldThreads: EmailThread[] | undefined) => {
         if (!oldThreads) return oldThreads;
         
@@ -339,7 +312,6 @@ export const useOptimizedInboxData = () => {
             console.log('Email thread update detected:', payload);
             const updatedThread = payload.new as EmailThread;
             
-            // Only update specific thread data without affecting list visibility
             queryClient.setQueryData(['email-threads', user?.id], (oldThreads: EmailThread[] | undefined) => {
               if (!oldThreads) return oldThreads;
               
@@ -362,17 +334,14 @@ export const useOptimizedInboxData = () => {
             console.log('New email message detected:', payload);
             const newMessage = payload.new as EmailMessage;
             
-            // Check if this message belongs to one of our threads
             const belongsToUser = stableThreads.some(thread => thread.id === newMessage.thread_id);
             
             if (belongsToUser) {
-              // Add new message to cache without affecting list visibility
               queryClient.setQueryData(['email-messages', user?.id], (oldMessages: EmailMessage[] | undefined) => {
                 if (!oldMessages) return [newMessage];
                 return [...oldMessages, newMessage];
               });
 
-              // Show notification for new inbound messages
               if (newMessage.direction === 'inbound') {
                 toast({
                   title: "New message received",
@@ -412,8 +381,8 @@ export const useOptimizedInboxData = () => {
   }, []);
 
   // Wrapper function that returns Promise<void>
-  const sendReply = async (threadId: string, content: string, attachments?: AttachmentFile[]): Promise<void> => {
-    await sendReplyMutation.mutateAsync({ threadId, content, attachments });
+  const sendReply = async (threadId: string, content: string): Promise<void> => {
+    await sendReplyMutation.mutateAsync({ threadId, content });
   };
 
   return {
