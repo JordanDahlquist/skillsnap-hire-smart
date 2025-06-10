@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Briefcase, Mail, LayoutDashboard, Bot } from "lucide-react";
+import { Briefcase, Mail, LayoutDashboard, Bot, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInboxData } from "@/hooks/useInboxData";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +18,11 @@ const publicNavigationItems: NavigationItem[] = [
     name: "Jobs",
     href: "/public-jobs",
     icon: Briefcase,
+  },
+  {
+    name: "Pricing",
+    href: "/pricing",
+    icon: DollarSign,
   },
 ];
 
@@ -42,6 +47,11 @@ const authenticatedNavigationItems: NavigationItem[] = [
     href: "/inbox",
     icon: Mail,
     showBadge: true,
+  },
+  {
+    name: "Pricing",
+    href: "/pricing",
+    icon: DollarSign,
   },
 ];
 
