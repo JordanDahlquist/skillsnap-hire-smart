@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, Location } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ export const MainNavigation = ({
   setIsMobileMenuOpen 
 }: MainNavigationProps) => {
   const navigation = [
-    { name: "Jobs", href: "/public-jobs" },
+    { name: "Jobs", href: "/jobs/public" },
     { name: "Pricing", href: "/pricing" },
   ];
 
