@@ -6,7 +6,14 @@ import { useInboxData } from "@/hooks/useInboxData";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 
-const publicNavigationItems = [
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  showBadge?: boolean;
+}
+
+const publicNavigationItems: NavigationItem[] = [
   {
     name: "Jobs",
     href: "/public-jobs",
@@ -14,7 +21,7 @@ const publicNavigationItems = [
   },
 ];
 
-const authenticatedNavigationItems = [
+const authenticatedNavigationItems: NavigationItem[] = [
   {
     name: "Jobs",
     href: "/public-jobs",
