@@ -1,10 +1,10 @@
-
 import { useState, useMemo } from "react";
 import { usePublicJobs } from "@/hooks/usePublicJobs";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { PublicJobsHeader } from "@/components/public-jobs/PublicJobsHeader";
 import { PublicJobsFilters } from "@/components/public-jobs/PublicJobsFilters";
 import { PublicJobsList } from "@/components/public-jobs/PublicJobsList";
+import { Footer } from "@/components/Footer";
 
 const PublicJobs = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -130,13 +130,13 @@ const PublicJobs = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <UnifiedHeader 
         breadcrumbs={breadcrumbs}
         showCreateButton={false}
       />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 flex-1">
         <PublicJobsHeader />
         
         <PublicJobsFilters
@@ -163,6 +163,8 @@ const PublicJobs = () => {
           getTimeAgo={getTimeAgo}
         />
       </div>
+      
+      <Footer />
     </div>
   );
 };

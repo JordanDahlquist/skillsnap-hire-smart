@@ -5,6 +5,7 @@ import { ProfileForm } from "@/components/profile/ProfileForm";
 import { AccountSettings } from "@/components/profile/AccountSettings";
 import { HiringPreferences } from "@/components/profile/HiringPreferences";
 import { EmailTemplates } from "@/components/profile/EmailTemplates";
+import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
@@ -29,10 +30,10 @@ const ProfileSettings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <UnifiedHeader breadcrumbs={breadcrumbs} showCreateButton={false} />
       
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-1">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
           <p className="mt-2 text-gray-600">Manage your account and preferences.</p>
@@ -63,6 +64,8 @@ const ProfileSettings = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Footer />
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { ApplicationsManager } from "./ApplicationsManager";
 import { EmailComposerModal } from "./EmailComposerModal";
 import { JobCreatorPanel } from "../JobCreatorPanel";
 import { DashboardSkeleton } from "./DashboardSkeleton";
+import { Footer } from "@/components/Footer";
 import { logger } from "@/services/loggerService";
 import { Application, Job } from "@/types";
 export const DashboardPage = () => {
@@ -143,14 +144,16 @@ export const DashboardPage = () => {
       </div>;
   }
   const selectedApplicationsData = applications.filter(app => selectedApplications.includes(app.id));
-  return <div className="min-h-screen bg-gray-50">
+  return <div className="min-h-screen bg-gray-50 flex flex-col">
       <UnifiedHeader onCreateRole={handleCreateJob} showCreateButton={true} />
       
       <DashboardHeader job={job} applications={applications} onJobUpdate={handleJobUpdate} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-[9px]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-[9px] flex-1">
         <ApplicationsManager applications={applications} selectedApplication={selectedApplication} onSelectApplication={setSelectedApplication} selectedApplications={selectedApplications} onSelectApplications={setSelectedApplications} onSendEmail={() => setEmailModalOpen(true)} onApplicationUpdate={handleApplicationUpdate} job={job} />
       </div>
+
+      <Footer />
 
       <EmailComposerModal open={emailModalOpen} onOpenChange={setEmailModalOpen} selectedApplications={selectedApplicationsData} job={job} />
 

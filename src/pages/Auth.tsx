@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
+import { Footer } from "@/components/Footer";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -126,7 +126,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
       {/* Simple Header */}
       <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -152,7 +152,7 @@ const Auth = () => {
       </header>
 
       {/* Auth Form */}
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 flex-1">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-2xl">
@@ -267,6 +267,8 @@ const Auth = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Footer />
     </div>
   );
 };
