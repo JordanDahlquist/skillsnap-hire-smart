@@ -19,7 +19,7 @@ export const useEmailSending = () => {
     return profile?.unique_email || 'user@atract.ai';
   };
 
-  const sendEmails = async (
+  const sendBulkEmail = async (
     applications: Application[],
     job: Job,
     subject: string,
@@ -88,7 +88,7 @@ export const useEmailSending = () => {
 
   return {
     isSending,
-    sendEmails,
+    sendBulkEmail,
     getCompanyName,
     getUserUniqueEmail
   };

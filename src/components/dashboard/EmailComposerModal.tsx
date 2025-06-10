@@ -27,7 +27,7 @@ export const EmailComposerModal = ({
 }: EmailComposerModalProps) => {
   const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates(open);
   const { formData, updateField, selectTemplate, togglePreview, resetForm } = useEmailComposer();
-  const { sendBulkEmail, isSending } = useEmailSending();
+  const { sendBulkEmail, isSending, getCompanyName, getUserUniqueEmail } = useEmailSending();
 
   const { isValid } = validateEmailForm(formData.subject, formData.content);
   const canSend = isValid && selectedApplications.length > 0 && !isSending;
@@ -36,12 +36,13 @@ export const EmailComposerModal = ({
     if (!canSend) return;
 
     try {
-      await sendBulkEmail({
-        applications: selectedApplications,
+      await sendBulkEmail(
+        selectedApplications,
         job,
-        subject: formData.subject,
-        content: formData.content
-      });
+        formData.subject,
+        formData.content,
+        formData.templateId
+      );
       
       resetForm();
       onOpenChange(false);
@@ -56,6 +57,9 @@ export const EmailComposerModal = ({
     }
     onOpenChange(open);
   };
+
+  const fromEmail = getUserUniqueEmail();
+  const companyName = getCompanyName(job);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -79,6 +83,7 @@ export const EmailComposerModal = ({
               <EmailComposerForm
                 subject={formData.subject}
                 content={formData.content}
+                fromEmail={fromEmail}
                 onSubjectChange={(subject) => updateField('subject', subject)}
                 onContentChange={(content) => updateField('content', content)}
               />
@@ -96,8 +101,10 @@ export const EmailComposerModal = ({
               <EmailPreview
                 subject={formData.subject}
                 content={formData.content}
-                sampleApplication={selectedApplications[0]}
+                application={selectedApplications[0]}
                 job={job}
+                fromEmail={fromEmail}
+                companyName={companyName}
               />
             )}
           </div>

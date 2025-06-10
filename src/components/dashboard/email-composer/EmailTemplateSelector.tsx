@@ -6,21 +6,36 @@ import type { EmailTemplate } from '@/types/emailComposer';
 
 interface EmailTemplateSelectorProps {
   templates: EmailTemplate[];
+  isLoading: boolean;
   selectedTemplateId: string;
-  onTemplateSelect: (template: EmailTemplate) => void;
+  onSelectTemplate: (template: EmailTemplate) => void;
 }
 
 export const EmailTemplateSelector = ({
   templates,
+  isLoading,
   selectedTemplateId,
-  onTemplateSelect
+  onSelectTemplate
 }: EmailTemplateSelectorProps) => {
   const handleTemplateChange = (templateId: string) => {
     const template = templates.find(t => t.id === templateId);
     if (template) {
-      onTemplateSelect(template);
+      onSelectTemplate(template);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div>
+        <Label htmlFor="template">Email Template (Optional)</Label>
+        <Select disabled>
+          <SelectTrigger>
+            <SelectValue placeholder="Loading templates..." />
+          </SelectTrigger>
+        </Select>
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -150,7 +150,7 @@ export const useOptimizedInboxData = () => {
     }
   });
 
-  // Optimized send reply with targeted updates
+  // Optimized send reply with targeted updates - now returns Promise<void>
   const sendReplyMutation = useMutation({
     mutationFn: async ({ 
       threadId, 
@@ -404,6 +404,11 @@ export const useOptimizedInboxData = () => {
     };
   }, []);
 
+  // Wrapper function that returns Promise<void>
+  const sendReply = async (threadId: string, content: string, attachments?: AttachmentFile[]): Promise<void> => {
+    await sendReplyMutation.mutateAsync({ threadId, content, attachments });
+  };
+
   return {
     threads,
     messages,
@@ -411,7 +416,6 @@ export const useOptimizedInboxData = () => {
     error: threadsError || messagesError,
     refetchThreads: handleRefresh,
     markThreadAsRead: markAsReadMutation.mutate,
-    sendReply: (threadId: string, content: string, attachments?: AttachmentFile[]) => 
-      sendReplyMutation.mutateAsync({ threadId, content, attachments })
+    sendReply
   };
 };
