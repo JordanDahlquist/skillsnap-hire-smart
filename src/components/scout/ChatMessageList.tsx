@@ -26,8 +26,8 @@ export const ChatMessageList = ({
   messagesContainerRef 
 }: ChatMessageListProps) => {
   return (
-    <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
-      <div className="px-6 py-4 space-y-6 pb-8" ref={messagesContainerRef}>
+    <ScrollArea className="h-full" ref={scrollAreaRef}>
+      <div className="px-4 py-4 space-y-6" ref={messagesContainerRef}>
         {messages.map((message) => (
           <ScoutMessage 
             key={message.id} 

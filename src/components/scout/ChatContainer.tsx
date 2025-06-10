@@ -29,21 +29,25 @@ export const ChatContainer = ({
 }: ChatContainerProps) => {
   return (
     <div className="h-full flex flex-col">
-      <Card className="flex-1 flex flex-col border-0 shadow-none min-h-0">
-        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-          <ChatMessageList
-            messages={messages}
-            isLoading={isLoading}
-            scrollAreaRef={scrollAreaRef}
-            messagesContainerRef={messagesContainerRef}
-          />
-        </CardContent>
-      </Card>
+      <div className="flex-1 min-h-0">
+        <Card className="h-full flex flex-col border-0 shadow-none">
+          <CardContent className="flex-1 min-h-0 p-0">
+            <ChatMessageList
+              messages={messages}
+              isLoading={isLoading}
+              scrollAreaRef={scrollAreaRef}
+              messagesContainerRef={messagesContainerRef}
+            />
+          </CardContent>
+        </Card>
+      </div>
       
-      <ChatInput
-        onSubmit={onSendMessage}
-        isLoading={isLoading}
-      />
+      <div className="flex-shrink-0">
+        <ChatInput
+          onSubmit={onSendMessage}
+          isLoading={isLoading}
+        />
+      </div>
     </div>
   );
 };
