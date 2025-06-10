@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -96,6 +96,10 @@ export const useOptimizedInboxData = () => {
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
+  // Memoize stable threads to prevent unnecessary re-renders
+  const stableThreads = useMemo(() => threads, [threads]);
+  const stableMessages = useMemo(() => messages, [messages]);
+
   // Optimized mark as read with targeted updates
   const markAsReadMutation = useMutation({
     mutationFn: async (threadId: string) => {
@@ -150,7 +154,7 @@ export const useOptimizedInboxData = () => {
     }
   });
 
-  // Optimized send reply with targeted updates - now returns Promise<void>
+  // Optimized send reply with targeted updates - returns Promise<void>
   const sendReplyMutation = useMutation({
     mutationFn: async ({ 
       threadId, 
@@ -161,7 +165,7 @@ export const useOptimizedInboxData = () => {
       content: string; 
       attachments?: AttachmentFile[] 
     }) => {
-      const thread = threads.find(t => t.id === threadId);
+      const thread = stableThreads.find(t => t.id === threadId);
       if (!thread || !user?.email || !profile?.unique_email) throw new Error('Thread, user, or unique email not found');
 
       const recipients = Array.isArray(thread.participants) 
@@ -332,7 +336,7 @@ export const useOptimizedInboxData = () => {
             console.log('Email thread update detected:', payload);
             const updatedThread = payload.new as EmailThread;
             
-            // Only update specific thread data
+            // Only update specific thread data without affecting list visibility
             queryClient.setQueryData(['email-threads', user?.id], (oldThreads: EmailThread[] | undefined) => {
               if (!oldThreads) return oldThreads;
               
@@ -356,10 +360,10 @@ export const useOptimizedInboxData = () => {
             const newMessage = payload.new as EmailMessage;
             
             // Check if this message belongs to one of our threads
-            const belongsToUser = threads.some(thread => thread.id === newMessage.thread_id);
+            const belongsToUser = stableThreads.some(thread => thread.id === newMessage.thread_id);
             
             if (belongsToUser) {
-              // Add new message to cache
+              // Add new message to cache without affecting list visibility
               queryClient.setQueryData(['email-messages', user?.id], (oldMessages: EmailMessage[] | undefined) => {
                 if (!oldMessages) return [newMessage];
                 return [...oldMessages, newMessage];
@@ -391,7 +395,7 @@ export const useOptimizedInboxData = () => {
     } catch (error) {
       console.error('Error setting up optimized inbox subscription:', error);
     }
-  }, [user?.id, queryClient, toast, threads]);
+  }, [user?.id, queryClient, toast, stableThreads]);
 
   // Cleanup subscription on unmount
   useEffect(() => {
@@ -410,8 +414,8 @@ export const useOptimizedInboxData = () => {
   };
 
   return {
-    threads,
-    messages,
+    threads: stableThreads,
+    messages: stableMessages,
     isLoading: threadsLoading || messagesLoading,
     error: threadsError || messagesError,
     refetchThreads: handleRefresh,

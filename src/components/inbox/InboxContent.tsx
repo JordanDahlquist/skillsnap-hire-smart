@@ -37,7 +37,8 @@ export const InboxContent = ({
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 flex-shrink-0 border-b">
+      {/* Fixed Header with Search - Always Visible */}
+      <CardHeader className="pb-3 flex-shrink-0 border-b bg-background">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5" />
@@ -56,6 +57,7 @@ export const InboxContent = ({
           </Button>
         </div>
         
+        {/* Search Bar - Always Visible */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
@@ -67,6 +69,7 @@ export const InboxContent = ({
         </div>
       </CardHeader>
 
+      {/* Scrollable Content Area */}
       <CardContent className="flex-1 p-0 overflow-hidden">
         <ScrollArea className="h-full">
           <ThreadList

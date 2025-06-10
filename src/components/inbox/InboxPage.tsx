@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useOptimizedInboxData } from "@/hooks/useOptimizedInboxData";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
@@ -25,6 +25,20 @@ export const InboxPage = () => {
 
   // Process email subjects with optimized caching
   const { processedThreads, isProcessing } = useOptimizedEmailSubjects(threads);
+
+  // Memoize filtered messages to prevent unnecessary recalculations
+  const threadMessages = useMemo(() => {
+    return selectedThreadId 
+      ? messages.filter(msg => msg.thread_id === selectedThreadId)
+      : [];
+  }, [messages, selectedThreadId]);
+
+  // Memoize selected thread to prevent unnecessary recalculations
+  const selectedThread = useMemo(() => {
+    return selectedThreadId 
+      ? processedThreads.find(thread => thread.id === selectedThreadId) || null
+      : null;
+  }, [processedThreads, selectedThreadId]);
 
   if (isLoading || isProcessing) {
     return <InboxSkeleton />;
@@ -52,14 +66,6 @@ export const InboxPage = () => {
     { label: "Inbox", isCurrentPage: true },
   ];
 
-  const selectedThread = selectedThreadId 
-    ? processedThreads.find(thread => thread.id === selectedThreadId) 
-    : null;
-
-  const threadMessages = selectedThreadId 
-    ? messages.filter(msg => msg.thread_id === selectedThreadId)
-    : [];
-
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background flex flex-col">
@@ -71,7 +77,7 @@ export const InboxPage = () => {
         <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
           <FixedHeightLayout>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-              {/* Thread List - Fixed height with internal scrolling */}
+              {/* Thread List - Independent Scrolling */}
               <div className="lg:col-span-1 h-full">
                 <InboxContent
                   threads={processedThreads}
@@ -82,7 +88,7 @@ export const InboxPage = () => {
                 />
               </div>
 
-              {/* Thread Detail - Fixed height with internal scrolling */}
+              {/* Thread Detail - Independent Scrolling */}
               <div className="lg:col-span-2 h-full">
                 <ThreadDetail
                   thread={selectedThread}

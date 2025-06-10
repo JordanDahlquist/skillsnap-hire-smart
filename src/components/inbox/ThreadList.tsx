@@ -20,14 +20,17 @@ export const ThreadList = ({
   if (threads.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-gray-500 p-4">
-        <p className="text-lg font-medium">No messages yet</p>
-        <p className="text-sm">Your email conversations will appear here</p>
+        <p className="text-lg font-medium">No messages found</p>
+        <p className="text-sm">Try adjusting your search or check back later</p>
       </div>
     );
   }
 
   const handleThreadClick = (thread: EmailThread) => {
+    // Always select the thread without affecting the list
     onSelectThread(thread.id);
+    
+    // Mark as read if needed, but don't let it affect list visibility
     if (thread.unread_count > 0) {
       onMarkAsRead(thread.id);
     }

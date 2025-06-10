@@ -70,7 +70,8 @@ export const ThreadDetail = ({
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 border-b flex-shrink-0">
+      {/* Fixed Header */}
+      <CardHeader className="pb-3 border-b flex-shrink-0 bg-background">
         <CardTitle className="text-lg truncate">{thread.subject}</CardTitle>
         <p className="text-sm text-gray-600 truncate">
           Conversation with: {participants}
@@ -78,13 +79,15 @@ export const ThreadDetail = ({
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-        {/* Messages Container - Takes remaining space with internal scrolling */}
-        <ConversationContainer 
-          messages={messages} 
-          className="flex-1 overflow-hidden"
-        />
+        {/* Messages Container - Independent Scrolling */}
+        <div className="flex-1 overflow-hidden">
+          <ConversationContainer 
+            messages={messages} 
+            className="h-full"
+          />
+        </div>
 
-        {/* Reply Composer - Fixed at bottom */}
+        {/* Fixed Reply Composer */}
         <div className="border-t p-4 flex-shrink-0 bg-background">
           <div className="space-y-3">
             {/* Rich Text Editor */}
