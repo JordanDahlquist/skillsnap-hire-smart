@@ -66,8 +66,15 @@ export const useSubscription = () => {
         console.error('Error fetching limits:', limitsError);
       } else {
         // Type-safe handling of the JSON response
-        if (limits && typeof limits === 'object') {
-          setPlanLimits(limits as PlanLimits);
+        if (limits && typeof limits === 'object' && !Array.isArray(limits)) {
+          const limitData = limits as { max_jobs: number; max_applications: number; has_scout_ai: boolean };
+          if ('max_jobs' in limitData && 'max_applications' in limitData && 'has_scout_ai' in limitData) {
+            setPlanLimits({
+              max_jobs: limitData.max_jobs,
+              max_applications: limitData.max_applications,
+              has_scout_ai: limitData.has_scout_ai
+            });
+          }
         }
       }
 
