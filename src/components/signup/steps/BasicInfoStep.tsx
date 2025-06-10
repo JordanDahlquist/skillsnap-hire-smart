@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +30,7 @@ export const BasicInfoStep = ({
     { text: "Contains number", met: /\d/.test(formData.password) },
   ];
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.fullName.trim()) {
@@ -53,11 +53,11 @@ export const BasicInfoStep = ({
     const isValid = Object.keys(newErrors).length === 0;
     onValidationChange(isValid);
     return isValid;
-  };
+  }, [formData.fullName, formData.email, formData.password, onValidationChange, passwordRequirements]);
 
   useEffect(() => {
     validateForm();
-  }, [formData.fullName, formData.email, formData.password]);
+  }, [validateForm]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

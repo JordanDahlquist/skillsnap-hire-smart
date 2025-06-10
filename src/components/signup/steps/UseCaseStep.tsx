@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -59,7 +59,7 @@ export const UseCaseStep = ({
   onValidationChange,
   onNext 
 }: UseCaseStepProps) => {
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const isValid = formData.hiringGoals.length > 0 && 
                    formData.hiresPerMonth !== "" &&
                    formData.currentTools.length > 0 &&
@@ -67,11 +67,11 @@ export const UseCaseStep = ({
     
     onValidationChange(isValid);
     return isValid;
-  };
+  }, [formData.hiringGoals, formData.hiresPerMonth, formData.currentTools, formData.biggestChallenges, onValidationChange]);
 
   useEffect(() => {
     validateForm();
-  }, [formData.hiringGoals, formData.hiresPerMonth, formData.currentTools, formData.biggestChallenges]);
+  }, [validateForm]);
 
   const handleGoalChange = (goal: string, checked: boolean) => {
     const newGoals = checked 

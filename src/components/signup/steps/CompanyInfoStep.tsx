@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +45,7 @@ export const CompanyInfoStep = ({
 }: CompanyInfoStepProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.companyName.trim()) {
@@ -68,11 +68,11 @@ export const CompanyInfoStep = ({
     const isValid = Object.keys(newErrors).length === 0;
     onValidationChange(isValid);
     return isValid;
-  };
+  }, [formData.companyName, formData.companySize, formData.industry, formData.jobTitle, onValidationChange]);
 
   useEffect(() => {
     validateForm();
-  }, [formData.companyName, formData.companySize, formData.industry, formData.jobTitle]);
+  }, [validateForm]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
