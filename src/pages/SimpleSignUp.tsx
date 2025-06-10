@@ -26,7 +26,7 @@ const SimpleSignUp = () => {
               Start Your Free Trial
             </h1>
             <p className="text-gray-600">
-              Join 500+ companies hiring smarter with Atract
+              Transform your hiring process with AI-powered recruitment
             </p>
           </div>
 
