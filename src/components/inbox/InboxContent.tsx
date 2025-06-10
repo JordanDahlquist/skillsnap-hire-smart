@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThreadList } from "./ThreadList";
 import type { EmailThread } from "@/types/inbox";
 
@@ -36,7 +37,7 @@ export const InboxContent = ({
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5" />
@@ -66,13 +67,15 @@ export const InboxContent = ({
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 p-0 overflow-hidden">
-        <ThreadList
-          threads={filteredThreads}
-          selectedThreadId={selectedThreadId}
-          onSelectThread={onSelectThread}
-          onMarkAsRead={onMarkAsRead}
-        />
+      <CardContent className="flex-1 p-0 min-h-0">
+        <ScrollArea className="h-full">
+          <ThreadList
+            threads={filteredThreads}
+            selectedThreadId={selectedThreadId}
+            onSelectThread={onSelectThread}
+            onMarkAsRead={onMarkAsRead}
+          />
+        </ScrollArea>
       </CardContent>
     </Card>
   );

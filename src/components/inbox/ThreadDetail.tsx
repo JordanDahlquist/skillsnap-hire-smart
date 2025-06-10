@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Send, ArrowLeft, Paperclip } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageList } from "./MessageList";
 import { EmailRichTextEditor } from "./EmailRichTextEditor";
 import { AttachmentUpload } from "./AttachmentUpload";
@@ -34,6 +35,27 @@ export const ThreadDetail = ({
   const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change or thread changes
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, thread?.id]);
+
+  // Auto-scroll to bottom when selecting a new thread
+  useEffect(() => {
+    if (thread?.id && scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        setTimeout(() => {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }, 100);
+      }
+    }
+  }, [thread?.id]);
 
   if (!thread) {
     return (
@@ -55,6 +77,13 @@ export const ThreadDetail = ({
       setReplyContent("");
       setAttachments([]);
       setShowAttachments(false);
+      
+      // Scroll to bottom after sending reply
+      setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 200);
     } catch (error) {
       console.error('Failed to send reply:', error);
     } finally {
@@ -70,21 +99,27 @@ export const ThreadDetail = ({
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 border-b">
+      <CardHeader className="pb-3 border-b flex-shrink-0">
         <CardTitle className="text-lg">{thread.subject}</CardTitle>
         <p className="text-sm text-gray-600">
           Conversation with: {participants}
         </p>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <MessageList messages={messages} />
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        {/* Messages with proper scrolling */}
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full" ref={scrollAreaRef}>
+            <div className="p-4">
+              <MessageList messages={messages} />
+              {/* Invisible element to scroll to */}
+              <div ref={messagesEndRef} className="h-0" />
+            </div>
+          </ScrollArea>
         </div>
 
-        {/* Reply Composer */}
-        <div className="border-t p-4">
+        {/* Reply Composer - Fixed at bottom */}
+        <div className="border-t p-4 flex-shrink-0 bg-background">
           <div className="space-y-3">
             {/* Rich Text Editor */}
             <EmailRichTextEditor
