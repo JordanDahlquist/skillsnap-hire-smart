@@ -154,10 +154,10 @@ const Pricing = () => {
           {plans.map((plan, index) => {
             const Icon = plan.icon;
             return (
-              <Card key={plan.name} className={`relative overflow-hidden ${plan.color} ${plan.popular ? 'scale-105 shadow-2xl border-purple-300' : 'shadow-lg'} hover:shadow-xl transition-all duration-300`}>
+              <Card key={plan.name} className={`relative ${plan.color} ${plan.popular ? 'scale-105 shadow-2xl border-purple-300 pt-8' : 'shadow-lg'} hover:shadow-xl transition-all duration-300`}>
                 {plan.popular && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <Badge className="bg-purple-600 text-white px-6 py-2 text-sm font-bold">
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <Badge className="bg-purple-600 text-white px-6 py-2 text-sm font-bold shadow-lg">
                       <Star className="w-4 h-4 mr-1 fill-current" />
                       Most Popular
                     </Badge>
