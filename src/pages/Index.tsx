@@ -8,13 +8,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { SolarSystemBackground } from "@/components/SolarSystemBackground";
 import { useNavigate } from "react-router-dom";
-
 const Index = () => {
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { user } = useAuth();
-
+  const {
+    user
+  } = useAuth();
   const handleCreateRole = () => {
     if (!user) {
       setShowAuthModal(true);
@@ -22,7 +22,6 @@ const Index = () => {
       setShowCreateModal(true);
     }
   };
-
   const handleGetStarted = () => {
     if (!user) {
       navigate('/signup');
@@ -30,9 +29,7 @@ const Index = () => {
       setShowCreateModal(true);
     }
   };
-
-  return (
-    <div className="min-h-screen relative overflow-hidden">
+  return <div className="min-h-screen relative overflow-hidden">
       {/* Light Cosmic Background */}
       <SolarSystemBackground />
 
@@ -40,10 +37,7 @@ const Index = () => {
       <div className="relative z-10">
         {/* Unified Header with light theme */}
         <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
-          <UnifiedHeader 
-            onCreateRole={handleCreateRole}
-            showCreateButton={true}
-          />
+          <UnifiedHeader onCreateRole={handleCreateRole} showCreateButton={true} />
         </div>
 
         {/* Enhanced Hero Section */}
@@ -56,16 +50,7 @@ const Index = () => {
               
               {/* Hero content with enhanced interactions */}
               <div className="relative z-10 px-8 md:px-12 py-8">
-                <div className="flex items-center justify-center gap-2 mb-6 animate-fade-in">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 text-yellow-500 fill-current animate-pulse" />
-                    <Star className="w-5 h-5 text-yellow-500 fill-current animate-pulse" style={{ animationDelay: '0.1s' }} />
-                    <Star className="w-5 h-5 text-yellow-500 fill-current animate-pulse" style={{ animationDelay: '0.2s' }} />
-                    <Star className="w-5 h-5 text-yellow-500 fill-current animate-pulse" style={{ animationDelay: '0.3s' }} />
-                    <Star className="w-5 h-5 text-yellow-500 fill-current animate-pulse" style={{ animationDelay: '0.4s' }} />
-                  </div>
-                  <span className="text-gray-600 text-sm">Trusted by 500+ companies</span>
-                </div>
+                
                 
                 <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
                   AI-Powered Hiring That
@@ -93,27 +78,16 @@ const Index = () => {
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Button 
-                    onClick={handleGetStarted}
-                    size="lg" 
-                    className="bg-[#007af6] hover:bg-[#0056b3] text-white px-10 py-5 text-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 rounded-xl animate-glow-pulse group"
-                  >
+                  <Button onClick={handleGetStarted} size="lg" className="bg-[#007af6] hover:bg-[#0056b3] text-white px-10 py-5 text-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 rounded-xl animate-glow-pulse group">
                     <Rocket className="mr-3 w-6 h-6 group-hover:animate-bounce" />
                     Start Hiring Smarter
                     <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   
-                  {!user && (
-                    <Button 
-                      variant="outline"
-                      onClick={() => navigate('/auth')}
-                      size="lg" 
-                      className="px-10 py-5 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 backdrop-blur-sm rounded-xl hover:scale-105 transition-all duration-300"
-                    >
+                  {!user && <Button variant="outline" onClick={() => navigate('/auth')} size="lg" className="px-10 py-5 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 backdrop-blur-sm rounded-xl hover:scale-105 transition-all duration-300">
                       <LogIn className="mr-3 w-6 h-6" />
                       Sign In
-                    </Button>
-                  )}
+                    </Button>}
                 </div>
               </div>
             </div>
@@ -545,27 +519,16 @@ const Index = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <Button 
-                  onClick={handleGetStarted}
-                  size="lg" 
-                  className="bg-[#007af6] hover:bg-[#0056b3] text-white px-12 py-6 text-2xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-2xl animate-glow-pulse group"
-                >
+                <Button onClick={handleGetStarted} size="lg" className="bg-[#007af6] hover:bg-[#0056b3] text-white px-12 py-6 text-2xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-2xl animate-glow-pulse group">
                   <Rocket className="mr-4 w-7 h-7 group-hover:animate-bounce" />
                   Start Your First Hire
                   <ArrowRight className="ml-4 w-7 h-7 group-hover:translate-x-2 transition-transform" />
                 </Button>
                 
-                {!user && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => navigate('/auth')}
-                    size="lg" 
-                    className="px-12 py-6 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 backdrop-blur-sm rounded-2xl hover:scale-105 transition-all duration-300"
-                  >
+                {!user && <Button variant="outline" onClick={() => navigate('/auth')} size="lg" className="px-12 py-6 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 backdrop-blur-sm rounded-2xl hover:scale-105 transition-all duration-300">
                     <LogIn className="mr-4 w-6 h-6" />
                     Sign In
-                  </Button>
-                )}
+                  </Button>}
               </div>
               
               <p className="text-gray-500 text-sm mt-8">
@@ -578,8 +541,6 @@ const Index = () => {
 
       <JobCreatorPanel open={showCreateModal} onOpenChange={setShowCreateModal} />
       <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
