@@ -21,6 +21,7 @@ import Contact from "./pages/Contact";
 import Pricing from "./pages/Pricing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import RefundPolicy from "./pages/RefundPolicy";
 import { LinkedInCallback } from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms-and-conditions" element={<TermsOfService />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/linkedin/callback" element={<LinkedInCallback />} />
             
             {/* Protected routes */}

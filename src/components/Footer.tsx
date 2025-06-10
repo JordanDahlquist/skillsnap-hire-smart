@@ -22,6 +22,13 @@ export const Footer = () => {
             >
               Terms of Service
             </Link>
+            <span className="mx-2">•</span>
+            <Link 
+              to="/refund-policy" 
+              className="text-gray-500 hover:text-gray-700 underline"
+            >
+              Refund Policy
+            </Link>
           </p>
         </div>
       </div>
