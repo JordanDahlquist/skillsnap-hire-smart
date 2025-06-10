@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,46 +34,6 @@ const INDUSTRIES = [
   "Other"
 ];
 
-const HIRING_GOALS = [
-  "Reduce time to hire",
-  "Improve candidate quality",
-  "Scale hiring process",
-  "Reduce hiring costs",
-  "Better candidate experience",
-  "Streamline interview process"
-];
-
-const HIRING_VOLUMES = [
-  "1-5 per month",
-  "6-15 per month",
-  "16-30 per month",
-  "31-50 per month",
-  "50+ per month",
-  "Seasonal/Project-based"
-];
-
-const CURRENT_TOOLS = [
-  "Indeed",
-  "LinkedIn Recruiter",
-  "ZipRecruiter",
-  "Glassdoor",
-  "AngelList",
-  "Manual process",
-  "Other ATS",
-  "None"
-];
-
-const BIGGEST_CHALLENGES = [
-  "Too many unqualified applicants",
-  "Time-consuming screening process",
-  "Difficulty assessing technical skills",
-  "Scheduling interviews",
-  "Poor candidate communication",
-  "Lack of hiring data/insights",
-  "High cost per hire",
-  "Long time to fill positions"
-];
-
 const SimpleSignUp = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -89,11 +48,7 @@ const SimpleSignUp = () => {
     companyName: "",
     companySize: "",
     industry: "",
-    jobTitle: "",
-    hiringGoals: [] as string[],
-    hiresPerMonth: "",
-    currentTools: [] as string[],
-    biggestChallenges: [] as string[]
+    jobTitle: ""
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -133,18 +88,6 @@ const SimpleSignUp = () => {
     if (!formData.jobTitle.trim()) {
       newErrors.jobTitle = "Job title is required";
     }
-    if (formData.hiringGoals.length === 0) {
-      newErrors.hiringGoals = "Please select at least one hiring goal";
-    }
-    if (!formData.hiresPerMonth) {
-      newErrors.hiresPerMonth = "Please select hiring volume";
-    }
-    if (formData.currentTools.length === 0) {
-      newErrors.currentTools = "Please select at least one current tool";
-    }
-    if (formData.biggestChallenges.length === 0) {
-      newErrors.biggestChallenges = "Please select at least one challenge";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -152,18 +95,6 @@ const SimpleSignUp = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: checked 
-        ? [...(prev[field as keyof typeof prev] as string[]), value]
-        : (prev[field as keyof typeof prev] as string[]).filter(item => item !== value)
-    }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
     }
@@ -190,11 +121,7 @@ const SimpleSignUp = () => {
             company_name: formData.companyName,
             company_size: formData.companySize,
             industry: formData.industry,
-            job_title: formData.jobTitle,
-            hiring_goals: formData.hiringGoals,
-            hires_per_month: formData.hiresPerMonth,
-            current_tools: formData.currentTools,
-            biggest_challenges: formData.biggestChallenges,
+            job_title: formData.jobTitle
           }
         }
       });
@@ -374,90 +301,6 @@ const SimpleSignUp = () => {
                       disabled={isLoading}
                     />
                     {errors.jobTitle && <p className="text-red-500 text-sm mt-1">{errors.jobTitle}</p>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Hiring Preferences */}
-              <div className="space-y-6 border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-900">Hiring Preferences</h3>
-                
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                      Main hiring goals (select all that apply)
-                    </Label>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {HIRING_GOALS.map((goal) => (
-                        <div key={goal} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={goal}
-                            checked={formData.hiringGoals.includes(goal)}
-                            onCheckedChange={(checked) => handleCheckboxChange('hiringGoals', goal, !!checked)}
-                            disabled={isLoading}
-                          />
-                          <Label htmlFor={goal} className="text-sm cursor-pointer">{goal}</Label>
-                        </div>
-                      ))}
-                    </div>
-                    {errors.hiringGoals && <p className="text-red-500 text-sm mt-1">{errors.hiringGoals}</p>}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="hiresPerMonth">Typical hiring volume</Label>
-                    <Select value={formData.hiresPerMonth} onValueChange={(value) => handleInputChange('hiresPerMonth', value)} disabled={isLoading}>
-                      <SelectTrigger className={cn(errors.hiresPerMonth && "border-red-500")}>
-                        <SelectValue placeholder="Select hiring volume" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {HIRING_VOLUMES.map((volume) => (
-                          <SelectItem key={volume} value={volume}>{volume}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.hiresPerMonth && <p className="text-red-500 text-sm mt-1">{errors.hiresPerMonth}</p>}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                      Current recruiting tools (select all that apply)
-                    </Label>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {CURRENT_TOOLS.map((tool) => (
-                        <div key={tool} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={tool}
-                            checked={formData.currentTools.includes(tool)}
-                            onCheckedChange={(checked) => handleCheckboxChange('currentTools', tool, !!checked)}
-                            disabled={isLoading}
-                          />
-                          <Label htmlFor={tool} className="text-sm cursor-pointer">{tool}</Label>
-                        </div>
-                      ))}
-                    </div>
-                    {errors.currentTools && <p className="text-red-500 text-sm mt-1">{errors.currentTools}</p>}
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                      Biggest hiring challenges (select all that apply)
-                    </Label>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {BIGGEST_CHALLENGES.map((challenge) => (
-                        <div key={challenge} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={challenge}
-                            checked={formData.biggestChallenges.includes(challenge)}
-                            onCheckedChange={(checked) => handleCheckboxChange('biggestChallenges', challenge, !!checked)}
-                            disabled={isLoading}
-                          />
-                          <Label htmlFor={challenge} className="text-sm cursor-pointer">{challenge}</Label>
-                        </div>
-                      ))}
-                    </div>
-                    {errors.biggestChallenges && <p className="text-red-500 text-sm mt-1">{errors.biggestChallenges}</p>}
                   </div>
                 </div>
               </div>
