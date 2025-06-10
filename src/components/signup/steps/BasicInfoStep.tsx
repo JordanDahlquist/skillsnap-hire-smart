@@ -7,6 +7,8 @@ import { Eye, EyeOff, Check, X } from "lucide-react";
 import { SignUpFormData } from "@/pages/SignUp";
 import { cn } from "@/lib/utils";
 import { useDebounceValidation } from "@/hooks/useDebounceValidation";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { AuthDivider } from "@/components/auth/AuthDivider";
 
 interface BasicInfoStepProps {
   formData: SignUpFormData;
@@ -89,6 +91,12 @@ export const BasicInfoStep = ({
         <p className="text-gray-600">
           Let's start with your basic information
         </p>
+      </div>
+
+      {/* Google Authentication */}
+      <div className="mb-6">
+        <GoogleAuthButton mode="signup" disabled={isLoading} />
+        <AuthDivider />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
