@@ -13,9 +13,9 @@ export const FixedHeightLayout = ({ children, className }: FixedHeightLayoutProp
   useEffect(() => {
     const calculateHeight = () => {
       // Calculate header height (including trial banner if present)
-      const header = document.querySelector('header');
-      const trialBanner = document.querySelector('[class*="trial-banner"], [class*="TrialBanner"]');
-      const footer = document.querySelector('footer');
+      const header = document.querySelector('header') as HTMLElement;
+      const trialBanner = document.querySelector('[class*="trial-banner"], [class*="TrialBanner"]') as HTMLElement;
+      const footer = document.querySelector('footer') as HTMLElement;
       
       const headerHeight = header?.offsetHeight || 64;
       const trialBannerHeight = trialBanner?.offsetHeight || 0;
