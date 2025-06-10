@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -108,11 +107,77 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'spin-slow': {
+					from: {
+						transform: 'translate(-50%, -50%) rotate(0deg)'
+					},
+					to: {
+						transform: 'translate(-50%, -50%) rotate(360deg)'
+					}
+				},
+				'spin-slower': {
+					from: {
+						transform: 'translate(-50%, -50%) rotate(0deg)'
+					},
+					to: {
+						transform: 'translate(-50%, -50%) rotate(360deg)'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0px) translateX(0px)',
+						opacity: '0.3'
+					},
+					'25%': {
+						transform: 'translateY(-15px) translateX(8px)',
+						opacity: '0.5'
+					},
+					'50%': {
+						transform: 'translateY(-8px) translateX(-12px)',
+						opacity: '0.4'
+					},
+					'75%': {
+						transform: 'translateY(-20px) translateX(4px)',
+						opacity: '0.6'
+					}
+				},
+				'shooting-star': {
+					'0%': {
+						transform: 'translateX(-100px) translateY(100px)',
+						opacity: '0'
+					},
+					'10%': {
+						opacity: '1'
+					},
+					'90%': {
+						opacity: '1'
+					},
+					'100%': {
+						transform: 'translateX(100vw) translateY(-100px)',
+						opacity: '0'
+					}
+				},
+				'glow-pulse': {
+					'0%, 100%': {
+						boxShadow: '0 0 20px rgba(0, 122, 246, 0.3)'
+					},
+					'50%': {
+						boxShadow: '0 0 40px rgba(0, 122, 246, 0.6)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'spin-slow': 'spin-slow 20s linear infinite',
+				'spin-slower': 'spin-slower 30s linear infinite',
+				'float': 'float 10s ease-in-out infinite',
+				'shooting-star': 'shooting-star 3s linear infinite',
+				'glow-pulse': 'glow-pulse 2s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(circle, var(--tw-gradient-stops))'
 			}
 		}
 	},
