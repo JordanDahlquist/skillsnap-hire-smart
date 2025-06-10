@@ -16,8 +16,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [companyName, setCompanyName] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const { toast } = useToast();
@@ -81,48 +79,6 @@ const Auth = () => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: fullName,
-            company_name: companyName,
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Account created!",
-        description: "Please check your email to confirm your account.",
-      });
-
-      // Redirect to email confirmation page
-      const confirmParams = new URLSearchParams({
-        email: email,
-        name: fullName
-      });
-      navigate(`/confirm-email?${confirmParams.toString()}`);
-
-    } catch (error: any) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
@@ -163,6 +119,10 @@ const Auth = () => {
     setShowForgotPassword(false);
     setResetEmailSent(false);
     setEmail("");
+  };
+
+  const handleSignUpClick = () => {
+    navigate('/signup');
   };
 
   return (
@@ -257,7 +217,7 @@ const Auth = () => {
               <Tabs defaultValue="signin" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  <TabsTrigger value="signup" onClick={handleSignUpClick}>Sign Up</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="signin">
@@ -300,59 +260,6 @@ const Auth = () => {
                         Forgot your password?
                       </Button>
                     </div>
-                  </form>
-                </TabsContent>
-
-                <TabsContent value="signup">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div>
-                      <Label htmlFor="signup-name">Full Name</Label>
-                      <Input
-                        id="signup-name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="signup-company">Company Name</Label>
-                      <Input
-                        id="signup-company"
-                        value={companyName}
-                        onChange={(e) => setCompanyName(e.target.value)}
-                        required
-                        placeholder="Your company name"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="signup-email">Email</Label>
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="signup-password">Password</Label>
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-[#007af6] hover:bg-[#0056b3]" 
-                      disabled={loading}
-                    >
-                      {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                      Create Account
-                    </Button>
                   </form>
                 </TabsContent>
               </Tabs>
