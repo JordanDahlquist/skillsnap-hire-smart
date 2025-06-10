@@ -65,7 +65,10 @@ export const useSubscription = () => {
       if (limitsError) {
         console.error('Error fetching limits:', limitsError);
       } else {
-        setPlanLimits(limits);
+        // Type-safe handling of the JSON response
+        if (limits && typeof limits === 'object') {
+          setPlanLimits(limits as PlanLimits);
+        }
       }
 
     } catch (error) {

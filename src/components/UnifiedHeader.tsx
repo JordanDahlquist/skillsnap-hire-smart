@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,10 +8,20 @@ import { AuthButtons } from "./header/AuthButtons";
 import { UserMenu } from "./header/UserMenu";
 import { TrialBanner } from "./subscription/TrialBanner";
 
-export const UnifiedHeader = () => {
+interface UnifiedHeaderProps {
+  breadcrumbs?: Array<{
+    label: string;
+    href?: string;
+    isCurrentPage?: boolean;
+  }>;
+  onCreateRole?: () => void;
+  showCreateButton?: boolean;
+}
+
+export const UnifiedHeader = ({ breadcrumbs, onCreateRole, showCreateButton = false }: UnifiedHeaderProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user, profile } = useAuth();
+  const { isAuthenticated, user, profile, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -28,9 +39,17 @@ export const UnifiedHeader = () => {
             
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
-                <UserMenu user={user} profile={profile} />
+                <UserMenu 
+                  user={user} 
+                  profile={profile}
+                  onSignOut={signOut}
+                  onCreateRole={onCreateRole}
+                />
               ) : (
-                <AuthButtons navigate={navigate} />
+                <AuthButtons 
+                  showCreateButton={showCreateButton}
+                  onCreateRole={onCreateRole}
+                />
               )}
             </div>
           </div>

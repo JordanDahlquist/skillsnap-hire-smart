@@ -1,101 +1,86 @@
 
-import { Link, useLocation } from "react-router-dom";
-import { Briefcase, Mail, LayoutDashboard, Bot, DollarSign } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useInboxData } from "@/hooks/useInboxData";
-import { useAuth } from "@/hooks/useAuth";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { Link, Location } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 
-interface NavigationItem {
-  name: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  showBadge?: boolean;
+interface MainNavigationProps {
+  location: Location;
+  isAuthenticated: boolean;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const publicNavigationItems: NavigationItem[] = [
-  {
-    name: "Jobs",
-    href: "/public-jobs",
-    icon: Briefcase,
-  },
-  {
-    name: "Pricing",
-    href: "/pricing",
-    icon: DollarSign,
-  },
-];
+export const MainNavigation = ({ 
+  location, 
+  isAuthenticated, 
+  isMobileMenuOpen, 
+  setIsMobileMenuOpen 
+}: MainNavigationProps) => {
+  const navigation = [
+    { name: "Jobs", href: "/public-jobs" },
+    { name: "Pricing", href: "/pricing" },
+  ];
 
-const authenticatedNavigationItems: NavigationItem[] = [
-  {
-    name: "Jobs",
-    href: "/public-jobs",
-    icon: Briefcase,
-  },
-  {
-    name: "Dashboard",
-    href: "/jobs",
-    icon: LayoutDashboard,
-  },
-  {
-    name: "Scout AI",
-    href: "/scout",
-    icon: Bot,
-  },
-  {
-    name: "Inbox",
-    href: "/inbox",
-    icon: Mail,
-    showBadge: true,
-  },
-  {
-    name: "Pricing",
-    href: "/pricing",
-    icon: DollarSign,
-  },
-];
+  const authenticatedNavigation = [
+    { name: "Dashboard", href: "/jobs" },
+    { name: "Scout AI", href: "/scout" },
+    { name: "Inbox", href: "/inbox" },
+  ];
 
-export const MainNavigation = () => {
-  const location = useLocation();
-  const { threads } = useInboxData();
-  const { isAuthenticated } = useAuth();
-  
-  const totalUnread = threads?.reduce((sum, thread) => sum + thread.unread_count, 0) || 0;
-  
-  // Use different navigation items based on authentication status
-  const navigationItems = isAuthenticated ? authenticatedNavigationItems : publicNavigationItems;
+  const currentNavigation = isAuthenticated ? authenticatedNavigation : navigation;
 
   return (
-    <nav className="hidden md:flex space-x-8">
-      {navigationItems.map((item, index) => {
-        // Dashboard should be active on /jobs route and individual job pages
-        const isActive = item.href === "/jobs" 
-          ? location.pathname === "/jobs" || location.pathname.startsWith("/jobs/")
-          : location.pathname === item.href;
-        
-        const Icon = item.icon;
-        
-        return (
+    <>
+      {/* Desktop Navigation */}
+      <nav className="hidden md:flex space-x-8">
+        {currentNavigation.map((item) => (
           <Link
             key={item.name}
             to={item.href}
-            className={cn(
-              "flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-              isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent"
-            )}
+            className={`px-3 py-2 text-sm font-medium transition-colors ${
+              location.pathname === item.href
+                ? "text-[#007af6] border-b-2 border-[#007af6]"
+                : "text-gray-700 hover:text-[#007af6]"
+            }`}
           >
-            <Icon className="w-4 h-4" />
-            <span>{item.name}</span>
-            {item.showBadge && totalUnread > 0 && isAuthenticated && (
-              <Badge variant="destructive" className="ml-1 text-xs">
-                {totalUnread}
-              </Badge>
-            )}
+            {item.name}
           </Link>
-        );
-      })}
-    </nav>
+        ))}
+      </nav>
+
+      {/* Mobile menu button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="md:hidden"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </Button>
+
+      {/* Mobile Navigation */}
+      {isMobileMenuOpen && (
+        <div className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 md:hidden">
+          <nav className="px-4 py-2 space-y-1">
+            {currentNavigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`block px-3 py-2 text-sm font-medium transition-colors ${
+                  location.pathname === item.href
+                    ? "text-[#007af6] bg-blue-50"
+                    : "text-gray-700 hover:text-[#007af6] hover:bg-gray-50"
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
+    </>
   );
 };

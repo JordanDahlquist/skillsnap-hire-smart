@@ -65,3 +65,14 @@ export const PRICING_PLANS = [
     icon: Users
   }
 ];
+
+export const PRICING_FEATURES = [
+  "AI-Powered Resume Screening",
+  "Automated Application Tracking",
+  "Smart Email Templates",
+  "Advanced Analytics Dashboard",
+  "Custom Hiring Workflows",
+  "Multi-Team Collaboration",
+  "API Integrations",
+  "Priority Customer Support"
+];
