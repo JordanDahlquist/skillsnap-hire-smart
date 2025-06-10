@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useInboxData } from "@/hooks/useInboxData";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
+import { ModernInboxLayout } from "./ModernInboxLayout";
 import { InboxContent } from "./InboxContent";
 import { ThreadDetail } from "./ThreadDetail";
 import { InboxSkeleton } from "./InboxSkeleton";
@@ -60,34 +62,33 @@ export const InboxPage = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <UnifiedHeader 
           breadcrumbs={breadcrumbs}
           showCreateButton={false}
         />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-            {/* Thread List */}
-            <div className="lg:col-span-1">
-              <InboxContent
-                threads={processedThreads}
-                selectedThreadId={selectedThreadId}
-                onSelectThread={setSelectedThreadId}
-                onMarkAsRead={markThreadAsRead}
-                onRefresh={refetchThreads}
-              />
-            </div>
-
-            {/* Thread Detail */}
-            <div className="lg:col-span-2">
-              <ThreadDetail
-                thread={selectedThread}
-                messages={threadMessages}
-                onSendReply={sendReply}
-                onMarkAsRead={markThreadAsRead}
-              />
-            </div>
+        <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+          <div className="h-[calc(100vh-200px)] bg-background border border-border rounded-lg overflow-hidden">
+            <ModernInboxLayout
+              sidebar={
+                <InboxContent
+                  threads={processedThreads}
+                  selectedThreadId={selectedThreadId}
+                  onSelectThread={setSelectedThreadId}
+                  onMarkAsRead={markThreadAsRead}
+                  onRefresh={refetchThreads}
+                />
+              }
+              main={
+                <ThreadDetail
+                  thread={selectedThread}
+                  messages={threadMessages}
+                  onSendReply={sendReply}
+                  onMarkAsRead={markThreadAsRead}
+                />
+              }
+            />
           </div>
         </div>
       </div>
