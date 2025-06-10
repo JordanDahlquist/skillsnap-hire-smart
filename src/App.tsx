@@ -1,85 +1,62 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster"
-import Auth from "./pages/Auth";
-import SignUp from "./pages/SignUp";
-import ResetPassword from "./pages/ResetPassword";
-import Index from "./pages/Index";
-import Pricing from "./pages/Pricing";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
-import { AuthGuard } from "./components/AuthGuard";
-import { DashboardPage } from "./components/dashboard/DashboardPage";
-import { JobApplicationPage } from "./pages/JobApplicationPage";
-import PublicJobs from "./pages/PublicJobs";
-import ProfileSettings from "./pages/ProfileSettings";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import { LinkedInCallback } from "./pages/LinkedInCallback";
+
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthGuard } from "@/components/AuthGuard";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import SimpleSignUp from "./pages/SimpleSignUp";
+import ProfileSettings from "./pages/ProfileSettings";
+import ResetPassword from "./pages/ResetPassword";
+import PublicJobs from "./pages/PublicJobs";
+import JobApplicationPage from "./pages/JobApplicationPage";
+import OptimizedJobsPage from "./components/jobs/OptimizedJobsPage";
+import DashboardPage from "./components/dashboard/DashboardPage";
 import Scout from "./pages/Scout";
-import { Inbox } from "./pages/Inbox";
+import Inbox from "./pages/Inbox";
+import Contact from "./pages/Contact";
+import Pricing from "./pages/Pricing";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import LinkedInCallback from "./pages/LinkedInCallback";
+import NotFound from "./pages/NotFound";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
-function App() {
-  return (
-    <Router>
-      <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen bg-background">
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/signup" element={<SignUp />} />
+            <Route path="/signup" element={<SimpleSignUp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/jobs/public" element={<PublicJobs />} />
+            <Route path="/jobs/apply/:jobId" element={<JobApplicationPage />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/jobs" element={
-              <AuthGuard>
-                <OptimizedJobsPage />
-              </AuthGuard>
-            } />
-            <Route path="/jobs/:jobId" element={
-              <AuthGuard>
-                <DashboardPage />
-              </AuthGuard>
-            } />
-            <Route path="/dashboard/:jobId" element={
-              <AuthGuard>
-                <DashboardPage />
-              </AuthGuard>
-            } />
-            <Route path="/scout" element={
-              <AuthGuard>
-                <Scout />
-              </AuthGuard>
-            } />
-            <Route path="/inbox" element={
-              <AuthGuard>
-                <Inbox />
-              </AuthGuard>
-            } />
-            <Route path="/analytics" element={<Navigate to="/jobs" replace />} />
-            <Route path="/apply/:jobId" element={<JobApplicationPage />} />
-            <Route path="/public-jobs" element={<PublicJobs />} />
-            <Route path="/profile" element={
-              <AuthGuard>
-                <ProfileSettings />
-              </AuthGuard>
-            } />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/linkedin/callback" element={<LinkedInCallback />} />
+            
+            {/* Protected routes */}
+            <Route path="/jobs" element={<AuthGuard><OptimizedJobsPage /></AuthGuard>} />
+            <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
+            <Route path="/scout" element={<AuthGuard><Scout /></AuthGuard>} />
+            <Route path="/inbox" element={<AuthGuard><Inbox /></AuthGuard>} />
+            <Route path="/profile" element={<AuthGuard><ProfileSettings /></AuthGuard>} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </div>
-        <Toaster />
-      </QueryClientProvider>
-    </Router>
-  );
-}
+        </ErrorBoundary>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
