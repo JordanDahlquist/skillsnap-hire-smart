@@ -24,7 +24,8 @@ export const useEmailSending = () => {
     job: Job,
     subject: string,
     content: string,
-    templateId?: string
+    templateId?: string,
+    attachments?: any[]
   ) => {
     const validation = validateEmailForm(subject, content);
     if (!validation.isValid) {
@@ -61,7 +62,8 @@ export const useEmailSending = () => {
           template_id: templateId || null,
           company_name: companyName,
           reply_to_email: userUniqueEmail,
-          create_threads: true
+          create_threads: true,
+          attachments: attachments || []
         }
       });
 

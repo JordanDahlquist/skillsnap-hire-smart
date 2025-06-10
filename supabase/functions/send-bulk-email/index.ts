@@ -17,6 +17,14 @@ interface Job {
   title: string;
 }
 
+interface AttachmentFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+}
+
 interface BulkEmailRequest {
   user_id: string;
   applications: Application[];
@@ -28,6 +36,7 @@ interface BulkEmailRequest {
   reply_to_email?: string;
   create_threads?: boolean;
   thread_id?: string;
+  attachments?: AttachmentFile[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -56,7 +65,8 @@ const handler = async (req: Request): Promise<Response> => {
       company_name,
       reply_to_email,
       create_threads = false,
-      thread_id
+      thread_id,
+      attachments = []
     }: BulkEmailRequest = await req.json();
 
     if (!user_id) {
@@ -68,8 +78,38 @@ const handler = async (req: Request): Promise<Response> => {
       count: applications.length, 
       subject, 
       reply_to_email,
-      create_threads 
+      create_threads,
+      attachments_count: attachments.length
     });
+
+    // Process attachments if any
+    const processedAttachments = [];
+    for (const attachment of attachments) {
+      try {
+        if (attachment.url) {
+          // Download the file from Supabase Storage
+          const response = await fetch(attachment.url);
+          if (response.ok) {
+            const fileBuffer = await response.arrayBuffer();
+            const base64Content = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
+            
+            processedAttachments.push({
+              id: attachment.id,
+              name: attachment.name,
+              content: base64Content,
+              disposition: "attachment"
+            });
+            
+            console.log(`Successfully processed attachment: ${attachment.name}`);
+          } else {
+            console.error(`Failed to download attachment ${attachment.name}:`, response.statusText);
+          }
+        }
+      } catch (error) {
+        console.error(`Error processing attachment ${attachment.name}:`, error);
+        // Continue with other attachments even if one fails
+      }
+    }
 
     const results = [];
     const fromEmail = reply_to_email || 'hiring@atract.ai';
@@ -136,7 +176,14 @@ const handler = async (req: Request): Promise<Response> => {
               content: processedContent,
               direction: 'outbound',
               message_type: 'original',
-              is_read: true
+              is_read: true,
+              attachments: attachments.map(att => ({
+                id: att.id,
+                name: att.name,
+                size: att.size,
+                type: att.type,
+                url: att.url
+              }))
             });
 
           if (messageError) {
@@ -149,7 +196,7 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         // Now attempt to send email via MailerSend API
-        const emailPayload = {
+        const emailPayload: any = {
           from: {
             email: fromEmail,
             name: companyName
@@ -169,6 +216,12 @@ const handler = async (req: Request): Promise<Response> => {
             name: companyName
           }
         };
+
+        // Add attachments to the email payload if any
+        if (processedAttachments.length > 0) {
+          emailPayload.attachments = processedAttachments;
+          console.log(`Adding ${processedAttachments.length} attachments to email`);
+        }
 
         let emailResult = null;
         let emailSendError = null;
@@ -236,7 +289,8 @@ const handler = async (req: Request): Promise<Response> => {
           thread_id: finalThreadId,
           message_id: emailResult?.message_id || emailResult?.id,
           email_sent: !emailSendError,
-          email_error: emailSendError?.message
+          email_error: emailSendError?.message,
+          attachments_processed: processedAttachments.length
         });
 
       } catch (error) {
@@ -259,7 +313,8 @@ const handler = async (req: Request): Promise<Response> => {
         summary: {
           total: applications.length,
           processed: successCount,
-          failed: applications.length - successCount
+          failed: applications.length - successCount,
+          attachments_processed: processedAttachments.length
         }
       }),
       {

@@ -220,7 +220,7 @@ export const useOptimizedInboxData = () => {
         throw messageError;
       }
 
-      // Send actual email via edge function
+      // Send actual email via edge function with attachments
       try {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = content;
@@ -236,7 +236,8 @@ export const useOptimizedInboxData = () => {
             job: { title: 'Reply' },
             subject: `Re: ${thread.subject} [Thread:${threadId}]`,
             content: plainTextContent,
-            reply_to_email: profile.unique_email
+            reply_to_email: profile.unique_email,
+            attachments: attachmentsData
           }
         });
 

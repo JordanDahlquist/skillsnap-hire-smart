@@ -120,7 +120,7 @@ export const emailService = {
 
     if (messageError) throw messageError;
 
-    // Send the actual email via existing edge function with thread tracking
+    // Send the actual email via existing edge function with thread tracking and attachments
     const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
       body: {
         user_id: user.data.user.id,
@@ -132,7 +132,8 @@ export const emailService = {
         subject: `${processedSubject} [Thread:${threadId}]`,
         content: plainTextContent,
         reply_to_email: data.userUniqueEmail,
-        thread_id: threadId
+        thread_id: threadId,
+        attachments: attachmentsData
       }
     });
 
