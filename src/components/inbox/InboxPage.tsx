@@ -7,6 +7,7 @@ import { InboxContent } from "./InboxContent";
 import { ThreadDetail } from "./ThreadDetail";
 import { InboxSkeleton } from "./InboxSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { FixedHeightLayout } from "@/components/layout/FixedHeightLayout";
 import { useProcessedEmailSubjects } from "@/hooks/useProcessedEmailSubjects";
 
 export const InboxPage = () => {
@@ -67,30 +68,31 @@ export const InboxPage = () => {
           showCreateButton={false}
         />
 
-        <div className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
-          {/* Fixed height container that accounts for header and footer */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0 max-h-[calc(100vh-200px)]">
-            {/* Thread List */}
-            <div className="lg:col-span-1 flex flex-col min-h-0">
-              <InboxContent
-                threads={processedThreads}
-                selectedThreadId={selectedThreadId}
-                onSelectThread={setSelectedThreadId}
-                onMarkAsRead={markThreadAsRead}
-                onRefresh={refetchThreads}
-              />
-            </div>
+        <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+          <FixedHeightLayout>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+              {/* Thread List - Fixed height with internal scrolling */}
+              <div className="lg:col-span-1 h-full">
+                <InboxContent
+                  threads={processedThreads}
+                  selectedThreadId={selectedThreadId}
+                  onSelectThread={setSelectedThreadId}
+                  onMarkAsRead={markThreadAsRead}
+                  onRefresh={refetchThreads}
+                />
+              </div>
 
-            {/* Thread Detail */}
-            <div className="lg:col-span-2 flex flex-col min-h-0">
-              <ThreadDetail
-                thread={selectedThread}
-                messages={threadMessages}
-                onSendReply={sendReply}
-                onMarkAsRead={markThreadAsRead}
-              />
+              {/* Thread Detail - Fixed height with internal scrolling */}
+              <div className="lg:col-span-2 h-full">
+                <ThreadDetail
+                  thread={selectedThread}
+                  messages={threadMessages}
+                  onSendReply={sendReply}
+                  onMarkAsRead={markThreadAsRead}
+                />
+              </div>
             </div>
-          </div>
+          </FixedHeightLayout>
         </div>
       </div>
     </ErrorBoundary>

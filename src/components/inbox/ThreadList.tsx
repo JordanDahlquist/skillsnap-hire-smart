@@ -34,14 +34,14 @@ export const ThreadList = ({
   };
 
   return (
-    <div>
+    <div className="divide-y divide-gray-200">
       {threads.map((thread) => (
         <div
           key={thread.id}
           onClick={() => handleThreadClick(thread)}
           className={cn(
-            "p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors",
-            selectedThreadId === thread.id && "bg-blue-50 border-blue-200",
+            "p-4 cursor-pointer hover:bg-gray-50 transition-colors",
+            selectedThreadId === thread.id && "bg-blue-50 border-l-4 border-l-blue-500",
             thread.unread_count > 0 && "bg-blue-25"
           )}
         >
@@ -53,19 +53,19 @@ export const ThreadList = ({
               {thread.subject}
             </h3>
             {thread.unread_count > 0 && (
-              <Badge variant="destructive" className="text-xs">
+              <Badge variant="destructive" className="text-xs flex-shrink-0">
                 {thread.unread_count}
               </Badge>
             )}
           </div>
           
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <span className="truncate">
+            <span className="truncate flex-1 mr-2">
               {Array.isArray(thread.participants) 
                 ? thread.participants.filter(p => typeof p === 'string').join(', ') 
                 : 'No participants'}
             </span>
-            <span className="ml-2 whitespace-nowrap">
+            <span className="whitespace-nowrap flex-shrink-0">
               {formatDistanceToNow(new Date(thread.last_message_at), { addSuffix: true })}
             </span>
           </div>

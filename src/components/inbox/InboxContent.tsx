@@ -36,8 +36,8 @@ export const InboxContent = ({
   const totalUnread = threads.reduce((sum, thread) => sum + thread.unread_count, 0);
 
   return (
-    <Card className="h-full flex flex-col min-h-0">
-      <CardHeader className="pb-3 flex-shrink-0">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0 border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5" />
@@ -67,7 +67,7 @@ export const InboxContent = ({
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 p-0 min-h-0">
+      <CardContent className="flex-1 p-0 overflow-hidden">
         <ScrollArea className="h-full">
           <ThreadList
             threads={filteredThreads}
