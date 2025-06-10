@@ -29,8 +29,15 @@ export const UnifiedHeader = ({
   const isDashboard = location.pathname === "/jobs" || 
     (location.pathname.startsWith("/jobs/") && !location.pathname.startsWith("/jobs/public"));
   
+  // Check if we're on the homepage for dark theme styling
+  const isHomepage = location.pathname === "/";
+  
   return (
-    <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <header className={`border-b sticky top-0 z-50 ${
+      isHomepage 
+        ? "border-white/10 bg-black/20 backdrop-blur-sm" 
+        : "border-gray-100 bg-white/80 backdrop-blur-sm"
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Main Navigation */}
@@ -42,7 +49,9 @@ export const UnifiedHeader = ({
           {/* Right Side Navigation */}
           <div className="flex items-center gap-4">
             {loading ? (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className={`flex items-center gap-2 text-sm ${
+                isHomepage ? "text-gray-300" : "text-gray-600"
+              }`}>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Loading...
               </div>

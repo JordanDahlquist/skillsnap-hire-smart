@@ -3,9 +3,18 @@ import { Link, useLocation } from "react-router-dom";
 import { Briefcase, Mail, LayoutDashboard, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInboxData } from "@/hooks/useInboxData";
+import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 
-const navigationItems = [
+const publicNavigationItems = [
+  {
+    name: "Jobs",
+    href: "/public-jobs",
+    icon: Briefcase,
+  },
+];
+
+const authenticatedNavigationItems = [
   {
     name: "Jobs",
     href: "/public-jobs",
@@ -32,8 +41,12 @@ const navigationItems = [
 export const MainNavigation = () => {
   const location = useLocation();
   const { threads } = useInboxData();
+  const { isAuthenticated } = useAuth();
   
   const totalUnread = threads?.reduce((sum, thread) => sum + thread.unread_count, 0) || 0;
+  
+  // Use different navigation items based on authentication status
+  const navigationItems = isAuthenticated ? authenticatedNavigationItems : publicNavigationItems;
 
   return (
     <nav className="hidden md:flex space-x-8">
@@ -58,7 +71,7 @@ export const MainNavigation = () => {
           >
             <Icon className="w-4 h-4" />
             <span>{item.name}</span>
-            {item.showBadge && totalUnread > 0 && (
+            {item.showBadge && totalUnread > 0 && isAuthenticated && (
               <Badge variant="destructive" className="ml-1 text-xs">
                 {totalUnread}
               </Badge>
