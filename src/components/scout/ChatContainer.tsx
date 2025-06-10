@@ -27,8 +27,9 @@ export const ChatContainer = ({
   messagesContainerRef
 }: ChatContainerProps) => {
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 min-h-0">
+    <div className="h-full relative overflow-hidden bg-background">
+      {/* Messages area - takes all available space minus input height */}
+      <div className="absolute inset-0 bottom-0 pb-32">
         <ChatMessageList
           messages={messages}
           isLoading={isLoading}
@@ -37,7 +38,8 @@ export const ChatContainer = ({
         />
       </div>
       
-      <div className="flex-shrink-0 border-t bg-background">
+      {/* Fixed input at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 border-t bg-background z-10">
         <ChatInput
           onSubmit={onSendMessage}
           isLoading={isLoading}

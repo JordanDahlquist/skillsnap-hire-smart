@@ -24,10 +24,10 @@ const Scout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
       <UnifiedHeader />
       <div 
-        className="flex-1 min-h-0"
+        className="flex-1 min-h-0 overflow-hidden"
         style={{ height: `${availableHeight}px` }}
       >
         <SidebarProvider>
@@ -37,7 +37,7 @@ const Scout = () => {
               onConversationSelect={handleConversationSelect}
               onNewConversation={handleNewConversation}
             />
-            <SidebarInset className="flex flex-col flex-1 min-h-0">
+            <SidebarInset className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-3 border-b flex-shrink-0">
                 <SidebarTrigger />
                 <div className="flex-1 min-w-0">
@@ -47,7 +47,7 @@ const Scout = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0 overflow-hidden">
                 <ScoutChat 
                   conversationId={activeConversationId}
                   onConversationUpdate={loadConversations}

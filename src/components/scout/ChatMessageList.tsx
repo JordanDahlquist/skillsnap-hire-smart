@@ -28,7 +28,7 @@ export const ChatMessageList = ({
   return (
     <div className="h-full overflow-hidden">
       <ScrollArea className="h-full" ref={scrollAreaRef}>
-        <div className="px-4 py-4 space-y-4 min-h-full" ref={messagesContainerRef}>
+        <div className="px-4 py-4 space-y-4 min-h-full pb-8" ref={messagesContainerRef}>
           {messages.length === 0 && !isLoading && (
             <div className="flex items-center justify-center h-full text-center">
               <div className="max-w-md">
