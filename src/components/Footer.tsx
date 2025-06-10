@@ -10,10 +10,17 @@ export const Footer = () => {
             © 2025 Atract. All rights reserved. 
             <span className="mx-2">•</span>
             <Link 
-              to="/privacy-policy" 
+              to="/privacy" 
               className="text-gray-500 hover:text-gray-700 underline"
             >
               Privacy Policy
+            </Link>
+            <span className="mx-2">•</span>
+            <Link 
+              to="/terms-and-conditions" 
+              className="text-gray-500 hover:text-gray-700 underline"
+            >
+              Terms of Service
             </Link>
           </p>
         </div>
