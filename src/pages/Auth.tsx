@@ -90,6 +90,7 @@ const Auth = () => {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: fullName,
             company_name: companyName,
@@ -101,10 +102,16 @@ const Auth = () => {
 
       toast({
         title: "Account created!",
-        description: "Please check your email to verify your account.",
+        description: "Please check your email to confirm your account.",
       });
 
-      // Don't navigate away, let them sign in after email verification
+      // Redirect to email confirmation page
+      const confirmParams = new URLSearchParams({
+        email: email,
+        name: fullName
+      });
+      navigate(`/confirm-email?${confirmParams.toString()}`);
+
     } catch (error: any) {
       toast({
         title: "Sign up failed",

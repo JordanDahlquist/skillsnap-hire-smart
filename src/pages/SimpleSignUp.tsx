@@ -135,13 +135,15 @@ const SimpleSignUp = () => {
       
       toast({
         title: "Account created successfully!",
-        description: "Welcome to Atract. You'll be redirected to your dashboard shortly.",
+        description: "Please check your email to confirm your account.",
       });
 
-      // Small delay then redirect
-      setTimeout(() => {
-        navigate('/jobs');
-      }, 1500);
+      // Redirect to email confirmation page with user details
+      const confirmParams = new URLSearchParams({
+        email: formData.email,
+        name: formData.fullName
+      });
+      navigate(`/confirm-email?${confirmParams.toString()}`);
 
     } catch (error: any) {
       console.error('Account creation error:', error);

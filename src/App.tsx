@@ -8,6 +8,7 @@ import { AuthGuard } from "@/components/AuthGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import SimpleSignUp from "./pages/SimpleSignUp";
+import ConfirmEmail from "./pages/ConfirmEmail";
 import ProfileSettings from "./pages/ProfileSettings";
 import ResetPassword from "./pages/ResetPassword";
 import PublicJobs from "./pages/PublicJobs";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<SimpleSignUp />} />
+            <Route path="/confirm-email" element={<ConfirmEmail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/jobs/public" element={<PublicJobs />} />
             <Route path="/jobs/apply/:jobId" element={<JobApplicationPage />} />
