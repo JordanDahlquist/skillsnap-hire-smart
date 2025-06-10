@@ -27,8 +27,8 @@ export const ChatContainer = ({
   messagesContainerRef
 }: ChatContainerProps) => {
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-hidden">
+    <div className="h-full flex flex-col">
+      <div className="flex-1 min-h-0">
         <ChatMessageList
           messages={messages}
           isLoading={isLoading}
@@ -37,7 +37,7 @@ export const ChatContainer = ({
         />
       </div>
       
-      <div className="flex-shrink-0 border-t">
+      <div className="flex-shrink-0 border-t bg-background">
         <ChatInput
           onSubmit={onSendMessage}
           isLoading={isLoading}

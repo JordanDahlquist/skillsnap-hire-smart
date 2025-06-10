@@ -33,7 +33,7 @@ export const ChatInput = ({
   };
 
   return (
-    <div className="bg-background p-3">
+    <div className="bg-background p-3 safe-area-inset-bottom">
       <div className="max-w-4xl mx-auto">
         <div
           className={cn(
@@ -75,7 +75,7 @@ export const ChatInput = ({
           </Button>
         </div>
         
-        <div className="flex items-center justify-center mt-1">
+        <div className="flex items-center justify-center mt-1 mb-2">
           <p className="text-xs text-muted-foreground/60">
             <kbd className="px-1 py-0.5 text-xs font-mono bg-muted rounded">Enter</kbd> to send, 
             <kbd className="px-1 py-0.5 text-xs font-mono bg-muted rounded ml-1">Shift + Enter</kbd> for new line
