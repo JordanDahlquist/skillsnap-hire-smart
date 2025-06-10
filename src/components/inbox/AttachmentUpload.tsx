@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Upload, X, File, Image, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -42,105 +41,64 @@ export const AttachmentUpload = ({ attachments, onAttachmentsChange, disabled }:
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const validateFile = (file: File): string | null => {
-    // Check file size (50MB limit)
-    if (file.size > 50 * 1024 * 1024) {
-      return `File ${file.name} exceeds the 50MB limit`;
-    }
-
-    // Check file type
-    const allowedTypes = [
-      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/plain', 'text/csv'
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      return `File type ${file.type} is not supported`;
-    }
-
-    return null;
-  };
-
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
     setUploading(true);
     const newAttachments: AttachmentFile[] = [];
-    const errors: string[] = [];
 
     try {
       for (const file of files) {
-        // Validate file
-        const validationError = validateFile(file);
-        if (validationError) {
-          errors.push(validationError);
+        if (file.size > 50 * 1024 * 1024) { // 50MB limit
+          toast({
+            title: "File too large",
+            description: `${file.name} exceeds the 50MB limit`,
+            variant: "destructive",
+          });
           continue;
         }
 
-        // Generate consistent file ID and path
         const fileId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const filePath = `${user?.id}/${fileId}-${file.name}`;
 
-        console.log(`Uploading file: ${file.name} to path: ${filePath}`);
-
-        // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from('email-attachments')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
+          .upload(filePath, file);
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          errors.push(`Failed to upload ${file.name}: ${uploadError.message}`);
+          toast({
+            title: "Upload failed",
+            description: `Failed to upload ${file.name}`,
+            variant: "destructive",
+          });
           continue;
         }
 
-        // Get public URL for display purposes
         const { data: { publicUrl } } = supabase.storage
           .from('email-attachments')
           .getPublicUrl(filePath);
 
-        // Create attachment object with both URL and path
-        const attachment: AttachmentFile = {
+        newAttachments.push({
           id: fileId,
           name: file.name,
           size: file.size,
           type: file.type,
           url: publicUrl,
-          path: filePath, // Store the full path for backend access
+          path: filePath, // Store the file path for backend access
           file
-        };
-
-        newAttachments.push(attachment);
-        console.log(`Successfully uploaded: ${file.name} (ID: ${fileId})`);
+        });
       }
 
-      // Update attachments list
+      onAttachmentsChange([...attachments, ...newAttachments]);
+      
       if (newAttachments.length > 0) {
-        onAttachmentsChange([...attachments, ...newAttachments]);
         toast({
           title: "Files uploaded",
           description: `${newAttachments.length} file(s) uploaded successfully`,
         });
       }
-
-      // Show errors if any
-      if (errors.length > 0) {
-        toast({
-          title: "Upload errors",
-          description: errors.join(', '),
-          variant: "destructive",
-        });
-      }
-
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -159,14 +117,10 @@ export const AttachmentUpload = ({ attachments, onAttachmentsChange, disabled }:
   const removeAttachment = async (attachmentId: string) => {
     const attachment = attachments.find(a => a.id === attachmentId);
     if (attachment?.path) {
-      // Delete from storage
-      const { error } = await supabase.storage
+      // Use the stored path for deletion
+      await supabase.storage
         .from('email-attachments')
         .remove([attachment.path]);
-      
-      if (error) {
-        console.error('Failed to delete file from storage:', error);
-      }
     }
 
     onAttachmentsChange(attachments.filter(a => a.id !== attachmentId));
@@ -196,9 +150,6 @@ export const AttachmentUpload = ({ attachments, onAttachmentsChange, disabled }:
           <Upload className="w-4 h-4" />
           {uploading ? 'Uploading...' : 'Attach Files'}
         </Button>
-        <p className="text-xs text-gray-500 mt-1">
-          Supported: Images, PDF, Word, Excel, Text files (max 50MB each)
-        </p>
       </div>
 
       {/* Attachments List */}

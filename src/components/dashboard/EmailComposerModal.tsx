@@ -9,19 +9,8 @@ import { EmailComposerForm } from './email-composer/EmailComposerForm';
 import { EmailComposerActions } from './email-composer/EmailComposerActions';
 import { RecipientsList } from './email-composer/RecipientsList';
 import { EmailPreview } from './email-composer/EmailPreview';
-import { AttachmentUpload } from '@/components/inbox/AttachmentUpload';
 import { validateEmailForm } from '@/utils/emailValidation';
 import type { Application, Job } from '@/types';
-
-interface AttachmentFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  url?: string;
-  path?: string;
-  file?: File;
-}
 
 interface EmailComposerModalProps {
   open: boolean;
@@ -39,7 +28,6 @@ export const EmailComposerModal = ({
   const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates(open);
   const { formData, updateField, selectTemplate, togglePreview, resetForm } = useEmailComposer();
   const { sendBulkEmail, isSending, getCompanyName, getUserUniqueEmail } = useEmailSending();
-  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
 
   const { isValid } = validateEmailForm(formData.subject, formData.content);
   const canSend = isValid && selectedApplications.length > 0 && !isSending;
@@ -48,20 +36,16 @@ export const EmailComposerModal = ({
     if (!canSend) return;
 
     try {
-      const success = await sendBulkEmail(
+      await sendBulkEmail(
         selectedApplications,
         job,
         formData.subject,
         formData.content,
-        formData.templateId,
-        attachments
+        formData.templateId
       );
       
-      if (success) {
-        resetForm();
-        setAttachments([]);
-        onOpenChange(false);
-      }
+      resetForm();
+      onOpenChange(false);
     } catch (error) {
       console.error('Failed to send emails:', error);
     }
@@ -70,7 +54,6 @@ export const EmailComposerModal = ({
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       resetForm();
-      setAttachments([]);
     }
     onOpenChange(open);
   };
@@ -104,15 +87,6 @@ export const EmailComposerModal = ({
                 onSubjectChange={(subject) => updateField('subject', subject)}
                 onContentChange={(content) => updateField('content', content)}
               />
-
-              <div className="border rounded-lg p-4">
-                <h4 className="font-medium mb-3">Attachments</h4>
-                <AttachmentUpload
-                  attachments={attachments}
-                  onAttachmentsChange={setAttachments}
-                  disabled={isSending}
-                />
-              </div>
 
               <EmailComposerActions
                 onSend={handleSend}

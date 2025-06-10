@@ -62,22 +62,15 @@ export const useEmailSending = () => {
       const companyName = getCompanyName(job);
       const userUniqueEmail = getUserUniqueEmail();
       
-      // Prepare attachments data with proper structure
+      // Prepare attachments data with both URL and path for backend access
       const attachmentsData = attachments ? attachments.map(att => ({
         id: att.id,
         name: att.name,
         size: att.size,
         type: att.type,
         url: att.url,
-        path: att.path
+        path: att.path // Include path for secure backend access
       })) : [];
-
-      console.log('Sending bulk email with attachments:', {
-        user_id: user.id,
-        applications_count: applications.length,
-        attachments_count: attachmentsData.length,
-        attachments: attachmentsData.map(a => ({ name: a.name, size: a.size }))
-      });
       
       const { data, error } = await supabase.functions.invoke('send-bulk-email', {
         body: {
@@ -94,36 +87,12 @@ export const useEmailSending = () => {
         }
       });
 
-      if (error) {
-        console.error('Email sending error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Bulk email response:', data);
-
-      // Check for attachment errors in the response
-      const attachmentErrors = data?.attachment_errors || [];
-      const summary = data?.summary;
-
-      let successMessage = `Successfully sent emails to ${applications.length} candidate${applications.length > 1 ? 's' : ''} from ${userUniqueEmail}.`;
-      
-      if (summary?.attachments_processed > 0) {
-        successMessage += ` ${summary.attachments_processed} attachments included.`;
-      }
-
-      if (attachmentErrors.length > 0) {
-        console.warn('Some attachments failed:', attachmentErrors);
-        toast({
-          title: "Emails Sent with Attachment Issues",
-          description: `${successMessage} However, ${attachmentErrors.length} attachment(s) failed to process.`,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Emails Sent",
-          description: successMessage,
-        });
-      }
+      toast({
+        title: "Emails Sent",
+        description: `Successfully sent emails to ${applications.length} candidate${applications.length > 1 ? 's' : ''} from ${userUniqueEmail}.`,
+      });
 
       return true;
     } catch (error) {
