@@ -1,77 +1,48 @@
-
-import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "react-router-dom";
 import { HeaderLogo } from "./header/HeaderLogo";
 import { MainNavigation } from "./header/MainNavigation";
-import { UserMenu } from "./header/UserMenu";
 import { AuthButtons } from "./header/AuthButtons";
+import { UserMenu } from "./header/UserMenu";
+import { TrialBanner } from "./subscription/TrialBanner";
 
-interface UnifiedHeaderProps {
-  breadcrumbs?: Array<{
-    label: string;
-    href?: string;
-    isCurrentPage?: boolean;
-  }>;
-  onCreateRole?: () => void;
-  showCreateButton?: boolean;
-}
-
-export const UnifiedHeader = ({
-  breadcrumbs,
-  onCreateRole,
-  showCreateButton = true
-}: UnifiedHeaderProps) => {
-  const { user, profile, profileLoading, signOut, loading, isAuthenticated } = useAuth();
+export const UnifiedHeader = () => {
   const location = useLocation();
-  
-  // Check if current location is the dashboard or any subdirectory of /jobs (except /jobs/public)
-  const isDashboard = location.pathname === "/jobs" || 
-    (location.pathname.startsWith("/jobs/") && !location.pathname.startsWith("/jobs/public"));
-  
-  // Check if we're on the homepage for dark theme styling
-  const isHomepage = location.pathname === "/";
-  
+  const navigate = useNavigate();
+  const { isAuthenticated, user, profile } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <header className={`border-b sticky top-0 z-50 ${
-      isHomepage 
-        ? "border-white/10 bg-black/20 backdrop-blur-sm" 
-        : "border-gray-100 bg-white/80 backdrop-blur-sm"
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo and Main Navigation */}
-          <div className="flex items-center space-x-6">
+    <>
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
             <HeaderLogo />
-            <MainNavigation />
-          </div>
-          
-          {/* Right Side Navigation */}
-          <div className="flex items-center gap-4">
-            {loading ? (
-              <div className={`flex items-center gap-2 text-sm ${
-                isHomepage ? "text-gray-300" : "text-gray-600"
-              }`}>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading...
-              </div>
-            ) : isAuthenticated ? (
-              <UserMenu 
-                user={user}
-                profile={profile}
-                profileLoading={profileLoading}
-                onSignOut={signOut}
-                onCreateRole={onCreateRole}
-              />
-            ) : (
-              <AuthButtons 
-                showCreateButton={showCreateButton}
-                onCreateRole={onCreateRole}
-              />
-            )}
+            <MainNavigation 
+              location={location}
+              isAuthenticated={isAuthenticated}
+              isMobileMenuOpen={isMobileMenuOpen}
+              setIsMobileMenuOpen={setIsMobileMenuOpen}
+            />
+            
+            <div className="flex items-center space-x-4">
+              {isAuthenticated ? (
+                <UserMenu user={user} profile={profile} />
+              ) : (
+                <AuthButtons navigate={navigate} />
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+      
+      {/* Trial Banner */}
+      {isAuthenticated && (
+        <div className="sticky top-16 z-40">
+          <TrialBanner />
+        </div>
+      )}
+    </>
   );
 };

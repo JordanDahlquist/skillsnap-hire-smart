@@ -642,6 +642,66 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          applications_count: number | null
+          applications_count_reset_date: string | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          job_count: number | null
+          paddle_customer_id: string | null
+          paddle_subscription_id: string | null
+          plan_type: Database["public"]["Enums"]["plan_type"]
+          status: Database["public"]["Enums"]["subscription_status"]
+          subscription_end_date: string | null
+          subscription_start_date: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          applications_count?: number | null
+          applications_count_reset_date?: string | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          job_count?: number | null
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          plan_type?: Database["public"]["Enums"]["plan_type"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          applications_count?: number | null
+          applications_count_reset_date?: string | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          job_count?: number | null
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          plan_type?: Database["public"]["Enums"]["plan_type"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -655,6 +715,10 @@ export type Database = {
         Args: { user_id: string; full_name: string; email: string }
         Returns: string
       }
+      get_user_plan_limits: {
+        Args: { user_id: string }
+        Returns: Json
+      }
       track_job_view: {
         Args: {
           p_job_id: string
@@ -664,9 +728,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      user_has_active_access: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      plan_type: "starter" | "professional" | "enterprise"
+      subscription_status:
+        | "trial"
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "paused"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -781,6 +855,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      plan_type: ["starter", "professional", "enterprise"],
+      subscription_status: [
+        "trial",
+        "active",
+        "past_due",
+        "canceled",
+        "paused",
+      ],
+    },
   },
 } as const
