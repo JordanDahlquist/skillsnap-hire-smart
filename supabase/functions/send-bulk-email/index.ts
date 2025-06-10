@@ -51,7 +51,6 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('MAILERSEND_API_KEY is not configured');
     }
 
-    // Create Supabase client with service role key for storage access
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -75,7 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('User ID is required');
     }
 
-    console.log('Sending bulk emails via MailerSend:', { 
+    console.log('Processing bulk email request:', { 
       user_id,
       count: applications.length, 
       subject, 
@@ -84,44 +83,90 @@ const handler = async (req: Request): Promise<Response> => {
       attachments_count: attachments.length
     });
 
-    // Process attachments if any
+    // Process attachments with improved error handling
     const processedAttachments = [];
+    const failedAttachments = [];
+
     for (const attachment of attachments) {
       try {
-        // Construct the file path based on how it's stored
-        const filePath = `${user_id}/${attachment.id}-${attachment.name}`;
-        console.log(`Attempting to download attachment from path: ${filePath}`);
+        console.log(`Processing attachment: ${attachment.name} (ID: ${attachment.id})`);
         
-        // Download the file directly from Supabase Storage using service role
+        // Use the exact same path format as frontend: user_id/fileId-fileName
+        const filePath = `${user_id}/${attachment.id}-${attachment.name}`;
+        console.log(`Attempting to download from path: ${filePath}`);
+        
+        // Verify file exists first
+        const { data: fileList, error: listError } = await supabase.storage
+          .from('email-attachments')
+          .list(user_id, {
+            search: `${attachment.id}-${attachment.name}`
+          });
+
+        if (listError) {
+          console.error(`Error listing files for ${attachment.name}:`, listError);
+          failedAttachments.push({ name: attachment.name, error: 'File not found in storage' });
+          continue;
+        }
+
+        if (!fileList || fileList.length === 0) {
+          console.error(`File not found in storage: ${filePath}`);
+          failedAttachments.push({ name: attachment.name, error: 'File not found in storage' });
+          continue;
+        }
+
+        console.log(`File found in storage: ${attachment.name}`);
+
+        // Download the file
         const { data: fileData, error: downloadError } = await supabase.storage
           .from('email-attachments')
           .download(filePath);
 
         if (downloadError) {
-          console.error(`Failed to download attachment ${attachment.name}:`, downloadError);
+          console.error(`Failed to download ${attachment.name}:`, downloadError);
+          failedAttachments.push({ name: attachment.name, error: downloadError.message });
           continue;
         }
 
-        if (fileData) {
-          // Convert file data to ArrayBuffer then to base64
-          const arrayBuffer = await fileData.arrayBuffer();
-          const base64Content = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-          
-          processedAttachments.push({
-            id: attachment.id,
-            name: attachment.name,
-            content: base64Content,
-            disposition: "attachment"
-          });
-          
-          console.log(`Successfully processed attachment: ${attachment.name} (${arrayBuffer.byteLength} bytes)`);
-        } else {
-          console.error(`No file data returned for attachment: ${attachment.name}`);
+        if (!fileData) {
+          console.error(`No file data returned for: ${attachment.name}`);
+          failedAttachments.push({ name: attachment.name, error: 'No file data returned' });
+          continue;
         }
+
+        // Convert to base64 with proper error handling
+        const arrayBuffer = await fileData.arrayBuffer();
+        if (arrayBuffer.byteLength === 0) {
+          console.error(`Empty file data for: ${attachment.name}`);
+          failedAttachments.push({ name: attachment.name, error: 'Empty file data' });
+          continue;
+        }
+
+        const base64Content = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        
+        // Create MailerSend compatible attachment object
+        const mailersendAttachment = {
+          name: attachment.name,
+          content: base64Content,
+          disposition: "attachment"
+        };
+
+        // Add content-type if available
+        if (attachment.type) {
+          mailersendAttachment.type = attachment.type;
+        }
+
+        processedAttachments.push(mailersendAttachment);
+        console.log(`Successfully processed attachment: ${attachment.name} (${arrayBuffer.byteLength} bytes)`);
+        
       } catch (error) {
         console.error(`Error processing attachment ${attachment.name}:`, error);
-        // Continue with other attachments even if one fails
+        failedAttachments.push({ name: attachment.name, error: error.message });
       }
+    }
+
+    console.log(`Attachment processing complete: ${processedAttachments.length} successful, ${failedAttachments.length} failed`);
+    if (failedAttachments.length > 0) {
+      console.error('Failed attachments:', failedAttachments);
     }
 
     const results = [];
@@ -176,7 +221,7 @@ const handler = async (req: Request): Promise<Response> => {
           ? `${processedSubject} [Thread:${finalThreadId}]`
           : processedSubject;
 
-        // Store message in database FIRST (before sending email)
+        // Store message in database FIRST
         if (finalThreadId) {
           console.log('Storing message in database for thread:', finalThreadId);
           const { error: messageError } = await supabase
@@ -208,7 +253,7 @@ const handler = async (req: Request): Promise<Response> => {
           }
         }
 
-        // Now attempt to send email via MailerSend API
+        // Prepare email payload for MailerSend
         const emailPayload: any = {
           from: {
             email: fromEmail,
@@ -230,7 +275,7 @@ const handler = async (req: Request): Promise<Response> => {
           }
         };
 
-        // Add attachments to the email payload if any were successfully processed
+        // Add attachments to email payload if any were successfully processed
         if (processedAttachments.length > 0) {
           emailPayload.attachments = processedAttachments;
           console.log(`Adding ${processedAttachments.length} attachments to email for ${application.email}`);
@@ -240,6 +285,7 @@ const handler = async (req: Request): Promise<Response> => {
         let emailSendError = null;
 
         try {
+          console.log('Sending email via MailerSend API for:', application.email);
           const emailResponse = await fetch('https://api.mailersend.com/v1/email', {
             method: 'POST',
             headers: {
@@ -250,31 +296,32 @@ const handler = async (req: Request): Promise<Response> => {
             body: JSON.stringify(emailPayload)
           });
 
+          console.log(`MailerSend response status: ${emailResponse.status}`);
+
           if (!emailResponse.ok) {
             const errorText = await emailResponse.text();
+            console.error(`MailerSend API error for ${application.email}:`, errorText);
             throw new Error(`MailerSend API error: ${emailResponse.status} - ${errorText}`);
           }
 
-          // Handle potentially empty or invalid JSON response
           const responseText = await emailResponse.text();
-          console.log('MailerSend response text:', responseText);
+          console.log('MailerSend response:', responseText);
           
           if (responseText.trim()) {
             try {
               emailResult = JSON.parse(responseText);
               console.log('Email sent successfully via MailerSend:', emailResult);
             } catch (parseError) {
-              console.warn('Failed to parse MailerSend response as JSON, but email may have been sent:', responseText);
-              emailResult = { message: 'Email sent (response parsing failed)', raw_response: responseText };
+              console.warn('Failed to parse MailerSend response as JSON:', responseText);
+              emailResult = { message: 'Email sent', raw_response: responseText };
             }
           } else {
-            console.warn('Empty response from MailerSend, but status was OK');
+            console.log('Empty response from MailerSend (likely success)');
             emailResult = { message: 'Email sent (empty response)' };
           }
         } catch (error) {
           console.error('Failed to send email via MailerSend:', error);
           emailSendError = error;
-          // Don't throw here - we still want to log the email and show success to user
         }
 
         // Log the email attempt
@@ -298,12 +345,13 @@ const handler = async (req: Request): Promise<Response> => {
 
         results.push({
           email: application.email,
-          success: messageStored, // Success is based on message storage, not email sending
+          success: messageStored && !emailSendError,
           thread_id: finalThreadId,
           message_id: emailResult?.message_id || emailResult?.id,
           email_sent: !emailSendError,
           email_error: emailSendError?.message,
-          attachments_processed: processedAttachments.length
+          attachments_processed: processedAttachments.length,
+          attachments_failed: failedAttachments.filter(f => f.name).length
         });
 
       } catch (error) {
@@ -327,8 +375,10 @@ const handler = async (req: Request): Promise<Response> => {
           total: applications.length,
           processed: successCount,
           failed: applications.length - successCount,
-          attachments_processed: processedAttachments.length
-        }
+          attachments_processed: processedAttachments.length,
+          attachments_failed: failedAttachments.length
+        },
+        attachment_errors: failedAttachments
       }),
       {
         status: 200,
