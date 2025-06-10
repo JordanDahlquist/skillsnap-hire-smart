@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +12,7 @@ interface AttachmentFile {
   size: number;
   type: string;
   url?: string;
+  path?: string;
   file?: File;
 }
 
@@ -177,12 +177,14 @@ export const useOptimizedInboxData = () => {
       
       const recipientEmail = recipients[0] || '';
 
+      // Prepare attachments data for database (include both URL and path)
       const attachmentsData = attachments.map(att => ({
         id: att.id,
         name: att.name,
         size: att.size,
         type: att.type,
-        url: att.url
+        url: att.url,
+        path: att.path // Include path for backend access
       }));
 
       const newMessage = {

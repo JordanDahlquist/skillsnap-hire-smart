@@ -17,6 +17,7 @@ interface AttachmentFile {
   size: number;
   type: string;
   url?: string;
+  path?: string;
   file?: File;
 }
 
@@ -89,13 +90,14 @@ export const emailService = {
       });
     }
 
-    // Prepare attachments data for database
+    // Prepare attachments data for database (include both URL and path)
     const attachmentsData = data.attachments ? data.attachments.map(att => ({
       id: att.id,
       name: att.name,
       size: att.size,
       type: att.type,
-      url: att.url
+      url: att.url,
+      path: att.path // Include path for backend access
     })) : [];
 
     // Convert rich text to plain text for email

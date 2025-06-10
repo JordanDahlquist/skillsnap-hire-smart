@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Upload, X, File, Image, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ interface AttachmentFile {
   size: number;
   type: string;
   url?: string;
+  path?: string;
   file?: File;
 }
 
@@ -86,6 +86,7 @@ export const AttachmentUpload = ({ attachments, onAttachmentsChange, disabled }:
           size: file.size,
           type: file.type,
           url: publicUrl,
+          path: filePath, // Store the file path for backend access
           file
         });
       }
@@ -115,14 +116,11 @@ export const AttachmentUpload = ({ attachments, onAttachmentsChange, disabled }:
 
   const removeAttachment = async (attachmentId: string) => {
     const attachment = attachments.find(a => a.id === attachmentId);
-    if (attachment?.url) {
-      // Extract file path from URL for deletion
-      const urlParts = attachment.url.split('/');
-      const filePath = `${user?.id}/${attachment.id}-${attachment.name}`;
-      
+    if (attachment?.path) {
+      // Use the stored path for deletion
       await supabase.storage
         .from('email-attachments')
-        .remove([filePath]);
+        .remove([attachment.path]);
     }
 
     onAttachmentsChange(attachments.filter(a => a.id !== attachmentId));

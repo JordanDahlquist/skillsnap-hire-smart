@@ -6,6 +6,16 @@ import { useToast } from '@/hooks/use-toast';
 import { validateEmailForm } from '@/utils/emailValidation';
 import type { Application, Job } from '@/types/emailComposer';
 
+interface AttachmentFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+  path?: string;
+  file?: File;
+}
+
 export const useEmailSending = () => {
   const { user, profile } = useOptimizedAuth();
   const { toast } = useToast();
@@ -25,7 +35,7 @@ export const useEmailSending = () => {
     subject: string,
     content: string,
     templateId?: string,
-    attachments?: any[]
+    attachments?: AttachmentFile[]
   ) => {
     const validation = validateEmailForm(subject, content);
     if (!validation.isValid) {
@@ -52,6 +62,16 @@ export const useEmailSending = () => {
       const companyName = getCompanyName(job);
       const userUniqueEmail = getUserUniqueEmail();
       
+      // Prepare attachments data with both URL and path for backend access
+      const attachmentsData = attachments ? attachments.map(att => ({
+        id: att.id,
+        name: att.name,
+        size: att.size,
+        type: att.type,
+        url: att.url,
+        path: att.path // Include path for secure backend access
+      })) : [];
+      
       const { data, error } = await supabase.functions.invoke('send-bulk-email', {
         body: {
           user_id: user.id,
@@ -63,7 +83,7 @@ export const useEmailSending = () => {
           company_name: companyName,
           reply_to_email: userUniqueEmail,
           create_threads: true,
-          attachments: attachments || []
+          attachments: attachmentsData
         }
       });
 

@@ -23,6 +23,7 @@ interface AttachmentFile {
   size: number;
   type: string;
   url?: string;
+  path?: string;
 }
 
 interface BulkEmailRequest {
@@ -50,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('MAILERSEND_API_KEY is not configured');
     }
 
+    // Create Supabase client with service role key for storage access
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -86,24 +88,35 @@ const handler = async (req: Request): Promise<Response> => {
     const processedAttachments = [];
     for (const attachment of attachments) {
       try {
-        if (attachment.url) {
-          // Download the file from Supabase Storage
-          const response = await fetch(attachment.url);
-          if (response.ok) {
-            const fileBuffer = await response.arrayBuffer();
-            const base64Content = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)));
-            
-            processedAttachments.push({
-              id: attachment.id,
-              name: attachment.name,
-              content: base64Content,
-              disposition: "attachment"
-            });
-            
-            console.log(`Successfully processed attachment: ${attachment.name}`);
-          } else {
-            console.error(`Failed to download attachment ${attachment.name}:`, response.statusText);
-          }
+        // Construct the file path based on how it's stored
+        const filePath = `${user_id}/${attachment.id}-${attachment.name}`;
+        console.log(`Attempting to download attachment from path: ${filePath}`);
+        
+        // Download the file directly from Supabase Storage using service role
+        const { data: fileData, error: downloadError } = await supabase.storage
+          .from('email-attachments')
+          .download(filePath);
+
+        if (downloadError) {
+          console.error(`Failed to download attachment ${attachment.name}:`, downloadError);
+          continue;
+        }
+
+        if (fileData) {
+          // Convert file data to ArrayBuffer then to base64
+          const arrayBuffer = await fileData.arrayBuffer();
+          const base64Content = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          
+          processedAttachments.push({
+            id: attachment.id,
+            name: attachment.name,
+            content: base64Content,
+            disposition: "attachment"
+          });
+          
+          console.log(`Successfully processed attachment: ${attachment.name} (${arrayBuffer.byteLength} bytes)`);
+        } else {
+          console.error(`No file data returned for attachment: ${attachment.name}`);
         }
       } catch (error) {
         console.error(`Error processing attachment ${attachment.name}:`, error);
@@ -217,10 +230,10 @@ const handler = async (req: Request): Promise<Response> => {
           }
         };
 
-        // Add attachments to the email payload if any
+        // Add attachments to the email payload if any were successfully processed
         if (processedAttachments.length > 0) {
           emailPayload.attachments = processedAttachments;
-          console.log(`Adding ${processedAttachments.length} attachments to email`);
+          console.log(`Adding ${processedAttachments.length} attachments to email for ${application.email}`);
         }
 
         let emailResult = null;
