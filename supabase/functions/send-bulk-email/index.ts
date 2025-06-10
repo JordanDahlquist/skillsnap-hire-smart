@@ -76,9 +76,10 @@ const handler = async (req: Request): Promise<Response> => {
     const companyName = company_name || 'Our Company';
 
     for (const application of applications) {
-      try {
-        let finalThreadId = thread_id;
+      let finalThreadId = thread_id;
+      let messageStored = false;
 
+      try {
         // Create email thread if requested and not provided
         if (create_threads && !finalThreadId) {
           const { data: thread, error: threadError } = await supabase
@@ -122,7 +123,32 @@ const handler = async (req: Request): Promise<Response> => {
           ? `${processedSubject} [Thread:${finalThreadId}]`
           : processedSubject;
 
-        // Send email via MailerSend API
+        // Store message in database FIRST (before sending email)
+        if (finalThreadId) {
+          console.log('Storing message in database for thread:', finalThreadId);
+          const { error: messageError } = await supabase
+            .from('email_messages')
+            .insert({
+              thread_id: finalThreadId,
+              sender_email: fromEmail,
+              recipient_email: application.email,
+              subject: finalSubject,
+              content: processedContent,
+              direction: 'outbound',
+              message_type: 'original',
+              is_read: true
+            });
+
+          if (messageError) {
+            console.error('Failed to store message:', messageError);
+            throw messageError;
+          } else {
+            console.log('Message stored successfully in database');
+            messageStored = true;
+          }
+        }
+
+        // Now attempt to send email via MailerSend API
         const emailPayload = {
           from: {
             email: fromEmail,
@@ -144,45 +170,48 @@ const handler = async (req: Request): Promise<Response> => {
           }
         };
 
-        const emailResponse = await fetch('https://api.mailersend.com/v1/email', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${mailersendApiKey}`,
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify(emailPayload)
-        });
+        let emailResult = null;
+        let emailSendError = null;
 
-        if (!emailResponse.ok) {
-          const errorText = await emailResponse.text();
-          throw new Error(`MailerSend API error: ${emailResponse.status} - ${errorText}`);
-        }
+        try {
+          const emailResponse = await fetch('https://api.mailersend.com/v1/email', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${mailersendApiKey}`,
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(emailPayload)
+          });
 
-        const emailResult = await emailResponse.json();
-        console.log('Email sent successfully via MailerSend:', emailResult);
-
-        // Store message in database if we have a thread
-        if (finalThreadId) {
-          const { error: messageError } = await supabase
-            .from('email_messages')
-            .insert({
-              thread_id: finalThreadId,
-              sender_email: fromEmail,
-              recipient_email: application.email,
-              subject: finalSubject,
-              content: processedContent,
-              direction: 'outbound',
-              message_type: 'original',
-              is_read: true
-            });
-
-          if (messageError) {
-            console.error('Failed to store message:', messageError);
+          if (!emailResponse.ok) {
+            const errorText = await emailResponse.text();
+            throw new Error(`MailerSend API error: ${emailResponse.status} - ${errorText}`);
           }
+
+          // Handle potentially empty or invalid JSON response
+          const responseText = await emailResponse.text();
+          console.log('MailerSend response text:', responseText);
+          
+          if (responseText.trim()) {
+            try {
+              emailResult = JSON.parse(responseText);
+              console.log('Email sent successfully via MailerSend:', emailResult);
+            } catch (parseError) {
+              console.warn('Failed to parse MailerSend response as JSON, but email may have been sent:', responseText);
+              emailResult = { message: 'Email sent (response parsing failed)', raw_response: responseText };
+            }
+          } else {
+            console.warn('Empty response from MailerSend, but status was OK');
+            emailResult = { message: 'Email sent (empty response)' };
+          }
+        } catch (error) {
+          console.error('Failed to send email via MailerSend:', error);
+          emailSendError = error;
+          // Don't throw here - we still want to log the email and show success to user
         }
 
-        // Log the email
+        // Log the email attempt
         const { error: logError } = await supabase
           .from('email_logs')
           .insert({
@@ -193,7 +222,7 @@ const handler = async (req: Request): Promise<Response> => {
             subject: finalSubject,
             content: processedContent,
             template_id: template_id || null,
-            status: 'sent',
+            status: emailSendError ? 'failed' : 'sent',
             sent_at: new Date().toISOString()
           });
 
@@ -203,13 +232,15 @@ const handler = async (req: Request): Promise<Response> => {
 
         results.push({
           email: application.email,
-          success: true,
+          success: messageStored, // Success is based on message storage, not email sending
           thread_id: finalThreadId,
-          message_id: emailResult.message_id || emailResult.id
+          message_id: emailResult?.message_id || emailResult?.id,
+          email_sent: !emailSendError,
+          email_error: emailSendError?.message
         });
 
       } catch (error) {
-        console.error(`Failed to send email to ${application.email}:`, error);
+        console.error(`Failed to process email for ${application.email}:`, error);
         results.push({
           email: application.email,
           success: false,
@@ -219,7 +250,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const successCount = results.filter(r => r.success).length;
-    console.log(`Bulk email completed: ${successCount}/${applications.length} sent successfully`);
+    console.log(`Bulk email completed: ${successCount}/${applications.length} processed successfully`);
 
     return new Response(
       JSON.stringify({
@@ -227,7 +258,7 @@ const handler = async (req: Request): Promise<Response> => {
         results,
         summary: {
           total: applications.length,
-          sent: successCount,
+          processed: successCount,
           failed: applications.length - successCount
         }
       }),

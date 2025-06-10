@@ -46,50 +46,29 @@ export const useInboxData = () => {
     enabled: !!user?.id,
   });
 
-  // Fetch all messages - improved query logic
+  // Fetch all messages - always fetch when we have a user
   const { 
     data: messages = [], 
     isLoading: messagesLoading,
     error: messagesError 
   } = useQuery({
-    queryKey: ['email-messages', user?.id, threads.length],
+    queryKey: ['email-messages', user?.id],
     queryFn: async () => {
       if (!user?.id) {
         console.log('No user ID, skipping message fetch');
         return [];
       }
       
-      // Always try to fetch messages if we have a user, regardless of threads length
       console.log('Fetching messages for user:', user.id);
-      console.log('Available threads:', threads.map(t => t.id));
       
-      if (threads.length === 0) {
-        console.log('No threads available yet, but fetching all user messages');
-        // Fetch all messages for the user (in case threads haven't loaded yet)
-        const { data, error } = await supabase
-          .from('email_messages')
-          .select(`
-            *,
-            email_threads!inner(user_id)
-          `)
-          .eq('email_threads.user_id', user.id)
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          console.error('Error fetching messages without threads:', error);
-          return [];
-        }
-        console.log('Fetched messages without thread filter:', data);
-        return data as EmailMessage[];
-      }
-      
-      const threadIds = threads.map(t => t.id);
-      console.log('Fetching messages for threads:', threadIds);
-      
+      // Fetch all messages for the user's threads
       const { data, error } = await supabase
         .from('email_messages')
-        .select('*')
-        .in('thread_id', threadIds)
+        .select(`
+          *,
+          email_threads!inner(user_id)
+        `)
+        .eq('email_threads.user_id', user.id)
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -97,7 +76,7 @@ export const useInboxData = () => {
         throw error;
       }
       
-      console.log('Fetched messages:', data);
+      console.log('Fetched messages:', data?.length || 0, 'messages');
       return data as EmailMessage[];
     },
     enabled: !!user?.id,
@@ -197,21 +176,26 @@ export const useInboxData = () => {
       const plainTextContent = tempDiv.textContent || tempDiv.innerText || content;
 
       // Send actual email via edge function
-      const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
-        body: {
-          user_id: user.id,
-          applications: [{
-            email: recipientEmail,
-            name: recipientEmail.split('@')[0]
-          }],
-          job: { title: 'Reply' },
-          subject: `Re: ${thread.subject} [Thread:${threadId}]`,
-          content: plainTextContent,
-          reply_to_email: profile.unique_email
-        }
-      });
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
+          body: {
+            user_id: user.id,
+            applications: [{
+              email: recipientEmail,
+              name: recipientEmail.split('@')[0]
+            }],
+            job: { title: 'Reply' },
+            subject: `Re: ${thread.subject} [Thread:${threadId}]`,
+            content: plainTextContent,
+            reply_to_email: profile.unique_email
+          }
+        });
 
-      if (emailError) {
+        if (emailError) {
+          console.error('Failed to send email via edge function:', emailError);
+          // Don't throw here as we've already stored the message
+        }
+      } catch (emailError) {
         console.error('Failed to send email:', emailError);
         // Don't throw here as we've already stored the message
       }
@@ -287,7 +271,6 @@ export const useInboxData = () => {
           (payload) => {
             console.log('Email threads change detected:', payload);
             queryClient.invalidateQueries({ queryKey: ['email-threads'] });
-            // Also invalidate messages since thread changes might affect message queries
             queryClient.invalidateQueries({ queryKey: ['email-messages'] });
           }
         )
@@ -338,7 +321,7 @@ export const useInboxData = () => {
     } catch (error) {
       console.error('Error setting up inbox subscription:', error);
     }
-  }, [user?.id, queryClient]);
+  }, [user?.id, queryClient, toast]);
 
   // Cleanup subscription on unmount
   useEffect(() => {
