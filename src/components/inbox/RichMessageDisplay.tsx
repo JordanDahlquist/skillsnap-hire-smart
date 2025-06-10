@@ -1,10 +1,9 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { formatDistanceToNow } from "date-fns";
-import { Download, File, Image, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, File, Image, FileText } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from '@/components/ui/button';
-import { parseEmailContent, truncateContent } from '@/utils/emailContentParser';
 import type { EmailMessage } from "@/types/inbox";
 
 interface Attachment {
@@ -20,9 +19,6 @@ interface RichMessageDisplayProps {
 }
 
 export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
-  const [showQuotedContent, setShowQuotedContent] = useState(false);
-  const [showFullContent, setShowFullContent] = useState(false);
-
   const getFileIcon = (type: string) => {
     if (type.startsWith('image/')) return <Image className="w-4 h-4" />;
     if (type === 'application/pdf') return <FileText className="w-4 h-4" />;
@@ -54,110 +50,47 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
     }
   };
 
-  // Parse the email content
-  const parsedContent = parseEmailContent(message.content);
-  const { cleanContent, hasQuotedReply, quotedContent } = parsedContent;
-  
-  // Determine if content should be truncated
-  const shouldTruncate = cleanContent.length > 500;
-  const displayContent = showFullContent ? cleanContent : truncateContent(cleanContent);
-  
+  const isRichContent = message.content.includes('<') || message.content.includes('&');
   const attachments = message.attachments || [];
 
   return (
     <div
       className={cn(
-        "p-4 rounded-lg shadow-sm border max-w-full",
+        "p-4 rounded-lg max-w-[80%]",
         message.direction === 'outbound'
-          ? "ml-auto mr-4 bg-primary text-primary-foreground max-w-[85%]"
-          : "mr-auto ml-4 bg-muted max-w-[85%]"
+          ? "ml-auto bg-blue-600 text-white"
+          : "mr-auto bg-gray-100 text-gray-900"
       )}
     >
       <div className="flex items-center justify-between mb-2">
         <span className={cn(
           "text-sm font-medium",
-          message.direction === 'outbound' ? "text-primary-foreground/90" : "text-muted-foreground"
+          message.direction === 'outbound' ? "text-blue-100" : "text-gray-600"
         )}>
           {message.direction === 'outbound' ? 'You' : message.sender_email}
         </span>
         <span className={cn(
           "text-xs",
-          message.direction === 'outbound' ? "text-primary-foreground/70" : "text-muted-foreground/70"
+          message.direction === 'outbound' ? "text-blue-200" : "text-gray-500"
         )}>
           {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
         </span>
       </div>
       
       {/* Message Content */}
-      <div className="text-sm mb-3 leading-relaxed break-words">
-        <div className="whitespace-pre-wrap">
-          {displayContent}
-        </div>
-        
-        {/* Show more/less button for long content */}
-        {shouldTruncate && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowFullContent(!showFullContent)}
+      <div className="text-sm mb-3">
+        {isRichContent ? (
+          <div 
+            dangerouslySetInnerHTML={{ __html: message.content }}
             className={cn(
-              "mt-2 h-6 text-xs p-1",
               message.direction === 'outbound' 
-                ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/20" 
-                : "text-muted-foreground hover:text-foreground"
+                ? "rich-message-content-outbound" 
+                : "rich-message-content"
             )}
-          >
-            {showFullContent ? (
-              <>
-                <ChevronUp className="w-3 h-3 mr-1" />
-                Show less
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-3 h-3 mr-1" />
-                Show more
-              </>
-            )}
-          </Button>
-        )}
-
-        {/* Quoted/Previous content */}
-        {hasQuotedReply && quotedContent && (
-          <div className="mt-3 pt-3 border-t border-opacity-20">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowQuotedContent(!showQuotedContent)}
-              className={cn(
-                "h-6 text-xs p-1 mb-2",
-                message.direction === 'outbound' 
-                  ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/20" 
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {showQuotedContent ? (
-                <>
-                  <ChevronUp className="w-3 h-3 mr-1" />
-                  Hide quoted text
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-3 h-3 mr-1" />
-                  Show quoted text
-                </>
-              )}
-            </Button>
-            
-            {showQuotedContent && (
-              <div className={cn(
-                "text-xs opacity-70 whitespace-pre-wrap p-2 rounded border border-opacity-20",
-                message.direction === 'outbound' 
-                  ? "bg-primary-foreground/10" 
-                  : "bg-background/50"
-              )}>
-                {quotedContent}
-              </div>
-            )}
+          />
+        ) : (
+          <div className="whitespace-pre-wrap">
+            {message.content}
           </div>
         )}
       </div>
@@ -167,7 +100,7 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
         <div className="space-y-2 pt-2 border-t border-opacity-20">
           <div className={cn(
             "text-xs font-medium",
-            message.direction === 'outbound' ? "text-primary-foreground/90" : "text-muted-foreground"
+            message.direction === 'outbound' ? "text-blue-100" : "text-gray-600"
           )}>
             Attachments ({attachments.length})
           </div>
@@ -175,10 +108,10 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
             <div
               key={attachment.id}
               className={cn(
-                "flex items-center justify-between p-2 rounded border border-opacity-20 bg-opacity-50",
+                "flex items-center justify-between p-2 rounded border border-opacity-20",
                 message.direction === 'outbound' 
-                  ? "bg-primary-foreground/10" 
-                  : "bg-background"
+                  ? "bg-blue-500 bg-opacity-50" 
+                  : "bg-white"
               )}
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -189,7 +122,7 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
                   </div>
                   <div className={cn(
                     "text-xs",
-                    message.direction === 'outbound' ? "text-primary-foreground/70" : "text-muted-foreground"
+                    message.direction === 'outbound' ? "text-blue-100" : "text-gray-500"
                   )}>
                     {formatFileSize(attachment.size)}
                   </div>
@@ -202,8 +135,8 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
                 className={cn(
                   "h-6 w-6 p-0",
                   message.direction === 'outbound' 
-                    ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/20" 
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-blue-100 hover:text-white hover:bg-blue-500" 
+                    : "text-gray-600 hover:text-gray-900"
                 )}
               >
                 <Download className="w-3 h-3" />

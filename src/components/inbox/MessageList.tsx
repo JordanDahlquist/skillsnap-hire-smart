@@ -1,5 +1,4 @@
 
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { RichMessageDisplay } from "./RichMessageDisplay";
 import type { EmailMessage } from "@/types/inbox";
 
@@ -10,7 +9,7 @@ interface MessageListProps {
 export const MessageList = ({ messages }: MessageListProps) => {
   if (messages.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 text-muted-foreground">
+      <div className="flex items-center justify-center h-64 text-gray-500">
         <p>No messages in this conversation</p>
       </div>
     );
@@ -22,11 +21,9 @@ export const MessageList = ({ messages }: MessageListProps) => {
   );
 
   return (
-    <div className="space-y-4 pb-4 px-2">
-      {sortedMessages.map((message, index) => (
-        <div key={message.id} className={index === sortedMessages.length - 1 ? "mb-6" : ""}>
-          <RichMessageDisplay message={message} />
-        </div>
+    <div className="space-y-4">
+      {sortedMessages.map((message) => (
+        <RichMessageDisplay key={message.id} message={message} />
       ))}
     </div>
   );
