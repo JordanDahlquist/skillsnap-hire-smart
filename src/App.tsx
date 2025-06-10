@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import { AuthGuard } from "./components/AuthGuard";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
@@ -35,6 +36,7 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/jobs" element={
               <AuthGuard>
                 <OptimizedJobsPage />

@@ -8,11 +8,13 @@ import { useState } from "react";
 import { JobCreatorPanel } from "@/components/JobCreatorPanel";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Pricing = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleCreateRole = () => {
     if (!user) {
@@ -20,6 +22,14 @@ const Pricing = () => {
     } else {
       setShowCreateModal(true);
     }
+  };
+
+  const handleStartFreeTrial = () => {
+    navigate('/auth');
+  };
+
+  const handleContactSales = () => {
+    navigate('/contact');
   };
 
   const plans = [
@@ -184,7 +194,7 @@ const Pricing = () => {
                 
                 <CardContent className="space-y-6">
                   <Button 
-                    onClick={plan.name === "Enterprise" ? undefined : handleCreateRole}
+                    onClick={plan.name === "Enterprise" ? handleContactSales : handleStartFreeTrial}
                     className={`w-full py-3 text-lg font-semibold rounded-xl ${plan.buttonStyle} text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105`}
                   >
                     {plan.name === "Enterprise" ? (
