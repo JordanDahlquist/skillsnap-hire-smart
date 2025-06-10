@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -25,7 +24,6 @@ export interface SignUpFormData {
   companyName: string;
   companySize: string;
   industry: string;
-  jobTitle: string;
   
   // Use case
   hiringGoals: string[];
@@ -90,7 +88,6 @@ const SignUp = () => {
             company_name: formData.companyName,
             company_size: formData.companySize,
             industry: formData.industry,
-            job_title: formData.jobTitle,
             hiring_goals: formData.hiringGoals,
             hires_per_month: formData.hiresPerMonth,
             current_tools: formData.currentTools,

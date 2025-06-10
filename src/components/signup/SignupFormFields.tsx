@@ -133,19 +133,6 @@ export const SignupFormFields = ({
           </Select>
           {errors.industry && <p className="text-red-500 text-sm mt-1">{errors.industry}</p>}
         </div>
-
-        <div>
-          <Label htmlFor="jobTitle">Your Job Title</Label>
-          <Input
-            id="jobTitle"
-            value={formData.jobTitle}
-            onChange={(e) => onInputChange('jobTitle', e.target.value)}
-            className={cn(errors.jobTitle && "border-red-500")}
-            placeholder="e.g. HR Manager, CEO, Recruiter"
-            disabled={isLoading}
-          />
-          {errors.jobTitle && <p className="text-red-500 text-sm mt-1">{errors.jobTitle}</p>}
-        </div>
       </div>
     </div>
   );

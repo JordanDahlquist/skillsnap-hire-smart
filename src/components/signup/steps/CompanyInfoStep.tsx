@@ -63,15 +63,11 @@ export const CompanyInfoStep = ({
       newErrors.industry = "Industry is required";
     }
 
-    if (!formData.jobTitle.trim()) {
-      newErrors.jobTitle = "Job title is required";
-    }
-
     setErrors(newErrors);
     const isValid = Object.keys(newErrors).length === 0;
     onValidationChange(isValid);
     return isValid;
-  }, [formData.companyName, formData.companySize, formData.industry, formData.jobTitle, onValidationChange]);
+  }, [formData.companyName, formData.companySize, formData.industry, onValidationChange]);
 
   const { debouncedValidate, clearDebounce } = useDebounceValidation(validateForm, 300);
 
@@ -181,27 +177,6 @@ export const CompanyInfoStep = ({
           </Select>
           {errors.industry && (
             <p className="text-red-500 text-sm mt-1">{errors.industry}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="jobTitle" className="text-sm font-medium text-gray-700">
-            Your Job Title
-          </Label>
-          <Input
-            id="jobTitle"
-            type="text"
-            value={formData.jobTitle}
-            onChange={(e) => handleInputChange('jobTitle', e.target.value)}
-            className={cn(
-              "mt-1",
-              errors.jobTitle && "border-red-500 focus-visible:ring-red-500"
-            )}
-            placeholder="e.g. HR Manager, CEO, Recruiter"
-            disabled={isLoading}
-          />
-          {errors.jobTitle && (
-            <p className="text-red-500 text-sm mt-1">{errors.jobTitle}</p>
           )}
         </div>
 

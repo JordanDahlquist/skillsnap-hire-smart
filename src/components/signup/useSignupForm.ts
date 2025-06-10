@@ -16,8 +16,7 @@ export const useSignupForm = () => {
     password: "",
     companyName: "",
     companySize: "",
-    industry: "",
-    jobTitle: ""
+    industry: ""
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -54,9 +53,6 @@ export const useSignupForm = () => {
     if (!formData.industry) {
       newErrors.industry = "Industry is required";
     }
-    if (!formData.jobTitle.trim()) {
-      newErrors.jobTitle = "Job title is required";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -89,8 +85,7 @@ export const useSignupForm = () => {
             full_name: formData.fullName,
             company_name: formData.companyName,
             company_size: formData.companySize,
-            industry: formData.industry,
-            job_title: formData.jobTitle
+            industry: formData.industry
           }
         }
       });

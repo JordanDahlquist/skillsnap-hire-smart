@@ -6,7 +6,6 @@ export interface SignupFormData {
   companyName: string;
   companySize: string;
   industry: string;
-  jobTitle: string;
 }
 
 export const COMPANY_SIZES = [

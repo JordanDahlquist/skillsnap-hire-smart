@@ -21,7 +21,6 @@ const initialFormData: SignUpFormData = {
   companyName: "",
   companySize: "",
   industry: "",
-  jobTitle: "",
   hiringGoals: [],
   hiresPerMonth: "",
   currentTools: [],
