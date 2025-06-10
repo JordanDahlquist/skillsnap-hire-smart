@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Clock, Users, Target, LogIn, Zap, Brain, TrendingUp, CheckCircle, Star, BarChart3, MessageSquare, Filter, Sparkles, Award, Shield, Rocket } from "lucide-react";
@@ -8,8 +7,10 @@ import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { SolarSystemBackground } from "@/components/SolarSystemBackground";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
@@ -17,6 +18,14 @@ const Index = () => {
   const handleCreateRole = () => {
     if (!user) {
       setShowAuthModal(true);
+    } else {
+      setShowCreateModal(true);
+    }
+  };
+
+  const handleGetStarted = () => {
+    if (!user) {
+      navigate('/signup');
     } else {
       setShowCreateModal(true);
     }
@@ -85,7 +94,7 @@ const Index = () => {
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button 
-                    onClick={handleCreateRole}
+                    onClick={handleGetStarted}
                     size="lg" 
                     className="bg-[#007af6] hover:bg-[#0056b3] text-white px-10 py-5 text-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 rounded-xl animate-glow-pulse group"
                   >
@@ -97,14 +106,12 @@ const Index = () => {
                   {!user && (
                     <Button 
                       variant="outline"
-                      asChild
+                      onClick={() => navigate('/auth')}
                       size="lg" 
                       className="px-10 py-5 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 backdrop-blur-sm rounded-xl hover:scale-105 transition-all duration-300"
                     >
-                      <a href="/auth">
-                        <LogIn className="mr-3 w-6 h-6" />
-                        Sign In
-                      </a>
+                      <LogIn className="mr-3 w-6 h-6" />
+                      Sign In
                     </Button>
                   )}
                 </div>
@@ -539,7 +546,7 @@ const Index = () => {
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                 <Button 
-                  onClick={handleCreateRole}
+                  onClick={handleGetStarted}
                   size="lg" 
                   className="bg-[#007af6] hover:bg-[#0056b3] text-white px-12 py-6 text-2xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-2xl animate-glow-pulse group"
                 >
@@ -551,14 +558,12 @@ const Index = () => {
                 {!user && (
                   <Button 
                     variant="outline"
-                    asChild
+                    onClick={() => navigate('/auth')}
                     size="lg" 
                     className="px-12 py-6 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 backdrop-blur-sm rounded-2xl hover:scale-105 transition-all duration-300"
                   >
-                    <a href="/auth">
-                      <LogIn className="mr-4 w-6 h-6" />
-                      Sign In
-                    </a>
+                    <LogIn className="mr-4 w-6 h-6" />
+                    Sign In
                   </Button>
                 )}
               </div>
