@@ -11,7 +11,7 @@ interface AuthButtonsProps {
 export const AuthButtons = ({ showCreateButton = true, onCreateRole }: AuthButtonsProps) => {
   return (
     <div className="flex items-center gap-2">
-      <Button variant="outline" asChild className="border-white/30 text-white hover:bg-white/10 hover:text-white">
+      <Button variant="outline" asChild className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900">
         <Link to="/auth">
           <LogIn className="w-4 h-4 mr-2" />
           Sign In

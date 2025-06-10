@@ -24,13 +24,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Solar System Background */}
+      {/* Light Cosmic Background */}
       <SolarSystemBackground />
 
       {/* Content Layer */}
-      <div className="relative z-10 text-white">
-        {/* Unified Header with dark theme */}
-        <div className="bg-black/20 backdrop-blur-sm border-b border-white/10">
+      <div className="relative z-10">
+        {/* Unified Header with light theme */}
+        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50">
           <UnifiedHeader 
             onCreateRole={handleCreateRole}
             showCreateButton={true}
@@ -40,45 +40,45 @@ const Index = () => {
         {/* Enhanced Hero Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
           <div className="text-center max-w-5xl mx-auto">
-            {/* Hero Content with Subtle Dark Haze */}
+            {/* Hero Content with Subtle Light Background */}
             <div className="relative">
-              {/* Subtle dark haze background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-black/20 backdrop-blur-sm rounded-3xl -m-8 md:-m-12"></div>
+              {/* Subtle light background with glass effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-blue-50/80 to-purple-50/60 backdrop-blur-sm rounded-3xl border border-white/30 shadow-xl -m-8 md:-m-12"></div>
               
               {/* Hero content */}
               <div className="relative z-10 px-8 md:px-12 py-8">
                 <div className="flex items-center justify-center gap-2 mb-6">
                   <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
                   </div>
-                  <span className="text-gray-300 text-sm">Trusted by 500+ companies</span>
+                  <span className="text-gray-600 text-sm">Trusted by 500+ companies</span>
                 </div>
                 
-                <h1 className="text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight drop-shadow-lg">
+                <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
                   AI-Powered Hiring That
-                  <span className="text-[#007af6] drop-shadow-lg"> Actually Works</span>
+                  <span className="text-[#007af6]"> Actually Works</span>
                 </h1>
                 
-                <p className="text-2xl text-gray-200 mb-6 leading-relaxed drop-shadow-sm max-w-4xl mx-auto">
+                <p className="text-2xl text-gray-700 mb-6 leading-relaxed max-w-4xl mx-auto">
                   Create jobs in 2 minutes. Get AI-generated skill tests. Filter out 90% of bad applicants automatically. 
                   Hire top talent in days, not weeks.
                 </p>
                 
-                <div className="flex items-center justify-center gap-8 mb-8 text-sm text-gray-300">
+                <div className="flex items-center justify-center gap-8 mb-8 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <CheckCircle className="w-5 h-5 text-green-500" />
                     <span>5x faster hiring</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <CheckCircle className="w-5 h-5 text-green-500" />
                     <span>90% fewer bad applicants</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <CheckCircle className="w-5 h-5 text-green-500" />
                     <span>Zero manual screening</span>
                   </div>
                 </div>
@@ -87,7 +87,7 @@ const Index = () => {
                   <Button 
                     onClick={handleCreateRole}
                     size="lg" 
-                    className="bg-[#007af6] hover:bg-[#0056b3] text-white px-10 py-5 text-xl font-semibold shadow-2xl hover:shadow-3xl transition-all duration-200 hover:scale-105 rounded-xl"
+                    className="bg-[#007af6] hover:bg-[#0056b3] text-white px-10 py-5 text-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105 rounded-xl"
                   >
                     <Rocket className="mr-3 w-6 h-6" />
                     Start Hiring Smarter
@@ -99,7 +99,7 @@ const Index = () => {
                       variant="outline"
                       asChild
                       size="lg" 
-                      className="px-10 py-5 text-xl font-semibold border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-xl"
+                      className="px-10 py-5 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 backdrop-blur-sm rounded-xl"
                     >
                       <a href="/auth">
                         <LogIn className="mr-3 w-6 h-6" />
@@ -116,117 +116,117 @@ const Index = () => {
         {/* Features at a Glance */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-6 drop-shadow-lg">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
               Everything you need to hire better, faster
             </h2>
-            <p className="text-xl text-gray-200 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               From AI job creation to candidate analytics - Atract handles your entire hiring pipeline
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-white/20 bg-black/30 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <Card className="border-gray-200 bg-white/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105 group">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-blue-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-500/30 transition-colors">
-                  <Brain className="w-8 h-8 text-blue-400" />
+                <div className="w-16 h-16 bg-blue-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-200 transition-colors">
+                  <Brain className="w-8 h-8 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">AI Job Creation</h3>
-                <p className="text-gray-300 leading-relaxed">Create compelling job posts in 2 minutes. Our AI understands your requirements and crafts perfect descriptions that attract quality candidates.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">AI Job Creation</h3>
+                <p className="text-gray-600 leading-relaxed">Create compelling job posts in 2 minutes. Our AI understands your requirements and crafts perfect descriptions that attract quality candidates.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-white/20 bg-black/30 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <Card className="border-gray-200 bg-white/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105 group">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-purple-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-500/30 transition-colors">
-                  <Zap className="w-8 h-8 text-purple-400" />
+                <div className="w-16 h-16 bg-purple-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-200 transition-colors">
+                  <Zap className="w-8 h-8 text-purple-600" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Smart Skill Testing</h3>
-                <p className="text-gray-300 leading-relaxed">AI-generated, role-specific tests that actually measure what matters. No more interviews with unqualified candidates.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Smart Skill Testing</h3>
+                <p className="text-gray-600 leading-relaxed">AI-generated, role-specific tests that actually measure what matters. No more interviews with unqualified candidates.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-white/20 bg-black/30 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <Card className="border-gray-200 bg-white/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105 group">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-green-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-green-500/30 transition-colors">
-                  <Filter className="w-8 h-8 text-green-400" />
+                <div className="w-16 h-16 bg-green-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-green-200 transition-colors">
+                  <Filter className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Intelligent Filtering</h3>
-                <p className="text-gray-300 leading-relaxed">Advanced dashboard with smart filters, bulk actions, and AI-powered candidate scoring. Manage hundreds of applications effortlessly.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Intelligent Filtering</h3>
+                <p className="text-gray-600 leading-relaxed">Advanced dashboard with smart filters, bulk actions, and AI-powered candidate scoring. Manage hundreds of applications effortlessly.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-white/20 bg-black/30 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <Card className="border-gray-200 bg-white/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105 group">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-orange-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-orange-500/30 transition-colors">
-                  <MessageSquare className="w-8 h-8 text-orange-400" />
+                <div className="w-16 h-16 bg-orange-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-orange-200 transition-colors">
+                  <MessageSquare className="w-8 h-8 text-orange-600" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Scout AI</h3>
-                <p className="text-gray-300 leading-relaxed">AI-powered candidate sourcing and chat. Find passive candidates and engage them with intelligent, personalized conversations.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Scout AI</h3>
+                <p className="text-gray-600 leading-relaxed">AI-powered candidate sourcing and chat. Find passive candidates and engage them with intelligent, personalized conversations.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-white/20 bg-black/30 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <Card className="border-gray-200 bg-white/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105 group">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-cyan-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-cyan-500/30 transition-colors">
-                  <BarChart3 className="w-8 h-8 text-cyan-400" />
+                <div className="w-16 h-16 bg-cyan-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-cyan-200 transition-colors">
+                  <BarChart3 className="w-8 h-8 text-cyan-600" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Hiring Analytics</h3>
-                <p className="text-gray-300 leading-relaxed">Deep insights into your hiring funnel. Track performance, identify bottlenecks, and optimize your process with data-driven decisions.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Hiring Analytics</h3>
+                <p className="text-gray-600 leading-relaxed">Deep insights into your hiring funnel. Track performance, identify bottlenecks, and optimize your process with data-driven decisions.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-white/20 bg-black/30 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:scale-105 group">
+            <Card className="border-gray-200 bg-white/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105 group">
               <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-pink-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-pink-500/30 transition-colors">
-                  <Award className="w-8 h-8 text-pink-400" />
+                <div className="w-16 h-16 bg-pink-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-pink-200 transition-colors">
+                  <Award className="w-8 h-8 text-pink-600" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4">Automated Communication</h3>
-                <p className="text-gray-300 leading-relaxed">Smart email templates, bulk communications, and automated follow-ups. Keep candidates engaged while saving hours of manual work.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Automated Communication</h3>
+                <p className="text-gray-600 leading-relaxed">Smart email templates, bulk communications, and automated follow-ups. Keep candidates engaged while saving hours of manual work.</p>
               </CardContent>
             </Card>
           </div>
         </section>
 
         {/* Enhanced Problem Section */}
-        <section className="bg-black/30 backdrop-blur-sm py-20">
+        <section className="bg-gradient-to-br from-gray-50 to-blue-50 py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-white mb-6 drop-shadow-lg">
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
                 The hiring nightmare every founder faces
               </h2>
-              <p className="text-xl text-gray-200 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                 Traditional hiring is broken. You're drowning in unqualified applicants while the best candidates slip through the cracks.
               </p>
             </div>
             
             <div className="grid lg:grid-cols-3 gap-8">
-              <Card className="border-red-500/30 bg-red-900/20 backdrop-blur-sm hover:shadow-xl transition-shadow">
+              <Card className="border-red-200 bg-red-50/60 backdrop-blur-sm hover:shadow-xl transition-shadow">
                 <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-red-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Users className="w-8 h-8 text-red-400" />
+                  <div className="w-16 h-16 bg-red-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Users className="w-8 h-8 text-red-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Flooded with unqualified applicants</h3>
-                  <p className="text-gray-300 leading-relaxed">Job boards bring quantity, not quality. You spend hours sifting through 200+ applications where 90% can't even do the basic requirements of the job.</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Flooded with unqualified applicants</h3>
+                  <p className="text-gray-600 leading-relaxed">Job boards bring quantity, not quality. You spend hours sifting through 200+ applications where 90% can't even do the basic requirements of the job.</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-yellow-500/30 bg-yellow-900/20 backdrop-blur-sm hover:shadow-xl transition-shadow">
+              <Card className="border-yellow-200 bg-yellow-50/60 backdrop-blur-sm hover:shadow-xl transition-shadow">
                 <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-yellow-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Clock className="w-8 h-8 text-yellow-400" />
+                  <div className="w-16 h-16 bg-yellow-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Clock className="w-8 h-8 text-yellow-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Interviews are massive time sinks</h3>
-                  <p className="text-gray-300 leading-relaxed">Hours spent interviewing people who looked good on paper but can't actually perform. Your time is worth $500+/hour, not screening resumes.</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Interviews are massive time sinks</h3>
+                  <p className="text-gray-600 leading-relaxed">Hours spent interviewing people who looked good on paper but can't actually perform. Your time is worth $500+/hour, not screening resumes.</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-orange-500/30 bg-orange-900/20 backdrop-blur-sm hover:shadow-xl transition-shadow">
+              <Card className="border-orange-200 bg-orange-50/60 backdrop-blur-sm hover:shadow-xl transition-shadow">
                 <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-orange-500/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Target className="w-8 h-8 text-orange-400" />
+                  <div className="w-16 h-16 bg-orange-100 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Target className="w-8 h-8 text-orange-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-4">No way to verify actual skills</h3>
-                  <p className="text-gray-300 leading-relaxed">Resumes lie. Portfolios can be copied. Interviews can be gamed. You need to see real work quality before investing time in candidates.</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">No way to verify actual skills</h3>
+                  <p className="text-gray-600 leading-relaxed">Resumes lie. Portfolios can be copied. Interviews can be gamed. You need to see real work quality before investing time in candidates.</p>
                 </CardContent>
               </Card>
             </div>
@@ -419,13 +419,13 @@ const Index = () => {
         </section>
 
         {/* Social Proof Section */}
-        <section className="bg-black/20 backdrop-blur-sm py-20">
+        <section className="bg-gradient-to-br from-blue-50 to-purple-50 py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-white mb-6 drop-shadow-lg">
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
                 Join 500+ companies hiring smarter
               </h2>
-              <p className="text-xl text-gray-200">
+              <p className="text-xl text-gray-600">
                 From startups to enterprises - see why teams choose Atract
               </p>
             </div>
@@ -433,37 +433,37 @@ const Index = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#007af6] mb-2">5x</div>
-                <div className="text-white font-semibold mb-1">Faster Hiring</div>
-                <div className="text-gray-400 text-sm">Average time to hire</div>
+                <div className="text-gray-900 font-semibold mb-1">Faster Hiring</div>
+                <div className="text-gray-600 text-sm">Average time to hire</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#007af6] mb-2">90%</div>
-                <div className="text-white font-semibold mb-1">Noise Reduction</div>
-                <div className="text-gray-400 text-sm">Fewer unqualified applicants</div>
+                <div className="text-gray-900 font-semibold mb-1">Noise Reduction</div>
+                <div className="text-gray-600 text-sm">Fewer unqualified applicants</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#007af6] mb-2">15hrs</div>
-                <div className="text-white font-semibold mb-1">Time Saved</div>
-                <div className="text-gray-400 text-sm">Per open position</div>
+                <div className="text-gray-900 font-semibold mb-1">Time Saved</div>
+                <div className="text-gray-600 text-sm">Per open position</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold text-[#007af6] mb-2">95%</div>
-                <div className="text-white font-semibold mb-1">Success Rate</div>
-                <div className="text-gray-400 text-sm">Successful hires after 6 months</div>
+                <div className="text-gray-900 font-semibold mb-1">Success Rate</div>
+                <div className="text-gray-600 text-sm">Successful hires after 6 months</div>
               </div>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8">
-              <Card className="border-white/20 bg-white/5 backdrop-blur-sm">
+              <Card className="border-gray-200 bg-white/80 backdrop-blur-sm">
                 <CardContent className="p-8">
                   <div className="flex items-center gap-1 mb-4">
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
                   </div>
-                  <p className="text-gray-200 mb-4 text-lg leading-relaxed">
+                  <p className="text-gray-700 mb-4 text-lg leading-relaxed">
                     "Atract cut our hiring time from 6 weeks to 10 days. The AI-generated tests are incredibly accurate - we've had zero bad hires since switching."
                   </p>
                   <div className="flex items-center gap-3">
@@ -471,23 +471,23 @@ const Index = () => {
                       <span className="text-white font-bold">SL</span>
                     </div>
                     <div>
-                      <div className="text-white font-semibold">Sarah Lee</div>
-                      <div className="text-gray-400 text-sm">VP Engineering, TechCorp</div>
+                      <div className="text-gray-900 font-semibold">Sarah Lee</div>
+                      <div className="text-gray-600 text-sm">VP Engineering, TechCorp</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-white/20 bg-white/5 backdrop-blur-sm">
+              <Card className="border-gray-200 bg-white/80 backdrop-blur-sm">
                 <CardContent className="p-8">
                   <div className="flex items-center gap-1 mb-4">
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
                   </div>
-                  <p className="text-gray-200 mb-4 text-lg leading-relaxed">
+                  <p className="text-gray-700 mb-4 text-lg leading-relaxed">
                     "The quality difference is night and day. Before Atract, 80% of our interviews were wastes of time. Now every candidate is pre-qualified and ready to perform."
                   </p>
                   <div className="flex items-center gap-3">
@@ -495,8 +495,8 @@ const Index = () => {
                       <span className="text-white font-bold">MJ</span>
                     </div>
                     <div>
-                      <div className="text-white font-semibold">Marcus Johnson</div>
-                      <div className="text-gray-400 text-sm">Founder, StartupXYZ</div>
+                      <div className="text-gray-900 font-semibold">Marcus Johnson</div>
+                      <div className="text-gray-600 text-sm">Founder, StartupXYZ</div>
                     </div>
                   </div>
                 </CardContent>
@@ -507,32 +507,32 @@ const Index = () => {
 
         {/* Final CTA Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-3xl p-16 border border-white/20 relative overflow-hidden">
+          <div className="text-center bg-gradient-to-br from-white/80 to-blue-50/80 backdrop-blur-sm rounded-3xl p-16 border border-gray-200 shadow-xl relative overflow-hidden">
             {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#007af6]/10 to-purple-600/10 rounded-3xl"></div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#007af6]/20 to-transparent rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-purple-600/20 to-transparent rounded-full blur-2xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#007af6]/5 to-purple-600/5 rounded-3xl"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#007af6]/10 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-purple-600/10 to-transparent rounded-full blur-2xl"></div>
             
             <div className="relative z-10">
-              <h2 className="text-5xl font-bold text-white mb-6 drop-shadow-lg">
+              <h2 className="text-5xl font-bold text-gray-900 mb-6">
                 Ready to revolutionize your hiring?
               </h2>
-              <p className="text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-2xl text-gray-700 mb-8 max-w-3xl mx-auto leading-relaxed">
                 Join 500+ companies that have transformed their hiring with AI. 
                 Create your first role and start getting qualified candidates in minutes.
               </p>
               
               <div className="flex items-center justify-center gap-6 mb-8">
-                <div className="flex items-center gap-2 text-gray-300">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
+                <div className="flex items-center gap-2 text-gray-600">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
                   <span>Free to start</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-300">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
+                <div className="flex items-center gap-2 text-gray-600">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
                   <span>2-minute setup</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-300">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
+                <div className="flex items-center gap-2 text-gray-600">
+                  <CheckCircle className="w-5 h-5 text-green-500" />
                   <span>No credit card required</span>
                 </div>
               </div>
@@ -541,7 +541,7 @@ const Index = () => {
                 <Button 
                   onClick={handleCreateRole}
                   size="lg" 
-                  className="bg-[#007af6] hover:bg-[#0056b3] text-white px-12 py-6 text-2xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-200 hover:scale-105 rounded-2xl"
+                  className="bg-[#007af6] hover:bg-[#0056b3] text-white px-12 py-6 text-2xl font-bold shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105 rounded-2xl"
                 >
                   <Rocket className="mr-4 w-7 h-7" />
                   Start Your First Hire
@@ -553,7 +553,7 @@ const Index = () => {
                     variant="outline"
                     asChild
                     size="lg" 
-                    className="px-12 py-6 text-xl font-semibold border-white/30 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-2xl"
+                    className="px-12 py-6 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 backdrop-blur-sm rounded-2xl"
                   >
                     <a href="/auth">
                       <LogIn className="mr-4 w-6 h-6" />
@@ -563,7 +563,7 @@ const Index = () => {
                 )}
               </div>
               
-              <p className="text-gray-400 text-sm mt-8">
+              <p className="text-gray-500 text-sm mt-8">
                 Trusted by 500+ companies • Average setup time: 2 minutes • 95% customer satisfaction
               </p>
             </div>
