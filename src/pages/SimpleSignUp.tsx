@@ -35,9 +35,11 @@ const SimpleSignUp = () => {
           <Card className="shadow-xl border-0">
             <CardContent className="p-8">
               {/* Google Authentication */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <GoogleAuthButton mode="signup" disabled={isLoading} />
-                <AuthDivider />
+                <div className="mt-4">
+                  <AuthDivider />
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
