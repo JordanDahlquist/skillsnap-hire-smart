@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthGuard } from "@/components/AuthGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -52,7 +52,8 @@ const App = () => (
             
             {/* Protected routes */}
             <Route path="/jobs" element={<AuthGuard><OptimizedJobsPage /></AuthGuard>} />
-            <Route path="/dashboard" element={<AuthGuard><DashboardPage /></AuthGuard>} />
+            <Route path="/dashboard" element={<AuthGuard><Navigate to="/jobs" replace /></AuthGuard>} />
+            <Route path="/dashboard/:jobId" element={<AuthGuard><DashboardPage /></AuthGuard>} />
             <Route path="/scout" element={<AuthGuard><Scout /></AuthGuard>} />
             <Route path="/inbox" element={<AuthGuard><Inbox /></AuthGuard>} />
             <Route path="/profile" element={<AuthGuard><ProfileSettings /></AuthGuard>} />
