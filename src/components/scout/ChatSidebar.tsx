@@ -18,12 +18,12 @@ export const ChatSidebar = ({
   onNewConversation
 }: ChatSidebarProps) => {
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b p-4">
-        <h2 className="text-lg font-semibold">Scout AI</h2>
-        <p className="text-sm text-muted-foreground">Your hiring assistant</p>
+    <Sidebar className="h-full">
+      <SidebarHeader className="border-b px-4 py-3 flex-shrink-0">
+        <h2 className="text-base font-semibold">Scout AI</h2>
+        <p className="text-xs text-muted-foreground">Your hiring assistant</p>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="flex-1 min-h-0 overflow-hidden">
         <ConversationList
           activeConversationId={activeConversationId}
           onConversationSelect={onConversationSelect}
