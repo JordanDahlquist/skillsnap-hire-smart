@@ -1,14 +1,14 @@
 
 import { useState } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
-import { useInboxData } from "@/hooks/useInboxData";
+import { useOptimizedInboxData } from "@/hooks/useOptimizedInboxData";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { InboxContent } from "./InboxContent";
 import { ThreadDetail } from "./ThreadDetail";
 import { InboxSkeleton } from "./InboxSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FixedHeightLayout } from "@/components/layout/FixedHeightLayout";
-import { useProcessedEmailSubjects } from "@/hooks/useProcessedEmailSubjects";
+import { useOptimizedEmailSubjects } from "@/hooks/useOptimizedEmailSubjects";
 
 export const InboxPage = () => {
   const { user } = useOptimizedAuth();
@@ -21,10 +21,10 @@ export const InboxPage = () => {
     refetchThreads, 
     markThreadAsRead,
     sendReply
-  } = useInboxData();
+  } = useOptimizedInboxData();
 
-  // Process email subjects to replace template variables
-  const { processedThreads, isProcessing } = useProcessedEmailSubjects(threads);
+  // Process email subjects with optimized caching
+  const { processedThreads, isProcessing } = useOptimizedEmailSubjects(threads);
 
   if (isLoading || isProcessing) {
     return <InboxSkeleton />;

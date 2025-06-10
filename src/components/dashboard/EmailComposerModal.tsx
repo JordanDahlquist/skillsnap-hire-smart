@@ -1,7 +1,6 @@
 
-import React from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Mail } from 'lucide-react';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { useEmailComposer } from '@/hooks/useEmailComposer';
 import { useEmailSending } from '@/hooks/useEmailSending';
@@ -10,7 +9,8 @@ import { EmailComposerForm } from './email-composer/EmailComposerForm';
 import { EmailComposerActions } from './email-composer/EmailComposerActions';
 import { RecipientsList } from './email-composer/RecipientsList';
 import { EmailPreview } from './email-composer/EmailPreview';
-import type { Application, Job } from '@/types/emailComposer';
+import { validateEmailForm } from '@/utils/emailValidation';
+import type { Application, Job } from '@/types';
 
 interface EmailComposerModalProps {
   open: boolean;
@@ -25,81 +25,79 @@ export const EmailComposerModal = ({
   selectedApplications,
   job
 }: EmailComposerModalProps) => {
-  const { data: templates = [] } = useEmailTemplates(open);
+  const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates(open);
   const { formData, updateField, selectTemplate, togglePreview, resetForm } = useEmailComposer();
-  const { isSending, sendEmails, getCompanyName, getUserUniqueEmail } = useEmailSending();
+  const { sendBulkEmail, isSending } = useEmailSending();
 
-  const companyName = getCompanyName(job);
-  const userUniqueEmail = getUserUniqueEmail();
-  const previewExample = selectedApplications[0];
-  const canSend = formData.subject.trim() && formData.content.trim();
+  const { isValid } = validateEmailForm(formData.subject, formData.content);
+  const canSend = isValid && selectedApplications.length > 0 && !isSending;
 
-  const handleSendEmails = async () => {
-    const success = await sendEmails(
-      selectedApplications,
-      job,
-      formData.subject,
-      formData.content,
-      formData.templateId || undefined
-    );
+  const handleSend = async () => {
+    if (!canSend) return;
 
-    if (success) {
+    try {
+      await sendBulkEmail({
+        applications: selectedApplications,
+        job,
+        subject: formData.subject,
+        content: formData.content
+      });
+      
       resetForm();
       onOpenChange(false);
+    } catch (error) {
+      console.error('Failed to send emails:', error);
     }
   };
 
-  const handleSubjectChange = (value: string) => updateField('subject', value);
-  const handleContentChange = (value: string) => updateField('content', value);
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      resetForm();
+    }
+    onOpenChange(open);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="w-5 h-5" />
-            Send Email to {selectedApplications.length} Candidate{selectedApplications.length > 1 ? 's' : ''}
-          </DialogTitle>
+          <DialogTitle>Send Bulk Email</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 overflow-hidden">
-          {/* Email Composer */}
-          <div className="space-y-4">
-            <EmailTemplateSelector
-              templates={templates}
-              selectedTemplateId={formData.templateId}
-              onTemplateSelect={selectTemplate}
-            />
+        <div className="space-y-6">
+          <RecipientsList applications={selectedApplications} />
 
-            <EmailComposerForm
-              subject={formData.subject}
-              content={formData.content}
-              fromEmail={userUniqueEmail}
-              onSubjectChange={handleSubjectChange}
-              onContentChange={handleContentChange}
-            />
+          <EmailTemplateSelector
+            templates={templates}
+            isLoading={templatesLoading}
+            selectedTemplateId={formData.templateId}
+            onSelectTemplate={selectTemplate}
+          />
 
-            <EmailComposerActions
-              onSend={handleSendEmails}
-              onTogglePreview={togglePreview}
-              isSending={isSending}
-              canSend={canSend}
-              showPreview={formData.showPreview}
-            />
-          </div>
-
-          {/* Recipients and Preview */}
-          <div className="space-y-4">
-            <RecipientsList applications={selectedApplications} />
-
-            {formData.showPreview && previewExample && (
-              <EmailPreview
-                application={previewExample}
-                job={job}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <EmailComposerForm
                 subject={formData.subject}
                 content={formData.content}
-                fromEmail={userUniqueEmail}
-                companyName={companyName}
+                onSubjectChange={(subject) => updateField('subject', subject)}
+                onContentChange={(content) => updateField('content', content)}
+              />
+
+              <EmailComposerActions
+                onSend={handleSend}
+                onTogglePreview={togglePreview}
+                isSending={isSending}
+                canSend={canSend}
+                showPreview={formData.showPreview}
+              />
+            </div>
+
+            {formData.showPreview && (
+              <EmailPreview
+                subject={formData.subject}
+                content={formData.content}
+                sampleApplication={selectedApplications[0]}
+                job={job}
               />
             )}
           </div>
