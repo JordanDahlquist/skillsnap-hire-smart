@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -7,6 +6,7 @@ import {
 } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster"
 import Auth from "./pages/Auth";
+import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
@@ -34,6 +34,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/signup" element={<SignUp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contact" element={<Contact />} />
