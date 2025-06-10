@@ -19,7 +19,7 @@ export const ThreadList = ({
 }: ThreadListProps) => {
   if (threads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+      <div className="flex flex-col items-center justify-center h-64 text-gray-500 p-4">
         <p className="text-lg font-medium">No messages yet</p>
         <p className="text-sm">Your email conversations will appear here</p>
       </div>
@@ -34,7 +34,7 @@ export const ThreadList = ({
   };
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div>
       {threads.map((thread) => (
         <div
           key={thread.id}

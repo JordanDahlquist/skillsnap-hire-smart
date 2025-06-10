@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useInboxData } from "@/hooks/useInboxData";
@@ -60,16 +61,17 @@ export const InboxPage = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <UnifiedHeader 
           breadcrumbs={breadcrumbs}
           showCreateButton={false}
         />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+        <div className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+          {/* Fixed height container that accounts for header and footer */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0 max-h-[calc(100vh-200px)]">
             {/* Thread List */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 flex flex-col min-h-0">
               <InboxContent
                 threads={processedThreads}
                 selectedThreadId={selectedThreadId}
@@ -80,7 +82,7 @@ export const InboxPage = () => {
             </div>
 
             {/* Thread Detail */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 flex flex-col min-h-0">
               <ThreadDetail
                 thread={selectedThread}
                 messages={threadMessages}

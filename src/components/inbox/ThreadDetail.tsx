@@ -1,8 +1,9 @@
 
 import { useState } from "react";
-import { Send, ArrowLeft, Paperclip } from "lucide-react";
+import { Send, Paperclip } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageList } from "./MessageList";
 import { EmailRichTextEditor } from "./EmailRichTextEditor";
 import { AttachmentUpload } from "./AttachmentUpload";
@@ -69,22 +70,26 @@ export const ThreadDetail = ({
   const hasContent = replyContent.trim() || attachments.length > 0;
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 border-b">
+    <Card className="h-full flex flex-col min-h-0">
+      <CardHeader className="pb-3 border-b flex-shrink-0">
         <CardTitle className="text-lg">{thread.subject}</CardTitle>
         <p className="text-sm text-gray-600">
           Conversation with: {participants}
         </p>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <MessageList messages={messages} />
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        {/* Messages with fixed height and internal scrolling */}
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              <MessageList messages={messages} />
+            </div>
+          </ScrollArea>
         </div>
 
-        {/* Reply Composer */}
-        <div className="border-t p-4">
+        {/* Reply Composer - Fixed at bottom */}
+        <div className="border-t p-4 flex-shrink-0 bg-background">
           <div className="space-y-3">
             {/* Rich Text Editor */}
             <EmailRichTextEditor
