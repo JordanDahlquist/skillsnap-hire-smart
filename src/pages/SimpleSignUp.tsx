@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useSignupForm } from "@/components/signup/useSignupForm";
 import { SignupFormFields } from "@/components/signup/SignupFormFields";
 import { Footer } from "@/components/Footer";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { AuthDivider } from "@/components/auth/AuthDivider";
 
 const SimpleSignUp = () => {
   const navigate = useNavigate();
@@ -32,6 +34,12 @@ const SimpleSignUp = () => {
 
           <Card className="shadow-xl border-0">
             <CardContent className="p-8">
+              {/* Google Authentication */}
+              <div className="mb-8">
+                <GoogleAuthButton mode="signup" disabled={isLoading} />
+                <AuthDivider />
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <SignupFormFields
                   formData={formData}
