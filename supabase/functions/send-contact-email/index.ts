@@ -1,5 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,9 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const mailersendApiKey = Deno.env.get("MAILERSEND_API_KEY");
-    if (!mailersendApiKey) {
-      throw new Error('MAILERSEND_API_KEY is not configured');
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY is not configured');
     }
 
     const { name, email, company, phone, message }: ContactFormRequest = await req.json();
@@ -36,16 +39,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Missing required fields');
     }
 
-    // Send email via MailerSend API
-    const emailPayload = {
-      from: {
-        email: "contact@atract.ai",
-        name: "Atract Contact Form"
-      },
-      to: [{
-        email: "jordan@aeonmarketing.co",
-        name: "Jordan"
-      }],
+    // Send email via Resend API
+    const emailResponse = await resend.emails.send({
+      from: "Atract Contact Form <contact@atract.ai>",
+      to: ["jordan@aeonmarketing.co"],
       subject: `New Contact Form Submission from ${company}`,
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
@@ -76,29 +73,10 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>
       `,
-      reply_to: {
-        email: email,
-        name: name
-      }
-    };
-
-    const emailResponse = await fetch('https://api.mailersend.com/v1/email', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${mailersendApiKey}`,
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      body: JSON.stringify(emailPayload)
+      reply_to: email
     });
 
-    if (!emailResponse.ok) {
-      const errorText = await emailResponse.text();
-      throw new Error(`MailerSend API error: ${emailResponse.status} - ${errorText}`);
-    }
-
-    const emailResult = await emailResponse.json();
-    console.log('Contact email sent successfully:', emailResult);
+    console.log('Contact email sent successfully:', emailResponse);
 
     return new Response(
       JSON.stringify({

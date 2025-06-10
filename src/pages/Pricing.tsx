@@ -344,7 +344,7 @@ const Pricing = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
-              onClick={handleCreateRole}
+              onClick={handleStartFreeTrial}
               size="lg" 
               className="bg-white text-[#007af6] hover:bg-gray-100 px-10 py-4 text-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105 rounded-xl"
             >
