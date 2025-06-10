@@ -8,6 +8,43 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+interface MailerSendWebhook {
+  type: string;
+  inbound_id: string;
+  url: string;
+  created_at: string;
+  data: {
+    object: string;
+    id: string;
+    recipients: {
+      to: {
+        raw: string;
+        data: Array<{
+          name: string;
+          email: string;
+        }>;
+      };
+      rcptTo: Array<{
+        email: string;
+      }>;
+    };
+    from: {
+      raw: string;
+      name: string;
+      email: string;
+    };
+    sender: {
+      email: string;
+    };
+    subject: string;
+    date: string;
+    headers: Record<string, any>;
+    text: string;
+    html: string;
+    raw: string;
+  };
+}
+
 interface IncomingEmail {
   from: string;
   to: string;
@@ -35,16 +72,14 @@ const handler = async (req: Request): Promise<Response> => {
     const rawBody = await req.text();
     console.log('Raw webhook body:', rawBody);
     
-    let emailData: IncomingEmail;
+    let webhookData: MailerSendWebhook;
     
     try {
-      emailData = JSON.parse(rawBody);
-      console.log('Parsed email data:', {
-        from: emailData.from,
-        to: emailData.to,
-        subject: emailData.subject,
-        hasText: !!emailData.text,
-        hasHtml: !!emailData.html
+      webhookData = JSON.parse(rawBody);
+      console.log('Parsed webhook data type:', webhookData.type);
+      console.log('Parsed webhook data structure:', {
+        hasData: !!webhookData.data,
+        dataKeys: webhookData.data ? Object.keys(webhookData.data) : []
       });
     } catch (parseError) {
       console.error('Failed to parse webhook body as JSON:', parseError);
@@ -59,6 +94,42 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     }
+
+    // Check if this is an inbound message webhook
+    if (webhookData.type !== 'inbound.message' || !webhookData.data) {
+      console.log('Not an inbound message webhook, ignoring');
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Webhook received but not an inbound message' 
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Extract email data from MailerSend's nested structure
+    const emailData: IncomingEmail = {
+      from: webhookData.data.from.email,
+      to: webhookData.data.recipients.to.data[0]?.email || webhookData.data.recipients.rcptTo[0]?.email,
+      subject: webhookData.data.subject,
+      text: webhookData.data.text || '',
+      html: webhookData.data.html || '',
+      message_id: webhookData.data.headers?.['Message-ID'] || webhookData.data.id,
+      in_reply_to: webhookData.data.headers?.['In-Reply-To'],
+      references: webhookData.data.headers?.['References']
+    };
+
+    console.log('Extracted email data:', {
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject,
+      hasText: !!emailData.text,
+      hasHtml: !!emailData.html,
+      messageId: emailData.message_id
+    });
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
