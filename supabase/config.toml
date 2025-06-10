@@ -1,1 +1,5 @@
+
 project_id = "wrnscwadcetbimpstnpu"
+
+[functions.handle-email-webhook]
+verify_jwt = false

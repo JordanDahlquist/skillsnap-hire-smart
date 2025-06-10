@@ -21,28 +21,49 @@ interface IncomingEmail {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('=== Email Webhook Called ===');
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
+  console.log('Request headers:', Object.fromEntries(req.headers));
+
   if (req.method === "OPTIONS") {
+    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('=== Email Webhook Called ===');
-    console.log('Request method:', req.method);
-    console.log('Request headers:', Object.fromEntries(req.headers));
+    const rawBody = await req.text();
+    console.log('Raw webhook body:', rawBody);
+    
+    let emailData: IncomingEmail;
+    
+    try {
+      emailData = JSON.parse(rawBody);
+      console.log('Parsed email data:', {
+        from: emailData.from,
+        to: emailData.to,
+        subject: emailData.subject,
+        hasText: !!emailData.text,
+        hasHtml: !!emailData.html
+      });
+    } catch (parseError) {
+      console.error('Failed to parse webhook body as JSON:', parseError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid JSON payload' 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-
-    const emailData: IncomingEmail = await req.json();
-    console.log('Received email webhook data:', {
-      from: emailData.from,
-      to: emailData.to,
-      subject: emailData.subject,
-      hasText: !!emailData.text,
-      hasHtml: !!emailData.html
-    });
 
     // Find user by their unique email address
     console.log('Looking up user by unique email:', emailData.to);
@@ -60,7 +81,7 @@ const handler = async (req: Request): Promise<Response> => {
           message: `No user found for email address: ${emailData.to}` 
         }),
         {
-          status: 400,
+          status: 200, // Return 200 to prevent MailerSend retries for invalid emails
           headers: { "Content-Type": "application/json", ...corsHeaders },
         }
       );
@@ -212,7 +233,11 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Successfully processed incoming email for thread:', threadId);
 
     return new Response(
-      JSON.stringify({ success: true, thread_id: threadId }),
+      JSON.stringify({ 
+        success: true, 
+        thread_id: threadId,
+        message: 'Email processed successfully'
+      }),
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -225,7 +250,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message,
+        stack: error.stack
       }),
       {
         status: 500,

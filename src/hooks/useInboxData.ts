@@ -1,9 +1,9 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useOptimizedAuth } from './useOptimizedAuth';
+import { updateExistingEmailThreads } from '@/utils/updateEmailThreads';
 import type { EmailThread, EmailMessage } from '@/types/inbox';
 
 interface AttachmentFile {
@@ -20,6 +20,16 @@ export const useInboxData = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const subscriptionRef = useRef<any>(null);
+  const [threadsUpdated, setThreadsUpdated] = useState(false);
+
+  // Auto-update existing threads on first load
+  useEffect(() => {
+    if (user?.id && !threadsUpdated) {
+      updateExistingEmailThreads(user.id).then(() => {
+        setThreadsUpdated(true);
+      });
+    }
+  }, [user?.id, threadsUpdated]);
 
   // Fetch email threads
   const { 
