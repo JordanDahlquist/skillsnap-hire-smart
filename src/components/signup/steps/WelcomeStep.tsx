@@ -1,80 +1,38 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2, Rocket, Zap, Users } from "lucide-react";
 import { SignUpFormData } from "@/pages/SignUp";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 interface WelcomeStepProps {
   formData: SignUpFormData;
   onComplete: () => void;
+  onCreateAccount: () => Promise<void>;
 }
 
-export const WelcomeStep = ({ formData, onComplete }: WelcomeStepProps) => {
+export const WelcomeStep = ({ formData, onComplete, onCreateAccount }: WelcomeStepProps) => {
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
-  const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
 
-  const createAccount = async () => {
+  const handleCreateAccount = async () => {
     try {
       setIsCreatingAccount(true);
-
-      // Sign up the user with Supabase
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: formData.fullName,
-            company_name: formData.companyName,
-            company_size: formData.companySize,
-            industry: formData.industry,
-            job_title: formData.jobTitle,
-            hiring_goals: formData.hiringGoals,
-            hires_per_month: formData.hiresPerMonth,
-            current_tools: formData.currentTools,
-            biggest_challenges: formData.biggestChallenges,
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Signup error:', error);
-        throw error;
-      }
-
-      console.log('Account created successfully:', data);
+      setError(null);
+      await onCreateAccount();
       setAccountCreated(true);
-
-      // Show success message
-      toast({
-        title: "Account created successfully!",
-        description: "Welcome to Atract. Let's get you started with your first job posting.",
-      });
-
+      
       // Wait a moment then redirect
       setTimeout(() => {
         onComplete();
       }, 2000);
-
     } catch (error: any) {
       console.error('Account creation error:', error);
-      toast({
-        title: "Account creation failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      setError(error.message || "Something went wrong. Please try again.");
     } finally {
       setIsCreatingAccount(false);
     }
   };
-
-  useEffect(() => {
-    // Auto-create account when this step loads
-    createAccount();
-  }, []);
 
   if (isCreatingAccount) {
     return (
@@ -164,11 +122,18 @@ export const WelcomeStep = ({ formData, onComplete }: WelcomeStepProps) => {
         Everything looks good. Let's create your account and get you hiring smarter.
       </p>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
+
       <Button
-        onClick={createAccount}
-        className="bg-blue-600 hover:bg-blue-700 px-8 py-3 text-lg font-semibold"
+        onClick={handleCreateAccount}
+        className="bg-blue-600 hover:bg-blue-700 px-8 py-3 text-lg font-semibold disabled:opacity-50"
+        disabled={isCreatingAccount}
       >
-        Create Account & Continue
+        {isCreatingAccount ? "Creating Account..." : "Create Account & Continue"}
       </Button>
     </div>
   );

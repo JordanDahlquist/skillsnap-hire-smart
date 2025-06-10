@@ -9,7 +9,11 @@ import { BasicInfoStep } from "@/components/signup/steps/BasicInfoStep";
 import { CompanyInfoStep } from "@/components/signup/steps/CompanyInfoStep";
 import { UseCaseStep } from "@/components/signup/steps/UseCaseStep";
 import { WelcomeStep } from "@/components/signup/steps/WelcomeStep";
+import { SignupErrorBoundary } from "@/components/signup/SignupErrorBoundary";
 import { useNavigate } from "react-router-dom";
+import { useSignupReducer } from "@/hooks/useSignupReducer";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export interface SignUpFormData {
   // Basic info
@@ -39,85 +43,133 @@ const STEPS = [
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<SignUpFormData>({
-    fullName: "",
-    email: "",
-    password: "",
-    companyName: "",
-    companySize: "",
-    industry: "",
-    jobTitle: "",
-    hiringGoals: [],
-    hiresPerMonth: "",
-    currentTools: [],
-    biggestChallenges: []
-  });
-
-  const [stepValidation, setStepValidation] = useState<boolean[]>([false, false, false, false]);
-
-  const updateFormData = (updates: Partial<SignUpFormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
-  };
-
-  const updateStepValidation = (stepIndex: number, isValid: boolean) => {
-    setStepValidation(prev => {
-      const newValidation = [...prev];
-      newValidation[stepIndex] = isValid;
-      return newValidation;
-    });
-  };
+  const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const {
+    formData,
+    stepValidation,
+    currentStep,
+    updateFormData,
+    updateStepValidation,
+    setCurrentStep,
+    resetForm
+  } = useSignupReducer();
 
   const handleNext = () => {
-    if (currentStep < STEPS.length - 1 && stepValidation[currentStep]) {
+    if (currentStep < STEPS.length - 1 && stepValidation[currentStep] && !isProcessing) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
+    if (currentStep > 0 && !isProcessing) {
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleSignInRedirect = () => {
-    navigate('/auth');
+    if (!isProcessing) {
+      navigate('/auth');
+    }
+  };
+
+  const createAccount = async () => {
+    setIsProcessing(true);
+    try {
+      console.log('Creating account with data:', formData);
+
+      // Sign up the user with Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: formData.fullName,
+            company_name: formData.companyName,
+            company_size: formData.companySize,
+            industry: formData.industry,
+            job_title: formData.jobTitle,
+            hiring_goals: formData.hiringGoals,
+            hires_per_month: formData.hiresPerMonth,
+            current_tools: formData.currentTools,
+            biggest_challenges: formData.biggestChallenges,
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Signup error:', error);
+        throw error;
+      }
+
+      console.log('Account created successfully:', data);
+
+      // Show success message
+      toast({
+        title: "Account created successfully!",
+        description: "Welcome to Atract. Let's get you started with your first job posting.",
+      });
+
+    } catch (error: any) {
+      console.error('Account creation error:', error);
+      toast({
+        title: "Account creation failed",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      throw error; // Re-throw to be handled by WelcomeStep
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleComplete = () => {
+    navigate('/jobs');
+  };
+
+  const handleReset = () => {
+    resetForm();
+    setIsProcessing(false);
   };
 
   const renderCurrentStep = () => {
+    const commonProps = {
+      formData,
+      onFormDataChange: updateFormData,
+      onNext: handleNext,
+      isLoading: isProcessing
+    };
+
     switch (currentStep) {
       case 0:
         return (
           <BasicInfoStep
-            formData={formData}
-            onFormDataChange={updateFormData}
+            {...commonProps}
             onValidationChange={(isValid) => updateStepValidation(0, isValid)}
-            onNext={handleNext}
           />
         );
       case 1:
         return (
           <CompanyInfoStep
-            formData={formData}
-            onFormDataChange={updateFormData}
+            {...commonProps}
             onValidationChange={(isValid) => updateStepValidation(1, isValid)}
-            onNext={handleNext}
           />
         );
       case 2:
         return (
           <UseCaseStep
-            formData={formData}
-            onFormDataChange={updateFormData}
+            {...commonProps}
             onValidationChange={(isValid) => updateStepValidation(2, isValid)}
-            onNext={handleNext}
           />
         );
       case 3:
         return (
           <WelcomeStep
             formData={formData}
-            onComplete={() => navigate('/jobs')}
+            onComplete={handleComplete}
+            onCreateAccount={createAccount}
           />
         );
       default:
@@ -128,67 +180,70 @@ const SignUp = () => {
   const progressPercentage = ((currentStep + 1) / STEPS.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Start Your Free Trial
-          </h1>
-          <p className="text-gray-600">
-            Join 500+ companies hiring smarter with Atract
-          </p>
-        </div>
-
-        {/* Progress */}
-        <div className="mb-6">
-          <Progress value={progressPercentage} className="h-2" />
-          <div className="flex justify-between text-sm text-gray-500 mt-2">
-            <span>Step {currentStep + 1} of {STEPS.length}</span>
-            <span>{Math.round(progressPercentage)}% complete</span>
+    <SignupErrorBoundary onReset={handleReset}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Start Your Free Trial
+            </h1>
+            <p className="text-gray-600">
+              Join 500+ companies hiring smarter with Atract
+            </p>
           </div>
-        </div>
 
-        {/* Step Indicator */}
-        <SignUpStepIndicator 
-          steps={STEPS}
-          currentStep={currentStep}
-          completedSteps={stepValidation}
-        />
-
-        {/* Main Card */}
-        <Card className="mt-8 shadow-xl border-0">
-          <CardContent className="p-8">
-            {renderCurrentStep()}
-          </CardContent>
-        </Card>
-
-        {/* Navigation */}
-        {currentStep < STEPS.length - 1 && (
-          <div className="flex justify-between mt-6">
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              disabled={currentStep === 0}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
-            
-            <div className="text-sm text-gray-500">
-              Already have an account?{" "}
-              <button
-                onClick={handleSignInRedirect}
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Sign in
-              </button>
+          {/* Progress */}
+          <div className="mb-6">
+            <Progress value={progressPercentage} className="h-2" />
+            <div className="flex justify-between text-sm text-gray-500 mt-2">
+              <span>Step {currentStep + 1} of {STEPS.length}</span>
+              <span>{Math.round(progressPercentage)}% complete</span>
             </div>
           </div>
-        )}
+
+          {/* Step Indicator */}
+          <SignUpStepIndicator 
+            steps={STEPS}
+            currentStep={currentStep}
+            completedSteps={stepValidation}
+          />
+
+          {/* Main Card */}
+          <Card className="mt-8 shadow-xl border-0">
+            <CardContent className="p-8">
+              {renderCurrentStep()}
+            </CardContent>
+          </Card>
+
+          {/* Navigation */}
+          {currentStep < STEPS.length - 1 && (
+            <div className="flex justify-between mt-6">
+              <Button
+                variant="ghost"
+                onClick={handleBack}
+                disabled={currentStep === 0 || isProcessing}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+              
+              <div className="text-sm text-gray-500">
+                Already have an account?{" "}
+                <button
+                  onClick={handleSignInRedirect}
+                  className="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+                  disabled={isProcessing}
+                >
+                  Sign in
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </SignupErrorBoundary>
   );
 };
 

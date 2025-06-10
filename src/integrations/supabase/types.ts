@@ -533,16 +533,22 @@ export type Database = {
       }
       profiles: {
         Row: {
+          biggest_challenges: Json | null
           company_name: string
+          company_size: string | null
           company_website: string | null
           created_at: string
+          current_tools: Json | null
           daily_briefing_regenerations: number | null
           default_location: string | null
           email: string | null
           full_name: string | null
+          hires_per_month: string | null
+          hiring_goals: Json | null
           id: string
           industry: string | null
           job_title: string | null
+          job_title_signup: string | null
           last_regeneration_date: string | null
           phone: string | null
           profile_picture_url: string | null
@@ -550,16 +556,22 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          biggest_challenges?: Json | null
           company_name: string
+          company_size?: string | null
           company_website?: string | null
           created_at?: string
+          current_tools?: Json | null
           daily_briefing_regenerations?: number | null
           default_location?: string | null
           email?: string | null
           full_name?: string | null
+          hires_per_month?: string | null
+          hiring_goals?: Json | null
           id: string
           industry?: string | null
           job_title?: string | null
+          job_title_signup?: string | null
           last_regeneration_date?: string | null
           phone?: string | null
           profile_picture_url?: string | null
@@ -567,16 +579,22 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          biggest_challenges?: Json | null
           company_name?: string
+          company_size?: string | null
           company_website?: string | null
           created_at?: string
+          current_tools?: Json | null
           daily_briefing_regenerations?: number | null
           default_location?: string | null
           email?: string | null
           full_name?: string | null
+          hires_per_month?: string | null
+          hiring_goals?: Json | null
           id?: string
           industry?: string | null
           job_title?: string | null
+          job_title_signup?: string | null
           last_regeneration_date?: string | null
           phone?: string | null
           profile_picture_url?: string | null

@@ -5,12 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SignUpFormData } from "@/pages/SignUp";
+import { useDebounceValidation } from "@/hooks/useDebounceValidation";
 
 interface UseCaseStepProps {
   formData: SignUpFormData;
   onFormDataChange: (updates: Partial<SignUpFormData>) => void;
   onValidationChange: (isValid: boolean) => void;
   onNext: () => void;
+  isLoading?: boolean;
 }
 
 const HIRING_GOALS = [
@@ -57,7 +59,8 @@ export const UseCaseStep = ({
   formData, 
   onFormDataChange, 
   onValidationChange,
-  onNext 
+  onNext,
+  isLoading = false
 }: UseCaseStepProps) => {
   const validateForm = useCallback(() => {
     const isValid = formData.hiringGoals.length > 0 && 
@@ -69,34 +72,42 @@ export const UseCaseStep = ({
     return isValid;
   }, [formData.hiringGoals, formData.hiresPerMonth, formData.currentTools, formData.biggestChallenges, onValidationChange]);
 
-  useEffect(() => {
-    validateForm();
-  }, [validateForm]);
+  const { debouncedValidate, clearDebounce } = useDebounceValidation(validateForm, 300);
 
-  const handleGoalChange = (goal: string, checked: boolean) => {
+  useEffect(() => {
+    if (!isLoading) {
+      debouncedValidate();
+    }
+    return () => clearDebounce();
+  }, [debouncedValidate, clearDebounce, isLoading]);
+
+  const handleGoalChange = useCallback((goal: string, checked: boolean) => {
+    if (isLoading) return;
     const newGoals = checked 
       ? [...formData.hiringGoals, goal]
       : formData.hiringGoals.filter(g => g !== goal);
     onFormDataChange({ hiringGoals: newGoals });
-  };
+  }, [formData.hiringGoals, onFormDataChange, isLoading]);
 
-  const handleToolChange = (tool: string, checked: boolean) => {
+  const handleToolChange = useCallback((tool: string, checked: boolean) => {
+    if (isLoading) return;
     const newTools = checked 
       ? [...formData.currentTools, tool]
       : formData.currentTools.filter(t => t !== tool);
     onFormDataChange({ currentTools: newTools });
-  };
+  }, [formData.currentTools, onFormDataChange, isLoading]);
 
-  const handleChallengeChange = (challenge: string, checked: boolean) => {
+  const handleChallengeChange = useCallback((challenge: string, checked: boolean) => {
+    if (isLoading) return;
     const newChallenges = checked 
       ? [...formData.biggestChallenges, challenge]
       : formData.biggestChallenges.filter(c => c !== challenge);
     onFormDataChange({ biggestChallenges: newChallenges });
-  };
+  }, [formData.biggestChallenges, onFormDataChange, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (!isLoading && validateForm()) {
       onNext();
     }
   };
@@ -125,6 +136,7 @@ export const UseCaseStep = ({
                   id={goal}
                   checked={formData.hiringGoals.includes(goal)}
                   onCheckedChange={(checked) => handleGoalChange(goal, !!checked)}
+                  disabled={isLoading}
                 />
                 <Label htmlFor={goal} className="text-sm text-gray-700 cursor-pointer">
                   {goal}
@@ -141,7 +153,8 @@ export const UseCaseStep = ({
           </Label>
           <Select 
             value={formData.hiresPerMonth} 
-            onValueChange={(value) => onFormDataChange({ hiresPerMonth: value })}
+            onValueChange={(value) => !isLoading && onFormDataChange({ hiresPerMonth: value })}
+            disabled={isLoading}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select hiring volume" />
@@ -168,6 +181,7 @@ export const UseCaseStep = ({
                   id={tool}
                   checked={formData.currentTools.includes(tool)}
                   onCheckedChange={(checked) => handleToolChange(tool, !!checked)}
+                  disabled={isLoading}
                 />
                 <Label htmlFor={tool} className="text-sm text-gray-700 cursor-pointer">
                   {tool}
@@ -189,6 +203,7 @@ export const UseCaseStep = ({
                   id={challenge}
                   checked={formData.biggestChallenges.includes(challenge)}
                   onCheckedChange={(checked) => handleChallengeChange(challenge, !!checked)}
+                  disabled={isLoading}
                 />
                 <Label htmlFor={challenge} className="text-sm text-gray-700 cursor-pointer">
                   {challenge}
@@ -200,10 +215,10 @@ export const UseCaseStep = ({
 
         <Button
           type="submit"
-          className="w-full py-3 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
-          disabled={!validateForm()}
+          className="w-full py-3 text-lg font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+          disabled={!validateForm() || isLoading}
         >
-          Continue
+          {isLoading ? "Processing..." : "Continue"}
         </Button>
       </form>
     </div>

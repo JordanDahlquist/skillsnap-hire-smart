@@ -6,19 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 import { SignUpFormData } from "@/pages/SignUp";
 import { cn } from "@/lib/utils";
+import { useDebounceValidation } from "@/hooks/useDebounceValidation";
 
 interface BasicInfoStepProps {
   formData: SignUpFormData;
   onFormDataChange: (updates: Partial<SignUpFormData>) => void;
   onValidationChange: (isValid: boolean) => void;
   onNext: () => void;
+  isLoading?: boolean;
 }
 
 export const BasicInfoStep = ({ 
   formData, 
   onFormDataChange, 
   onValidationChange,
-  onNext 
+  onNext,
+  isLoading = false
 }: BasicInfoStepProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -55,16 +58,27 @@ export const BasicInfoStep = ({
     return isValid;
   }, [formData.fullName, formData.email, formData.password, onValidationChange, passwordRequirements]);
 
+  const { debouncedValidate, clearDebounce } = useDebounceValidation(validateForm, 300);
+
   useEffect(() => {
-    validateForm();
-  }, [validateForm]);
+    if (!isLoading) {
+      debouncedValidate();
+    }
+    return () => clearDebounce();
+  }, [debouncedValidate, clearDebounce, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (!isLoading && validateForm()) {
       onNext();
     }
   };
+
+  const handleInputChange = useCallback((field: keyof SignUpFormData, value: string) => {
+    if (!isLoading) {
+      onFormDataChange({ [field]: value });
+    }
+  }, [onFormDataChange, isLoading]);
 
   return (
     <div>
@@ -86,12 +100,13 @@ export const BasicInfoStep = ({
             id="fullName"
             type="text"
             value={formData.fullName}
-            onChange={(e) => onFormDataChange({ fullName: e.target.value })}
+            onChange={(e) => handleInputChange('fullName', e.target.value)}
             className={cn(
               "mt-1",
               errors.fullName && "border-red-500 focus-visible:ring-red-500"
             )}
             placeholder="Enter your full name"
+            disabled={isLoading}
           />
           {errors.fullName && (
             <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
@@ -106,12 +121,13 @@ export const BasicInfoStep = ({
             id="email"
             type="email"
             value={formData.email}
-            onChange={(e) => onFormDataChange({ email: e.target.value })}
+            onChange={(e) => handleInputChange('email', e.target.value)}
             className={cn(
               "mt-1",
               errors.email && "border-red-500 focus-visible:ring-red-500"
             )}
             placeholder="your.email@company.com"
+            disabled={isLoading}
           />
           {errors.email && (
             <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -127,17 +143,19 @@ export const BasicInfoStep = ({
               id="password"
               type={showPassword ? "text" : "password"}
               value={formData.password}
-              onChange={(e) => onFormDataChange({ password: e.target.value })}
+              onChange={(e) => handleInputChange('password', e.target.value)}
               className={cn(
                 "pr-10",
                 errors.password && "border-red-500 focus-visible:ring-red-500"
               )}
               placeholder="Create a strong password"
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -164,10 +182,10 @@ export const BasicInfoStep = ({
 
         <Button
           type="submit"
-          className="w-full py-3 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
-          disabled={Object.keys(errors).length > 0}
+          className="w-full py-3 text-lg font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+          disabled={Object.keys(errors).length > 0 || isLoading}
         >
-          Continue
+          {isLoading ? "Processing..." : "Continue"}
         </Button>
       </form>
 

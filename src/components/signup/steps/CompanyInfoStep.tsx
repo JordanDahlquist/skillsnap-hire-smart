@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SignUpFormData } from "@/pages/SignUp";
 import { cn } from "@/lib/utils";
+import { useDebounceValidation } from "@/hooks/useDebounceValidation";
 
 interface CompanyInfoStepProps {
   formData: SignUpFormData;
   onFormDataChange: (updates: Partial<SignUpFormData>) => void;
   onValidationChange: (isValid: boolean) => void;
   onNext: () => void;
+  isLoading?: boolean;
 }
 
 const COMPANY_SIZES = [
@@ -41,7 +43,8 @@ export const CompanyInfoStep = ({
   formData, 
   onFormDataChange, 
   onValidationChange,
-  onNext 
+  onNext,
+  isLoading = false
 }: CompanyInfoStepProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -70,16 +73,27 @@ export const CompanyInfoStep = ({
     return isValid;
   }, [formData.companyName, formData.companySize, formData.industry, formData.jobTitle, onValidationChange]);
 
+  const { debouncedValidate, clearDebounce } = useDebounceValidation(validateForm, 300);
+
   useEffect(() => {
-    validateForm();
-  }, [validateForm]);
+    if (!isLoading) {
+      debouncedValidate();
+    }
+    return () => clearDebounce();
+  }, [debouncedValidate, clearDebounce, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (!isLoading && validateForm()) {
       onNext();
     }
   };
+
+  const handleInputChange = useCallback((field: keyof SignUpFormData, value: string) => {
+    if (!isLoading) {
+      onFormDataChange({ [field]: value });
+    }
+  }, [onFormDataChange, isLoading]);
 
   return (
     <div>
@@ -101,12 +115,13 @@ export const CompanyInfoStep = ({
             id="companyName"
             type="text"
             value={formData.companyName}
-            onChange={(e) => onFormDataChange({ companyName: e.target.value })}
+            onChange={(e) => handleInputChange('companyName', e.target.value)}
             className={cn(
               "mt-1",
               errors.companyName && "border-red-500 focus-visible:ring-red-500"
             )}
             placeholder="Your company name"
+            disabled={isLoading}
           />
           {errors.companyName && (
             <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>
@@ -119,7 +134,8 @@ export const CompanyInfoStep = ({
           </Label>
           <Select 
             value={formData.companySize} 
-            onValueChange={(value) => onFormDataChange({ companySize: value })}
+            onValueChange={(value) => handleInputChange('companySize', value)}
+            disabled={isLoading}
           >
             <SelectTrigger className={cn(
               "mt-1",
@@ -146,7 +162,8 @@ export const CompanyInfoStep = ({
           </Label>
           <Select 
             value={formData.industry} 
-            onValueChange={(value) => onFormDataChange({ industry: value })}
+            onValueChange={(value) => handleInputChange('industry', value)}
+            disabled={isLoading}
           >
             <SelectTrigger className={cn(
               "mt-1",
@@ -175,12 +192,13 @@ export const CompanyInfoStep = ({
             id="jobTitle"
             type="text"
             value={formData.jobTitle}
-            onChange={(e) => onFormDataChange({ jobTitle: e.target.value })}
+            onChange={(e) => handleInputChange('jobTitle', e.target.value)}
             className={cn(
               "mt-1",
               errors.jobTitle && "border-red-500 focus-visible:ring-red-500"
             )}
             placeholder="e.g. HR Manager, CEO, Recruiter"
+            disabled={isLoading}
           />
           {errors.jobTitle && (
             <p className="text-red-500 text-sm mt-1">{errors.jobTitle}</p>
@@ -189,10 +207,10 @@ export const CompanyInfoStep = ({
 
         <Button
           type="submit"
-          className="w-full py-3 text-lg font-semibold bg-blue-600 hover:bg-blue-700"
-          disabled={Object.keys(errors).length > 0}
+          className="w-full py-3 text-lg font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+          disabled={Object.keys(errors).length > 0 || isLoading}
         >
-          Continue
+          {isLoading ? "Processing..." : "Continue"}
         </Button>
       </form>
     </div>
