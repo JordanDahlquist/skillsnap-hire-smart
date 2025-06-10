@@ -49,7 +49,7 @@ export const FixedHeightLayout = ({ children, className }: FixedHeightLayoutProp
 
   return (
     <div 
-      className={cn("w-full overflow-hidden", className)}
+      className={cn("w-full", className)}
       style={{ height: availableHeight > 0 ? `${availableHeight}px` : 'auto' }}
     >
       {children}

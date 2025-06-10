@@ -69,8 +69,8 @@ export const InboxContent = ({
         </div>
       </CardHeader>
 
-      {/* Scrollable Content Area */}
-      <CardContent className="flex-1 p-0 overflow-hidden">
+      {/* Scrollable Content Area - Independent Scrolling */}
+      <CardContent className="flex-1 min-h-0 p-0">
         <ScrollArea className="h-full">
           <ThreadList
             threads={filteredThreads}
