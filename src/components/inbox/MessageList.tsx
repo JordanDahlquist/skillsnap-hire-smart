@@ -22,9 +22,11 @@ export const MessageList = ({ messages }: MessageListProps) => {
   );
 
   return (
-    <div className="space-y-4 pb-4">
-      {sortedMessages.map((message) => (
-        <RichMessageDisplay key={message.id} message={message} />
+    <div className="space-y-4 pb-4 px-2">
+      {sortedMessages.map((message, index) => (
+        <div key={message.id} className={index === sortedMessages.length - 1 ? "mb-6" : ""}>
+          <RichMessageDisplay message={message} />
+        </div>
       ))}
     </div>
   );

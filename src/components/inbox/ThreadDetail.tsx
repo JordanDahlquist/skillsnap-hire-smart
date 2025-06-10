@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { Send, ArrowLeft, Paperclip } from "lucide-react";
+import { Send, Paperclip } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -100,17 +100,17 @@ export const ThreadDetail = ({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-3 border-b flex-shrink-0">
-        <CardTitle className="text-lg">{thread.subject}</CardTitle>
-        <p className="text-sm text-gray-600">
+        <CardTitle className="text-lg line-clamp-2">{thread.subject}</CardTitle>
+        <p className="text-sm text-gray-600 truncate">
           Conversation with: {participants}
         </p>
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0 min-h-0">
         {/* Messages with proper scrolling */}
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 relative">
           <ScrollArea className="h-full" ref={scrollAreaRef}>
-            <div className="p-4">
+            <div className="py-4">
               <MessageList messages={messages} />
               {/* Invisible element to scroll to */}
               <div ref={messagesEndRef} className="h-0" />

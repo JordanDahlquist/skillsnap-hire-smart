@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { formatDistanceToNow } from "date-fns";
-import { Download, File, Image, FileText } from 'lucide-react';
+import { Download, File, Image, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from '@/components/ui/button';
+import { parseEmailContent, truncateContent } from '@/utils/emailContentParser';
 import type { EmailMessage } from "@/types/inbox";
 
 interface Attachment {
@@ -19,6 +20,9 @@ interface RichMessageDisplayProps {
 }
 
 export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
+  const [showQuotedContent, setShowQuotedContent] = useState(false);
+  const [showFullContent, setShowFullContent] = useState(false);
+
   const getFileIcon = (type: string) => {
     if (type.startsWith('image/')) return <Image className="w-4 h-4" />;
     if (type === 'application/pdf') return <FileText className="w-4 h-4" />;
@@ -50,16 +54,23 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
     }
   };
 
-  const isRichContent = message.content.includes('<') || message.content.includes('&');
+  // Parse the email content
+  const parsedContent = parseEmailContent(message.content);
+  const { cleanContent, hasQuotedReply, quotedContent } = parsedContent;
+  
+  // Determine if content should be truncated
+  const shouldTruncate = cleanContent.length > 500;
+  const displayContent = showFullContent ? cleanContent : truncateContent(cleanContent);
+  
   const attachments = message.attachments || [];
 
   return (
     <div
       className={cn(
-        "p-4 rounded-lg max-w-[85%] shadow-sm border",
+        "p-4 rounded-lg shadow-sm border max-w-full",
         message.direction === 'outbound'
-          ? "ml-auto bg-primary text-primary-foreground"
-          : "mr-auto bg-muted"
+          ? "ml-auto mr-4 bg-primary text-primary-foreground max-w-[85%]"
+          : "mr-auto ml-4 bg-muted max-w-[85%]"
       )}
     >
       <div className="flex items-center justify-between mb-2">
@@ -78,20 +89,75 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
       </div>
       
       {/* Message Content */}
-      <div className="text-sm mb-3 leading-relaxed">
-        {isRichContent ? (
-          <div 
-            dangerouslySetInnerHTML={{ __html: message.content }}
+      <div className="text-sm mb-3 leading-relaxed break-words">
+        <div className="whitespace-pre-wrap">
+          {displayContent}
+        </div>
+        
+        {/* Show more/less button for long content */}
+        {shouldTruncate && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowFullContent(!showFullContent)}
             className={cn(
-              "prose prose-sm max-w-none",
+              "mt-2 h-6 text-xs p-1",
               message.direction === 'outbound' 
-                ? "prose-invert" 
-                : ""
+                ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/20" 
+                : "text-muted-foreground hover:text-foreground"
             )}
-          />
-        ) : (
-          <div className="whitespace-pre-wrap">
-            {message.content}
+          >
+            {showFullContent ? (
+              <>
+                <ChevronUp className="w-3 h-3 mr-1" />
+                Show less
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3 h-3 mr-1" />
+                Show more
+              </>
+            )}
+          </Button>
+        )}
+
+        {/* Quoted/Previous content */}
+        {hasQuotedReply && quotedContent && (
+          <div className="mt-3 pt-3 border-t border-opacity-20">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowQuotedContent(!showQuotedContent)}
+              className={cn(
+                "h-6 text-xs p-1 mb-2",
+                message.direction === 'outbound' 
+                  ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/20" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {showQuotedContent ? (
+                <>
+                  <ChevronUp className="w-3 h-3 mr-1" />
+                  Hide quoted text
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-3 h-3 mr-1" />
+                  Show quoted text
+                </>
+              )}
+            </Button>
+            
+            {showQuotedContent && (
+              <div className={cn(
+                "text-xs opacity-70 whitespace-pre-wrap p-2 rounded border border-opacity-20",
+                message.direction === 'outbound' 
+                  ? "bg-primary-foreground/10" 
+                  : "bg-background/50"
+              )}>
+                {quotedContent}
+              </div>
+            )}
           </div>
         )}
       </div>
