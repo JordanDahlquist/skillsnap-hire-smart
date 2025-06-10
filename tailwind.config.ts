@@ -124,6 +124,48 @@ export default {
 						transform: 'translate(-50%, -50%) rotate(360deg)'
 					}
 				},
+				'spin-galaxy-1': {
+					from: {
+						transform: 'translate(-50%, -50%) rotate(0deg)'
+					},
+					to: {
+						transform: 'translate(-50%, -50%) rotate(360deg)'
+					}
+				},
+				'spin-galaxy-2': {
+					from: {
+						transform: 'translate(-50%, -50%) rotate(360deg)'
+					},
+					to: {
+						transform: 'translate(-50%, -50%) rotate(0deg)'
+					}
+				},
+				'spin-nebula': {
+					from: {
+						transform: 'translate(-50%, -50%) rotate(0deg)'
+					},
+					to: {
+						transform: 'translate(-50%, -50%) rotate(360deg)'
+					}
+				},
+				'spin-outer': {
+					from: {
+						transform: 'rotate(0deg)'
+					},
+					to: {
+						transform: 'rotate(360deg)'
+					}
+				},
+				'twinkle': {
+					'0%, 100%': {
+						opacity: '0.2',
+						transform: 'scale(0.8)'
+					},
+					'50%': {
+						opacity: '1',
+						transform: 'scale(1.2)'
+					}
+				},
 				'float': {
 					'0%, 100%': {
 						transform: 'translateY(0px) translateX(0px)',
@@ -172,6 +214,11 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'spin-slow': 'spin-slow 20s linear infinite',
 				'spin-slower': 'spin-slower 30s linear infinite',
+				'spin-galaxy-1': 'spin-galaxy-1 80s linear infinite',
+				'spin-galaxy-2': 'spin-galaxy-2 120s linear infinite',
+				'spin-nebula': 'spin-nebula 200s linear infinite',
+				'spin-outer': 'spin-outer 300s linear infinite',
+				'twinkle': 'twinkle 2s ease-in-out infinite',
 				'float': 'float 10s ease-in-out infinite',
 				'shooting-star': 'shooting-star 3s linear infinite',
 				'glow-pulse': 'glow-pulse 2s ease-in-out infinite'
