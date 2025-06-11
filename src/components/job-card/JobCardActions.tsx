@@ -35,13 +35,13 @@ export const JobCardActions = ({
       
       <div className="flex gap-2">
         <Button variant="outline" size="sm" asChild>
-          <a href={`/apply/${jobId}`} target="_blank" rel="noopener noreferrer">
+          <a href={`/jobs/apply/${jobId}`} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="w-4 h-4 mr-2" />
             View Public
           </a>
         </Button>
         <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700">
-          <Link to={`/jobs/${jobId}`}>
+          <Link to={`/dashboard/${jobId}`}>
             <BarChart3 className="w-4 h-4 mr-2" />
             Manage
           </Link>
