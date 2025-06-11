@@ -53,6 +53,35 @@
     background: radial-gradient(circle, var(--tw-gradient-stops));
   }
 
+  /* Home Page Cosmos Background */
+  .cosmos-background {
+    position: relative;
+    background-image: url('/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  .cosmos-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.1) 0%, 
+      rgba(59, 130, 246, 0.05) 25%, 
+      rgba(147, 51, 234, 0.05) 50%, 
+      rgba(236, 72, 153, 0.05) 75%, 
+      rgba(255, 255, 255, 0.1) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cosmos-background > * {
+    position: relative;
+    z-index: 2;
+  }
+
   /* Enhanced Liquid Glass Morphism */
   .rounded-4xl {
     border-radius: 2rem;

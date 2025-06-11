@@ -31,12 +31,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 relative overflow-hidden">
-      {/* Ambient Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-cyan-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-blue-300/5 rounded-full blur-3xl"></div>
+    <div className="min-h-screen cosmos-background relative overflow-hidden">
+      {/* Ambient Background Effects - Enhanced for cosmos background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/15 to-purple-400/15 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/15 to-pink-400/15 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
       </div>
 
       {/* Content Layer */}
@@ -48,9 +48,9 @@ const Index = () => {
         <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-24 pb-32">
           <div className="text-center max-w-6xl mx-auto">
             {/* Hero Content */}
-            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl shadow-black/5 p-12 md:p-16 relative overflow-hidden">
+            <div className="backdrop-blur-xl bg-white/25 border border-white/40 rounded-3xl shadow-2xl shadow-black/10 p-12 md:p-16 relative overflow-hidden">
               {/* Glass overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-white/10 to-transparent rounded-3xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/15 to-white/5 rounded-3xl"></div>
               
               <div className="relative z-10">
                 <h1 className="text-6xl lg:text-8xl font-bold text-slate-900 mb-10 leading-tight tracking-tight">
@@ -66,15 +66,15 @@ const Index = () => {
                 </p>
                 
                 <div className="flex items-center justify-center gap-12 mb-12 text-lg text-slate-600">
-                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/50 px-6 py-3 rounded-2xl border border-white/50">
                     <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow-sm" />
                     <span className="font-medium">5x faster hiring</span>
                   </div>
-                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/50 px-6 py-3 rounded-2xl border border-white/50">
                     <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow-sm" />
                     <span className="font-medium">90% fewer bad applicants</span>
                   </div>
-                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/50 px-6 py-3 rounded-2xl border border-white/50">
                     <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow-sm" />
                     <span className="font-medium">Zero manual screening</span>
                   </div>
@@ -96,7 +96,7 @@ const Index = () => {
                       variant="outline" 
                       onClick={() => navigate('/auth')} 
                       size="lg" 
-                      className="backdrop-blur-xl bg-white/25 border-2 border-white/40 text-slate-700 hover:bg-white/35 hover:text-slate-900 px-16 py-8 text-xl font-semibold rounded-4xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl"
+                      className="backdrop-blur-xl bg-white/30 border-2 border-white/50 text-slate-700 hover:bg-white/40 hover:text-slate-900 px-16 py-8 text-xl font-semibold rounded-4xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl"
                     >
                       <LogIn className="mr-4 w-7 h-7" />
                       Sign In
@@ -120,11 +120,11 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+            <Card className="backdrop-blur-xl bg-white/25 border border-white/40 shadow-2xl shadow-black/10 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
               <CardContent className="p-10 text-center relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-blue-500/5 rounded-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-blue-500/10 rounded-3xl"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500/25 to-blue-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                     <Brain className="w-10 h-10 text-blue-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-6">AI Job Creation</h3>
@@ -133,11 +133,11 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+            <Card className="backdrop-blur-xl bg-white/25 border border-white/40 shadow-2xl shadow-black/10 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
               <CardContent className="p-10 text-center relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-purple-500/5 rounded-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-purple-500/10 rounded-3xl"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-purple-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500/25 to-purple-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                     <Zap className="w-10 h-10 text-purple-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-6">Smart Skill Testing</h3>
@@ -146,11 +146,11 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+            <Card className="backdrop-blur-xl bg-white/25 border border-white/40 shadow-2xl shadow-black/10 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
               <CardContent className="p-10 text-center relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-emerald-500/5 rounded-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-emerald-500/10 rounded-3xl"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/25 to-emerald-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                     <Filter className="w-10 h-10 text-emerald-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-6">Intelligent Filtering</h3>
@@ -159,11 +159,11 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+            <Card className="backdrop-blur-xl bg-white/25 border border-white/40 shadow-2xl shadow-black/10 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
               <CardContent className="p-10 text-center relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-orange-500/5 rounded-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-orange-500/10 rounded-3xl"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-500/20 to-orange-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-orange-500/25 to-orange-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                     <MessageSquare className="w-10 h-10 text-orange-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-6">Scout AI</h3>
@@ -172,11 +172,11 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+            <Card className="backdrop-blur-xl bg-white/25 border border-white/40 shadow-2xl shadow-black/10 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
               <CardContent className="p-10 text-center relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-cyan-500/5 rounded-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-cyan-500/10 rounded-3xl"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-cyan-500/20 to-cyan-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-cyan-500/25 to-cyan-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                     <BarChart3 className="w-10 h-10 text-cyan-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-6">Hiring Analytics</h3>
@@ -185,11 +185,11 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+            <Card className="backdrop-blur-xl bg-white/25 border border-white/40 shadow-2xl shadow-black/10 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
               <CardContent className="p-10 text-center relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-pink-500/5 rounded-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-pink-500/10 rounded-3xl"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-pink-500/20 to-pink-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-500/25 to-pink-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                     <Award className="w-10 h-10 text-pink-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-6">Automated Communication</h3>
@@ -202,7 +202,7 @@ const Index = () => {
 
         {/* Problem Section */}
         <section className="py-24 relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/5 via-red-900/5 to-orange-900/5 backdrop-blur-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/10 via-red-900/10 to-orange-900/10 backdrop-blur-3xl"></div>
           <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
             <div className="text-center mb-20">
               <h2 className="text-5xl lg:text-6xl font-bold text-slate-900 mb-8 tracking-tight">
@@ -214,11 +214,11 @@ const Index = () => {
             </div>
             
             <div className="grid lg:grid-cols-3 gap-8">
-              <Card className="backdrop-blur-xl bg-white/15 border border-red-200/50 shadow-2xl shadow-red-500/5 rounded-3xl overflow-hidden">
+              <Card className="backdrop-blur-xl bg-white/20 border border-red-200/60 shadow-2xl shadow-red-500/10 rounded-3xl overflow-hidden">
                 <CardContent className="p-10 text-center relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-red-500/5 rounded-3xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/15 via-transparent to-red-500/10 rounded-3xl"></div>
                   <div className="relative z-10">
-                    <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-red-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <div className="w-20 h-20 bg-gradient-to-br from-red-500/25 to-red-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                       <Users className="w-10 h-10 text-red-600" />
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-6">Flooded with unqualified applicants</h3>
@@ -227,11 +227,11 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="backdrop-blur-xl bg-white/15 border border-yellow-200/50 shadow-2xl shadow-yellow-500/5 rounded-3xl overflow-hidden">
+              <Card className="backdrop-blur-xl bg-white/20 border border-yellow-200/60 shadow-2xl shadow-yellow-500/10 rounded-3xl overflow-hidden">
                 <CardContent className="p-10 text-center relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-yellow-500/5 rounded-3xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/15 via-transparent to-yellow-500/10 rounded-3xl"></div>
                   <div className="relative z-10">
-                    <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-yellow-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/25 to-yellow-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                       <Clock className="w-10 h-10 text-yellow-600" />
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-6">Interviews are massive time sinks</h3>
@@ -240,11 +240,11 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="backdrop-blur-xl bg-white/15 border border-orange-200/50 shadow-2xl shadow-orange-500/5 rounded-3xl overflow-hidden">
+              <Card className="backdrop-blur-xl bg-white/20 border border-orange-200/60 shadow-2xl shadow-orange-500/10 rounded-3xl overflow-hidden">
                 <CardContent className="p-10 text-center relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/5 rounded-3xl"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/15 via-transparent to-orange-500/10 rounded-3xl"></div>
                   <div className="relative z-10">
-                    <div className="w-20 h-20 bg-gradient-to-br from-orange-500/20 to-orange-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <div className="w-20 h-20 bg-gradient-to-br from-orange-500/25 to-orange-600/35 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg border border-white/30">
                       <Target className="w-10 h-10 text-orange-600" />
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-6">No way to verify actual skills</h3>
@@ -530,8 +530,8 @@ const Index = () => {
 
         {/* Final CTA Section */}
         <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-24">
-          <div className="text-center backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl shadow-black/5 p-16 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-white/10 to-transparent rounded-3xl"></div>
+          <div className="text-center backdrop-blur-xl bg-white/25 border border-white/40 rounded-3xl shadow-2xl shadow-black/10 p-16 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/15 to-white/5 rounded-3xl"></div>
             
             <div className="relative z-10">
               <h2 className="text-5xl lg:text-6xl font-bold text-slate-900 mb-8 tracking-tight">
@@ -543,15 +543,15 @@ const Index = () => {
               </p>
               
               <div className="flex items-center justify-center gap-12 mb-12">
-                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/50 px-6 py-3 rounded-2xl border border-white/50">
                   <CheckCircle className="w-6 h-6 text-emerald-500" />
                   <span className="text-slate-600 font-medium">Free to start</span>
                 </div>
-                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/50 px-6 py-3 rounded-2xl border border-white/50">
                   <CheckCircle className="w-6 h-6 text-emerald-500" />
                   <span className="text-slate-600 font-medium">2-minute setup</span>
                 </div>
-                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/50 px-6 py-3 rounded-2xl border border-white/50">
                   <CheckCircle className="w-6 h-6 text-emerald-500" />
                   <span className="text-slate-600 font-medium">No credit card required</span>
                 </div>
@@ -573,7 +573,7 @@ const Index = () => {
                     variant="outline" 
                     onClick={() => navigate('/auth')} 
                     size="lg" 
-                    className="backdrop-blur-xl bg-white/25 border-2 border-white/40 text-slate-700 hover:bg-white/35 hover:text-slate-900 px-20 py-10 text-xl font-semibold rounded-4xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl"
+                    className="backdrop-blur-xl bg-white/30 border-2 border-white/50 text-slate-700 hover:bg-white/40 hover:text-slate-900 px-20 py-10 text-xl font-semibold rounded-4xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl"
                   >
                     <LogIn className="mr-4 w-7 h-7" />
                     Sign In
