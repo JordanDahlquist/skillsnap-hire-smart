@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Template, Star, Loader2 } from 'lucide-react';
+import { FileText, Star, Loader2 } from 'lucide-react';
 import type { EmailTemplate } from '@/types/emailComposer';
 
 interface TemplateGalleryProps {
@@ -37,7 +37,7 @@ export const TemplateGallery = ({
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-3 text-lg">
           <div className="p-2 bg-purple-500 rounded-xl text-white">
-            <Template className="w-5 h-5" />
+            <FileText className="w-5 h-5" />
           </div>
           Email Templates
           <Badge variant="outline" className="ml-auto">
