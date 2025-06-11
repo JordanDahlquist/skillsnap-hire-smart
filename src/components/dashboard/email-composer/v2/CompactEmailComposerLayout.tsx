@@ -52,7 +52,7 @@ export const CompactEmailComposerLayout = ({
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden p-4 gap-4">
       {/* Compact top section - Recipients and Template */}
-      <div className="flex-shrink-0 glass-content rounded-2xl p-4 space-y-3">
+      <div className="flex-shrink-0 space-y-3">
         <CompactRecipientsSection applications={selectedApplications} />
         <CompactTemplateSelector
           templates={templates}

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { useEmailComposer } from '@/hooks/useEmailComposer';
 import { useEmailSending } from '@/hooks/useEmailSending';
@@ -66,8 +66,19 @@ export const EmailComposerModalV2 = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent 
-        className="max-w-4xl w-[95vw] max-h-[90vh] p-0 glass-card border-0 shadow-2xl [&>button]:hidden overflow-hidden relative"
+        className="max-w-4xl w-[95vw] h-[90vh] max-h-[90vh] p-0 border-0 shadow-2xl [&>button]:hidden overflow-hidden relative backdrop-blur-xl bg-white/30 border border-white/40 rounded-3xl"
       >
+        {/* Accessibility components - visually hidden */}
+        <DialogTitle className="sr-only">
+          Email Composer - {selectedApplications.length} recipient{selectedApplications.length > 1 ? 's' : ''}
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          Compose and send bulk emails to selected candidates for {job.title} position
+        </DialogDescription>
+
+        {/* Enhanced glass background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-transparent rounded-3xl pointer-events-none" />
+        
         {/* Cosmic Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Main ambient orbs */}
@@ -81,7 +92,7 @@ export const EmailComposerModalV2 = ({
           <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-purple-300/80 rounded-full animate-twinkle" style={{ animationDelay: '3s' }} />
         </div>
 
-        <div className="flex flex-col h-full max-h-[90vh] overflow-hidden relative z-10">
+        <div className="flex flex-col h-full min-h-0 overflow-hidden relative z-10">
           <EmailComposerHeader
             currentStep={currentStep}
             recipientCount={selectedApplications.length}
