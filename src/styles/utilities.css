@@ -1,3 +1,5 @@
+
+
 /* Utility classes for semantic colors */
 @layer utilities {
   .text-brand-primary {
@@ -113,7 +115,7 @@
   /* Dashboard Ocean Wave Background - Full Color */
   .dashboard-cosmos-background {
     position: relative;
-    background-image: url('/lovable-uploads/bf541f7e-95d7-4d39-9900-fbd149cc0a46.png');
+    background-image: url('/lovable-uploads/f73a59ab-c7c7-4bd1-822e-e0cbbf8c638a.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -301,3 +303,4 @@
       0 16px 64px rgba(0, 0, 0, 0.15);
   }
 }
+
