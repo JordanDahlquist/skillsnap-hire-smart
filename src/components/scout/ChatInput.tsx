@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,7 +32,7 @@ export const ChatInput = ({
   };
 
   return (
-    <div className="bg-background p-4 safe-area-inset-bottom border-t">
+    <div className="bg-background p-4">
       <div className="max-w-4xl mx-auto">
         <div
           className={cn(
