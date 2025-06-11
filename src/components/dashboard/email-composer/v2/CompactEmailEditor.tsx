@@ -58,10 +58,10 @@ export const CompactEmailEditor = ({
         </div>
       </div>
 
-      {/* Content editor with fixed height */}
+      {/* Content editor with expanded height */}
       <div className="flex-1 min-h-0 flex flex-col p-2">
         <Label className="text-xs font-medium text-gray-600 mb-1">Message</Label>
-        <div className="h-32 min-h-0 border rounded">
+        <div className="flex-1 min-h-0 border rounded">
           <EmailRichTextEditor
             value={content}
             onChange={onContentChange}
