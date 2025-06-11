@@ -150,33 +150,32 @@ export const OptimizedJobsContent = memo(({
   return (
     <div className="max-w-7xl mx-auto px-8 py-4">
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Showing <span className="font-semibold text-gray-900">{filteredJobs.length}</span> of <span className="font-semibold text-gray-900">{jobs.length}</span> total jobs
-            {needsAttentionFilter && (
-              <span className="ml-2 text-orange-600 font-medium">
-                (filtered for jobs needing attention)
-              </span>
-            )}
-            {activeJobsFilter && (
-              <span className="ml-2 text-blue-600 font-medium">
-                (filtered for active jobs)
-              </span>
-            )}
-          </div>
-        </div>
-
         {filteredJobs.length > 0 && (
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={handleSelectAll}
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  Select all {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={handleSelectAll}
+                  />
+                  <span className="text-sm font-medium text-foreground">
+                    Select all {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="text-sm text-foreground">
+                  Showing <span className="font-semibold">{filteredJobs.length}</span> of <span className="font-semibold">{jobs.length}</span> total jobs
+                  {needsAttentionFilter && (
+                    <span className="ml-2 text-orange-600 font-medium">
+                      (filtered for jobs needing attention)
+                    </span>
+                  )}
+                  {activeJobsFilter && (
+                    <span className="ml-2 text-blue-600 font-medium">
+                      (filtered for active jobs)
+                    </span>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -196,7 +195,7 @@ export const OptimizedJobsContent = memo(({
               <JobItem
                 key={job.id}
                 job={job}
-                selectedJobs={selectedJobs}
+selectedJobs={selectedJobs}
                 onJobSelection={onJobSelection}
                 onRefetch={onRefetch}
               />
