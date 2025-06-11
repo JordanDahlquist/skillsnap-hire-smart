@@ -1,0 +1,171 @@
+
+/* Utility classes for semantic colors */
+@layer utilities {
+  .text-brand-primary {
+    color: hsl(var(--brand-primary));
+  }
+  
+  .bg-brand-primary {
+    background-color: hsl(var(--brand-primary));
+  }
+  
+  .border-brand-primary {
+    border-color: hsl(var(--brand-primary));
+  }
+  
+  .text-status-active {
+    color: hsl(var(--status-active));
+  }
+  
+  .text-status-pending {
+    color: hsl(var(--status-pending));
+  }
+  
+  .text-status-inactive {
+    color: hsl(var(--status-inactive));
+  }
+  
+  .text-attention {
+    color: hsl(var(--attention-color));
+  }
+  
+  .bg-attention {
+    background-color: hsl(var(--attention-color));
+  }
+  
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+  
+  .animate-spin-slower {
+    animation: spin-slower 30s linear infinite;
+  }
+  
+  .animate-spin-slowest {
+    animation: spin-slowest 45s linear infinite;
+  }
+
+  .animate-float {
+    animation: float 10s ease-in-out infinite;
+  }
+
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+
+  /* Enhanced Liquid Glass Morphism */
+  .rounded-4xl {
+    border-radius: 2rem;
+  }
+
+  .shadow-3xl {
+    box-shadow: 
+      0 35px 60px -12px rgba(0, 0, 0, 0.25), 
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+      0 0 40px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Liquid Glass Card Styles */
+  .glass-card {
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.25) 0%, 
+      rgba(255, 255, 255, 0.15) 50%, 
+      rgba(255, 255, 255, 0.08) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 16px 40px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.35) 0%, 
+      rgba(255, 255, 255, 0.25) 50%, 
+      rgba(255, 255, 255, 0.12) 100%);
+    box-shadow: 
+      0 24px 64px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px) scale(1.01);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Enhanced liquid glass morphism */
+  .glass-button {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .glass-button:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.08) 100%);
+    box-shadow: 
+      0 16px 64px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  /* Liquid ripple effect */
+  .liquid-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-ripple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease-out, height 0.6s ease-out;
+  }
+
+  .liquid-ripple:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Glass content container */
+  .glass-content {
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.18) 0%, 
+      rgba(255, 255, 255, 0.08) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    box-shadow: 
+      0 12px 32px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+
+  /* Enhanced button glow effects */
+  .shadow-glow-blue {
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.3),
+      0 0 40px rgba(59, 130, 246, 0.2),
+      0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .shadow-glow-blue:hover {
+    box-shadow: 
+      0 0 30px rgba(59, 130, 246, 0.5),
+      0 0 60px rgba(59, 130, 246, 0.3),
+      0 16px 64px rgba(0, 0, 0, 0.15);
+  }
+}
