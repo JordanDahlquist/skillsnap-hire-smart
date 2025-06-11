@@ -11,14 +11,14 @@ const lightModeBackgrounds = [
 ];
 
 const darkModeBackgrounds = [
-  '/lovable-uploads/a9794164-3a51-4bae-a5df-8d262d5e3660.png', // Starry night with clouds
-  '/lovable-uploads/665ad2a2-26d4-4d47-9b74-f8d9b3fbd84d.png', // Night flowers field with mountains
-  '/lovable-uploads/91434aed-9d21-45c4-923f-3689199d51f7.png', // Rolling hills under stars
-  '/lovable-uploads/915aed33-6e51-409b-a7af-4aa148ac3e52.png', // Ocean waves under starry sky
-  '/lovable-uploads/4dc7d598-c423-4afe-bf70-dba781069f46.png', // Purple cosmos flowers at night
-  '/lovable-uploads/a4a8ecfc-f0ab-4d4d-961a-12b6acefac61.png', // Wheat field under starry sky
-  '/lovable-uploads/62e62011-16d7-410a-93c5-6d24e25a4e47.png', // Mountain peaks with Milky Way
-  '/lovable-uploads/24a3103c-109b-4470-b73f-2e0d2e47964f.png', // Teal gradient night sky
+  '/lovable-uploads/23d28cb2-7c51-4163-b662-b7e8ab37fe3a.png', // Starry night with clouds
+  '/lovable-uploads/f31dd49f-4320-4158-ae1a-798a8228e710.png', // Night flowers field with mountains
+  '/lovable-uploads/88c539ee-2eca-4ed6-aa22-eff1b249cd28.png', // Rolling hills under stars
+  '/lovable-uploads/0a14a67e-fdc4-4349-9bd3-dcdb7846e547.png', // Ocean waves under starry sky
+  '/lovable-uploads/709e62f6-6954-46ad-bfcf-99596ba43e7c.png', // Purple cosmos flowers at night
+  '/lovable-uploads/a3f6d4c4-b1e7-4d4f-bbea-9e99b5a67d4b.png', // Wheat field under starry sky
+  '/lovable-uploads/2bee2e19-d279-41ab-8dd2-375b2ae62ffc.png', // Mountain peaks with Milky Way
+  '/lovable-uploads/f1d65efc-b1d6-49f7-9e12-b1e70373d211.png', // Teal gradient night sky
 ];
 
 export const useRotatingBackground = () => {
