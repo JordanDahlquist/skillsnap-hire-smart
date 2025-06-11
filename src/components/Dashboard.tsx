@@ -59,14 +59,8 @@ export const Dashboard = () => {
 
   if (!job) {
     return (
-      <div className="min-h-screen cosmos-flowers-background relative overflow-hidden flex items-center justify-center">
-        {/* Ambient Background Effects */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/15 to-purple-400/15 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/15 to-pink-400/15 rounded-full blur-3xl"></div>
-        </div>
-        
-        <div className="relative z-10 text-center backdrop-blur-xl bg-white/25 border border-white/40 rounded-3xl shadow-2xl shadow-black/10 p-12">
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Job not found</h2>
           <p className="text-gray-600">The job you're looking for doesn't exist or you don't have permission to view it.</p>
         </div>
@@ -75,34 +69,24 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen cosmos-flowers-background relative overflow-hidden">
-      {/* Ambient Background Effects */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/15 to-purple-400/15 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/15 to-pink-400/15 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
-      </div>
+    <div className="min-h-screen">
+      <EnhancedDashboardHeader
+        job={job}
+        applications={applications || []}
+        getTimeAgo={getTimeAgo}
+        onJobUpdate={refetchApplications}
+      />
 
-      {/* Content Layer */}
-      <div className="relative z-10">
-        <EnhancedDashboardHeader
-          job={job}
-          applications={applications || []}
-          getTimeAgo={getTimeAgo}
-          onJobUpdate={refetchApplications}
-        />
-
-        <ApplicationsManager
-          applications={applications || []}
-          selectedApplication={selectedApplication}
-          onSelectApplication={handleSelectApplication}
-          selectedApplications={selectedApplications}
-          onSelectApplications={setSelectedApplications}
-          onSendEmail={handleSendEmail}
-          onApplicationUpdate={refetchApplications}
-          job={job}
-        />
-      </div>
+      <ApplicationsManager
+        applications={applications || []}
+        selectedApplication={selectedApplication}
+        onSelectApplication={handleSelectApplication}
+        selectedApplications={selectedApplications}
+        onSelectApplications={setSelectedApplications}
+        onSendEmail={handleSendEmail}
+        onApplicationUpdate={refetchApplications}
+        job={job}
+      />
     </div>
   );
 };
