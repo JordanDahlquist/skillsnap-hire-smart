@@ -11,14 +11,15 @@ const roleTypeSynonyms: Record<string, string[]> = {
   sales: ["sales", "business development", "account management", "customer success"]
 };
 
-// Enhanced flexible search function with better partial matching
+// Simplified and more reliable search function
 export const matchesSearchTerm = (job: any, searchTerm: string): boolean => {
   if (!searchTerm || searchTerm.trim() === "") return true;
   
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0);
+  console.log('Searching for:', normalizedSearchTerm);
   
-  const searchableContent = [
+  // Get all searchable content from the job
+  const searchableFields = [
     job.title || '',
     job.description || '',
     job.required_skills || '',
@@ -26,29 +27,50 @@ export const matchesSearchTerm = (job: any, searchTerm: string): boolean => {
     job.city || '',
     job.state || '',
     job.country || ''
-  ].join(' ').toLowerCase();
+  ];
   
-  // More flexible matching - require at least 60% of search words to match
+  const searchableContent = searchableFields.join(' ').toLowerCase();
+  console.log('Job content sample:', job.title, '- Full content length:', searchableContent.length);
+  
+  // Priority 1: Direct substring match (most important for user expectations)
+  if (searchableContent.includes(normalizedSearchTerm)) {
+    console.log('✓ Direct match found for:', normalizedSearchTerm);
+    return true;
+  }
+  
+  // Priority 2: Word-by-word matching for multi-word searches
+  const searchWords = normalizedSearchTerm.split(/\s+/).filter(word => word.length > 0);
+  
+  if (searchWords.length === 1) {
+    // Single word search - already checked above, return false
+    console.log('✗ No match found for single word:', normalizedSearchTerm);
+    return false;
+  }
+  
+  // For multi-word searches, require at least 70% of words to match
   const matchedWords = searchWords.filter(word => {
-    if (searchableContent.includes(word)) return true;
+    // Check direct inclusion first
+    if (searchableContent.includes(word)) {
+      return true;
+    }
     
-    // Partial word matching for words longer than 3 characters
-    if (word.length > 3) {
+    // For longer words (4+ chars), check partial matches
+    if (word.length >= 4) {
       const contentWords = searchableContent.split(/\s+/);
       return contentWords.some(jobWord => {
-        return jobWord.includes(word) || 
-               word.includes(jobWord) ||
-               (jobWord.length > 3 && word.length > 3 && 
-                (jobWord.startsWith(word.substring(0, 4)) || word.startsWith(jobWord.substring(0, 4))));
+        return jobWord.includes(word) || word.includes(jobWord);
       });
     }
     
     return false;
   });
   
-  // Require at least 60% match, but at least 1 word for short searches
-  const requiredMatches = Math.max(1, Math.ceil(searchWords.length * 0.6));
-  return matchedWords.length >= requiredMatches;
+  const requiredMatches = Math.ceil(searchWords.length * 0.7);
+  const hasMatch = matchedWords.length >= requiredMatches;
+  
+  console.log(`Multi-word search: ${matchedWords.length}/${searchWords.length} words matched (need ${requiredMatches}):`, hasMatch);
+  
+  return hasMatch;
 };
 
 // Enhanced role matching with better synonym support

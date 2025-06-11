@@ -46,16 +46,22 @@ export const parseBudgetOptimized = (budgetStr: string | null, employmentType: s
 // Optimized filtering with reduced complexity and better error handling
 export const applyJobFiltersOptimized = (jobs: any[], searchTerm: string, filters: JobFilters) => {
   if (!jobs || !Array.isArray(jobs) || jobs.length === 0) {
+    console.log('No jobs to filter');
     return [];
   }
   
+  console.log(`Starting filter with ${jobs.length} jobs, search term: "${searchTerm}"`);
+  
   try {
-    return jobs.filter(job => {
+    const filtered = jobs.filter(job => {
       if (!job) return false;
       
       // Text search first (most likely to eliminate jobs)
-      if (searchTerm && searchTerm.trim() && !matchesSearchTerm(job, searchTerm)) {
-        return false;
+      if (searchTerm && searchTerm.trim()) {
+        const searchMatches = matchesSearchTerm(job, searchTerm);
+        if (!searchMatches) {
+          return false;
+        }
       }
       
       // Employment type check with fallback
@@ -107,6 +113,9 @@ export const applyJobFiltersOptimized = (jobs: any[], searchTerm: string, filter
       
       return true;
     });
+
+    console.log(`Filtering complete: ${filtered.length} jobs remaining out of ${jobs.length}`);
+    return filtered;
   } catch (error) {
     console.error('Error in job filtering:', error);
     return jobs; // Return original jobs if filtering fails
