@@ -135,25 +135,14 @@
     background-attachment: fixed;
   }
 
+  /* Dark mode will use rotating backgrounds instead of fixed background */
   .dark body {
-    background-image: url('/lovable-uploads/1bfe1877-3441-4bd9-b661-0db7a2b90db0.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
-
-  .dark body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
+    background-image: none;
     background: linear-gradient(135deg, 
       rgba(147, 51, 234, 0.15) 0%, 
       rgba(168, 85, 247, 0.12) 25%, 
       rgba(139, 92, 246, 0.15) 50%, 
       rgba(124, 58, 237, 0.12) 75%, 
       rgba(109, 40, 217, 0.15) 100%);
-    pointer-events: none;
-    z-index: -1;
   }
 }

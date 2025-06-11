@@ -1,3 +1,4 @@
+
 /* Background utility classes */
 @layer utilities {
   /* Home Page Cosmos Background */
@@ -58,7 +59,7 @@
     z-index: 2;
   }
 
-  /* Dashboard Rotating Background */
+  /* Dashboard Rotating Background with extended 3-second transitions */
   .dashboard-rotating-background {
     position: relative;
     background-size: cover;
@@ -66,7 +67,7 @@
     background-repeat: no-repeat;
     background-attachment: fixed;
     min-height: 100vh;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 3s ease-in-out;
   }
 
   .dashboard-rotating-background.transitioning {
@@ -85,7 +86,7 @@
       rgba(255, 255, 255, 0.15) 100%);
     pointer-events: none;
     z-index: 1;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 3s ease-in-out;
   }
 
   .dashboard-rotating-background > * {
