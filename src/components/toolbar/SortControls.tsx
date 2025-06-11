@@ -11,11 +11,11 @@ interface SortControlsProps {
 
 export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsProps) => {
   const sortOptions = [
-    { value: 'created_desc', label: 'Newest first' },
-    { value: 'created_asc', label: 'Oldest first' },
-    { value: 'needs_attention', label: 'Needs attention' },
-    { value: 'applications_desc', label: 'Most applications' },
-    { value: 'applications_asc', label: 'Least applications' },
+    { value: 'updated_at', label: 'Recently Updated' },
+    { value: 'created_at', label: 'Newest First' },
+    { value: 'needs_attention', label: 'Needs Attention' },
+    { value: 'applications_desc', label: 'Most Applications' },
+    { value: 'applications_asc', label: 'Least Applications' },
     { value: 'title_asc', label: 'Title A-Z' },
     { value: 'title_desc', label: 'Title Z-A' }
   ].filter(option => option.value && option.value.trim() !== '');
@@ -24,15 +24,15 @@ export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsPr
 
   return (
     <div className="flex gap-2 items-center">
-      <Select value={sortBy || 'created_desc'} onValueChange={onSortChange}>
-        <SelectTrigger className="w-40 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300">
+      <Select value={sortBy || 'updated_at'} onValueChange={onSortChange}>
+        <SelectTrigger className="w-40 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-white">
           <SelectValue>
             {currentSortLabel}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="glass-card border-white/40">
+        <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
           {sortOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-gray-100">
               {option.label}
             </SelectItem>
           ))}
@@ -43,7 +43,7 @@ export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsPr
         variant="outline" 
         size="sm" 
         onClick={onRefresh}
-        className="rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300"
+        className="rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300 text-white hover:text-white"
       >
         <RefreshCw className="w-4 h-4" />
       </Button>

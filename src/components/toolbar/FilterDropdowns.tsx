@@ -33,13 +33,13 @@ export const FilterDropdowns = ({
   return (
     <>
       <Select value={statusFilter || 'all'} onValueChange={onStatusFilterChange}>
-        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300">
-          <Filter className="w-4 h-4 mr-1 text-slate-600" />
+        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-white">
+          <Filter className="w-4 h-4 mr-1 text-white" />
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
-        <SelectContent className="glass-card border-white/40">
+        <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
           {statusOptions.map((status) => (
-            <SelectItem key={status.value} value={status.value}>
+            <SelectItem key={status.value} value={status.value} className="text-gray-900 hover:bg-gray-100">
               {status.label}
             </SelectItem>
           ))}
@@ -47,13 +47,13 @@ export const FilterDropdowns = ({
       </Select>
 
       <Select value={workTypeFilter || 'all'} onValueChange={onWorkTypeFilterChange}>
-        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300">
-          <MapPin className="w-4 h-4 mr-1 text-slate-600" />
+        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-white">
+          <MapPin className="w-4 h-4 mr-1 text-white" />
           <SelectValue placeholder="All Types" />
         </SelectTrigger>
-        <SelectContent className="glass-card border-white/40">
+        <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
           {workTypeOptions.map((type) => (
-            <SelectItem key={type.value} value={type.value}>
+            <SelectItem key={type.value} value={type.value} className="text-gray-900 hover:bg-gray-100">
               {type.label}
             </SelectItem>
           ))}
