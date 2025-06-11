@@ -1,4 +1,3 @@
-
 import { memo, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { VirtualList } from "@/components/ui/virtual-list";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Job } from "@/types";
 import { UI_CONSTANTS } from "@/constants/ui";
+import { BulkActionsDropdown } from "@/components/toolbar/BulkActionsDropdown";
 
 interface OptimizedJobsContentProps {
   jobs: Job[];
@@ -21,6 +21,7 @@ interface OptimizedJobsContentProps {
   clearFilters: () => void;
   needsAttentionFilter: boolean;
   activeJobsFilter: boolean;
+  onBulkAction: (action: string) => void;
 }
 
 const JobItem = memo(({ 
@@ -74,7 +75,8 @@ export const OptimizedJobsContent = memo(({
   onRefetch,
   clearFilters,
   needsAttentionFilter,
-  activeJobsFilter
+  activeJobsFilter,
+  onBulkAction
 }: OptimizedJobsContentProps) => {
   const handleSelectAll = useCallback((checked: boolean) => {
     onSelectAll(checked, filteredJobs);
@@ -162,6 +164,10 @@ export const OptimizedJobsContent = memo(({
                   <span className="text-sm font-medium text-foreground">
                     Select all {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
                   </span>
+                  <BulkActionsDropdown 
+                    selectedCount={selectedJobs.length}
+                    onBulkAction={onBulkAction}
+                  />
                 </div>
                 <div className="text-sm text-foreground">
                   Showing <span className="font-semibold">{filteredJobs.length}</span> of <span className="font-semibold">{jobs.length}</span> total jobs
@@ -195,7 +201,7 @@ export const OptimizedJobsContent = memo(({
               <JobItem
                 key={job.id}
                 job={job}
-selectedJobs={selectedJobs}
+                selectedJobs={selectedJobs}
                 onJobSelection={onJobSelection}
                 onRefetch={onRefetch}
               />
@@ -208,3 +214,5 @@ selectedJobs={selectedJobs}
 });
 
 OptimizedJobsContent.displayName = 'OptimizedJobsContent';
+
+export default OptimizedJobsContent;
