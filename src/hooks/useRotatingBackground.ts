@@ -28,24 +28,44 @@ export const useRotatingBackground = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Handle theme changes - reset image index but don't affect rotation timer
   useEffect(() => {
+    console.log(`[Background Rotation] Theme changed to: ${currentTheme}`);
+    setCurrentImageIndex(0);
+    setIsTransitioning(false);
+  }, [currentTheme]);
+
+  // Main rotation effect - runs independently of theme changes
+  useEffect(() => {
+    console.log('[Background Rotation] Starting rotation timer');
+    
     const interval = setInterval(() => {
+      console.log('[Background Rotation] Starting transition...');
       setIsTransitioning(true);
       
       // After 1.5 seconds (half of the 3-second transition), change the image
       setTimeout(() => {
-        const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
-        setCurrentImageIndex((prev) => (prev + 1) % backgroundArray.length);
+        setCurrentImageIndex((prev) => {
+          const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
+          const newIndex = (prev + 1) % backgroundArray.length;
+          console.log(`[Background Rotation] Switching to image ${newIndex + 1}/${backgroundArray.length} (${currentTheme} mode)`);
+          return newIndex;
+        });
         setIsTransitioning(false);
       }, 1500);
     }, 120000); // 2 minutes = 120,000ms
 
-    return () => clearInterval(interval);
-  }, [currentTheme]);
+    return () => {
+      console.log('[Background Rotation] Clearing rotation timer');
+      clearInterval(interval);
+    };
+  }, []); // No dependencies - timer runs independently
 
   // Return the appropriate background based on theme
   const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
   const currentImage = backgroundArray[currentImageIndex];
+
+  console.log(`[Background Rotation] Current: ${currentTheme} mode, image ${currentImageIndex + 1}/${backgroundArray.length}, transitioning: ${isTransitioning}`);
 
   return {
     currentImage,
