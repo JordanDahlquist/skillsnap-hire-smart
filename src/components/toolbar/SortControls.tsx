@@ -25,12 +25,12 @@ export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsPr
   return (
     <div className="flex gap-2 items-center">
       <Select value={sortBy || 'created_desc'} onValueChange={onSortChange}>
-        <SelectTrigger className="w-40">
+        <SelectTrigger className="w-40 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300">
           <SelectValue>
             {currentSortLabel}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="glass-card border-white/40">
           {sortOptions.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
@@ -39,7 +39,12 @@ export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsPr
         </SelectContent>
       </Select>
       
-      <Button variant="outline" size="sm" onClick={onRefresh}>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={onRefresh}
+        className="rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300"
+      >
         <RefreshCw className="w-4 h-4" />
       </Button>
     </div>

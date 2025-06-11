@@ -16,12 +16,12 @@ export const SearchBar = memo(({
 }: SearchBarProps) => {
   return (
     <div className="relative w-full">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-600 w-4 h-4" />
       <Input
         placeholder={placeholder}
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-10 w-full"
+        className="pl-10 w-full bg-transparent border-0 focus:ring-0 focus-visible:ring-0 placeholder:text-slate-500 text-slate-700"
       />
     </div>
   );
