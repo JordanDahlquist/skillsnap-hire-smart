@@ -33,8 +33,8 @@ export const FilterDropdowns = ({
   return (
     <>
       <Select value={statusFilter || 'all'} onValueChange={onStatusFilterChange}>
-        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-white">
-          <Filter className="w-4 h-4 mr-1 text-white" />
+        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-black">
+          <Filter className="w-4 h-4 mr-1 text-black" />
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
         <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
@@ -47,8 +47,8 @@ export const FilterDropdowns = ({
       </Select>
 
       <Select value={workTypeFilter || 'all'} onValueChange={onWorkTypeFilterChange}>
-        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-white">
-          <MapPin className="w-4 h-4 mr-1 text-white" />
+        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-black">
+          <MapPin className="w-4 h-4 mr-1 text-black" />
           <SelectValue placeholder="All Types" />
         </SelectTrigger>
         <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">

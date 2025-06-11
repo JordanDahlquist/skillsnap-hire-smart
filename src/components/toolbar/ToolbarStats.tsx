@@ -1,3 +1,4 @@
+
 import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 interface ToolbarStatsProps {
@@ -12,7 +13,7 @@ export const ToolbarStats = memo(({
   activeFiltersCount,
   needsAttentionFilter
 }: ToolbarStatsProps) => {
-  return <div className="flex gap-4 items-center text-sm text-gray-600">
+  return <div className="flex gap-4 items-center text-sm text-black">
       {selectedCount > 0}
       {activeFiltersCount > 0 && <Badge variant="outline" className="bg-blue-50 text-blue-600">
           {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active

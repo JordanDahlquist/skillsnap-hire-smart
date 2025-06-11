@@ -25,7 +25,7 @@ export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsPr
   return (
     <div className="flex gap-2 items-center">
       <Select value={sortBy || 'updated_at'} onValueChange={onSortChange}>
-        <SelectTrigger className="w-40 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-white">
+        <SelectTrigger className="w-40 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-black">
           <SelectValue>
             {currentSortLabel}
           </SelectValue>
@@ -43,7 +43,7 @@ export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsPr
         variant="outline" 
         size="sm" 
         onClick={onRefresh}
-        className="rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300 text-white hover:text-white"
+        className="rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300 text-black hover:text-black"
       >
         <RefreshCw className="w-4 h-4" />
       </Button>
