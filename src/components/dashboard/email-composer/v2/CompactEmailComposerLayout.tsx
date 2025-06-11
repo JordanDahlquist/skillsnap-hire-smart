@@ -2,7 +2,6 @@
 import { CompactRecipientsSection } from './CompactRecipientsSection';
 import { CompactTemplateSelector } from './CompactTemplateSelector';
 import { CompactEmailEditor } from './CompactEmailEditor';
-import { CompactEmailPreview } from './CompactEmailPreview';
 import { CompactEmailActions } from './CompactEmailActions';
 import { SendingProgress } from './SendingProgress';
 import type { EmailTemplate, EmailFormData, Application, Job } from '@/types/emailComposer';
@@ -13,7 +12,6 @@ interface CompactEmailComposerLayoutProps {
   formData: EmailFormData;
   updateField: (field: keyof EmailFormData, value: string | boolean) => void;
   selectTemplate: (template: EmailTemplate) => void;
-  togglePreview: () => void;
   onSend: () => void;
   isSending: boolean;
   canSend: boolean;
@@ -30,7 +28,6 @@ export const CompactEmailComposerLayout = ({
   formData,
   updateField,
   selectTemplate,
-  togglePreview,
   onSend,
   isSending,
   canSend,
@@ -65,10 +62,9 @@ export const CompactEmailComposerLayout = ({
         />
       </div>
 
-      {/* Main content area with proper height constraints */}
+      {/* Main content area - Full width email editor */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Left side - Email Editor with internal scrolling */}
-        <div className={`${formData.showPreview ? 'w-1/2' : 'w-full'} flex flex-col border-r overflow-hidden`}>
+        <div className="w-full flex flex-col border-r overflow-hidden">
           <CompactEmailEditor
             subject={formData.subject}
             content={formData.content}
@@ -77,30 +73,14 @@ export const CompactEmailComposerLayout = ({
             onContentChange={(content) => updateField('content', content)}
           />
         </div>
-
-        {/* Right side - Preview (if enabled) */}
-        {formData.showPreview && (
-          <div className="w-1/2 flex flex-col min-h-0 overflow-hidden">
-            <CompactEmailPreview
-              subject={formData.subject}
-              content={formData.content}
-              application={selectedApplications[0]}
-              job={job}
-              fromEmail={fromEmail}
-              companyName={companyName}
-            />
-          </div>
-        )}
       </div>
 
       {/* Bottom actions - Always visible and accessible */}
       <div className="flex-shrink-0 border-t bg-white">
         <CompactEmailActions
           onSend={onSend}
-          onTogglePreview={togglePreview}
           isSending={isSending}
           canSend={canSend}
-          showPreview={formData.showPreview}
         />
       </div>
     </div>

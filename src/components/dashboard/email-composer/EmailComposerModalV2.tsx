@@ -24,7 +24,7 @@ export const EmailComposerModalV2 = ({
   job
 }: EmailComposerModalV2Props) => {
   const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates(open);
-  const { formData, updateField, selectTemplate, togglePreview, resetForm } = useEmailComposer();
+  const { formData, updateField, selectTemplate, resetForm } = useEmailComposer();
   const { sendBulkEmail, isSending, getCompanyName, getUserUniqueEmail } = useEmailSending();
   const { availableHeight } = useViewportHeight();
   const [currentStep, setCurrentStep] = useState<'compose' | 'preview' | 'sending'>('compose');
@@ -88,7 +88,6 @@ export const EmailComposerModalV2 = ({
             formData={formData}
             updateField={updateField}
             selectTemplate={selectTemplate}
-            togglePreview={togglePreview}
             onSend={handleSend}
             isSending={isSending}
             canSend={canSend}

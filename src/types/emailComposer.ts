@@ -29,5 +29,4 @@ export interface EmailFormData {
   templateId: string;
   subject: string;
   content: string;
-  showPreview: boolean;
 }

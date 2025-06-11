@@ -6,8 +6,7 @@ export const useEmailComposer = () => {
   const [formData, setFormData] = useState<EmailFormData>({
     templateId: '',
     subject: '',
-    content: '',
-    showPreview: false
+    content: ''
   });
 
   const updateField = useCallback((field: keyof EmailFormData, value: string | boolean) => {
@@ -26,19 +25,11 @@ export const useEmailComposer = () => {
     }));
   }, []);
 
-  const togglePreview = useCallback(() => {
-    setFormData(prev => ({
-      ...prev,
-      showPreview: !prev.showPreview
-    }));
-  }, []);
-
   const resetForm = useCallback(() => {
     setFormData({
       templateId: '',
       subject: '',
-      content: '',
-      showPreview: false
+      content: ''
     });
   }, []);
 
@@ -46,7 +37,6 @@ export const useEmailComposer = () => {
     formData,
     updateField,
     selectTemplate,
-    togglePreview,
     resetForm
   };
 };
