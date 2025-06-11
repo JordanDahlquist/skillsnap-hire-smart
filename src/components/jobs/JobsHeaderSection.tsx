@@ -28,7 +28,7 @@ export const JobsHeaderSection = ({
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5"></div>
       
       {/* Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AIDailyBriefing 
           userDisplayName={userDisplayName}
           onCreateJob={onCreateJob}
