@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RefreshCw } from "lucide-react";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface SortControlsProps {
   sortBy: string;
@@ -10,6 +11,8 @@ interface SortControlsProps {
 }
 
 export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsProps) => {
+  const { currentTheme } = useThemeContext();
+  
   const sortOptions = [
     { value: 'updated_at', label: 'Recently Updated' },
     { value: 'created_at', label: 'Newest First' },
@@ -21,11 +24,14 @@ export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsPr
   ].filter(option => option.value && option.value.trim() !== '');
 
   const currentSortLabel = sortOptions.find(option => option.value === sortBy)?.label || 'Sort by';
+  
+  const textColor = currentTheme === 'dark' ? 'text-white' : 'text-black';
+  const iconColor = currentTheme === 'dark' ? 'text-white' : 'text-black';
 
   return (
     <div className="flex gap-2 items-center">
       <Select value={sortBy || 'updated_at'} onValueChange={onSortChange}>
-        <SelectTrigger className="w-40 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-black">
+        <SelectTrigger className={`w-40 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 ${textColor}`}>
           <SelectValue>
             {currentSortLabel}
           </SelectValue>
@@ -43,9 +49,9 @@ export const SortControls = ({ sortBy, onSortChange, onRefresh }: SortControlsPr
         variant="outline" 
         size="sm" 
         onClick={onRefresh}
-        className="rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300 text-black hover:text-black"
+        className={`rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300 ${textColor} hover:${textColor}`}
       >
-        <RefreshCw className="w-4 h-4" />
+        <RefreshCw className={`w-4 h-4 ${iconColor}`} />
       </Button>
     </div>
   );
