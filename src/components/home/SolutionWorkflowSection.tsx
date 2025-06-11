@@ -119,44 +119,52 @@ export const SolutionWorkflowSection = () => {
 
   return (
     <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-24">
-      <div className="text-center mb-20">
-        <h2 className="text-5xl lg:text-6xl font-bold text-slate-900 mb-8 tracking-tight">
-          How Atract transforms your hiring
-        </h2>
-        <p className="text-2xl text-slate-600 max-w-4xl mx-auto font-light">
-          One intelligent platform. Four powerful steps. Zero time wasted on unqualified candidates.
-        </p>
-      </div>
-
-      <div className="space-y-24">
-        {steps.map((step, index) => (
-          <div key={index} className={`grid lg:grid-cols-2 gap-12 items-center ${index % 2 === 0 ? '' : 'lg:grid-flow-col-dense'}`}>
-            <div className={index % 2 === 0 ? 'order-2 lg:order-1' : ''}>
-              <div className="relative">
-                <div className="absolute -top-4 -left-4 w-12 h-12 bg-[#007af6] rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  {step.number}
-                </div>
-                <Card className="bg-white border border-gray-200 p-8 shadow-lg">
-                  {step.mockup}
-                </Card>
-              </div>
-            </div>
-            <div className={index % 2 === 0 ? 'order-1 lg:order-2' : ''}>
-              <h3 className="text-3xl font-bold text-gray-900 mb-6">{step.title}</h3>
-              <p className="text-xl text-gray-700 mb-6 leading-relaxed">
-                {step.description}
-              </p>
-              <div className="flex items-center gap-4 text-gray-600">
-                {step.features.map((feature, featureIndex) => (
-                  <div key={featureIndex} className="flex items-center gap-2">
-                    <feature.icon className={`w-5 h-5 ${feature.color}`} />
-                    <span>{feature.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* Glass morphism container for better readability */}
+      <div className="backdrop-blur-xl bg-white/25 border border-white/40 rounded-3xl shadow-2xl shadow-black/10 p-12 md:p-16 relative overflow-hidden">
+        {/* Glass overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/15 to-white/5 rounded-3xl"></div>
+        
+        <div className="relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl lg:text-6xl font-bold text-slate-900 mb-8 tracking-tight">
+              How Atract transforms your hiring
+            </h2>
+            <p className="text-2xl text-slate-600 max-w-4xl mx-auto font-light">
+              One intelligent platform. Four powerful steps. Zero time wasted on unqualified candidates.
+            </p>
           </div>
-        ))}
+
+          <div className="space-y-24">
+            {steps.map((step, index) => (
+              <div key={index} className={`grid lg:grid-cols-2 gap-12 items-center ${index % 2 === 0 ? '' : 'lg:grid-flow-col-dense'}`}>
+                <div className={index % 2 === 0 ? 'order-2 lg:order-1' : ''}>
+                  <div className="relative">
+                    <div className="absolute -top-4 -left-4 w-12 h-12 bg-[#007af6] rounded-full flex items-center justify-center text-white font-bold text-xl">
+                      {step.number}
+                    </div>
+                    <Card className="bg-white border border-gray-200 p-8 shadow-lg">
+                      {step.mockup}
+                    </Card>
+                  </div>
+                </div>
+                <div className={index % 2 === 0 ? 'order-1 lg:order-2' : ''}>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-6">{step.title}</h3>
+                  <p className="text-xl text-gray-700 mb-6 leading-relaxed">
+                    {step.description}
+                  </p>
+                  <div className="flex items-center gap-4 text-gray-600">
+                    {step.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-center gap-2">
+                        <feature.icon className={`w-5 h-5 ${feature.color}`} />
+                        <span>{feature.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
