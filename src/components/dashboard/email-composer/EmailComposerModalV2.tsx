@@ -71,10 +71,23 @@ export const EmailComposerModalV2 = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent 
-        className="max-w-4xl p-0 bg-white border shadow-2xl [&>button]:hidden overflow-hidden"
+        className="max-w-4xl p-0 glass-card border-0 shadow-2xl [&>button]:hidden overflow-hidden relative"
         style={{ height: `${modalHeight}px` }}
       >
-        <div className="flex flex-col h-full overflow-hidden">
+        {/* Cosmic Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Main ambient orbs */}
+          <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-br from-blue-400/20 via-purple-500/15 to-cyan-400/10 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-32 right-16 w-48 h-48 bg-gradient-to-br from-purple-400/25 via-pink-500/15 to-blue-400/10 rounded-full blur-2xl animate-float" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-gradient-to-br from-cyan-400/30 via-blue-500/20 to-purple-400/15 rounded-full blur-xl animate-float" style={{ animationDelay: '4s' }} />
+          
+          {/* Subtle particle effects */}
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/60 rounded-full animate-twinkle" />
+          <div className="absolute top-3/4 left-3/4 w-1.5 h-1.5 bg-blue-300/70 rounded-full animate-twinkle" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-purple-300/80 rounded-full animate-twinkle" style={{ animationDelay: '3s' }} />
+        </div>
+
+        <div className="flex flex-col h-full overflow-hidden relative z-10">
           <EmailComposerHeader
             currentStep={currentStep}
             recipientCount={selectedApplications.length}
