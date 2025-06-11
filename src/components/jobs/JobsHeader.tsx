@@ -10,7 +10,7 @@ interface JobsHeaderProps {
 
 export const JobsHeader = ({ userDisplayName, onCreateJob }: JobsHeaderProps) => {
   return (
-    <div className="py-12 px-8">
+    <div className="py-12 px-8 textured-background">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
           <div className="space-y-4">
@@ -21,11 +21,12 @@ export const JobsHeader = ({ userDisplayName, onCreateJob }: JobsHeaderProps) =>
               {getWelcomeSubtitle()}
             </p>
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 relative">
             <Button 
               onClick={onCreateJob}
-              className="bg-[#007af6] hover:bg-[#0056b3] text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              variant="glass-premium"
               size="lg"
+              className="glass-button-premium text-lg font-semibold px-10 py-5 relative z-10"
             >
               <Plus className="w-6 h-6 mr-3" />
               Create New Job
