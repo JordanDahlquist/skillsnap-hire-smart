@@ -13,18 +13,18 @@ import SimpleSignUp from "./pages/SimpleSignUp";
 import ResetPassword from "./pages/ResetPassword";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import PublicJobs from "./pages/PublicJobs";
-import JobApplicationPage from "./pages/JobApplicationPage";
-import OptimizedJobsPage from "./components/jobs/OptimizedJobsPage";
-import DashboardPage from "./components/dashboard/DashboardPage";
+import { JobApplicationPage } from "./pages/JobApplicationPage";
+import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
+import { DashboardPage } from "./components/dashboard/DashboardPage";
 import Scout from "./pages/Scout";
-import Inbox from "./pages/Inbox";
+import { Inbox } from "./pages/Inbox";
 import ProfileSettings from "./pages/ProfileSettings";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
-import LinkedInCallback from "./pages/LinkedInCallback";
+import { LinkedInCallback } from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
