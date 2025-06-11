@@ -11,21 +11,19 @@ import { JobCreatorPanel } from "@/components/JobCreatorPanel";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { JobsHeaderSection } from "./JobsHeaderSection";
-import { JobsToolbar } from "./JobsToolbar";
+import { JobManagementModal } from "./JobManagementModal";
 import { OptimizedJobsContent } from "./OptimizedJobsContent";
 import { LOADING_MESSAGES, SUCCESS_MESSAGES } from "@/constants/messages";
 
 export const OptimizedJobsPage = memo(() => {
-  const { user, profile } = useOptimizedAuth(); // Use optimized auth
+  const { user, profile } = useOptimizedAuth();
   const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
   const { toast } = useToast();
   const { execute: executeAsync } = useAsyncOperation();
   const { handleError } = useStandardizedError();
 
-  // Use optimized jobs hook for better performance
   const { data: jobs = [], isLoading: jobsLoading, refetch } = useOptimizedJobs(user?.id);
 
-  // Consolidated data hook (keeping existing logic but with optimized data)
   const {
     filteredJobs,
     stats,
@@ -43,7 +41,6 @@ export const OptimizedJobsPage = memo(() => {
     activeFiltersCount
   } = useJobsData();
 
-  // Job selection (keeping existing logic)
   const {
     selectedJobs,
     handleJobSelection,
@@ -127,7 +124,6 @@ export const OptimizedJobsPage = memo(() => {
     setIsCreatePanelOpen(true);
   }, []);
 
-  // Use jobsLoading from optimized hook instead of consolidated loading
   if (jobsLoading) {
     return (
       <div className="dashboard-cosmos-background min-h-screen flex items-center justify-center">
@@ -171,22 +167,27 @@ export const OptimizedJobsPage = memo(() => {
             activeJobsFilterActive={activeJobsFilter}
           />
 
-          <JobsToolbar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            statusFilter={filters.employmentType}
-            onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
-            workTypeFilter={filters.locationType}
-            onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            totalJobs={jobs.length}
-            selectedJobs={selectedJobs}
-            onBulkAction={handleBulkAction}
-            onRefresh={handleRefresh}
-            needsAttentionFilter={needsAttentionFilter}
-            activeFiltersCount={activeFiltersCount}
-          />
+          {/* New Compact Job Management Modal */}
+          <div className="py-3 mx-8">
+            <div className="max-w-7xl mx-auto">
+              <JobManagementModal
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                statusFilter={filters.employmentType}
+                onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
+                workTypeFilter={filters.locationType}
+                onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                totalJobs={jobs.length}
+                selectedJobs={selectedJobs}
+                onBulkAction={handleBulkAction}
+                onRefresh={handleRefresh}
+                needsAttentionFilter={needsAttentionFilter}
+                activeFiltersCount={activeFiltersCount}
+              />
+            </div>
+          </div>
 
           <OptimizedJobsContent
             jobs={jobs}
