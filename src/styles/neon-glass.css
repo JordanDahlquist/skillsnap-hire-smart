@@ -1,0 +1,157 @@
+
+/* Neon glass card variants */
+@layer utilities {
+  .glass-card-neon-amber {
+    position: relative;
+    backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.45) 0%, 
+      rgba(255, 191, 0, 0.08) 35%, 
+      rgba(255, 191, 0, 0.06) 65%, 
+      rgba(255, 255, 255, 0.38) 100%);
+    border: 1px solid rgba(255, 191, 0, 0.3);
+    box-shadow: 
+      0 16px 40px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.03),
+      0 0 60px rgba(255, 191, 0, 0.15);
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  .glass-card-neon-amber::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(255, 191, 0, 0.12) 0%, rgba(255, 191, 0, 0.04) 60%, transparent 100%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 191, 0, 0.08) 50%, rgba(255, 255, 255, 0.12) 100%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  .glass-card-neon-amber:hover {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.55) 0%, 
+      rgba(255, 191, 0, 0.12) 35%, 
+      rgba(255, 191, 0, 0.10) 65%, 
+      rgba(255, 255, 255, 0.48) 100%);
+    box-shadow: 
+      0 24px 64px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.03),
+      0 0 80px rgba(255, 191, 0, 0.25);
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .glass-card-neon-cyan {
+    position: relative;
+    backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.45) 0%, 
+      rgba(6, 182, 212, 0.08) 35%, 
+      rgba(6, 182, 212, 0.06) 65%, 
+      rgba(255, 255, 255, 0.38) 100%);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    box-shadow: 
+      0 16px 40px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.03),
+      0 0 60px rgba(6, 182, 212, 0.15);
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  .glass-card-neon-cyan::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.12) 0%, rgba(6, 182, 212, 0.04) 60%, transparent 100%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(6, 182, 212, 0.08) 50%, rgba(255, 255, 255, 0.12) 100%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  .glass-card-neon-cyan:hover {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.55) 0%, 
+      rgba(6, 182, 212, 0.12) 35%, 
+      rgba(6, 182, 212, 0.10) 65%, 
+      rgba(255, 255, 255, 0.48) 100%);
+    box-shadow: 
+      0 24px 64px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.03),
+      0 0 80px rgba(6, 182, 212, 0.25);
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .glass-card-neon-purple {
+    position: relative;
+    backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.45) 0%, 
+      rgba(147, 51, 234, 0.08) 35%, 
+      rgba(147, 51, 234, 0.06) 65%, 
+      rgba(255, 255, 255, 0.38) 100%);
+    border: 1px solid rgba(147, 51, 234, 0.3);
+    box-shadow: 
+      0 16px 40px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.03),
+      0 0 60px rgba(147, 51, 234, 0.15);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .glass-card-neon-purple::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.12) 0%, rgba(147, 51, 234, 0.04) 60%, transparent 100%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(147, 51, 234, 0.08) 50%, rgba(255, 255, 255, 0.12) 100%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  .glass-card-neon-emerald {
+    position: relative;
+    backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.15);
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.45) 0%, 
+      rgba(16, 185, 129, 0.08) 35%, 
+      rgba(16, 185, 129, 0.06) 65%, 
+      rgba(255, 255, 255, 0.38) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 
+      0 16px 40px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.03),
+      0 0 60px rgba(16, 185, 129, 0.15);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .glass-card-neon-emerald::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 60%, transparent 100%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(16, 185, 129, 0.08) 50%, rgba(255, 255, 255, 0.12) 100%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: inherit;
+  }
+}

@@ -3,4 +3,7 @@
 @import './styles/base.css';
 @import './styles/components.css';
 @import './styles/animations.css';
-@import './styles/utilities.css';
+@import './styles/backgrounds.css';
+@import './styles/glass-morphism.css';
+@import './styles/neon-glass.css';
+@import './styles/effects.css';

@@ -1,0 +1,115 @@
+
+/* General effects and utility classes */
+@layer utilities {
+  /* Utility classes for semantic colors */
+  .text-brand-primary {
+    color: hsl(var(--brand-primary));
+  }
+  
+  .bg-brand-primary {
+    background-color: hsl(var(--brand-primary));
+  }
+  
+  .border-brand-primary {
+    border-color: hsl(var(--brand-primary));
+  }
+  
+  .text-status-active {
+    color: hsl(var(--status-active));
+  }
+  
+  .text-status-pending {
+    color: hsl(var(--status-pending));
+  }
+  
+  .text-status-inactive {
+    color: hsl(var(--status-inactive));
+  }
+  
+  .text-attention {
+    color: hsl(var(--attention-color));
+  }
+  
+  .bg-attention {
+    background-color: hsl(var(--attention-color));
+  }
+  
+  /* Custom animation speeds */
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+  
+  .animate-spin-slower {
+    animation: spin-slower 30s linear infinite;
+  }
+  
+  .animate-spin-slowest {
+    animation: spin-slowest 45s linear infinite;
+  }
+
+  .animate-float {
+    animation: float 10s ease-in-out infinite;
+  }
+
+  /* Enhanced Liquid Glass Morphism */
+  .rounded-4xl {
+    border-radius: 2rem;
+  }
+
+  .shadow-3xl {
+    box-shadow: 
+      0 35px 60px -12px rgba(0, 0, 0, 0.25), 
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+      0 0 40px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Liquid ripple effect */
+  .liquid-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-ripple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease-out, height 0.6s ease-out;
+  }
+
+  .liquid-ripple:active::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Text contrast safety utilities */
+  .text-contrast-safe {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+    color: rgba(0, 0, 0, 0.9);
+  }
+
+  .text-contrast-safe-light {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    color: rgba(0, 0, 0, 0.8);
+  }
+
+  /* Enhanced button glow effects */
+  .shadow-glow-blue {
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.3),
+      0 0 40px rgba(59, 130, 246, 0.2),
+      0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .shadow-glow-blue:hover {
+    box-shadow: 
+      0 0 30px rgba(59, 130, 246, 0.5),
+      0 0 60px rgba(59, 130, 246, 0.3),
+      0 16px 64px rgba(0, 0, 0, 0.15);
+  }
+}
