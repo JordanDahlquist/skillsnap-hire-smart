@@ -82,6 +82,35 @@
     z-index: 2;
   }
 
+  /* Home Page Cosmos Flowers Background */
+  .cosmos-flowers-background {
+    position: relative;
+    background-image: url('/lovable-uploads/4943e341-61e7-46be-befa-46a7d0a2be75.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  .cosmos-flowers-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.15) 0%, 
+      rgba(59, 130, 246, 0.08) 25%, 
+      rgba(147, 51, 234, 0.08) 50%, 
+      rgba(236, 72, 153, 0.08) 75%, 
+      rgba(255, 255, 255, 0.15) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cosmos-flowers-background > * {
+    position: relative;
+    z-index: 2;
+  }
+
   /* Enhanced Liquid Glass Morphism */
   .rounded-4xl {
     border-radius: 2rem;

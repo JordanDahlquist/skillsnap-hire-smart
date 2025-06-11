@@ -31,8 +31,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen cosmos-background relative overflow-hidden">
-      {/* Ambient Background Effects - Enhanced for cosmos background */}
+    <div className="min-h-screen cosmos-flowers-background relative overflow-hidden">
+      {/* Ambient Background Effects - Enhanced for cosmos flowers background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/15 to-purple-400/15 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/15 to-pink-400/15 rounded-full blur-3xl"></div>
@@ -596,3 +596,5 @@ const Index = () => {
 };
 
 export default Index;
+
+</edits_to_apply>
