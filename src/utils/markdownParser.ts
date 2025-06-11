@@ -2,8 +2,11 @@
 export const parseMarkdown = (text: string): string => {
   if (!text) return '';
   
+  // First, clean any stray asterisks that shouldn't be there
+  let cleanedText = text.replace(/\*+/g, '');
+  
   // Split into lines for processing
-  let lines = text.split('\n');
+  let lines = cleanedText.split('\n');
   let result = '';
   let inList = false;
   let listItems: string[] = [];
@@ -26,7 +29,7 @@ export const parseMarkdown = (text: string): string => {
     // Handle bullet points (lines starting with * or -)
     if (line.match(/^[\*\-]\s+/)) {
       const content = line.replace(/^[\*\-]\s+/, '');
-      const formattedContent = formatInlineMarkdown(content);
+      const formattedContent = formatInlineContent(content);
       
       if (!inList) {
         inList = true;
@@ -38,7 +41,7 @@ export const parseMarkdown = (text: string): string => {
     // Handle numbered lists
     if (line.match(/^\d+\.\s+/)) {
       const content = line.replace(/^\d+\.\s+/, '');
-      const formattedContent = formatInlineMarkdown(content);
+      const formattedContent = formatInlineContent(content);
       
       if (inList && listItems.length > 0) {
         // Close previous unordered list
@@ -66,7 +69,7 @@ export const parseMarkdown = (text: string): string => {
     if (line.match(/^#{1,6}\s+/)) {
       const level = (line.match(/^#+/) || [''])[0].length;
       const content = line.replace(/^#+\s+/, '');
-      const formattedContent = formatInlineMarkdown(content);
+      const formattedContent = formatInlineContent(content);
       
       // Define header classes for all 6 levels
       const headerClass = level === 1 ? 'text-xl font-bold mb-3 mt-4' : 
@@ -81,7 +84,7 @@ export const parseMarkdown = (text: string): string => {
     }
     
     // Regular paragraph
-    const formattedLine = formatInlineMarkdown(line);
+    const formattedLine = formatInlineContent(line);
     result += `<p class="mb-3 leading-relaxed">${formattedLine}</p>`;
   }
   
@@ -93,13 +96,8 @@ export const parseMarkdown = (text: string): string => {
   return result;
 };
 
-const formatInlineMarkdown = (text: string): string => {
-  // Handle bold text (**text**)
-  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold">$1</strong>');
-  
-  // Handle italic text (*text*) but not if it's at the start of line (bullet point)
-  text = text.replace(/(?<!^)\*([^*]+)\*/g, '<em class="italic">$1</em>');
-  
+const formatInlineContent = (text: string): string => {
+  // Since we're now getting clean text from AI, just handle basic formatting
   // Handle inline code (`code`)
   text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
   

@@ -35,31 +35,46 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const borderColor = currentTheme === 'dark' ? 'border-gray-700' : 'border-gray-100';
 
   const getFallbackContent = () => {
-    return `Good morning, ${userDisplayName}! Ready to find your next great hire? Your hiring dashboard is waiting for you.`;
+    const now = new Date();
+    const hour = now.getHours();
+    let timeBasedGreeting = 'Hello';
+    
+    if (hour >= 6 && hour < 12) {
+      timeBasedGreeting = 'Good morning';
+    } else if (hour >= 12 && hour < 18) {
+      timeBasedGreeting = 'Good afternoon';
+    } else if (hour >= 18 && hour < 24) {
+      timeBasedGreeting = 'Good evening';
+    }
+
+    return `${timeBasedGreeting}, ${userDisplayName}! Ready to find your next great hire? Your hiring dashboard is waiting for you.`;
+  };
+
+  const cleanBriefingContent = (content: string) => {
+    // Remove any stray asterisks and clean up the content
+    return content
+      .replace(/\*\*/g, '') // Remove all double asterisks
+      .replace(/\*/g, '') // Remove all single asterisks
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
   };
 
   const formatBriefingContent = (content: string) => {
-    // Split into sentences and format intelligently
-    const sentences = content.split(/(?<=[.!?])\s+/);
+    // Clean the content first
+    const cleanedContent = cleanBriefingContent(content);
+    
+    // Split into sentences
+    const sentences = cleanedContent.split(/(?<=[.!?])\s+/);
     
     if (sentences.length === 0) {
-      return { greeting: content, content: '' };
+      return { greeting: cleanedContent, content: '' };
     }
     
-    // First sentence as greeting (usually starts with "Good morning" or similar)
+    // First sentence as greeting
     const greeting = sentences[0];
     const restContent = sentences.slice(1).join(' ');
     
-    // Format the rest of the content with markdown-like parsing
-    const formattedRest = restContent
-      // Bold numbers and metrics
-      .replace(/(\d+\+?\s*(?:job|application|candidate|pending|approved|high-rated)[s]?)/gi, '**$1**')
-      // Bold job titles (assuming they're in quotes or after "job" mentions)
-      .replace(/"([^"]+)"/g, '**"$1"**')
-      // Bold attention indicators
-      .replace(/(need[s]?\s+attention|high[- ]rated|new\s+this\s+week)/gi, '**$1**');
-    
-    return { greeting, content: formattedRest };
+    return { greeting, content: restContent };
   };
 
   const getDisplayContent = () => {
@@ -79,10 +94,9 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
         <div className="space-y-2">
           <h2 className={`text-lg font-semibold ${titleColor}`}>{formatted.greeting}</h2>
           {formatted.content && (
-            <div 
-              className={`text-sm ${contentColor} leading-relaxed`}
-              dangerouslySetInnerHTML={{ __html: parseMarkdown(formatted.content) }}
-            />
+            <div className={`text-sm ${contentColor} leading-relaxed`}>
+              {formatted.content}
+            </div>
           )}
         </div>
       );
@@ -93,10 +107,9 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       <div className="space-y-2">
         <h2 className={`text-lg font-semibold ${titleColor}`}>{formatted.greeting}</h2>
         {formatted.content && (
-          <div 
-            className={`text-sm ${contentColor} leading-relaxed`}
-            dangerouslySetInnerHTML={{ __html: parseMarkdown(formatted.content) }}
-          />
+          <div className={`text-sm ${contentColor} leading-relaxed`}>
+            {formatted.content}
+          </div>
         )}
       </div>
     );

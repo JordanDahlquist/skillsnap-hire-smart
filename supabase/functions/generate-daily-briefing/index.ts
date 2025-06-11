@@ -70,6 +70,19 @@ serve(async (req) => {
     const userDisplayName = profile?.full_name || 'there'
     const companyName = profile?.company_name || 'Your Company'
 
+    // Get current time and determine appropriate greeting
+    const now = new Date()
+    const hour = now.getHours()
+    let timeBasedGreeting = 'Hello'
+    
+    if (hour >= 6 && hour < 12) {
+      timeBasedGreeting = 'Good morning'
+    } else if (hour >= 12 && hour < 18) {
+      timeBasedGreeting = 'Good afternoon'
+    } else if (hour >= 18 && hour < 24) {
+      timeBasedGreeting = 'Good evening'
+    }
+
     // Get comprehensive job and application data using LEFT JOIN instead of INNER JOIN
     const { data: jobs, error: jobsError } = await supabase
       .from('jobs')
@@ -91,7 +104,6 @@ serve(async (req) => {
     console.log('Raw jobs data:', jobs?.length, 'jobs found')
 
     // Process the data to calculate metrics
-    const now = new Date()
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
     const totalJobs = jobs?.length || 0
@@ -148,12 +160,14 @@ Current hiring metrics:
 Active job titles: ${activeJobTitles.join(', ')}
 Jobs still waiting for applications: ${jobsWithoutApplications.map(j => j.title).join(', ')}
 
-Create a brief, friendly morning briefing (2-3 sentences) that:
-1. Starts with a personalized greeting
+Create a brief, friendly briefing (2-3 sentences) that:
+1. Starts with "${timeBasedGreeting}, ${userDisplayName}!"
 2. Highlights the most important metrics and actionable items
 3. Mentions specific job titles when relevant
 4. Provides encouragement and next steps
 5. Notes if any jobs are still waiting for their first applications
+
+IMPORTANT: Do not use any asterisks (*) or markdown formatting in your response. Use plain text only. When emphasizing numbers or important information, simply state them clearly without special formatting.
 
 Keep it conversational, positive, and focused on what ${userDisplayName} should prioritize today.`
 
@@ -168,7 +182,7 @@ Keep it conversational, positive, and focused on what ${userDisplayName} should 
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful hiring assistant that creates personalized daily briefings for recruiters and hiring managers. Focus on actionable insights and maintain an encouraging, professional tone.'
+            content: 'You are a helpful hiring assistant that creates personalized daily briefings for recruiters and hiring managers. Focus on actionable insights and maintain an encouraging, professional tone. Never use asterisks or markdown formatting - use plain text only.'
           },
           {
             role: 'user',
