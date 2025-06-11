@@ -111,6 +111,36 @@
     z-index: 2;
   }
 
+  /* Dashboard Cosmos Flowers Background */
+  .dashboard-cosmos-background {
+    position: relative;
+    background-image: url('/lovable-uploads/e969ed8f-fe7e-4023-948f-762385fe7b29.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .dashboard-cosmos-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.85) 0%, 
+      rgba(255, 255, 255, 0.75) 25%, 
+      rgba(248, 250, 252, 0.8) 50%, 
+      rgba(255, 255, 255, 0.75) 75%, 
+      rgba(255, 255, 255, 0.85) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .dashboard-cosmos-background > * {
+    position: relative;
+    z-index: 2;
+  }
+
   /* Enhanced Liquid Glass Morphism */
   .rounded-4xl {
     border-radius: 2rem;

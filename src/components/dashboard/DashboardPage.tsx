@@ -114,7 +114,9 @@ export const DashboardPage = () => {
 
   // Loading state with skeleton - faster loading with parallel queries
   if (isLoading) {
-    return <DashboardSkeleton />;
+    return <div className="dashboard-cosmos-background">
+        <DashboardSkeleton />
+      </div>;
   }
 
   // Error states
@@ -123,8 +125,8 @@ export const DashboardPage = () => {
       jobError,
       applicationsError
     });
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+    return <div className="dashboard-cosmos-background min-h-screen flex items-center justify-center">
+        <div className="text-center glass-card p-8 mx-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h1>
           <p className="text-gray-600 mb-4">
             {jobError ? 'Failed to load job details.' : 'Failed to load applications.'}
@@ -136,24 +138,34 @@ export const DashboardPage = () => {
       </div>;
   }
   if (!job) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+    return <div className="dashboard-cosmos-background min-h-screen flex items-center justify-center">
+        <div className="text-center glass-card p-8 mx-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Job Not Found</h1>
           <p className="text-gray-600">The job you're looking for doesn't exist or you don't have access to it.</p>
         </div>
       </div>;
   }
   const selectedApplicationsData = applications.filter(app => selectedApplications.includes(app.id));
-  return <div className="min-h-screen bg-gray-50 flex flex-col">
-      <UnifiedHeader onCreateRole={handleCreateJob} showCreateButton={true} />
-      
-      <DashboardHeader job={job} applications={applications} onJobUpdate={handleJobUpdate} />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-[9px] flex-1">
-        <ApplicationsManager applications={applications} selectedApplication={selectedApplication} onSelectApplication={setSelectedApplication} selectedApplications={selectedApplications} onSelectApplications={setSelectedApplications} onSendEmail={() => setEmailModalOpen(true)} onApplicationUpdate={handleApplicationUpdate} job={job} />
+  return <div className="dashboard-cosmos-background min-h-screen flex flex-col">
+      {/* Ambient Background Effects */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
       </div>
 
-      <Footer />
+      {/* Content Layer */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <UnifiedHeader onCreateRole={handleCreateJob} showCreateButton={true} />
+        
+        <DashboardHeader job={job} applications={applications} onJobUpdate={handleJobUpdate} />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-[9px] flex-1">
+          <ApplicationsManager applications={applications} selectedApplication={selectedApplication} onSelectApplication={setSelectedApplication} selectedApplications={selectedApplications} onSelectApplications={setSelectedApplications} onSendEmail={() => setEmailModalOpen(true)} onApplicationUpdate={handleApplicationUpdate} job={job} />
+        </div>
+
+        <Footer />
+      </div>
 
       <EmailComposerModal open={emailModalOpen} onOpenChange={setEmailModalOpen} selectedApplications={selectedApplicationsData} job={job} />
 

@@ -1,3 +1,4 @@
+
 import { useState, memo, useCallback } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useToast } from "@/components/ui/use-toast";
@@ -129,8 +130,8 @@ export const OptimizedJobsPage = memo(() => {
   // Use jobsLoading from optimized hook instead of consolidated loading
   if (jobsLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
+      <div className="dashboard-cosmos-background min-h-screen flex items-center justify-center">
+        <div className="text-center glass-card p-8 mx-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">{LOADING_MESSAGES.LOADING}</p>
         </div>
@@ -144,58 +145,68 @@ export const OptimizedJobsPage = memo(() => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
-        <UnifiedHeader 
-          breadcrumbs={breadcrumbs}
-          onCreateRole={handleCreateJob}
-          showCreateButton={true}
-        />
+      <div className="dashboard-cosmos-background min-h-screen">
+        {/* Ambient Background Effects */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
+        </div>
 
-        <JobsHeaderSection
-          userDisplayName={getUserDisplayName()}
-          onCreateJob={handleCreateJob}
-          stats={stats}
-          onNeedsAttentionClick={handleNeedsAttentionClick}
-          needsAttentionActive={needsAttentionFilter}
-          onActiveJobsClick={handleActiveJobsClick}
-          activeJobsFilterActive={activeJobsFilter}
-        />
+        {/* Content Layer */}
+        <div className="relative z-10">
+          <UnifiedHeader 
+            breadcrumbs={breadcrumbs}
+            onCreateRole={handleCreateJob}
+            showCreateButton={true}
+          />
 
-        <JobsToolbar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={filters.employmentType}
-          onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
-          workTypeFilter={filters.locationType}
-          onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          totalJobs={jobs.length}
-          selectedJobs={selectedJobs}
-          onBulkAction={handleBulkAction}
-          onRefresh={handleRefresh}
-          needsAttentionFilter={needsAttentionFilter}
-          activeFiltersCount={activeFiltersCount}
-        />
+          <JobsHeaderSection
+            userDisplayName={getUserDisplayName()}
+            onCreateJob={handleCreateJob}
+            stats={stats}
+            onNeedsAttentionClick={handleNeedsAttentionClick}
+            needsAttentionActive={needsAttentionFilter}
+            onActiveJobsClick={handleActiveJobsClick}
+            activeJobsFilterActive={activeJobsFilter}
+          />
 
-        <OptimizedJobsContent
-          jobs={jobs}
-          filteredJobs={filteredJobs}
-          selectedJobs={selectedJobs}
-          onJobSelection={handleJobSelection}
-          onSelectAll={handleSelectAll}
-          onCreateJob={handleCreateJob}
-          onRefetch={refetch}
-          clearFilters={clearAllFilters}
-          needsAttentionFilter={needsAttentionFilter}
-          activeJobsFilter={activeJobsFilter}
-        />
+          <JobsToolbar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            statusFilter={filters.employmentType}
+            onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
+            workTypeFilter={filters.locationType}
+            onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            totalJobs={jobs.length}
+            selectedJobs={selectedJobs}
+            onBulkAction={handleBulkAction}
+            onRefresh={handleRefresh}
+            needsAttentionFilter={needsAttentionFilter}
+            activeFiltersCount={activeFiltersCount}
+          />
 
-        <JobCreatorPanel 
-          open={isCreatePanelOpen} 
-          onOpenChange={setIsCreatePanelOpen}
-          onJobCreated={refetch}
-        />
+          <OptimizedJobsContent
+            jobs={jobs}
+            filteredJobs={filteredJobs}
+            selectedJobs={selectedJobs}
+            onJobSelection={handleJobSelection}
+            onSelectAll={handleSelectAll}
+            onCreateJob={handleCreateJob}
+            onRefetch={refetch}
+            clearFilters={clearAllFilters}
+            needsAttentionFilter={needsAttentionFilter}
+            activeJobsFilter={activeJobsFilter}
+          />
+
+          <JobCreatorPanel 
+            open={isCreatePanelOpen} 
+            onOpenChange={setIsCreatePanelOpen}
+            onJobCreated={refetch}
+          />
+        </div>
       </div>
     </ErrorBoundary>
   );
