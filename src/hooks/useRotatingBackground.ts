@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 import { useThemeContext } from '@/contexts/ThemeContext';
 
 const lightModeBackgrounds = [
-  '/lovable-uploads/359cf4d3-a562-4548-8f05-42e09b703652.png', // Ocean beach
-  '/lovable-uploads/9a214e87-85c9-4507-816d-1c0366a49ea8.png', // Cosmos flowers
-  '/lovable-uploads/229ea90d-ee95-4ce3-81f6-b1143e5aef5e.png', // Wheat field
-  '/lovable-uploads/517d2fe4-14e8-451b-b0a9-78a713a6c7a1.png', // Tropical rainforest
-  '/lovable-uploads/ef411788-847f-4c6e-95a9-07da702b977f.png', // Beach waves
+  '/lovable-uploads/98c7cfbe-64cc-429d-938f-402000e7cdf2.png', // Beach with sand patterns
+  '/lovable-uploads/bb4da3b1-d19d-4ce4-b115-a9d2c1500738.png', // Rolling hills landscape
+  '/lovable-uploads/0424f7ba-2b5d-4a20-b078-0a6dbbb657f0.png', // Mountain wildflower meadow
+  '/lovable-uploads/933adeae-91a6-4c99-b2f6-5fe3fe28136e.png', // Golden hour field
+  '/lovable-uploads/78ea977a-e7d4-45c6-8eac-2c949f778c87.png', // Sky and clouds
+  '/lovable-uploads/42e601b9-445d-4059-bf73-0baa9749d9d2.png', // Wheat field
+  '/lovable-uploads/ce9ad6fb-9b5f-432b-9d79-0a3455cedc24.png', // Cosmos flowers
 ];
 
 const darkModeBackgrounds = [
