@@ -4,7 +4,6 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { useEmailComposer } from '@/hooks/useEmailComposer';
 import { useEmailSending } from '@/hooks/useEmailSending';
-import { useViewportHeight } from '@/hooks/useViewportHeight';
 import { EmailComposerHeader } from './v2/EmailComposerHeader';
 import { CompactEmailComposerLayout } from './v2/CompactEmailComposerLayout';
 import { validateEmailForm } from '@/utils/emailValidation';
@@ -26,7 +25,6 @@ export const EmailComposerModalV2 = ({
   const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates(open);
   const { formData, updateField, selectTemplate, resetForm } = useEmailComposer();
   const { sendBulkEmail, isSending, getCompanyName, getUserUniqueEmail } = useEmailSending();
-  const { availableHeight } = useViewportHeight();
   const [currentStep, setCurrentStep] = useState<'compose' | 'preview' | 'sending'>('compose');
 
   const { isValid } = validateEmailForm(formData.subject, formData.content);
@@ -64,15 +62,11 @@ export const EmailComposerModalV2 = ({
 
   const fromEmail = getUserUniqueEmail();
   const companyName = getCompanyName(job);
-  
-  // Calculate optimal modal height
-  const modalHeight = Math.min(availableHeight * 0.9, 800);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent 
-        className="max-w-4xl p-0 glass-card border-0 shadow-2xl [&>button]:hidden overflow-hidden relative"
-        style={{ height: `${modalHeight}px` }}
+        className="max-w-4xl w-[95vw] max-h-[90vh] p-0 glass-card border-0 shadow-2xl [&>button]:hidden overflow-hidden relative"
       >
         {/* Cosmic Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -87,7 +81,7 @@ export const EmailComposerModalV2 = ({
           <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-purple-300/80 rounded-full animate-twinkle" style={{ animationDelay: '3s' }} />
         </div>
 
-        <div className="flex flex-col h-full overflow-hidden relative z-10">
+        <div className="flex flex-col h-full max-h-[90vh] overflow-hidden relative z-10">
           <EmailComposerHeader
             currentStep={currentStep}
             recipientCount={selectedApplications.length}
