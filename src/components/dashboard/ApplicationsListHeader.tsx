@@ -8,7 +8,7 @@ import {
   DropdownMenuContent, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { SearchBar } from '@/components/toolbar/SearchBar';
+import { SearchBar } from '@/components/ui/search-bar';
 import { BulkStageSelector } from './bulk-actions/BulkStageSelector';
 import { Mail, X, ChevronDown, Star } from 'lucide-react';
 import { logger } from '@/services/loggerService';
