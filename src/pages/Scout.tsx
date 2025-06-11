@@ -5,10 +5,12 @@ import { ChatSidebar } from '@/components/scout/ChatSidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { useActiveConversation } from '@/hooks/useActiveConversation';
 import { useConversations } from '@/hooks/useConversations';
+import { useAuth } from '@/hooks/useAuth';
 
 const Scout = () => {
   const { activeConversationId, setActiveConversation, startNewConversation } = useActiveConversation();
   const { loadConversations } = useConversations();
+  const { isAuthenticated } = useAuth();
 
   const handleConversationSelect = (conversationId: string) => {
     setActiveConversation(conversationId);
@@ -21,10 +23,13 @@ const Scout = () => {
     }
   };
 
+  // Calculate top offset based on header (64px) + trial banner (48px if present)
+  const topOffset = isAuthenticated ? 'pt-28' : 'pt-16'; // 112px total or 64px for header only
+
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <UnifiedHeader />
-      <div className="flex-1 pt-16 overflow-hidden">
+      <div className={`flex-1 ${topOffset} overflow-hidden`}>
         <SidebarProvider>
           <div className="flex h-full w-full">
             <ChatSidebar
