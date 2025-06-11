@@ -1,5 +1,5 @@
 
-import { Plus, MessageSquare, Trash2, X, Loader2 } from 'lucide-react';
+import { Plus, MessageSquare, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useConversations } from '@/hooks/useConversations';
@@ -36,14 +36,14 @@ export const ConversationSidebar = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 border-r border-gray-200">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-900">Scout AI</h2>
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-1 text-gray-500 hover:text-gray-700 rounded transition-colors"
+            className="lg:hidden p-1 text-gray-500 hover:text-gray-700 rounded"
           >
             <X className="w-5 h-5" />
           </button>
@@ -51,10 +51,10 @@ export const ConversationSidebar = ({
       </div>
       
       {/* New Chat Button */}
-      <div className="p-4 bg-white border-b border-gray-200">
+      <div className="p-4">
         <Button
           onClick={handleNewChat}
-          className="w-full justify-start gap-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          className="w-full justify-start gap-3 bg-blue-600 hover:bg-blue-700 text-white"
         >
           <Plus className="w-4 h-4" />
           New Chat
@@ -63,15 +63,15 @@ export const ConversationSidebar = ({
       
       {/* Conversations List */}
       <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
+        <div className="px-2 pb-4 space-y-1">
           {isLoading ? (
             <div className="space-y-2 p-2">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+                <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
               ))}
             </div>
           ) : conversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
               <MessageSquare className="w-8 h-8 text-gray-300 mb-3" />
               <p className="text-sm text-gray-500 mb-1">No conversations yet</p>
               <p className="text-xs text-gray-400">Start a new chat to begin</p>
@@ -82,10 +82,10 @@ export const ConversationSidebar = ({
                 key={conversation.id}
                 onClick={() => handleConversationClick(conversation.id)}
                 className={`
-                  group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200
+                  group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors
                   ${activeConversationId === conversation.id 
-                    ? 'bg-blue-50 border border-blue-200 shadow-sm' 
-                    : 'hover:bg-white hover:shadow-sm'
+                    ? 'bg-blue-50 border border-blue-200' 
+                    : 'hover:bg-gray-100'
                   }
                 `}
               >
@@ -94,14 +94,9 @@ export const ConversationSidebar = ({
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-medium text-gray-900 truncate">
-                      {conversation.title}
-                    </h4>
-                    {conversation.isGeneratingTitle && (
-                      <Loader2 className="w-3 h-3 text-blue-500 animate-spin flex-shrink-0" />
-                    )}
-                  </div>
+                  <h4 className="text-sm font-medium text-gray-900 truncate">
+                    {conversation.title}
+                  </h4>
                   <p className="text-xs text-gray-500 truncate mt-1">
                     {conversation.lastMessage}
                   </p>
@@ -112,9 +107,9 @@ export const ConversationSidebar = ({
                 
                 <button
                   onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-600 transition-all"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-3 h-3" />
                 </button>
               </div>
             ))

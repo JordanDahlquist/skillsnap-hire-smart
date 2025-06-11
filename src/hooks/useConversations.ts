@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +9,6 @@ export interface Conversation {
   lastMessage: string;
   lastMessageAt: Date;
   messageCount: number;
-  isGeneratingTitle?: boolean;
 }
 
 export const useConversations = () => {
@@ -38,15 +36,12 @@ export const useConversations = () => {
         const existing = conversationMap.get(msg.conversation_id);
         
         if (!existing) {
-          // Determine title and loading state
+          // Determine title: use AI-generated title if available, otherwise use first user message
           let title = 'New Conversation';
-          let isGeneratingTitle = false;
-          
           if (msg.title) {
             title = msg.title;
-          } else {
-            // No title yet - show loading state
-            isGeneratingTitle = true;
+          } else if (!msg.is_ai_response && msg.message_content) {
+            title = msg.message_content.substring(0, 50) + (msg.message_content.length > 50 ? '...' : '');
           }
             
           conversationMap.set(msg.conversation_id, {
@@ -54,8 +49,7 @@ export const useConversations = () => {
             title,
             lastMessage: msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : ''),
             lastMessageAt: new Date(msg.created_at),
-            messageCount: 1,
-            isGeneratingTitle
+            messageCount: 1
           });
         } else {
           // Update existing conversation
@@ -64,16 +58,9 @@ export const useConversations = () => {
             existing.lastMessage = msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : '');
             existing.lastMessageAt = new Date(msg.created_at);
           }
-          
-          // Update title if we found one
-          if (msg.title && (!existing.title || existing.title === 'New Conversation')) {
+          // Use AI-generated title if available, otherwise keep original title
+          if (msg.title && !existing.title.includes('New Conversation')) {
             existing.title = msg.title;
-            existing.isGeneratingTitle = false;
-          }
-          
-          // Show loading if we have 2+ messages but no title yet
-          if (existing.messageCount >= 2 && (!msg.title || existing.title === 'New Conversation')) {
-            existing.isGeneratingTitle = true;
           }
         }
       });
@@ -112,36 +99,6 @@ export const useConversations = () => {
       logger.error('Failed to delete conversation', { error });
     }
   };
-
-  // Set up real-time updates for conversation titles
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('conversation-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'scout_conversations',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          console.log('Real-time conversation update:', payload);
-          // Reload conversations when titles are updated
-          if (payload.new.title && payload.new.title !== payload.old?.title) {
-            console.log('Title updated, reloading conversations');
-            loadConversations();
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
 
   useEffect(() => {
     loadConversations();

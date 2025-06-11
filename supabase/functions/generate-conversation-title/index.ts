@@ -31,34 +31,13 @@ serve(async (req) => {
 
     console.log('Generating title for conversation:', conversation_id)
 
-    // Check if conversation already has a title
-    const { data: existingTitle, error: titleCheckError } = await supabase
-      .from('scout_conversations')
-      .select('title')
-      .eq('conversation_id', conversation_id)
-      .not('title', 'is', null)
-      .limit(1)
-      .single()
-
-    if (titleCheckError && titleCheckError.code !== 'PGRST116') {
-      throw new Error(`Failed to check existing title: ${titleCheckError.message}`)
-    }
-
-    if (existingTitle && existingTitle.title && existingTitle.title !== 'New Conversation') {
-      console.log('Conversation already has title:', existingTitle.title)
-      return new Response(
-        JSON.stringify({ title: existingTitle.title, skipped: true }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
     // Get the first few messages from the conversation
     const { data: messages, error } = await supabase
       .from('scout_conversations')
       .select('message_content, is_ai_response')
       .eq('conversation_id', conversation_id)
       .order('created_at', { ascending: true })
-      .limit(6)
+      .limit(4)
 
     if (error) {
       throw new Error(`Failed to fetch messages: ${error.message}`)
@@ -75,7 +54,7 @@ serve(async (req) => {
 
     console.log('Conversation context:', conversationContext.substring(0, 200))
 
-    // Enhanced OpenAI prompt for better title generation
+    // Call OpenAI to generate title
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -87,29 +66,26 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a title generator for hiring assistant conversations. Create concise, specific titles that capture the essence of the conversation.
-
-Rules:
-- Use EXACTLY 3-6 words
-- Focus on hiring, recruitment, candidates, or job-related topics
-- Use proper title case
-- Be specific and descriptive
-- Avoid generic words like "conversation", "chat", "discussion"
-- Prioritize candidate names, job roles, or specific hiring activities
-
-Examples:
-- "Frontend Developer Interview Prep"
-- "Q4 Engineering Pipeline Review"
-- "React Developer Screening"
-- "Marketing Manager Requirements"
-- "Technical Assessment Questions"
-- "John Smith Background"
-
-Return ONLY the title, nothing else.`
+            content: `You are tasked with creating concise, descriptive titles for hiring assistant conversations. 
+            
+            Based on the conversation excerpt, generate a title that:
+            - Is 2-5 words maximum
+            - Captures the main topic or candidate being discussed
+            - Uses proper title case
+            - Is specific and helpful for navigation
+            
+            Examples:
+            - "Frontend Developer Review"
+            - "Sarah Johnson Interview"
+            - "Q4 Hiring Pipeline"
+            - "React Candidates"
+            - "Technical Assessment"
+            
+            Return only the title, nothing else.`
           },
           {
             role: 'user',
-            content: `Generate a 3-6 word title for this hiring conversation:\n\n${conversationContext}`
+            content: `Generate a title for this conversation:\n\n${conversationContext}`
           }
         ],
         max_tokens: 20,
@@ -122,25 +98,11 @@ Return ONLY the title, nothing else.`
     }
 
     const aiResponse = await response.json()
-    let generatedTitle = aiResponse.choices[0].message.content.trim()
-
-    // Clean and validate title
-    generatedTitle = generatedTitle.replace(/['"]/g, '').trim()
-    
-    // Ensure title doesn't exceed 6 words
-    const words = generatedTitle.split(' ')
-    if (words.length > 6) {
-      generatedTitle = words.slice(0, 6).join(' ')
-    }
-
-    // Ensure minimum 3 words
-    if (words.length < 3) {
-      generatedTitle = 'New Hiring Conversation'
-    }
+    const generatedTitle = aiResponse.choices[0].message.content.trim()
 
     console.log('Generated title:', generatedTitle)
 
-    // Update ALL messages in the conversation with the generated title
+    // Update the conversation with the generated title
     const { error: updateError } = await supabase
       .from('scout_conversations')
       .update({ title: generatedTitle })
@@ -150,7 +112,7 @@ Return ONLY the title, nothing else.`
       throw new Error(`Failed to update conversation title: ${updateError.message}`)
     }
 
-    console.log('Successfully updated conversation title for all messages')
+    console.log('Successfully updated conversation title')
 
     return new Response(
       JSON.stringify({ title: generatedTitle }),

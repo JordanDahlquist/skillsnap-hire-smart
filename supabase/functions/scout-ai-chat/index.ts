@@ -13,61 +13,20 @@ const corsHeaders = {
 }
 
 const triggerTitleGeneration = async (supabase: any, conversationId: string, messageCount: number) => {
-  // Generate title after 2-4 messages for better context
-  if (messageCount >= 2 && messageCount <= 4 && messageCount % 2 === 0) {
+  // Only generate title after the first AI response (when we have 2+ messages)
+  if (messageCount === 2) {
     try {
-      console.log('Triggering title generation for conversation:', conversationId, 'at message count:', messageCount)
+      console.log('Triggering title generation for conversation:', conversationId)
       
-      // Call the title generation function with retry logic
-      let attempts = 0
-      const maxAttempts = 3
+      // Call the title generation function asynchronously
+      await supabase.functions.invoke('generate-conversation-title', {
+        body: { conversation_id: conversationId }
+      })
       
-      while (attempts < maxAttempts) {
-        try {
-          console.log(`Title generation attempt ${attempts + 1} for conversation ${conversationId}`)
-          
-          const { data, error } = await supabase.functions.invoke('generate-conversation-title', {
-            body: { conversation_id: conversationId }
-          })
-          
-          if (error) {
-            console.error(`Title generation attempt ${attempts + 1} failed:`, error)
-            throw error
-          }
-          
-          console.log('Title generation successful:', data?.title)
-          return // Success, exit retry loop
-        } catch (retryError) {
-          attempts++
-          console.error(`Title generation attempt ${attempts} failed:`, retryError)
-          
-          if (attempts >= maxAttempts) {
-            console.error('Title generation failed after all attempts, marking as failed')
-            // Update conversation to remove loading state
-            await supabase
-              .from('scout_conversations')
-              .update({ title: 'Conversation' })
-              .eq('conversation_id', conversationId)
-              .limit(1)
-          } else {
-            // Wait before retry (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempts))
-          }
-        }
-      }
+      console.log('Title generation triggered successfully')
     } catch (error) {
-      console.error('Error in title generation process:', error)
+      console.error('Error triggering title generation:', error)
       // Don't throw - title generation failure shouldn't break the main chat flow
-      // Set a fallback title to remove loading state
-      try {
-        await supabase
-          .from('scout_conversations')
-          .update({ title: 'Conversation' })
-          .eq('conversation_id', conversationId)
-          .limit(1)
-      } catch (fallbackError) {
-        console.error('Failed to set fallback title:', fallbackError)
-      }
     }
   }
 }
@@ -148,14 +107,9 @@ serve(async (req) => {
       applicationIds
     )
 
-    // Get current message count and trigger title generation
+    // Get current message count and trigger title generation if needed
     const currentMessageCount = conversationHistory.length + 2 // +2 for user message and AI response
-    console.log('Current message count for conversation:', conversation_id, 'is', currentMessageCount)
-    
-    // Trigger title generation asynchronously (don't await to avoid blocking response)
-    triggerTitleGeneration(supabase, conversation_id, currentMessageCount).catch(error => {
-      console.error('Background title generation failed:', error)
-    })
+    await triggerTitleGeneration(supabase, conversation_id, currentMessageCount)
 
     // Get card data for response
     const { jobCards, candidateCards } = await getCardData(
@@ -169,8 +123,7 @@ serve(async (req) => {
       candidateProfiles: candidateProfiles.length,
       jobCards: jobCards.length, 
       candidateCards: candidateCards.length,
-      detectedCandidates: applicationIds.length,
-      messageCount: currentMessageCount
+      detectedCandidates: applicationIds.length
     })
 
     return new Response(
