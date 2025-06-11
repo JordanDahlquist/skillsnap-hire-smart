@@ -44,9 +44,9 @@ export const useTheme = () => {
 
   const toggleTheme = () => {
     setTheme(prev => {
-      if (prev === 'light') return 'dark';
-      if (prev === 'dark') return 'system';
-      return 'light';
+      // Direct toggle between light and dark, no system cycling
+      const currentEffectiveTheme = prev === 'system' ? systemTheme : prev;
+      return currentEffectiveTheme === 'light' ? 'dark' : 'light';
     });
   };
 
