@@ -84,11 +84,11 @@ const Index = () => {
                   <Button 
                     onClick={handleGetStarted} 
                     size="lg" 
-                    className="group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-6 text-xl font-semibold shadow-2xl shadow-blue-500/25 rounded-2xl border-0 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:shadow-blue-500/40"
+                    className="group liquid-ripple backdrop-blur-xl bg-gradient-to-br from-blue-500/40 via-cyan-500/35 to-indigo-600/40 hover:from-blue-500/50 hover:via-cyan-500/45 hover:to-indigo-600/50 text-white px-16 py-8 text-2xl font-bold shadow-3xl border-2 border-white/30 hover:border-white/40 rounded-4xl transition-all duration-500 hover:scale-105 hover:shadow-[0_40px_80px_-12px_rgba(59,130,246,0.4),0_0_0_1px_rgba(255,255,255,0.2)_inset] active:scale-95"
                   >
-                    <Rocket className="mr-4 w-7 h-7 group-hover:rotate-12 transition-transform duration-300" />
+                    <Rocket className="mr-4 w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
                     Start Hiring Smarter
-                    <ArrowRight className="ml-4 w-7 h-7 group-hover:translate-x-1 transition-transform duration-300" />
+                    <ArrowRight className="ml-4 w-8 h-8 group-hover:translate-x-1 transition-transform duration-300" />
                   </Button>
                   
                   {!user && (
@@ -96,9 +96,9 @@ const Index = () => {
                       variant="outline" 
                       onClick={() => navigate('/auth')} 
                       size="lg" 
-                      className="backdrop-blur-sm bg-white/30 border-white/40 text-slate-700 hover:bg-white/50 hover:text-slate-900 px-12 py-6 text-xl font-semibold rounded-2xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                      className="backdrop-blur-xl bg-white/25 border-2 border-white/40 text-slate-700 hover:bg-white/35 hover:text-slate-900 px-16 py-8 text-xl font-semibold rounded-4xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl"
                     >
-                      <LogIn className="mr-4 w-6 h-6" />
+                      <LogIn className="mr-4 w-7 h-7" />
                       Sign In
                     </Button>
                   )}
@@ -561,7 +561,7 @@ const Index = () => {
                 <Button 
                   onClick={handleGetStarted} 
                   size="lg" 
-                  className="group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-16 py-8 text-2xl font-bold shadow-2xl shadow-blue-500/25 rounded-3xl transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:shadow-blue-500/40"
+                  className="group liquid-ripple backdrop-blur-xl bg-gradient-to-br from-blue-500/40 via-cyan-500/35 to-indigo-600/40 hover:from-blue-500/50 hover:via-cyan-500/45 hover:to-indigo-600/50 text-white px-20 py-10 text-2xl font-bold shadow-3xl border-2 border-white/30 hover:border-white/40 rounded-4xl transition-all duration-500 hover:scale-105 hover:shadow-[0_40px_80px_-12px_rgba(59,130,246,0.4),0_0_0_1px_rgba(255,255,255,0.2)_inset] active:scale-95"
                 >
                   <Rocket className="mr-4 w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
                   Start Your First Hire
@@ -573,7 +573,7 @@ const Index = () => {
                     variant="outline" 
                     onClick={() => navigate('/auth')} 
                     size="lg" 
-                    className="backdrop-blur-sm bg-white/30 border-white/40 text-slate-700 hover:bg-white/50 hover:text-slate-900 px-16 py-8 text-xl font-semibold rounded-3xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="backdrop-blur-xl bg-white/25 border-2 border-white/40 text-slate-700 hover:bg-white/35 hover:text-slate-900 px-20 py-10 text-xl font-semibold rounded-4xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl"
                   >
                     <LogIn className="mr-4 w-7 h-7" />
                     Sign In
@@ -596,3 +596,5 @@ const Index = () => {
 };
 
 export default Index;
+
+</edits_to_apply>
