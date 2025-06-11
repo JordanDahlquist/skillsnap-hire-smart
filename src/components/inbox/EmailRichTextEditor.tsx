@@ -11,9 +11,10 @@ interface EmailRichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
-export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichTextEditorProps) => {
+export const EmailRichTextEditor = ({ value, onChange, placeholder, disabled = false }: EmailRichTextEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -21,11 +22,12 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
   const [savedRange, setSavedRange] = useState<Range | null>(null);
 
   const handleCommand = useCallback((command: string, value?: string) => {
+    if (disabled) return;
     document.execCommand(command, false, value);
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
-  }, [onChange]);
+  }, [onChange, disabled]);
 
   const handleBold = () => handleCommand('bold');
   const handleItalic = () => handleCommand('italic');
@@ -53,7 +55,7 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
   };
 
   const handleLinkClick = () => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || disabled) return;
     
     editorRef.current.focus();
     
@@ -71,7 +73,7 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
   };
 
   const insertLink = () => {
-    if (!linkUrl || !editorRef.current) return;
+    if (!linkUrl || !editorRef.current || disabled) return;
 
     editorRef.current.focus();
     restoreSelection();
@@ -121,7 +123,7 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
   };
 
   const handleInput = () => {
-    if (editorRef.current) {
+    if (editorRef.current && !disabled) {
       onChange(editorRef.current.innerHTML);
     }
   };
@@ -139,7 +141,7 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
     setLinkUrl('');
     setLinkText('');
     setSavedRange(null);
-    if (editorRef.current) {
+    if (editorRef.current && !disabled) {
       editorRef.current.focus();
     }
   };
@@ -191,6 +193,7 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
             variant="ghost"
             size="sm"
             onClick={handleBold}
+            disabled={disabled}
             className="h-6 w-6 p-0"
             title="Bold (Ctrl+B)"
           >
@@ -201,6 +204,7 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
             variant="ghost"
             size="sm"
             onClick={handleItalic}
+            disabled={disabled}
             className="h-6 w-6 p-0"
             title="Italic (Ctrl+I)"
           >
@@ -211,6 +215,7 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
             variant="ghost"
             size="sm"
             onClick={handleLinkClick}
+            disabled={disabled}
             className="h-6 w-6 p-0"
             title="Add Link"
           >
@@ -221,6 +226,7 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
             variant="ghost"
             size="sm"
             onClick={handleList}
+            disabled={disabled}
             className="h-6 w-6 p-0"
             title="Bullet List"
           >
@@ -234,9 +240,11 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder }: EmailRichT
         <ScrollArea className="h-full w-full">
           <div
             ref={editorRef}
-            contentEditable
+            contentEditable={!disabled}
             onInput={handleInput}
-            className="w-full p-2 min-h-full focus:outline-none bg-white text-xs"
+            className={`w-full p-2 min-h-full focus:outline-none text-xs ${
+              disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'bg-white'
+            }`}
             style={{ 
               wordWrap: 'break-word', 
               whiteSpace: 'pre-wrap',
