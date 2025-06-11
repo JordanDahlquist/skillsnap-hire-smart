@@ -72,14 +72,14 @@ export const EnhancedDashboardHeader = ({
       {/* Loading overlay */}
       {(isUpdating || isRefreshingAI) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 flex items-center gap-3">
+          <div className="glass-card p-6 flex items-center gap-3">
             <Loader2 className="w-5 h-5 animate-spin" />
             <span>{getLoadingMessage()}</span>
           </div>
         </div>
       )}
 
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white/5 backdrop-blur-xl border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Button variant="outline" size="sm" asChild>

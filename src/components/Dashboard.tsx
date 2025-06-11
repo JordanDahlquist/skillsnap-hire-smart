@@ -59,7 +59,7 @@ export const Dashboard = () => {
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Job not found</h2>
           <p className="text-gray-600">The job you're looking for doesn't exist or you don't have permission to view it.</p>
@@ -69,7 +69,7 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <EnhancedDashboardHeader
         job={job}
         applications={applications || []}

@@ -54,7 +54,7 @@ export const ApplicationsList = memo(({
   }, [applications, searchTerm]);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm h-full">
+    <div className="glass-card h-full">
       <ApplicationsListHeader
         applicationsCount={filteredApplications.length}
         selectedApplications={selectedApplications}
