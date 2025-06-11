@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { useEmailComposer } from '@/hooks/useEmailComposer';
 import { useEmailSending } from '@/hooks/useEmailSending';
+import { useViewportHeight } from '@/hooks/useViewportHeight';
 import { EmailComposerHeader } from './v2/EmailComposerHeader';
 import { CompactEmailComposerLayout } from './v2/CompactEmailComposerLayout';
 import { validateEmailForm } from '@/utils/emailValidation';
@@ -25,6 +26,7 @@ export const EmailComposerModalV2 = ({
   const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates(open);
   const { formData, updateField, selectTemplate, togglePreview, resetForm } = useEmailComposer();
   const { sendBulkEmail, isSending, getCompanyName, getUserUniqueEmail } = useEmailSending();
+  const { availableHeight } = useViewportHeight();
   const [currentStep, setCurrentStep] = useState<'compose' | 'preview' | 'sending'>('compose');
 
   const { isValid } = validateEmailForm(formData.subject, formData.content);
@@ -62,11 +64,17 @@ export const EmailComposerModalV2 = ({
 
   const fromEmail = getUserUniqueEmail();
   const companyName = getCompanyName(job);
+  
+  // Calculate optimal modal height
+  const modalHeight = Math.min(availableHeight * 0.9, 800);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl h-[85vh] p-0 bg-white border shadow-2xl [&>button]:hidden">
-        <div className="flex flex-col h-full">
+      <DialogContent 
+        className="max-w-4xl p-0 bg-white border shadow-2xl [&>button]:hidden"
+        style={{ height: `${modalHeight}px` }}
+      >
+        <div className="flex flex-col h-full overflow-hidden">
           <EmailComposerHeader
             currentStep={currentStep}
             recipientCount={selectedApplications.length}

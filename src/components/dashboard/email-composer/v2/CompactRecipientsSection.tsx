@@ -12,15 +12,13 @@ export const CompactRecipientsSection = ({ applications }: CompactRecipientsSect
   const remainingCount = Math.max(0, applications.length - displayCount);
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-gray-700">To:</span>
-      </div>
+    <div className="flex items-center gap-2 p-2 bg-white rounded border text-sm">
+      <span className="text-xs font-medium text-gray-600 min-w-fit">To:</span>
       
       <div className="flex items-center gap-2 flex-1 min-w-0">
-        <div className="flex -space-x-2">
+        <div className="flex -space-x-1">
           {applications.slice(0, displayCount).map((app) => (
-            <Avatar key={app.id} className="w-8 h-8 border-2 border-white">
+            <Avatar key={app.id} className="w-6 h-6 border border-white">
               <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
                 {app.name.split(' ').map(n => n[0]).join('').toUpperCase()}
               </AvatarFallback>
@@ -29,12 +27,12 @@ export const CompactRecipientsSection = ({ applications }: CompactRecipientsSect
         </div>
         
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm text-gray-600 truncate">
+          <span className="text-xs text-gray-600 truncate">
             {applications.slice(0, 2).map(app => app.name).join(', ')}
             {applications.length > 2 && '...'}
           </span>
-          <Badge variant="secondary" className="text-xs">
-            {applications.length} recipient{applications.length > 1 ? 's' : ''}
+          <Badge variant="secondary" className="text-xs py-0 px-1.5 h-4">
+            {applications.length}
           </Badge>
         </div>
       </div>

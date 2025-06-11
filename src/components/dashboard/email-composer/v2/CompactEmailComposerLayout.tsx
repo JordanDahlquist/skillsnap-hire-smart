@@ -42,7 +42,7 @@ export const CompactEmailComposerLayout = ({
 }: CompactEmailComposerLayoutProps) => {
   if (currentStep === 'sending') {
     return (
-      <div className="flex-1 p-6">
+      <div className="flex-1 flex items-center justify-center p-6">
         <SendingProgress 
           totalRecipients={selectedApplications.length}
           currentRecipient={0}
@@ -54,8 +54,8 @@ export const CompactEmailComposerLayout = ({
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      {/* Top section - Recipients and Template */}
-      <div className="flex-shrink-0 p-3 bg-gray-50/50 border-b space-y-2">
+      {/* Compact top section - Recipients and Template */}
+      <div className="flex-shrink-0 p-2 bg-gray-50/30 border-b space-y-2">
         <CompactRecipientsSection applications={selectedApplications} />
         <CompactTemplateSelector
           templates={templates}
@@ -65,24 +65,22 @@ export const CompactEmailComposerLayout = ({
         />
       </div>
 
-      {/* Main content area */}
-      <div className="flex-1 flex min-h-0">
-        {/* Left side - Email Editor */}
-        <div className="flex-1 flex flex-col border-r">
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <CompactEmailEditor
-              subject={formData.subject}
-              content={formData.content}
-              fromEmail={fromEmail}
-              onSubjectChange={(subject) => updateField('subject', subject)}
-              onContentChange={(content) => updateField('content', content)}
-            />
-          </div>
+      {/* Main content area with proper height constraints */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Left side - Email Editor with internal scrolling */}
+        <div className={`${formData.showPreview ? 'w-1/2' : 'w-full'} flex flex-col border-r overflow-hidden`}>
+          <CompactEmailEditor
+            subject={formData.subject}
+            content={formData.content}
+            fromEmail={fromEmail}
+            onSubjectChange={(subject) => updateField('subject', subject)}
+            onContentChange={(content) => updateField('content', content)}
+          />
         </div>
 
         {/* Right side - Preview (if enabled) */}
         {formData.showPreview && (
-          <div className="w-1/2 flex flex-col min-h-0">
+          <div className="w-1/2 flex flex-col min-h-0 overflow-hidden">
             <CompactEmailPreview
               subject={formData.subject}
               content={formData.content}
@@ -95,8 +93,8 @@ export const CompactEmailComposerLayout = ({
         )}
       </div>
 
-      {/* Bottom actions - Always visible */}
-      <div className="flex-shrink-0 border-t">
+      {/* Bottom actions - Always visible and accessible */}
+      <div className="flex-shrink-0 border-t bg-white">
         <CompactEmailActions
           onSend={onSend}
           onTogglePreview={togglePreview}

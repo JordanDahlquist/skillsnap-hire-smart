@@ -18,23 +18,23 @@ export const CompactEmailActions = ({
   showPreview
 }: CompactEmailActionsProps) => {
   return (
-    <div className="p-3 bg-gray-50/30">
+    <div className="p-2 bg-gray-50/20">
       <div className="flex items-center justify-between">
         {/* Left side - Preview toggle */}
         <Button
           variant="outline"
           size="sm"
           onClick={onTogglePreview}
-          className="h-8"
+          className="h-7 text-xs"
         >
           {showPreview ? (
             <>
-              <EyeOff className="w-4 h-4 mr-2" />
+              <EyeOff className="w-3 h-3 mr-1" />
               Hide Preview
             </>
           ) : (
             <>
-              <Eye className="w-4 h-4 mr-2" />
+              <Eye className="w-3 h-3 mr-1" />
               Show Preview
             </>
           )}
@@ -44,16 +44,16 @@ export const CompactEmailActions = ({
         <Button
           onClick={onSend}
           disabled={!canSend || isSending}
-          className="h-8 bg-blue-600 hover:bg-blue-700"
+          className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
         >
           {isSending ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
               Sending...
             </>
           ) : (
             <>
-              <Send className="w-4 h-4 mr-2" />
+              <Send className="w-3 h-3 mr-1" />
               Send Email
             </>
           )}

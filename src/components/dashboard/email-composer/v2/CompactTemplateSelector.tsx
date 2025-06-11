@@ -29,25 +29,25 @@ export const CompactTemplateSelector = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
+      <div className="flex items-center gap-2 p-2 bg-white rounded border text-sm">
         <FileText className="w-4 h-4 text-purple-600" />
-        <span className="text-sm font-medium text-gray-700">Template:</span>
+        <span className="text-xs font-medium text-gray-600">Template:</span>
         <div className="flex items-center gap-2 text-gray-500">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-sm">Loading...</span>
+          <Loader2 className="w-3 h-3 animate-spin" />
+          <span className="text-xs">Loading...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
+    <div className="flex items-center gap-2 p-2 bg-white rounded border text-sm">
       <FileText className="w-4 h-4 text-purple-600" />
-      <span className="text-sm font-medium text-gray-700">Template:</span>
+      <span className="text-xs font-medium text-gray-600 min-w-fit">Template:</span>
       
       <Select value={selectedTemplateId || 'none'} onValueChange={handleTemplateChange}>
-        <SelectTrigger className="w-80 h-8 text-sm">
-          <SelectValue placeholder="Choose a template (optional)" />
+        <SelectTrigger className="h-6 text-xs border-0 bg-transparent p-0 focus:ring-0 flex-1">
+          <SelectValue placeholder="Choose template (optional)" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">No template</SelectItem>
@@ -65,8 +65,8 @@ export const CompactTemplateSelector = ({
       </Select>
 
       {templates.length > 0 && (
-        <Badge variant="outline" className="text-xs text-gray-500">
-          {templates.length} available
+        <Badge variant="outline" className="text-xs py-0 px-1.5 h-4 text-gray-500">
+          {templates.length}
         </Badge>
       )}
     </div>
