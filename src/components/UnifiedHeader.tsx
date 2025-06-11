@@ -26,9 +26,9 @@ export const UnifiedHeader = ({ breadcrumbs, onCreateRole, showCreateButton = fa
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/30 border-b border-white/20 shadow-lg shadow-black/5">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="flex justify-between items-center h-20">
             <HeaderLogo />
             <MainNavigation 
               location={location}
@@ -37,7 +37,7 @@ export const UnifiedHeader = ({ breadcrumbs, onCreateRole, showCreateButton = fa
               setIsMobileMenuOpen={setIsMobileMenuOpen}
             />
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
               {isAuthenticated ? (
                 <UserMenu 
                   user={user} 
@@ -58,7 +58,7 @@ export const UnifiedHeader = ({ breadcrumbs, onCreateRole, showCreateButton = fa
       
       {/* Trial Banner */}
       {isAuthenticated && (
-        <div className="sticky top-16 z-40">
+        <div className="sticky top-20 z-40">
           <TrialBanner />
         </div>
       )}

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Clock, Users, Target, LogIn, Zap, Brain, TrendingUp, CheckCircle, Star, BarChart3, MessageSquare, Filter, Sparkles, Award, Shield, Rocket } from "lucide-react";
@@ -13,9 +12,8 @@ const Index = () => {
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+
   const handleCreateRole = () => {
     if (!user) {
       setShowAuthModal(true);
@@ -23,6 +21,7 @@ const Index = () => {
       setShowCreateModal(true);
     }
   };
+
   const handleGetStarted = () => {
     if (!user) {
       navigate('/signup');
@@ -30,174 +29,227 @@ const Index = () => {
       setShowCreateModal(true);
     }
   };
-  return <div className="min-h-screen bg-white">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 relative overflow-hidden">
+      {/* Ambient Background Effects */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-cyan-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-blue-300/5 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Content Layer */}
-      <div>
+      <div className="relative z-10">
         {/* Unified Header */}
-        <div className="bg-white border-b border-gray-200">
-          <UnifiedHeader onCreateRole={handleCreateRole} showCreateButton={true} />
-        </div>
+        <UnifiedHeader onCreateRole={handleCreateRole} showCreateButton={true} />
 
         {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
-          <div className="text-center max-w-5xl mx-auto">
+        <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-24 pb-32">
+          <div className="text-center max-w-6xl mx-auto">
             {/* Hero Content */}
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-lg p-8 md:p-12">
-              <h1 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
-                AI-Powered Hiring That
-                <span className="text-[#007af6] bg-gradient-to-r from-[#007af6] to-purple-600 bg-clip-text text-transparent"> Actually Works</span>
-              </h1>
+            <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl shadow-black/5 p-12 md:p-16 relative overflow-hidden">
+              {/* Glass overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-white/10 to-transparent rounded-3xl"></div>
               
-              <p className="text-2xl text-gray-700 mb-6 leading-relaxed max-w-4xl mx-auto">
-                Create jobs in 2 minutes. Get AI-generated skill tests. Filter out 90% of bad applicants automatically. 
-                Hire top talent in days, not weeks.
-              </p>
-              
-              <div className="flex items-center justify-center gap-8 mb-8 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span>5x faster hiring</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span>90% fewer bad applicants</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span>Zero manual screening</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Button onClick={handleGetStarted} size="lg" className="bg-[#007af6] hover:bg-[#0056b3] text-white px-10 py-5 text-xl font-semibold shadow-xl rounded-xl">
-                  <Rocket className="mr-3 w-6 h-6" />
-                  Start Hiring Smarter
-                  <ArrowRight className="ml-3 w-6 h-6" />
-                </Button>
+              <div className="relative z-10">
+                <h1 className="text-6xl lg:text-8xl font-bold text-slate-900 mb-10 leading-tight tracking-tight">
+                  AI-Powered Hiring That
+                  <span className="block bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-600 bg-clip-text text-transparent mt-4">
+                    Actually Works
+                  </span>
+                </h1>
                 
-                {!user && <Button variant="outline" onClick={() => navigate('/auth')} size="lg" className="px-10 py-5 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-xl">
-                    <LogIn className="mr-3 w-6 h-6" />
-                    Sign In
-                  </Button>}
+                <p className="text-2xl lg:text-3xl text-slate-700 mb-8 leading-relaxed max-w-5xl mx-auto font-light">
+                  Create jobs in 2 minutes. Get AI-generated skill tests. Filter out 90% of bad applicants automatically. 
+                  Hire top talent in days, not weeks.
+                </p>
+                
+                <div className="flex items-center justify-center gap-12 mb-12 text-lg text-slate-600">
+                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                    <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow-sm" />
+                    <span className="font-medium">5x faster hiring</span>
+                  </div>
+                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                    <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow-sm" />
+                    <span className="font-medium">90% fewer bad applicants</span>
+                  </div>
+                  <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                    <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow-sm" />
+                    <span className="font-medium">Zero manual screening</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                  <Button 
+                    onClick={handleGetStarted} 
+                    size="lg" 
+                    className="group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-6 text-xl font-semibold shadow-2xl shadow-blue-500/25 rounded-2xl border-0 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:shadow-blue-500/40"
+                  >
+                    <Rocket className="mr-4 w-7 h-7 group-hover:rotate-12 transition-transform duration-300" />
+                    Start Hiring Smarter
+                    <ArrowRight className="ml-4 w-7 h-7 group-hover:translate-x-1 transition-transform duration-300" />
+                  </Button>
+                  
+                  {!user && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/auth')} 
+                      size="lg" 
+                      className="backdrop-blur-sm bg-white/30 border-white/40 text-slate-700 hover:bg-white/50 hover:text-slate-900 px-12 py-6 text-xl font-semibold rounded-2xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                    >
+                      <LogIn className="mr-4 w-6 h-6" />
+                      Sign In
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Features at a Glance */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+        <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-24">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl lg:text-6xl font-bold text-slate-900 mb-8 tracking-tight">
               Everything you need to hire better, faster
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-2xl text-slate-600 max-w-4xl mx-auto font-light">
               From AI job creation to candidate analytics - Atract handles your entire hiring pipeline
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-gray-200 bg-white shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Brain className="w-8 h-8 text-blue-600" />
+            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+              <CardContent className="p-10 text-center relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-blue-500/5 rounded-3xl"></div>
+                <div className="relative z-10">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <Brain className="w-10 h-10 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">AI Job Creation</h3>
+                  <p className="text-slate-600 leading-relaxed text-lg">Create compelling job posts in 2 minutes. Our AI understands your requirements and crafts perfect descriptions that attract quality candidates.</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">AI Job Creation</h3>
-                <p className="text-gray-600 leading-relaxed">Create compelling job posts in 2 minutes. Our AI understands your requirements and crafts perfect descriptions that attract quality candidates.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 bg-white shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Zap className="w-8 h-8 text-purple-600" />
+            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+              <CardContent className="p-10 text-center relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-purple-500/5 rounded-3xl"></div>
+                <div className="relative z-10">
+                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-purple-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <Zap className="w-10 h-10 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">Smart Skill Testing</h3>
+                  <p className="text-slate-600 leading-relaxed text-lg">AI-generated, role-specific tests that actually measure what matters. No more interviews with unqualified candidates.</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Smart Skill Testing</h3>
-                <p className="text-gray-600 leading-relaxed">AI-generated, role-specific tests that actually measure what matters. No more interviews with unqualified candidates.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 bg-white shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Filter className="w-8 h-8 text-green-600" />
+            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+              <CardContent className="p-10 text-center relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-emerald-500/5 rounded-3xl"></div>
+                <div className="relative z-10">
+                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <Filter className="w-10 h-10 text-emerald-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">Intelligent Filtering</h3>
+                  <p className="text-slate-600 leading-relaxed text-lg">Advanced dashboard with smart filters, bulk actions, and AI-powered candidate scoring. Manage hundreds of applications effortlessly.</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Intelligent Filtering</h3>
-                <p className="text-gray-600 leading-relaxed">Advanced dashboard with smart filters, bulk actions, and AI-powered candidate scoring. Manage hundreds of applications effortlessly.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 bg-white shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <MessageSquare className="w-8 h-8 text-orange-600" />
+            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+              <CardContent className="p-10 text-center relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-orange-500/5 rounded-3xl"></div>
+                <div className="relative z-10">
+                  <div className="w-20 h-20 bg-gradient-to-br from-orange-500/20 to-orange-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <MessageSquare className="w-10 h-10 text-orange-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">Scout AI</h3>
+                  <p className="text-slate-600 leading-relaxed text-lg">AI-powered candidate sourcing and chat. Find passive candidates and engage them with intelligent, personalized conversations.</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Scout AI</h3>
-                <p className="text-gray-600 leading-relaxed">AI-powered candidate sourcing and chat. Find passive candidates and engage them with intelligent, personalized conversations.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 bg-white shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <BarChart3 className="w-8 h-8 text-cyan-600" />
+            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+              <CardContent className="p-10 text-center relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-cyan-500/5 rounded-3xl"></div>
+                <div className="relative z-10">
+                  <div className="w-20 h-20 bg-gradient-to-br from-cyan-500/20 to-cyan-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <BarChart3 className="w-10 h-10 text-cyan-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">Hiring Analytics</h3>
+                  <p className="text-slate-600 leading-relaxed text-lg">Deep insights into your hiring funnel. Track performance, identify bottlenecks, and optimize your process with data-driven decisions.</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Hiring Analytics</h3>
-                <p className="text-gray-600 leading-relaxed">Deep insights into your hiring funnel. Track performance, identify bottlenecks, and optimize your process with data-driven decisions.</p>
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 bg-white shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Award className="w-8 h-8 text-pink-600" />
+            <Card className="backdrop-blur-xl bg-white/20 border border-white/30 shadow-2xl shadow-black/5 rounded-3xl overflow-hidden group hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+              <CardContent className="p-10 text-center relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-pink-500/5 rounded-3xl"></div>
+                <div className="relative z-10">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-500/20 to-pink-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <Award className="w-10 h-10 text-pink-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6">Automated Communication</h3>
+                  <p className="text-slate-600 leading-relaxed text-lg">Smart email templates, bulk communications, and automated follow-ups. Keep candidates engaged while saving hours of manual work.</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Automated Communication</h3>
-                <p className="text-gray-600 leading-relaxed">Smart email templates, bulk communications, and automated follow-ups. Keep candidates engaged while saving hours of manual work.</p>
               </CardContent>
             </Card>
           </div>
         </section>
 
         {/* Problem Section */}
-        <section className="bg-gray-50 py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+        <section className="py-24 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/5 via-red-900/5 to-orange-900/5 backdrop-blur-3xl"></div>
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+            <div className="text-center mb-20">
+              <h2 className="text-5xl lg:text-6xl font-bold text-slate-900 mb-8 tracking-tight">
                 The hiring nightmare every founder faces
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-2xl text-slate-600 max-w-4xl mx-auto font-light">
                 Traditional hiring is broken. You're drowning in unqualified applicants while the best candidates slip through the cracks.
               </p>
             </div>
             
             <div className="grid lg:grid-cols-3 gap-8">
-              <Card className="border-red-200 bg-red-50 shadow-lg">
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Users className="w-8 h-8 text-red-600" />
+              <Card className="backdrop-blur-xl bg-white/15 border border-red-200/50 shadow-2xl shadow-red-500/5 rounded-3xl overflow-hidden">
+                <CardContent className="p-10 text-center relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-red-500/5 rounded-3xl"></div>
+                  <div className="relative z-10">
+                    <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-red-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                      <Users className="w-10 h-10 text-red-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-6">Flooded with unqualified applicants</h3>
+                    <p className="text-slate-600 leading-relaxed text-lg">Job boards bring quantity, not quality. You spend hours sifting through 200+ applications where 90% can't even do the basic requirements of the job.</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Flooded with unqualified applicants</h3>
-                  <p className="text-gray-600 leading-relaxed">Job boards bring quantity, not quality. You spend hours sifting through 200+ applications where 90% can't even do the basic requirements of the job.</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-yellow-200 bg-yellow-50 shadow-lg">
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Clock className="w-8 h-8 text-yellow-600" />
+              <Card className="backdrop-blur-xl bg-white/15 border border-yellow-200/50 shadow-2xl shadow-yellow-500/5 rounded-3xl overflow-hidden">
+                <CardContent className="p-10 text-center relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-yellow-500/5 rounded-3xl"></div>
+                  <div className="relative z-10">
+                    <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-yellow-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                      <Clock className="w-10 h-10 text-yellow-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-6">Interviews are massive time sinks</h3>
+                    <p className="text-slate-600 leading-relaxed text-lg">Hours spent interviewing people who looked good on paper but can't actually perform. Your time is worth $500+/hour, not screening resumes.</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Interviews are massive time sinks</h3>
-                  <p className="text-gray-600 leading-relaxed">Hours spent interviewing people who looked good on paper but can't actually perform. Your time is worth $500+/hour, not screening resumes.</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-orange-200 bg-orange-50 shadow-lg">
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Target className="w-8 h-8 text-orange-600" />
+              <Card className="backdrop-blur-xl bg-white/15 border border-orange-200/50 shadow-2xl shadow-orange-500/5 rounded-3xl overflow-hidden">
+                <CardContent className="p-10 text-center relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/5 rounded-3xl"></div>
+                  <div className="relative z-10">
+                    <div className="w-20 h-20 bg-gradient-to-br from-orange-500/20 to-orange-600/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
+                      <Target className="w-10 h-10 text-orange-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-6">No way to verify actual skills</h3>
+                    <p className="text-slate-600 leading-relaxed text-lg">Resumes lie. Portfolios can be copied. Interviews can be gamed. You need to see real work quality before investing time in candidates.</p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">No way to verify actual skills</h3>
-                  <p className="text-gray-600 leading-relaxed">Resumes lie. Portfolios can be copied. Interviews can be gamed. You need to see real work quality before investing time in candidates.</p>
                 </CardContent>
               </Card>
             </div>
@@ -205,17 +257,17 @@ const Index = () => {
         </section>
 
         {/* Solution Workflow Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+        <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-24">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl lg:text-6xl font-bold text-slate-900 mb-8 tracking-tight">
               How Atract transforms your hiring
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-2xl text-slate-600 max-w-4xl mx-auto font-light">
               One intelligent platform. Four powerful steps. Zero time wasted on unqualified candidates.
             </p>
           </div>
 
-          <div className="space-y-16">
+          <div className="space-y-24">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="order-2 lg:order-1">
                 <div className="relative">
@@ -477,53 +529,70 @@ const Index = () => {
         </section>
 
         {/* Final CTA Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center bg-white rounded-3xl p-16 border border-gray-200 shadow-lg">
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">
-              Ready to revolutionize your hiring?
-            </h2>
-            <p className="text-2xl text-gray-700 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Join 500+ companies that have transformed their hiring with AI. 
-              Create your first role and start getting qualified candidates in minutes.
-            </p>
+        <section className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-24">
+          <div className="text-center backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl shadow-black/5 p-16 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/25 via-white/10 to-transparent rounded-3xl"></div>
             
-            <div className="flex items-center justify-center gap-6 mb-8">
-              <div className="flex items-center gap-2 text-gray-600">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>Free to start</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>2-minute setup</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>No credit card required</span>
-              </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Button onClick={handleGetStarted} size="lg" className="bg-[#007af6] hover:bg-[#0056b3] text-white px-12 py-6 text-2xl font-bold shadow-lg rounded-2xl">
-                <Rocket className="mr-4 w-7 h-7" />
-                Start Your First Hire
-                <ArrowRight className="ml-4 w-7 h-7" />
-              </Button>
+            <div className="relative z-10">
+              <h2 className="text-5xl lg:text-6xl font-bold text-slate-900 mb-8 tracking-tight">
+                Ready to revolutionize your hiring?
+              </h2>
+              <p className="text-2xl lg:text-3xl text-slate-700 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
+                Join 500+ companies that have transformed their hiring with AI. 
+                Create your first role and start getting qualified candidates in minutes.
+              </p>
               
-              {!user && <Button variant="outline" onClick={() => navigate('/auth')} size="lg" className="px-12 py-6 text-xl font-semibold border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-2xl">
-                  <LogIn className="mr-4 w-6 h-6" />
-                  Sign In
-                </Button>}
+              <div className="flex items-center justify-center gap-12 mb-12">
+                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                  <CheckCircle className="w-6 h-6 text-emerald-500" />
+                  <span className="text-slate-600 font-medium">Free to start</span>
+                </div>
+                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                  <CheckCircle className="w-6 h-6 text-emerald-500" />
+                  <span className="text-slate-600 font-medium">2-minute setup</span>
+                </div>
+                <div className="flex items-center gap-3 backdrop-blur-sm bg-white/40 px-6 py-3 rounded-2xl border border-white/40">
+                  <CheckCircle className="w-6 h-6 text-emerald-500" />
+                  <span className="text-slate-600 font-medium">No credit card required</span>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
+                <Button 
+                  onClick={handleGetStarted} 
+                  size="lg" 
+                  className="group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-16 py-8 text-2xl font-bold shadow-2xl shadow-blue-500/25 rounded-3xl transition-all duration-300 hover:scale-105 hover:shadow-3xl hover:shadow-blue-500/40"
+                >
+                  <Rocket className="mr-4 w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
+                  Start Your First Hire
+                  <ArrowRight className="ml-4 w-8 h-8 group-hover:translate-x-1 transition-transform duration-300" />
+                </Button>
+                
+                {!user && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/auth')} 
+                    size="lg" 
+                    className="backdrop-blur-sm bg-white/30 border-white/40 text-slate-700 hover:bg-white/50 hover:text-slate-900 px-16 py-8 text-xl font-semibold rounded-3xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    <LogIn className="mr-4 w-7 h-7" />
+                    Sign In
+                  </Button>
+                )}
+              </div>
+              
+              <p className="text-slate-500 text-lg mt-12 font-light">
+                Trusted by 500+ companies • Average setup time: 2 minutes • 95% customer satisfaction
+              </p>
             </div>
-            
-            <p className="text-gray-500 text-sm mt-8">
-              Trusted by 500+ companies • Average setup time: 2 minutes • 95% customer satisfaction
-            </p>
           </div>
         </section>
       </div>
 
       <JobCreatorPanel open={showCreateModal} onOpenChange={setShowCreateModal} />
       <AuthModal open={showAuthModal} onOpenChange={setShowAuthModal} />
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
