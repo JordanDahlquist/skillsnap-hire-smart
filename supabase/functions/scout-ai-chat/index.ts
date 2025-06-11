@@ -13,19 +13,39 @@ const corsHeaders = {
 }
 
 const triggerTitleGeneration = async (supabase: any, conversationId: string, messageCount: number) => {
-  // Only generate title after the first AI response (when we have 2+ messages)
-  if (messageCount === 2) {
+  // Generate title after 2-4 messages for better context
+  if (messageCount >= 2 && messageCount <= 4 && messageCount % 2 === 0) {
     try {
-      console.log('Triggering title generation for conversation:', conversationId)
+      console.log('Triggering title generation for conversation:', conversationId, 'at message count:', messageCount)
       
-      // Call the title generation function asynchronously
-      await supabase.functions.invoke('generate-conversation-title', {
-        body: { conversation_id: conversationId }
-      })
+      // Call the title generation function with retry logic
+      let attempts = 0
+      const maxAttempts = 3
       
-      console.log('Title generation triggered successfully')
+      while (attempts < maxAttempts) {
+        try {
+          const { data, error } = await supabase.functions.invoke('generate-conversation-title', {
+            body: { conversation_id: conversationId }
+          })
+          
+          if (error) throw error
+          
+          console.log('Title generation successful:', data?.title)
+          break
+        } catch (retryError) {
+          attempts++
+          console.error(`Title generation attempt ${attempts} failed:`, retryError)
+          
+          if (attempts >= maxAttempts) {
+            console.error('Title generation failed after all attempts')
+          } else {
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempts))
+          }
+        }
+      }
     } catch (error) {
-      console.error('Error triggering title generation:', error)
+      console.error('Error in title generation process:', error)
       // Don't throw - title generation failure shouldn't break the main chat flow
     }
   }
@@ -107,7 +127,7 @@ serve(async (req) => {
       applicationIds
     )
 
-    // Get current message count and trigger title generation if needed
+    // Get current message count and trigger title generation with enhanced timing
     const currentMessageCount = conversationHistory.length + 2 // +2 for user message and AI response
     await triggerTitleGeneration(supabase, conversation_id, currentMessageCount)
 
@@ -123,7 +143,8 @@ serve(async (req) => {
       candidateProfiles: candidateProfiles.length,
       jobCards: jobCards.length, 
       candidateCards: candidateCards.length,
-      detectedCandidates: applicationIds.length
+      detectedCandidates: applicationIds.length,
+      messageCount: currentMessageCount
     })
 
     return new Response(

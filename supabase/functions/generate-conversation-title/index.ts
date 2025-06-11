@@ -37,7 +37,7 @@ serve(async (req) => {
       .select('message_content, is_ai_response')
       .eq('conversation_id', conversation_id)
       .order('created_at', { ascending: true })
-      .limit(4)
+      .limit(6)
 
     if (error) {
       throw new Error(`Failed to fetch messages: ${error.message}`)
@@ -54,7 +54,7 @@ serve(async (req) => {
 
     console.log('Conversation context:', conversationContext.substring(0, 200))
 
-    // Call OpenAI to generate title
+    // Enhanced OpenAI prompt for better title generation
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -66,30 +66,33 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are tasked with creating concise, descriptive titles for hiring assistant conversations. 
-            
-            Based on the conversation excerpt, generate a title that:
-            - Is 2-5 words maximum
-            - Captures the main topic or candidate being discussed
-            - Uses proper title case
-            - Is specific and helpful for navigation
-            
-            Examples:
-            - "Frontend Developer Review"
-            - "Sarah Johnson Interview"
-            - "Q4 Hiring Pipeline"
-            - "React Candidates"
-            - "Technical Assessment"
-            
-            Return only the title, nothing else.`
+            content: `You are a title generator for hiring assistant conversations. Create concise, specific titles that capture the essence of the conversation.
+
+Rules:
+- Use EXACTLY 6 words or fewer
+- Focus on hiring, recruitment, candidates, or job-related topics
+- Use proper title case
+- Be specific and descriptive
+- Avoid generic words like "conversation", "chat", "discussion"
+- Prioritize candidate names, job roles, or specific hiring activities
+
+Examples:
+- "Frontend Developer Sarah Interview Prep"
+- "Q4 Engineering Pipeline Review"
+- "React Developer Candidate Screening"
+- "Marketing Manager Role Requirements"
+- "Technical Assessment Questions Discussion"
+- "John Smith Background Check"
+
+Return ONLY the title, nothing else.`
           },
           {
             role: 'user',
-            content: `Generate a title for this conversation:\n\n${conversationContext}`
+            content: `Generate a 6-word title for this hiring conversation:\n\n${conversationContext}`
           }
         ],
-        max_tokens: 20,
-        temperature: 0.3,
+        max_tokens: 15,
+        temperature: 0.2,
       }),
     })
 
@@ -98,7 +101,13 @@ serve(async (req) => {
     }
 
     const aiResponse = await response.json()
-    const generatedTitle = aiResponse.choices[0].message.content.trim()
+    let generatedTitle = aiResponse.choices[0].message.content.trim()
+
+    // Ensure title doesn't exceed 6 words
+    const words = generatedTitle.split(' ')
+    if (words.length > 6) {
+      generatedTitle = words.slice(0, 6).join(' ')
+    }
 
     console.log('Generated title:', generatedTitle)
 
