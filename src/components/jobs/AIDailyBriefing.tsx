@@ -217,6 +217,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
             <div className="flex flex-wrap items-center gap-3">
               <Button 
                 onClick={onCreateJob}
+                variant="magnifying-glass"
                 size="sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
