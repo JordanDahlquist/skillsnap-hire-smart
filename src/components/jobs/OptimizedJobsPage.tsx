@@ -1,27 +1,18 @@
-import { useState, memo, useCallback } from "react";
+import { memo } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
-import { useToast } from "@/components/ui/use-toast";
 import { useJobSelection } from "@/hooks/useJobSelection";
-import { useAsyncOperation } from "@/hooks/useAsyncOperation";
 import { useJobsData } from "@/hooks/useJobsData";
-import { useStandardizedError } from "@/hooks/useStandardizedError";
 import { useOptimizedJobs } from "@/hooks/useOptimizedJobs";
-import { useRotatingBackground } from "@/hooks/useRotatingBackground";
-import { JobCreatorPanel } from "@/components/JobCreatorPanel";
-import { UnifiedHeader } from "@/components/UnifiedHeader";
+import { useJobsPageActions } from "@/hooks/jobs/useJobsPageActions";
+import { useJobsPageFilters } from "@/hooks/jobs/useJobsPageFilters";
+import { useJobsPageState } from "@/hooks/jobs/useJobsPageState";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { JobsHeaderSection } from "./JobsHeaderSection";
-import { JobsToolbar } from "./JobsToolbar";
-import { OptimizedJobsContent } from "./OptimizedJobsContent";
-import { LOADING_MESSAGES, SUCCESS_MESSAGES } from "@/constants/messages";
+import { JobsPageBackground } from "./JobsPageBackground";
+import { JobsPageLoading } from "./JobsPageLoading";
+import { JobsPageContent } from "./JobsPageContent";
 
 export const OptimizedJobsPage = memo(() => {
-  const { user, profile } = useOptimizedAuth(); // Use optimized auth
-  const [isCreatePanelOpen, setIsCreatePanelOpen] = useState(false);
-  const { toast } = useToast();
-  const { execute: executeAsync } = useAsyncOperation();
-  const { handleError } = useStandardizedError();
-  const { currentImage, isTransitioning } = useRotatingBackground();
+  const { user, profile } = useOptimizedAuth();
 
   // Use optimized jobs hook for better performance
   const { data: jobs = [], isLoading: jobsLoading, refetch } = useOptimizedJobs(user?.id);
@@ -52,167 +43,62 @@ export const OptimizedJobsPage = memo(() => {
     handleBulkAction
   } = useJobSelection(jobs, refetch);
 
-  const getUserDisplayName = useCallback(() => {
-    if (profile?.full_name) {
-      return profile.full_name.split(' ')[0];
-    }
-    return user?.email?.split('@')[0] || 'there';
-  }, [profile?.full_name, user?.email]);
+  // Extract state management
+  const {
+    isCreatePanelOpen,
+    setIsCreatePanelOpen,
+    getUserDisplayName,
+    handleCreateJob
+  } = useJobsPageState(profile, user);
 
-  const handleRefresh = useCallback(async () => {
-    try {
-      await executeAsync(
-        async () => {
-          await refetch();
-          return true;
-        },
-        {
-          logOperation: 'Manual refresh triggered',
-          onSuccess: () => {
-            toast({
-              title: "Refreshed",
-              description: SUCCESS_MESSAGES.UPDATED,
-            });
-          }
-        }
-      );
-    } catch (error) {
-      handleError(error, {
-        component: 'OptimizedJobsPage',
-        action: 'Manual refresh',
-        toastTitle: 'Refresh failed',
-        fallbackMessage: 'Unable to refresh jobs. Please try again.'
-      });
-    }
-  }, [executeAsync, refetch, toast, handleError]);
+  // Extract actions
+  const { handleRefresh } = useJobsPageActions(refetch);
 
-  const handleNeedsAttentionClick = useCallback(() => {
-    const newValue = !needsAttentionFilter;
-    setNeedsAttentionFilter(newValue);
-    setActiveJobsFilter(false);
-    
-    if (newValue) {
-      setSortBy("needs_attention");
-      toast({
-        title: "Filtered by Attention",
-        description: "Showing jobs with 10+ pending applications",
-      });
-    } else {
-      toast({
-        title: "Filter Cleared",
-        description: "Showing all jobs",
-      });
-    }
-  }, [needsAttentionFilter, setNeedsAttentionFilter, setActiveJobsFilter, setSortBy, toast]);
-
-  const handleActiveJobsClick = useCallback(() => {
-    const newValue = !activeJobsFilter;
-    setActiveJobsFilter(newValue);
-    setNeedsAttentionFilter(false);
-    
-    if (newValue) {
-      setSortBy("updated_at");
-      toast({
-        title: "Filtered by Active Jobs",
-        description: "Showing only active job postings",
-      });
-    } else {
-      toast({
-        title: "Filter Cleared",
-        description: "Showing all jobs",
-      });
-    }
-  }, [activeJobsFilter, setActiveJobsFilter, setNeedsAttentionFilter, setSortBy, toast]);
-
-  const handleCreateJob = useCallback(() => {
-    setIsCreatePanelOpen(true);
-  }, []);
+  // Extract filter actions
+  const { handleNeedsAttentionClick, handleActiveJobsClick } = useJobsPageFilters({
+    needsAttentionFilter,
+    setNeedsAttentionFilter,
+    activeJobsFilter,
+    setActiveJobsFilter,
+    setSortBy
+  });
 
   // Use jobsLoading from optimized hook instead of consolidated loading
   if (jobsLoading) {
-    return (
-      <div className="dashboard-ocean-background min-h-screen flex items-center justify-center">
-        <div className="text-center glass-card p-8 mx-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">{LOADING_MESSAGES.LOADING}</p>
-        </div>
-      </div>
-    );
+    return <JobsPageLoading />;
   }
-
-  const breadcrumbs = [
-    { label: "Dashboard", isCurrentPage: true }
-  ];
 
   return (
     <ErrorBoundary>
-      <div 
-        className={`dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''}`}
-        style={{ backgroundImage: `url(${currentImage})` }}
-      >
-        {/* Ambient Background Effects */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-cyan-400/10 to-blue-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-blue-400/10 to-cyan-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-teal-300/5 to-cyan-300/5 rounded-full blur-3xl"></div>
-        </div>
-
-        {/* Content Layer */}
-        <div className="relative z-10">
-          <UnifiedHeader 
-            breadcrumbs={breadcrumbs}
-            onCreateRole={handleCreateJob}
-            showCreateButton={true}
-          />
-
-          <JobsHeaderSection
-            userDisplayName={getUserDisplayName()}
-            onCreateJob={handleCreateJob}
-            stats={stats}
-            onNeedsAttentionClick={handleNeedsAttentionClick}
-            needsAttentionActive={needsAttentionFilter}
-            onActiveJobsClick={handleActiveJobsClick}
-            activeJobsFilterActive={activeJobsFilter}
-          />
-
-          <JobsToolbar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            statusFilter={filters.employmentType}
-            onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
-            workTypeFilter={filters.locationType}
-            onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            totalJobs={jobs.length}
-            selectedJobs={selectedJobs}
-            onBulkAction={handleBulkAction}
-            onRefresh={handleRefresh}
-            needsAttentionFilter={needsAttentionFilter}
-            activeFiltersCount={activeFiltersCount}
-          />
-
-          <OptimizedJobsContent
-            jobs={jobs}
-            filteredJobs={filteredJobs}
-            selectedJobs={selectedJobs}
-            onJobSelection={handleJobSelection}
-            onSelectAll={handleSelectAll}
-            onCreateJob={handleCreateJob}
-            onRefetch={refetch}
-            clearFilters={clearAllFilters}
-            needsAttentionFilter={needsAttentionFilter}
-            activeJobsFilter={activeJobsFilter}
-            onBulkAction={handleBulkAction}
-          />
-
-          <JobCreatorPanel 
-            open={isCreatePanelOpen} 
-            onOpenChange={setIsCreatePanelOpen}
-            onJobCreated={refetch}
-          />
-        </div>
-      </div>
+      <JobsPageBackground>
+        <JobsPageContent
+          onCreateJob={handleCreateJob}
+          jobs={jobs}
+          filteredJobs={filteredJobs}
+          stats={stats}
+          userDisplayName={getUserDisplayName()}
+          needsAttentionFilter={needsAttentionFilter}
+          activeJobsFilter={activeJobsFilter}
+          onNeedsAttentionClick={handleNeedsAttentionClick}
+          onActiveJobsClick={handleActiveJobsClick}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          filters={filters}
+          setFilters={setFilters}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          activeFiltersCount={activeFiltersCount}
+          selectedJobs={selectedJobs}
+          onJobSelection={handleJobSelection}
+          onSelectAll={handleSelectAll}
+          onBulkAction={handleBulkAction}
+          onRefresh={handleRefresh}
+          refetch={refetch}
+          clearAllFilters={clearAllFilters}
+          isCreatePanelOpen={isCreatePanelOpen}
+          setIsCreatePanelOpen={setIsCreatePanelOpen}
+        />
+      </JobsPageBackground>
     </ErrorBoundary>
   );
 });
