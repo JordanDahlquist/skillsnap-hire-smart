@@ -2,8 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, Plus, LogOut, Loader2, LayoutDashboard } from "lucide-react";
+import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface UserMenuProps {
   user: any;
@@ -14,6 +15,8 @@ interface UserMenuProps {
 }
 
 export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRole }: UserMenuProps) => {
+  const { currentTheme, toggleTheme } = useThemeContext();
+
   const getUserInitials = () => {
     if (profile?.full_name) {
       return profile.full_name.split(' ').map((name: string) => name[0]).join('').toUpperCase().slice(0, 2);
@@ -57,6 +60,15 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
             <LayoutDashboard className="w-4 h-4 mr-2" />
             Dashboard
           </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={toggleTheme}>
+          {currentTheme === 'dark' ? (
+            <Sun className="w-4 h-4 mr-2" />
+          ) : (
+            <Moon className="w-4 h-4 mr-2" />
+          )}
+          {currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

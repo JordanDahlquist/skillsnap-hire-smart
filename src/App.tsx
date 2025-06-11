@@ -1,69 +1,78 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthGuard } from "@/components/AuthGuard";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import SignUp from "./pages/SignUp";
 import SimpleSignUp from "./pages/SimpleSignUp";
-import ConfirmEmail from "./pages/ConfirmEmail";
-import ProfileSettings from "./pages/ProfileSettings";
 import ResetPassword from "./pages/ResetPassword";
+import ConfirmEmail from "./pages/ConfirmEmail";
 import PublicJobs from "./pages/PublicJobs";
-import { JobApplicationPage } from "./pages/JobApplicationPage";
-import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
-import { DashboardPage } from "./components/dashboard/DashboardPage";
+import JobApplicationPage from "./pages/JobApplicationPage";
+import OptimizedJobsPage from "./components/jobs/OptimizedJobsPage";
+import DashboardPage from "./components/dashboard/DashboardPage";
 import Scout from "./pages/Scout";
-import { Inbox } from "./pages/Inbox";
-import Contact from "./pages/Contact";
+import Inbox from "./pages/Inbox";
+import ProfileSettings from "./pages/ProfileSettings";
 import Pricing from "./pages/Pricing";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Contact from "./pages/Contact";
 import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
-import { LinkedInCallback } from "./pages/LinkedInCallback";
+import LinkedInCallback from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/signup" element={<SimpleSignUp />} />
-            <Route path="/confirm-email" element={<ConfirmEmail />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/jobs/public" element={<PublicJobs />} />
-            <Route path="/jobs/apply/:jobId" element={<JobApplicationPage />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms-and-conditions" element={<TermsOfService />} />
-            <Route path="/refund-policy" element={<RefundPolicy />} />
-            <Route path="/linkedin/callback" element={<LinkedInCallback />} />
-            
-            {/* Protected routes */}
-            <Route path="/jobs" element={<AuthGuard><OptimizedJobsPage /></AuthGuard>} />
-            <Route path="/dashboard" element={<AuthGuard><Navigate to="/jobs" replace /></AuthGuard>} />
-            <Route path="/dashboard/:jobId" element={<AuthGuard><DashboardPage /></AuthGuard>} />
-            <Route path="/scout" element={<AuthGuard><Scout /></AuthGuard>} />
-            <Route path="/inbox" element={<AuthGuard><Inbox /></AuthGuard>} />
-            <Route path="/profile" element={<AuthGuard><ProfileSettings /></AuthGuard>} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </ErrorBoundary>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/simple-signup" element={<SimpleSignUp />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/confirm-email" element={<ConfirmEmail />} />
+                <Route path="/public-jobs" element={<PublicJobs />} />
+                <Route path="/apply/:jobId" element={<JobApplicationPage />} />
+                <Route path="/jobs" element={<OptimizedJobsPage />} />
+                <Route path="/dashboard/:jobId" element={<DashboardPage />} />
+                <Route path="/scout" element={<Scout />} />
+                <Route path="/inbox" element={<Inbox />} />
+                <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/refund" element={<RefundPolicy />} />
+                <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
+                <Route path="/404" element={<NotFound />} />
+                <Route path="*" element={<Navigate to="/404" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+}
 
 export default App;
