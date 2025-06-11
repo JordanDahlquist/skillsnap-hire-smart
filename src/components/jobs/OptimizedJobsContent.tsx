@@ -45,20 +45,14 @@ const JobItem = memo(({
   );
 
   return (
-    <div className="flex gap-6 mb-6">
-      <div className="flex items-start pt-6">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={handleJobSelection}
-        />
-      </div>
-      <div className="flex-1">
-        <OptimizedJobCard
-          job={job}
-          onJobUpdate={onRefetch}
-          getTimeAgo={getTimeAgo}
-        />
-      </div>
+    <div className="mb-6">
+      <OptimizedJobCard
+        job={job}
+        onJobUpdate={onRefetch}
+        getTimeAgo={getTimeAgo}
+        isSelected={isSelected}
+        onJobSelection={handleJobSelection}
+      />
     </div>
   );
 });

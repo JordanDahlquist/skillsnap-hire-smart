@@ -15,12 +15,16 @@ interface OptimizedJobCardProps {
   job: Job;
   onJobUpdate: () => void;
   getTimeAgo: (dateString: string) => string;
+  isSelected?: boolean;
+  onJobSelection?: (checked: boolean) => void;
 }
 
 export const OptimizedJobCard = memo(({ 
   job, 
   onJobUpdate, 
-  getTimeAgo 
+  getTimeAgo,
+  isSelected = false,
+  onJobSelection
 }: OptimizedJobCardProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
@@ -79,6 +83,8 @@ export const OptimizedJobCard = memo(({
             onStatusChange={handleStatusChange}
             isUpdating={isUpdating}
             applicationsCount={applicationsCount}
+            isSelected={isSelected}
+            onJobSelection={onJobSelection}
           />
           
           <JobCardDetails 

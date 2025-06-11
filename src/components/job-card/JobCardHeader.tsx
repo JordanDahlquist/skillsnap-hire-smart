@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Bell } from "lucide-react";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
 import { Job } from "@/types";
@@ -13,6 +14,8 @@ interface JobCardHeaderProps {
   onStatusChange: (newStatus: string) => void;
   isUpdating: boolean;
   applicationsCount: number;
+  isSelected?: boolean;
+  onJobSelection?: (checked: boolean) => void;
 }
 
 export const JobCardHeader = ({ 
@@ -21,26 +24,38 @@ export const JobCardHeader = ({
   status, 
   onStatusChange, 
   isUpdating, 
-  applicationsCount 
+  applicationsCount,
+  isSelected = false,
+  onJobSelection
 }: JobCardHeaderProps) => {
   return (
     <div className="flex items-start justify-between">
-      <div className="flex-1">
-        <div className="flex items-center gap-3 mb-2">
-          <CardTitle className="text-xl">
-            <Link 
-              to={`/dashboard/${job.id}`}
-              className="hover:text-blue-600 transition-colors cursor-pointer"
-            >
-              {job.title}
-            </Link>
-          </CardTitle>
-          {needsAttention && (
-            <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-xs font-medium">
-              <Bell className="w-3 h-3" />
-              <span>Needs attention</span>
-            </div>
-          )}
+      <div className="flex items-start gap-3 flex-1">
+        {onJobSelection && (
+          <div className="flex items-start pt-1">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={onJobSelection}
+            />
+          </div>
+        )}
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <CardTitle className="text-xl">
+              <Link 
+                to={`/dashboard/${job.id}`}
+                className="hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                {job.title}
+              </Link>
+            </CardTitle>
+            {needsAttention && (
+              <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-xs font-medium">
+                <Bell className="w-3 h-3" />
+                <span>Needs attention</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
