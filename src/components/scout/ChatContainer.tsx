@@ -1,4 +1,5 @@
 
+import { Card, CardContent } from '@/components/ui/card';
 import { ChatMessageList } from './ChatMessageList';
 import { ChatInput } from './ChatInput';
 
@@ -27,19 +28,21 @@ export const ChatContainer = ({
   messagesContainerRef
 }: ChatContainerProps) => {
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-background">
-      {/* Messages area - takes all available space */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <ChatMessageList
-          messages={messages}
-          isLoading={isLoading}
-          scrollAreaRef={scrollAreaRef}
-          messagesContainerRef={messagesContainerRef}
-        />
+    <div className="h-full flex flex-col">
+      <div className="flex-1 min-h-0">
+        <Card className="h-full flex flex-col border-0 shadow-none">
+          <CardContent className="flex-1 min-h-0 p-0">
+            <ChatMessageList
+              messages={messages}
+              isLoading={isLoading}
+              scrollAreaRef={scrollAreaRef}
+              messagesContainerRef={messagesContainerRef}
+            />
+          </CardContent>
+        </Card>
       </div>
       
-      {/* Fixed input at bottom */}
-      <div className="flex-shrink-0 border-t bg-background">
+      <div className="flex-shrink-0">
         <ChatInput
           onSubmit={onSendMessage}
           isLoading={isLoading}

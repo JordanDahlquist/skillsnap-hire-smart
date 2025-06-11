@@ -21,7 +21,7 @@ export const TrialBanner = () => {
   };
 
   return (
-    <Alert className="border-orange-200 bg-orange-50 relative" data-trial-banner>
+    <Alert className="border-orange-200 bg-orange-50 relative">
       <Crown className="h-4 w-4 text-orange-600" />
       <AlertDescription className="text-orange-800 pr-8">
         <div className="flex items-center justify-between">
