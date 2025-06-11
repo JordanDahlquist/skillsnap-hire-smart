@@ -65,7 +65,7 @@ export const EmailComposerModalV2 = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-white border shadow-2xl">
+      <DialogContent className="max-w-4xl h-[85vh] p-0 bg-white border shadow-2xl [&>button]:hidden">
         <div className="flex flex-col h-full">
           <EmailComposerHeader
             currentStep={currentStep}

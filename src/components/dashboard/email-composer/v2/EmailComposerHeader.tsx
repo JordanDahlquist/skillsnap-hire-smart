@@ -47,7 +47,6 @@ export const EmailComposerHeader = ({
         {/* Right - Recipients count and close */}
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="bg-white/20 text-white border-0">
-            <Users className="w-4 h-4 mr-1" />
             {recipientCount}
           </Badge>
           

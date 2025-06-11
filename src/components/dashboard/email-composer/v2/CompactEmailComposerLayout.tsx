@@ -53,9 +53,9 @@ export const CompactEmailComposerLayout = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Top section - Recipients and Template */}
-      <div className="flex-shrink-0 p-4 bg-gray-50/50 border-b space-y-3">
+      <div className="flex-shrink-0 p-3 bg-gray-50/50 border-b space-y-2">
         <CompactRecipientsSection applications={selectedApplications} />
         <CompactTemplateSelector
           templates={templates}
@@ -69,7 +69,7 @@ export const CompactEmailComposerLayout = ({
       <div className="flex-1 flex min-h-0">
         {/* Left side - Email Editor */}
         <div className="flex-1 flex flex-col border-r">
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <CompactEmailEditor
               subject={formData.subject}
               content={formData.content}
@@ -82,7 +82,7 @@ export const CompactEmailComposerLayout = ({
 
         {/* Right side - Preview (if enabled) */}
         {formData.showPreview && (
-          <div className="w-1/2 flex flex-col">
+          <div className="w-1/2 flex flex-col min-h-0">
             <CompactEmailPreview
               subject={formData.subject}
               content={formData.content}
@@ -95,7 +95,7 @@ export const CompactEmailComposerLayout = ({
         )}
       </div>
 
-      {/* Bottom actions */}
+      {/* Bottom actions - Always visible */}
       <div className="flex-shrink-0 border-t">
         <CompactEmailActions
           onSend={onSend}

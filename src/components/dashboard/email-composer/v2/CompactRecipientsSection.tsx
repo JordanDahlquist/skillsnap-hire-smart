@@ -1,7 +1,6 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Users } from 'lucide-react';
 import type { Application } from '@/types/emailComposer';
 
 interface CompactRecipientsSectionProps {
@@ -15,7 +14,6 @@ export const CompactRecipientsSection = ({ applications }: CompactRecipientsSect
   return (
     <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
       <div className="flex items-center gap-2">
-        <Users className="w-4 h-4 text-blue-600" />
         <span className="text-sm font-medium text-gray-700">To:</span>
       </div>
       

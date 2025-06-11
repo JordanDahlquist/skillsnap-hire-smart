@@ -18,7 +18,7 @@ export const CompactEmailActions = ({
   showPreview
 }: CompactEmailActionsProps) => {
   return (
-    <div className="p-4 bg-gray-50/30">
+    <div className="p-3 bg-gray-50/30">
       <div className="flex items-center justify-between">
         {/* Left side - Preview toggle */}
         <Button
