@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText, Plus } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
@@ -165,91 +164,93 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const insights = getInsightIcons();
 
   return (
-    <div className="py-4">
-      <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg">
-        <CardContent className="p-6">
-          {/* Header with AI badge and regenerate button */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-500" />
-              <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">
-                AI Daily Briefing
-              </span>
+    <div className="py-4 px-8">
+      <div className="max-w-7xl mx-auto">
+        <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg">
+          <CardContent className="p-6">
+            {/* Header with AI badge and regenerate button */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-blue-500" />
+                <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">
+                  AI Daily Briefing
+                </span>
+              </div>
+              
+              <Button
+                onClick={regenerate}
+                disabled={!canRegenerate || isRegenerating}
+                variant="outline"
+                size="sm"
+                className="text-xs h-7 px-2"
+              >
+                {isRegenerating ? (
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                ) : (
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                )}
+                Regenerate ({remainingRegenerations} left)
+              </Button>
+            </div>
+
+            {/* Main content */}
+            <div className="mb-4">
+              {getDisplayContent()}
             </div>
             
-            <Button
-              onClick={regenerate}
-              disabled={!canRegenerate || isRegenerating}
-              variant="outline"
-              size="sm"
-              className="text-xs h-7 px-2"
-            >
-              {isRegenerating ? (
-                <Loader2 className="w-3 h-3 animate-spin mr-1" />
-              ) : (
-                <RefreshCw className="w-3 h-3 mr-1" />
-              )}
-              Regenerate ({remainingRegenerations} left)
-            </Button>
-          </div>
+            {/* Insights */}
+            {insights && insights.length > 0 && (
+              <div className="flex flex-wrap items-center gap-4 text-sm mb-6 pb-4 border-b border-gray-100">
+                {insights.map((insight, index) => {
+                  const IconComponent = insight.icon;
+                  return (
+                    <div key={index} className="flex items-center gap-1.5">
+                      <IconComponent className={`w-3 h-3 ${insight.color}`} />
+                      <span className="text-gray-600 text-xs">{insight.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
-          {/* Main content */}
-          <div className="mb-4">
-            {getDisplayContent()}
-          </div>
-          
-          {/* Insights */}
-          {insights && insights.length > 0 && (
-            <div className="flex flex-wrap items-center gap-4 text-sm mb-6 pb-4 border-b border-gray-100">
-              {insights.map((insight, index) => {
-                const IconComponent = insight.icon;
-                return (
-                  <div key={index} className="flex items-center gap-1.5">
-                    <IconComponent className={`w-3 h-3 ${insight.color}`} />
-                    <span className="text-gray-600 text-xs">{insight.label}</span>
-                  </div>
-                );
-              })}
+            {/* Action Bar */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button 
+                onClick={onCreateJob}
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Job
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="sm"
+                className="text-sm"
+                onClick={() => setShowAnalytics(true)}
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                View Analytics
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="sm"
+                className="text-sm"
+                onClick={handleExportReport}
+                disabled={isExporting || analytics.isLoading}
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4 mr-2" />
+                )}
+                Export PDF Report
+              </Button>
             </div>
-          )}
-
-          {/* Action Bar */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Button 
-              onClick={onCreateJob}
-              size="sm"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create New Job
-            </Button>
-            
-            <Button 
-              variant="outline"
-              size="sm"
-              className="text-sm"
-              onClick={() => setShowAnalytics(true)}
-            >
-              <BarChart3 className="w-4 h-4 mr-2" />
-              View Analytics
-            </Button>
-            
-            <Button 
-              variant="outline"
-              size="sm"
-              className="text-sm"
-              onClick={handleExportReport}
-              disabled={isExporting || analytics.isLoading}
-            >
-              {isExporting ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <FileText className="w-4 h-4 mr-2" />
-              )}
-              Export PDF Report
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       <AnalyticsModal 
         open={showAnalytics} 
