@@ -1,4 +1,3 @@
-
 import { useState, memo, useCallback } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useToast } from "@/components/ui/use-toast";
@@ -7,6 +6,7 @@ import { useAsyncOperation } from "@/hooks/useAsyncOperation";
 import { useJobsData } from "@/hooks/useJobsData";
 import { useStandardizedError } from "@/hooks/useStandardizedError";
 import { useOptimizedJobs } from "@/hooks/useOptimizedJobs";
+import { useRotatingBackground } from "@/hooks/useRotatingBackground";
 import { JobCreatorPanel } from "@/components/JobCreatorPanel";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -21,6 +21,7 @@ export const OptimizedJobsPage = memo(() => {
   const { toast } = useToast();
   const { execute: executeAsync } = useAsyncOperation();
   const { handleError } = useStandardizedError();
+  const { currentImage, isTransitioning } = useRotatingBackground();
 
   // Use optimized jobs hook for better performance
   const { data: jobs = [], isLoading: jobsLoading, refetch } = useOptimizedJobs(user?.id);
@@ -145,7 +146,10 @@ export const OptimizedJobsPage = memo(() => {
 
   return (
     <ErrorBoundary>
-      <div className="dashboard-ocean-background min-h-screen">
+      <div 
+        className={`dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''}`}
+        style={{ backgroundImage: `url(${currentImage})` }}
+      >
         {/* Ambient Background Effects */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-cyan-400/10 to-blue-400/10 rounded-full blur-3xl"></div>
