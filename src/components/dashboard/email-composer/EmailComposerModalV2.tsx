@@ -71,7 +71,7 @@ export const EmailComposerModalV2 = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent 
-        className="max-w-4xl p-0 bg-white border shadow-2xl [&>button]:hidden"
+        className="max-w-4xl p-0 bg-white border shadow-2xl [&>button]:hidden overflow-hidden"
         style={{ height: `${modalHeight}px` }}
       >
         <div className="flex flex-col h-full overflow-hidden">
