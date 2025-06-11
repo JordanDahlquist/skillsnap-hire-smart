@@ -1,3 +1,4 @@
+
 import { SearchBar } from "@/components/toolbar/SearchBar";
 import { FilterDropdowns } from "@/components/toolbar/FilterDropdowns";
 import { SortControls } from "@/components/toolbar/SortControls";
@@ -37,7 +38,7 @@ export const JobManagementToolbar = ({
   needsAttentionFilter = false,
   activeFiltersCount = 0
 }: JobManagementToolbarProps) => {
-  return <div className="glass-content border-b border-white/20 py-3 space-y-2 mx-[121px]">
+  return <div className="glass-content border-b border-white/20 py-3 space-y-2">
       <div className="max-w-7xl mx-auto px-8">
         {/* Search and filters row */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
