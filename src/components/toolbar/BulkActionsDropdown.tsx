@@ -21,8 +21,8 @@ export const BulkActionsDropdown = ({
 
   return (
     <Select onValueChange={handleActionSelect}>
-      <SelectTrigger className="w-36 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-white">
-        <Settings className="w-4 h-4 mr-1 text-white" />
+      <SelectTrigger className="w-36 backdrop-blur-2xl bg-gradient-to-br from-white/20 via-white/15 to-white/8 text-slate-700 shadow-[0_8px_24px_rgba(0,0,0,0.08),0_0_0_1px_rgba(255,255,255,0.2)_inset,0_1px_0_rgba(255,255,255,0.3)_inset,0_-1px_0_rgba(0,0,0,0.03)_inset] border border-white/12 hover:bg-gradient-to-br hover:from-white/30 hover:via-white/25 hover:to-white/15 hover:text-slate-900 hover:shadow-[0_12px_32px_rgba(0,0,0,0.12),0_0_0_1px_rgba(255,255,255,0.3)_inset,0_2px_0_rgba(255,255,255,0.4)_inset,0_-1px_0_rgba(0,0,0,0.05)_inset] hover:border-white/20 rounded-2xl transition-all duration-300 focus:ring-0">
+        <Settings className="w-4 h-4 mr-1 text-slate-700" />
         <SelectValue placeholder="Actions" />
       </SelectTrigger>
       <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
