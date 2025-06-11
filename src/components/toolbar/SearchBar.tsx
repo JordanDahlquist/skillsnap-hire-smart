@@ -21,7 +21,7 @@ export const SearchBar = memo(({
         placeholder={placeholder}
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-10 w-full bg-transparent border-0 focus:ring-0 focus-visible:ring-0 placeholder:text-slate-500 text-slate-700"
+        className="pl-10 w-full rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 focus:ring-0 focus-visible:ring-0 placeholder:text-slate-500 text-slate-700"
       />
     </div>
   );
