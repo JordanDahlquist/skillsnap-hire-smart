@@ -1,4 +1,5 @@
 
+
 /* Background utility classes */
 @layer utilities {
   /* Home Page Cosmos Background */
@@ -33,7 +34,7 @@
   /* Home Page Cosmos Flowers Background */
   .cosmos-flowers-background {
     position: relative;
-    background-image: url('/lovable-uploads/4943e341-61e7-46be-befa-46a7d0a2be75.png');
+    background-image: url('/lovable-uploads/9a214e87-85c9-4507-816d-1c0366a49ea8.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -145,3 +146,4 @@
     background: radial-gradient(circle, var(--tw-gradient-stops));
   }
 }
+
