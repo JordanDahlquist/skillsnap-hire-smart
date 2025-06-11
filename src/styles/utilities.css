@@ -111,7 +111,7 @@
     z-index: 2;
   }
 
-  /* Dashboard Ocean Wave Background */
+  /* Dashboard Ocean Wave Background - Full Color */
   .dashboard-cosmos-background {
     position: relative;
     background-image: url('/lovable-uploads/86e30a3b-ec4b-4548-9431-7b8b08f29439.png');
@@ -120,20 +120,6 @@
     background-repeat: no-repeat;
     background-attachment: fixed;
     min-height: 100vh;
-  }
-
-  .dashboard-cosmos-background::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, 
-      rgba(255, 255, 255, 0.85) 0%, 
-      rgba(255, 255, 255, 0.75) 25%, 
-      rgba(248, 250, 252, 0.8) 50%, 
-      rgba(255, 255, 255, 0.75) 75%, 
-      rgba(255, 255, 255, 0.85) 100%);
-    pointer-events: none;
-    z-index: 1;
   }
 
   .dashboard-cosmos-background > * {
