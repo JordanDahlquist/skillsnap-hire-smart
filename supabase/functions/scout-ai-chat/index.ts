@@ -24,22 +24,33 @@ const triggerTitleGeneration = async (supabase: any, conversationId: string, mes
       
       while (attempts < maxAttempts) {
         try {
+          console.log(`Title generation attempt ${attempts + 1} for conversation ${conversationId}`)
+          
           const { data, error } = await supabase.functions.invoke('generate-conversation-title', {
             body: { conversation_id: conversationId }
           })
           
-          if (error) throw error
+          if (error) {
+            console.error(`Title generation attempt ${attempts + 1} failed:`, error)
+            throw error
+          }
           
           console.log('Title generation successful:', data?.title)
-          break
+          return // Success, exit retry loop
         } catch (retryError) {
           attempts++
           console.error(`Title generation attempt ${attempts} failed:`, retryError)
           
           if (attempts >= maxAttempts) {
-            console.error('Title generation failed after all attempts')
+            console.error('Title generation failed after all attempts, marking as failed')
+            // Update conversation to remove loading state
+            await supabase
+              .from('scout_conversations')
+              .update({ title: 'Conversation' })
+              .eq('conversation_id', conversationId)
+              .limit(1)
           } else {
-            // Wait before retry
+            // Wait before retry (exponential backoff)
             await new Promise(resolve => setTimeout(resolve, 1000 * attempts))
           }
         }
@@ -47,6 +58,16 @@ const triggerTitleGeneration = async (supabase: any, conversationId: string, mes
     } catch (error) {
       console.error('Error in title generation process:', error)
       // Don't throw - title generation failure shouldn't break the main chat flow
+      // Set a fallback title to remove loading state
+      try {
+        await supabase
+          .from('scout_conversations')
+          .update({ title: 'Conversation' })
+          .eq('conversation_id', conversationId)
+          .limit(1)
+      } catch (fallbackError) {
+        console.error('Failed to set fallback title:', fallbackError)
+      }
     }
   }
 }
@@ -127,9 +148,14 @@ serve(async (req) => {
       applicationIds
     )
 
-    // Get current message count and trigger title generation with enhanced timing
+    // Get current message count and trigger title generation
     const currentMessageCount = conversationHistory.length + 2 // +2 for user message and AI response
-    await triggerTitleGeneration(supabase, conversation_id, currentMessageCount)
+    console.log('Current message count for conversation:', conversation_id, 'is', currentMessageCount)
+    
+    // Trigger title generation asynchronously (don't await to avoid blocking response)
+    triggerTitleGeneration(supabase, conversation_id, currentMessageCount).catch(error => {
+      console.error('Background title generation failed:', error)
+    })
 
     // Get card data for response
     const { jobCards, candidateCards } = await getCardData(

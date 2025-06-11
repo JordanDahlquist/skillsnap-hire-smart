@@ -38,14 +38,15 @@ export const useConversations = () => {
         const existing = conversationMap.get(msg.conversation_id);
         
         if (!existing) {
-          // Generate better fallback title
+          // Determine title and loading state
           let title = 'New Conversation';
+          let isGeneratingTitle = false;
+          
           if (msg.title) {
             title = msg.title;
-          } else if (!msg.is_ai_response && msg.message_content) {
-            // Create a smarter fallback title from user message
-            const words = msg.message_content.split(' ').slice(0, 4);
-            title = words.join(' ') + (msg.message_content.split(' ').length > 4 ? '...' : '');
+          } else {
+            // No title yet - show loading state
+            isGeneratingTitle = true;
           }
             
           conversationMap.set(msg.conversation_id, {
@@ -54,7 +55,7 @@ export const useConversations = () => {
             lastMessage: msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : ''),
             lastMessageAt: new Date(msg.created_at),
             messageCount: 1,
-            isGeneratingTitle: !msg.title && !msg.is_ai_response
+            isGeneratingTitle
           });
         } else {
           // Update existing conversation
@@ -63,13 +64,15 @@ export const useConversations = () => {
             existing.lastMessage = msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : '');
             existing.lastMessageAt = new Date(msg.created_at);
           }
-          // Use AI-generated title if available
-          if (msg.title && existing.title.includes('New Conversation')) {
+          
+          // Update title if we found one
+          if (msg.title && (!existing.title || existing.title === 'New Conversation')) {
             existing.title = msg.title;
             existing.isGeneratingTitle = false;
           }
-          // Mark as generating title if we have 2+ messages but no title yet
-          if (existing.messageCount >= 2 && !msg.title && existing.title.includes('New Conversation')) {
+          
+          // Show loading if we have 2+ messages but no title yet
+          if (existing.messageCount >= 2 && (!msg.title || existing.title === 'New Conversation')) {
             existing.isGeneratingTitle = true;
           }
         }
@@ -128,6 +131,7 @@ export const useConversations = () => {
           console.log('Real-time conversation update:', payload);
           // Reload conversations when titles are updated
           if (payload.new.title && payload.new.title !== payload.old?.title) {
+            console.log('Title updated, reloading conversations');
             loadConversations();
           }
         }
