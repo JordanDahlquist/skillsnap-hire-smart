@@ -1,4 +1,3 @@
-
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,14 +6,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bold, Italic, Link, List } from 'lucide-react';
 
+interface Variable {
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+}
+
 interface EmailRichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  variables?: Variable[];
 }
 
-export const EmailRichTextEditor = ({ value, onChange, placeholder, disabled = false }: EmailRichTextEditorProps) => {
+export const EmailRichTextEditor = ({ 
+  value, 
+  onChange, 
+  placeholder, 
+  disabled = false,
+  variables = []
+}: EmailRichTextEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -32,6 +44,11 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder, disabled = f
   const handleBold = () => handleCommand('bold');
   const handleItalic = () => handleCommand('italic');
   const handleList = () => handleCommand('insertUnorderedList');
+
+  const handleVariableClick = (variableName: string) => {
+    if (disabled) return;
+    onChange(value + ` ${variableName}`);
+  };
 
   const saveSelection = () => {
     const selection = window.getSelection();
@@ -185,9 +202,10 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder, disabled = f
 
   return (
     <div className="email-rich-text-editor h-full flex flex-col">
-      {/* Compact Toolbar */}
+      {/* Compact Toolbar with Variables */}
       <div className="flex-shrink-0 border-b bg-gray-50/50 p-1">
         <div className="flex items-center gap-1">
+          {/* Formatting buttons */}
           <Button
             type="button"
             variant="ghost"
@@ -232,6 +250,28 @@ export const EmailRichTextEditor = ({ value, onChange, placeholder, disabled = f
           >
             <List className="w-3 h-3" />
           </Button>
+
+          {/* Separator if variables exist */}
+          {variables.length > 0 && (
+            <div className="w-px h-4 bg-gray-300 mx-1" />
+          )}
+
+          {/* Variable buttons */}
+          {variables.map((variable) => {
+            const IconComponent = variable.icon;
+            return (
+              <button
+                key={variable.name}
+                onClick={() => handleVariableClick(variable.name)}
+                disabled={disabled}
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-white border rounded hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={variable.description}
+              >
+                <IconComponent className="w-3 h-3 text-gray-500" />
+                <code className="text-blue-600">{variable.name}</code>
+              </button>
+            );
+          })}
         </div>
       </div>
 

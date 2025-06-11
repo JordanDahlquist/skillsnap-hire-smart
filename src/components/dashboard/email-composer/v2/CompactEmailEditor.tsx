@@ -66,30 +66,8 @@ export const CompactEmailEditor = ({
             value={content}
             onChange={onContentChange}
             placeholder="Type your email message..."
+            variables={variables}
           />
-        </div>
-      </div>
-
-      {/* Variables footer */}
-      <div className="flex-shrink-0 p-2 border-t bg-gray-50/50">
-        <div className="space-y-1">
-          <Label className="text-xs font-medium text-gray-600">Quick Variables</Label>
-          <div className="flex flex-wrap gap-1">
-            {variables.map((variable) => {
-              const IconComponent = variable.icon;
-              return (
-                <button
-                  key={variable.name}
-                  onClick={() => onContentChange(content + ` ${variable.name}`)}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-white border rounded hover:bg-gray-50 transition-colors"
-                  title={variable.description}
-                >
-                  <IconComponent className="w-3 h-3 text-gray-500" />
-                  <code className="text-blue-600">{variable.name}</code>
-                </button>
-              );
-            })}
-          </div>
         </div>
       </div>
     </div>
