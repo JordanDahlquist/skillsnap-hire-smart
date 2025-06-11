@@ -11,13 +11,13 @@ export const useViewportHeight = () => {
       setViewportHeight(window.innerHeight);
       
       // Calculate header height
-      const header = document.querySelector('header');
+      const header = document.querySelector('header') as HTMLElement;
       if (header) {
         setHeaderHeight(header.offsetHeight);
       }
       
       // Calculate trial banner height
-      const trialBanner = document.querySelector('[data-trial-banner]');
+      const trialBanner = document.querySelector('[data-trial-banner]') as HTMLElement;
       setTrialBannerHeight(trialBanner ? trialBanner.offsetHeight : 0);
     };
 
