@@ -1,6 +1,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, MapPin } from "lucide-react";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface FilterDropdownsProps {
   statusFilter: string;
@@ -15,6 +16,8 @@ export const FilterDropdowns = ({
   workTypeFilter,
   onWorkTypeFilterChange
 }: FilterDropdownsProps) => {
+  const { currentTheme } = useThemeContext();
+  
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'active', label: 'Active' },
@@ -30,11 +33,14 @@ export const FilterDropdowns = ({
     { value: 'hybrid', label: 'Hybrid' }
   ].filter(option => option.value && option.value.trim() !== '');
 
+  const textColor = currentTheme === 'dark' ? 'text-white' : 'text-black';
+  const iconColor = currentTheme === 'dark' ? 'text-white' : 'text-black';
+
   return (
     <>
       <Select value={statusFilter || 'all'} onValueChange={onStatusFilterChange}>
-        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-black">
-          <Filter className="w-4 h-4 mr-1 text-black" />
+        <SelectTrigger className={`w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 ${textColor}`}>
+          <Filter className={`w-4 h-4 mr-1 ${iconColor}`} />
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
         <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
@@ -47,8 +53,8 @@ export const FilterDropdowns = ({
       </Select>
 
       <Select value={workTypeFilter || 'all'} onValueChange={onWorkTypeFilterChange}>
-        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-black">
-          <MapPin className="w-4 h-4 mr-1 text-black" />
+        <SelectTrigger className={`w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 ${textColor}`}>
+          <MapPin className={`w-4 h-4 mr-1 ${iconColor}`} />
           <SelectValue placeholder="All Types" />
         </SelectTrigger>
         <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
