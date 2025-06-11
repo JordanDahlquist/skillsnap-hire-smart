@@ -1,3 +1,4 @@
+
 import { useState, memo, useCallback } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useToast } from "@/components/ui/use-toast";
@@ -129,7 +130,7 @@ export const OptimizedJobsPage = memo(() => {
   // Use jobsLoading from optimized hook instead of consolidated loading
   if (jobsLoading) {
     return (
-      <div className="dashboard-cosmos-background min-h-screen flex items-center justify-center">
+      <div className="dashboard-ocean-background min-h-screen flex items-center justify-center">
         <div className="text-center glass-card p-8 mx-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">{LOADING_MESSAGES.LOADING}</p>
@@ -144,12 +145,12 @@ export const OptimizedJobsPage = memo(() => {
 
   return (
     <ErrorBoundary>
-      <div className="dashboard-cosmos-background min-h-screen">
+      <div className="dashboard-ocean-background min-h-screen">
         {/* Ambient Background Effects */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-cyan-400/10 to-blue-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-blue-400/10 to-cyan-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-teal-300/5 to-cyan-300/5 rounded-full blur-3xl"></div>
         </div>
 
         {/* Content Layer */}
