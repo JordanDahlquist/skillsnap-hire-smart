@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +76,7 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
 
   return (
     <Card 
-      className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500 cursor-pointer"
+      className="cursor-pointer border-l-4 border-l-blue-500 group"
       onClick={handleCardClick}
     >
       <CardHeader className="pb-2 pt-4 px-4">

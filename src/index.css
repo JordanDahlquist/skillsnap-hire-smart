@@ -126,6 +126,13 @@
 
   body {
     @apply bg-background text-foreground;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.08) 0%, transparent 50%),
+      linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #f8fafc 75%, #f1f5f9 100%);
+    background-size: 800px 800px, 600px 600px, 900px 900px, 100% 100%;
+    background-attachment: fixed;
   }
 }
 
@@ -183,13 +190,43 @@
     background: radial-gradient(circle, var(--tw-gradient-stops));
   }
 
-  /* Liquid Glass Button Effects */
+  /* Enhanced Liquid Glass Morphism */
   .rounded-4xl {
     border-radius: 2rem;
   }
 
   .shadow-3xl {
     box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  }
+
+  /* Liquid Glass Card Styles */
+  .glass-card {
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.25) 0%, 
+      rgba(255, 255, 255, 0.15) 50%, 
+      rgba(255, 255, 255, 0.08) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 16px 40px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.35) 0%, 
+      rgba(255, 255, 255, 0.25) 50%, 
+      rgba(255, 255, 255, 0.12) 100%);
+    box-shadow: 
+      0 24px 64px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px) scale(1.01);
+    border-color: rgba(255, 255, 255, 0.4);
   }
 
   /* Enhanced liquid glass morphism */
@@ -235,6 +272,20 @@
   .liquid-ripple:active::before {
     width: 300px;
     height: 300px;
+  }
+
+  /* Glass content container */
+  .glass-content {
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.18) 0%, 
+      rgba(255, 255, 255, 0.08) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    box-shadow: 
+      0 12px 32px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
   }
 }
 

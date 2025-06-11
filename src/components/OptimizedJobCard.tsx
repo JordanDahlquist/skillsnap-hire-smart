@@ -70,7 +70,7 @@ export const OptimizedJobCard = memo(({
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-shadow">
+      <Card className="group">
         <CardHeader>
           <JobCardHeader 
             job={job} 

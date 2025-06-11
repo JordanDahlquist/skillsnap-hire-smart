@@ -44,7 +44,7 @@ export const ScoutJobCard = ({ job }: ScoutJobCardProps) => {
 
   return (
     <Card 
-      className="cursor-pointer hover:shadow-md transition-shadow bg-gray-50 border-l-4 border-l-blue-500"
+      className="cursor-pointer bg-gray-50 border-l-4 border-l-blue-500 group"
       onClick={handleClick}
     >
       <CardContent className="p-4">
