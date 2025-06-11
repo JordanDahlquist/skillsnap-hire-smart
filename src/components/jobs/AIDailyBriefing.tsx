@@ -1,15 +1,11 @@
+
 import { useState } from "react";
-import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText, Plus } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Plus, RefreshCw, Loader2 } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
-import { useJobs } from "@/hooks/useJobs";
-import { useHiringAnalytics } from "@/hooks/useHiringAnalytics";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { parseMarkdown } from "@/utils/markdownParser";
-import { AnalyticsModal } from "@/components/analytics/AnalyticsModal";
-import { generatePDFReport } from "@/utils/pdfReportGenerator";
-import { useToast } from "@/hooks/use-toast";
 
 interface AIDailyBriefingProps {
   userDisplayName: string;
@@ -17,247 +13,102 @@ interface AIDailyBriefingProps {
 }
 
 export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefingProps) => {
-  const { data: briefing, isLoading, error } = useDailyBriefing();
-  const { regenerate, isRegenerating, remainingRegenerations, canRegenerate } = useRegenerateBriefing();
-  const { data: jobs = [] } = useJobs();
-  const analytics = useHiringAnalytics();
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const { toast } = useToast();
+  const { data: briefingData, isLoading, refetch } = useDailyBriefing();
+  const { regenerateBriefing, isRegenerating } = useRegenerateBriefing(refetch);
 
-  const getFallbackContent = () => {
-    return `Good morning, ${userDisplayName}! Ready to find your next great hire? Your hiring dashboard is waiting for you.`;
+  const handleRegenerate = () => {
+    regenerateBriefing();
   };
 
-  const formatBriefingContent = (content: string) => {
-    // Split into sentences and format intelligently
-    const sentences = content.split(/(?<=[.!?])\s+/);
-    
-    if (sentences.length === 0) {
-      return { greeting: content, content: '' };
-    }
-    
-    // First sentence as greeting (usually starts with "Good morning" or similar)
-    const greeting = sentences[0];
-    const restContent = sentences.slice(1).join(' ');
-    
-    // Format the rest of the content with markdown-like parsing
-    const formattedRest = restContent
-      // Bold numbers and metrics
-      .replace(/(\d+\+?\s*(?:job|application|candidate|pending|approved|high-rated)[s]?)/gi, '**$1**')
-      // Bold job titles (assuming they're in quotes or after "job" mentions)
-      .replace(/"([^"]+)"/g, '**"$1"**')
-      // Bold attention indicators
-      .replace(/(need[s]?\s+attention|high[- ]rated|new\s+this\s+week)/gi, '**$1**');
-    
-    return { greeting, content: formattedRest };
-  };
-
-  const getDisplayContent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center gap-2">
-          <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-          <span className="text-sm text-gray-600">Generating your daily briefing...</span>
-        </div>
-      );
-    }
-
-    if (error || !briefing) {
-      const fallback = getFallbackContent();
-      const formatted = formatBriefingContent(fallback);
-      return (
-        <div className="space-y-2">
-          <h2 className="text-lg font-semibold text-gray-900">{formatted.greeting}</h2>
-          {formatted.content && (
-            <div 
-              className="text-sm text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: parseMarkdown(formatted.content) }}
-            />
-          )}
-        </div>
-      );
-    }
-
-    const formatted = formatBriefingContent(briefing.briefing_content);
+  if (isLoading) {
     return (
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold text-gray-900">{formatted.greeting}</h2>
-        {formatted.content && (
-          <div 
-            className="text-sm text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: parseMarkdown(formatted.content) }}
-          />
-        )}
+      <div className="px-6 sm:px-8 lg:px-12 py-6">
+        <div className="max-w-7xl mx-auto">
+          <Card className="relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-70" />
+            <CardContent className="relative p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-48 animate-pulse"></div>
+                  <div className="h-3 bg-gray-200 rounded w-32 animate-pulse"></div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
-  };
+  }
 
-  const getInsightIcons = () => {
-    if (!briefing?.briefing_data) return null;
-
-    const data = briefing.briefing_data;
-    const insights = [];
-
-    if (data.jobs_needing_attention > 0) {
-      insights.push({
-        icon: Bell,
-        label: `${data.jobs_needing_attention} need${data.jobs_needing_attention === 1 ? 's' : ''} attention`,
-        color: "text-orange-500"
-      });
-    }
-
-    if (data.high_rated_applications > 0) {
-      insights.push({
-        icon: TrendingUp,
-        label: `${data.high_rated_applications} high-rated candidate${data.high_rated_applications === 1 ? '' : 's'}`,
-        color: "text-green-500"
-      });
-    }
-
-    if (data.recent_applications > 0) {
-      insights.push({
-        icon: Users,
-        label: `${data.recent_applications} new this week`,
-        color: "text-blue-500"
-      });
-    }
-
-    return insights.slice(0, 3); // Show max 3 insights
-  };
-
-  const handleExportReport = async () => {
-    setIsExporting(true);
-    try {
-      toast({
-        title: "Generating Report",
-        description: "Creating your comprehensive PDF report with analytics...",
-      });
-
-      const reportData = {
-        metrics: analytics.metrics,
-        pipelineData: analytics.pipelineData,
-        trendData: analytics.trendData,
-        jobPerformanceData: analytics.jobPerformanceData,
-        jobs,
-        userDisplayName
-      };
-
-      await generatePDFReport(reportData);
-      
-      toast({
-        title: "Report Generated",
-        description: "Your comprehensive hiring analytics report has been downloaded as a PDF.",
-      });
-    } catch (error) {
-      console.error('Export error:', error);
-      toast({
-        title: "Export Failed",
-        description: "There was an error generating your report. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const insights = getInsightIcons();
+  const briefing = briefingData?.briefing;
+  const greeting = briefingData?.greeting || `Good morning, ${userDisplayName}! 👋`;
 
   return (
-    <div className="py-4 px-8">
+    <div className="px-6 sm:px-8 lg:px-12 py-6">
       <div className="max-w-7xl mx-auto">
-        <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg">
-          <CardContent className="p-6">
-            {/* Header with AI badge and regenerate button */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-blue-600 uppercase tracking-wide">
-                  AI Daily Briefing
-                </span>
+        <Card className="relative overflow-hidden border-0 bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-70" />
+          <CardContent className="relative p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">{greeting}</h2>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-purple-100 text-purple-700 border-0 text-xs">
+                      AI Daily Briefing
+                    </Badge>
+                  </div>
+                </div>
               </div>
               
-              <Button
-                onClick={regenerate}
-                disabled={!canRegenerate || isRegenerating}
-                variant="outline"
-                size="sm"
-                className="text-xs h-7 px-2"
-              >
-                {isRegenerating ? (
-                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                ) : (
-                  <RefreshCw className="w-3 h-3 mr-1" />
-                )}
-                Regenerate ({remainingRegenerations} left)
-              </Button>
-            </div>
-
-            {/* Main content */}
-            <div className="mb-4">
-              {getDisplayContent()}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRegenerate}
+                  disabled={isRegenerating}
+                  className="text-gray-600 hover:text-gray-800"
+                >
+                  {isRegenerating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                </Button>
+                <Button 
+                  onClick={onCreateJob}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Job
+                </Button>
+              </div>
             </div>
             
-            {/* Insights */}
-            {insights && insights.length > 0 && (
-              <div className="flex flex-wrap items-center gap-4 text-sm mb-6 pb-4 border-b border-gray-100">
-                {insights.map((insight, index) => {
-                  const IconComponent = insight.icon;
-                  return (
-                    <div key={index} className="flex items-center gap-1.5">
-                      <IconComponent className={`w-3 h-3 ${insight.color}`} />
-                      <span className="text-gray-600 text-xs">{insight.label}</span>
-                    </div>
-                  );
-                })}
+            {briefing ? (
+              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                <div dangerouslySetInnerHTML={{ __html: briefing }} />
               </div>
+            ) : (
+              <p className="text-gray-600 italic">
+                Your personalized briefing will appear here. Click the refresh button to generate insights about your hiring activity.
+              </p>
             )}
-
-            {/* Action Bar */}
-            <div className="flex flex-wrap items-center gap-3">
-              <Button 
-                onClick={onCreateJob}
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Job
-              </Button>
-              
-              <Button 
-                variant="outline"
-                size="sm"
-                className="text-sm"
-                onClick={() => setShowAnalytics(true)}
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                View Analytics
-              </Button>
-              
-              <Button 
-                variant="outline"
-                size="sm"
-                className="text-sm"
-                onClick={handleExportReport}
-                disabled={isExporting || analytics.isLoading}
-              >
-                {isExporting ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <FileText className="w-4 h-4 mr-2" />
-                )}
-                Export PDF Report
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
-
-      <AnalyticsModal 
-        open={showAnalytics} 
-        onOpenChange={setShowAnalytics}
-        userDisplayName={userDisplayName}
-      />
     </div>
   );
 };

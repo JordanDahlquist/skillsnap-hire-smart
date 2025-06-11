@@ -20,7 +20,7 @@ export const JobsStats = ({
   activeJobsFilterActive
 }: JobsStatsProps) => {
   return (
-    <div className="px-8 pb-4">
+    <div className="px-6 sm:px-8 lg:px-12 pb-4">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
           <Card 
