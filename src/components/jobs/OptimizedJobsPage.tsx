@@ -1,4 +1,3 @@
-
 import { useState, memo, useCallback } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useToast } from "@/components/ui/use-toast";
@@ -199,6 +198,7 @@ export const OptimizedJobsPage = memo(() => {
             clearFilters={clearAllFilters}
             needsAttentionFilter={needsAttentionFilter}
             activeJobsFilter={activeJobsFilter}
+            onBulkAction={handleBulkAction}
           />
 
           <JobCreatorPanel 
