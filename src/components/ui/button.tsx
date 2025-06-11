@@ -49,16 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {/* Content wrapper with proper z-index */}
-        <span className="relative z-10 flex items-center justify-center gap-2">
-          {children}
-        </span>
-        
-        {/* Liquid ripple effect on interaction */}
-        <span className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/0 via-white/0 to-white/0 group-active:from-white/20 group-active:via-white/10 group-active:to-white/5 transition-all duration-200 pointer-events-none" />
-        
-        {/* Subtle inner glow */}
-        <span className="absolute inset-2 rounded-3xl bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50 group-hover:opacity-75 transition-opacity duration-500 pointer-events-none" />
+        {children}
       </Comp>
     )
   }
