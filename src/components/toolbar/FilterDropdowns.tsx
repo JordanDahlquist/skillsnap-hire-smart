@@ -43,9 +43,20 @@ export const FilterDropdowns = ({
           <Filter className={`w-4 h-4 mr-1 ${iconColor}`} />
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
-        <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
+        <SelectContent className={`backdrop-blur-sm border-white/40 shadow-lg ${
+          currentTheme === 'dark' 
+            ? 'bg-black/90 border-gray-800' 
+            : 'bg-white/95'
+        }`}>
           {statusOptions.map((status) => (
-            <SelectItem key={status.value} value={status.value} className="text-gray-900 hover:bg-gray-100">
+            <SelectItem 
+              key={status.value} 
+              value={status.value} 
+              className={currentTheme === 'dark' 
+                ? 'text-white hover:bg-gray-800' 
+                : 'text-gray-900 hover:bg-gray-100'
+              }
+            >
               {status.label}
             </SelectItem>
           ))}
@@ -57,9 +68,20 @@ export const FilterDropdowns = ({
           <MapPin className={`w-4 h-4 mr-1 ${iconColor}`} />
           <SelectValue placeholder="All Types" />
         </SelectTrigger>
-        <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
+        <SelectContent className={`backdrop-blur-sm border-white/40 shadow-lg ${
+          currentTheme === 'dark' 
+            ? 'bg-black/90 border-gray-800' 
+            : 'bg-white/95'
+        }`}>
           {workTypeOptions.map((type) => (
-            <SelectItem key={type.value} value={type.value} className="text-gray-900 hover:bg-gray-100">
+            <SelectItem 
+              key={type.value} 
+              value={type.value} 
+              className={currentTheme === 'dark' 
+                ? 'text-white hover:bg-gray-800' 
+                : 'text-gray-900 hover:bg-gray-100'
+              }
+            >
               {type.label}
             </SelectItem>
           ))}

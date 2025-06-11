@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
 import { Job, Application } from "@/types";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface DashboardHeaderInfoProps {
   job: Job;
@@ -10,6 +11,8 @@ interface DashboardHeaderInfoProps {
 }
 
 export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: DashboardHeaderInfoProps) => {
+  const { currentTheme } = useThemeContext();
+  
   // Calculate days running
   const startDate = new Date(job.created_at);
   const today = new Date();
@@ -44,15 +47,19 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
   // Use the real view_count from the database
   const viewCount = job.view_count || 0;
 
+  // Theme-aware colors
+  const titleColor = currentTheme === 'dark' ? 'text-white' : 'text-foreground';
+  const subtleTextColor = currentTheme === 'dark' ? 'text-gray-300' : 'text-muted-foreground';
+
   return (
     <div>
       <div className="flex items-center gap-3">
-        <h1 className="text-lg font-semibold text-foreground">{job.title}</h1>
+        <h1 className={`text-lg font-semibold ${titleColor}`}>{job.title}</h1>
         <Badge className={getStatusBadgeClasses(job.status)}>
           {job.status}
         </Badge>
       </div>
-      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+      <div className={`flex items-center gap-4 text-xs mt-1 ${subtleTextColor}`}>
         <span>Started {startDateFormatted}, {startTimeFormatted}</span>
         <span>•</span>
         <span>{daysRunning} day{daysRunning !== 1 ? 's' : ''} running</span>
@@ -60,7 +67,7 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
         <span>{applications.length} applications</span>
         <span>•</span>
         <div className="flex items-center gap-1">
-          <Eye className="w-3 h-3 text-muted-foreground" />
+          <Eye className={`w-3 h-3 ${subtleTextColor}`} />
           <span>{viewCount} views</span>
         </div>
       </div>

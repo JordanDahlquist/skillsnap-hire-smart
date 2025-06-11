@@ -10,6 +10,7 @@ import { getTimeAgo } from "@/utils/dateUtils";
 import { Job } from "@/types";
 import { UI_CONSTANTS } from "@/constants/ui";
 import { BulkActionsDropdown } from "@/components/toolbar/BulkActionsDropdown";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface OptimizedJobsContentProps {
   jobs: Job[];
@@ -73,6 +74,13 @@ export const OptimizedJobsContent = memo(({
   activeJobsFilter,
   onBulkAction
 }: OptimizedJobsContentProps) => {
+  const { currentTheme } = useThemeContext();
+  
+  // Theme-aware text colors
+  const titleColor = currentTheme === 'dark' ? 'text-white' : 'text-gray-900';
+  const textColor = currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-600';
+  const labelTextColor = currentTheme === 'dark' ? 'text-white' : 'text-foreground';
+
   const handleSelectAll = useCallback((checked: boolean) => {
     onSelectAll(checked, filteredJobs);
   }, [onSelectAll, filteredJobs]);
@@ -101,12 +109,12 @@ export const OptimizedJobsContent = memo(({
     return (
       <div className="max-w-7xl mx-auto px-8 py-8">
         <Card className="glass-card-no-hover">
-          <CardContent className="p-12 text-center text-gray-500">
+          <CardContent className={`p-12 text-center ${textColor}`}>
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Plus className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold mb-3 text-gray-900">No jobs yet</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            <h3 className={`text-xl font-semibold mb-3 ${titleColor}`}>No jobs yet</h3>
+            <p className={`mb-6 max-w-md mx-auto ${textColor}`}>
               Create your first job posting to start receiving applications and building your talent pipeline
             </p>
             <Button 
@@ -127,11 +135,11 @@ export const OptimizedJobsContent = memo(({
     return (
       <div className="max-w-7xl mx-auto px-8 py-8">
         <Card className="glass-card-no-hover">
-          <CardContent className="p-12 text-center text-gray-500">
-            <h3 className="text-xl font-semibold mb-3 text-gray-900">No jobs match your filters</h3>
-            <p className="text-gray-600 mb-6">Try adjusting your search or filter criteria</p>
+          <CardContent className={`p-12 text-center ${textColor}`}>
+            <h3 className={`text-xl font-semibold mb-3 ${titleColor}`}>No jobs match your filters</h3>
+            <p className={`mb-6 ${textColor}`}>Try adjusting your search or filter criteria</p>
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className={`text-sm ${textColor}`}>
                 Showing {filteredJobs.length} of {jobs.length} total jobs
               </p>
               <Button variant="outline" onClick={clearFilters} size="lg">
@@ -156,7 +164,7 @@ export const OptimizedJobsContent = memo(({
                     checked={allSelected}
                     onCheckedChange={handleSelectAll}
                   />
-                  <span className="text-sm font-medium text-foreground">
+                  <span className={`text-sm font-medium ${labelTextColor}`}>
                     Select all {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
                   </span>
                   <BulkActionsDropdown 
@@ -164,7 +172,7 @@ export const OptimizedJobsContent = memo(({
                     onBulkAction={onBulkAction}
                   />
                 </div>
-                <div className="text-sm text-foreground">
+                <div className={`text-sm ${labelTextColor}`}>
                   Showing <span className="font-semibold">{filteredJobs.length}</span> of <span className="font-semibold">{jobs.length}</span> total jobs
                   {needsAttentionFilter && (
                     <span className="ml-2 text-orange-600 font-medium">
