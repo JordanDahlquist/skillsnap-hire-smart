@@ -71,18 +71,10 @@ export const EmailComposerModalV2 = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent 
-        className="max-w-4xl p-0 border-0 bg-transparent shadow-none [&>button]:hidden overflow-hidden"
+        className="max-w-4xl p-0 bg-white border shadow-2xl [&>button]:hidden overflow-hidden"
         style={{ height: `${modalHeight}px` }}
       >
-        {/* Cosmic Background Effects */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-r from-green-400/15 to-emerald-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
-        </div>
-
-        {/* Main Modal Content with Glass Effect */}
-        <div className="glass-card h-full flex flex-col overflow-hidden relative z-10">
+        <div className="flex flex-col h-full overflow-hidden">
           <EmailComposerHeader
             currentStep={currentStep}
             recipientCount={selectedApplications.length}

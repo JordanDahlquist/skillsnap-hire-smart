@@ -52,7 +52,7 @@ export const CompactEmailComposerLayout = ({
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Compact top section - Recipients and Template */}
-      <div className="flex-shrink-0 p-2 glass-content border-b border-white/10 space-y-2">
+      <div className="flex-shrink-0 p-2 bg-gray-50/30 border-b space-y-2">
         <CompactRecipientsSection applications={selectedApplications} />
         <CompactTemplateSelector
           templates={templates}
@@ -64,7 +64,7 @@ export const CompactEmailComposerLayout = ({
 
       {/* Main content area - Full width email editor */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        <div className="w-full flex flex-col border-r border-white/10 overflow-hidden">
+        <div className="w-full flex flex-col border-r overflow-hidden">
           <CompactEmailEditor
             subject={formData.subject}
             content={formData.content}
@@ -76,7 +76,7 @@ export const CompactEmailComposerLayout = ({
       </div>
 
       {/* Bottom actions - Always visible and accessible */}
-      <div className="flex-shrink-0 border-t border-white/10 glass-content">
+      <div className="flex-shrink-0 border-t bg-white">
         <CompactEmailActions
           onSend={onSend}
           isSending={isSending}
