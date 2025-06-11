@@ -74,7 +74,7 @@ export const OptimizedJobCard = memo(({
 
   return (
     <>
-      <Card className="group">
+      <Card className="group glass-card-no-hover">
         <CardHeader>
           <JobCardHeader 
             job={job} 
