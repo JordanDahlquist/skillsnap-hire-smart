@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, MapPin, Calendar, DollarSign, Clock, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface PublicJobCardProps {
   job: {
@@ -28,6 +29,7 @@ interface PublicJobCardProps {
 
 export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
   const navigate = useNavigate();
+  const { currentTheme } = useThemeContext();
 
   const handleCardClick = () => {
     navigate(`/apply/${job.id}`);
@@ -74,15 +76,21 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
 
   const applicationsCount = job.applications?.[0]?.count || 0;
 
+  // Theme-aware colors
+  const titleColor = currentTheme === 'dark' ? 'text-white' : 'text-gray-900';
+  const textColor = currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-700';
+  const subtleTextColor = currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600';
+  const moreSubtleTextColor = currentTheme === 'dark' ? 'text-gray-500' : 'text-gray-500';
+
   return (
     <Card 
-      className="cursor-pointer border-l-4 border-l-blue-500 group"
+      className="cursor-pointer border-l-4 border-l-blue-500 group glass-card-no-hover"
       onClick={handleCardClick}
     >
       <CardHeader className="pb-2 pt-4 px-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+            <CardTitle className={`text-lg font-semibold mb-2 leading-tight ${titleColor}`}>
               {job.title}
             </CardTitle>
             
@@ -95,7 +103,7 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
               </Badge>
             </div>
             
-            <div className="flex items-center flex-wrap gap-3 text-xs text-gray-600 mb-2">
+            <div className={`flex items-center flex-wrap gap-3 text-xs mb-2 ${subtleTextColor}`}>
               <div className="flex items-center gap-1">
                 <MapPin className="w-3 h-3" />
                 <span>{getLocationDisplay()}</span>
@@ -116,13 +124,13 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
                 <Users className="w-3 h-3" />
                 <span>{applicationsCount} application{applicationsCount !== 1 ? 's' : ''}</span>
               </div>
-              <div className="flex items-center gap-1 text-gray-500">
+              <div className={`flex items-center gap-1 ${moreSubtleTextColor}`}>
                 <Calendar className="w-3 h-3" />
                 <span>{getTimeAgo(job.created_at)}</span>
               </div>
             </div>
             
-            <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed">
+            <p className={`text-sm line-clamp-2 leading-relaxed ${textColor}`}>
               {getDisplayDescription()}
             </p>
           </div>
