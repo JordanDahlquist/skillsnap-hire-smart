@@ -1,10 +1,9 @@
 
-import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
-import { useEmailComposer } from '@/hooks/useEmailComposer';
 import { useEmailSending } from '@/hooks/useEmailSending';
 import { useViewportHeight } from '@/hooks/useViewportHeight';
+import { useEmailComposerState } from '@/hooks/useEmailComposerState';
 import { EmailComposerHeader } from './v2/EmailComposerHeader';
 import { CompactEmailComposerLayout } from './v2/CompactEmailComposerLayout';
 import { validateEmailForm } from '@/utils/emailValidation';
@@ -24,10 +23,16 @@ export const EmailComposerModalV2 = ({
   job
 }: EmailComposerModalV2Props) => {
   const { data: templates = [], isLoading: templatesLoading } = useEmailTemplates(open);
-  const { formData, updateField, selectTemplate, resetForm } = useEmailComposer();
+  const {
+    currentStep,
+    setCurrentStep,
+    formData,
+    updateField,
+    selectTemplate,
+    resetForm
+  } = useEmailComposerState();
   const { sendBulkEmail, isSending, getCompanyName, getUserUniqueEmail } = useEmailSending();
   const { availableHeight } = useViewportHeight();
-  const [currentStep, setCurrentStep] = useState<'compose' | 'preview' | 'sending'>('compose');
 
   const { isValid } = validateEmailForm(formData.subject, formData.content);
   const canSend = isValid && selectedApplications.length > 0 && !isSending;
@@ -47,7 +52,6 @@ export const EmailComposerModalV2 = ({
       
       resetForm();
       onOpenChange(false);
-      setCurrentStep('compose');
     } catch (error) {
       console.error('Failed to send emails:', error);
       setCurrentStep('compose');
@@ -57,7 +61,6 @@ export const EmailComposerModalV2 = ({
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       resetForm();
-      setCurrentStep('compose');
     }
     onOpenChange(open);
   };
@@ -65,7 +68,6 @@ export const EmailComposerModalV2 = ({
   const fromEmail = getUserUniqueEmail();
   const companyName = getCompanyName(job);
   
-  // Calculate optimal modal height
   const modalHeight = Math.min(availableHeight * 0.9, 800);
 
   return (
