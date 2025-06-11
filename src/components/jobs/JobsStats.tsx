@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Users, TrendingUp, BarChart3 } from "lucide-react";
 import { JobStats } from "@/hooks/useJobStats";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface JobsStatsProps {
   stats: JobStats;
@@ -19,6 +20,15 @@ export const JobsStats = ({
   onActiveJobsClick,
   activeJobsFilterActive
 }: JobsStatsProps) => {
+  const { currentTheme } = useThemeContext();
+  
+  // Theme-aware colors
+  const labelTextColor = currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600';
+  const orangeNumberColor = currentTheme === 'dark' ? 'text-orange-400' : 'text-orange-600';
+  const blueNumberColor = currentTheme === 'dark' ? 'text-blue-400' : 'text-[#007af6]';
+  const purpleNumberColor = currentTheme === 'dark' ? 'text-purple-400' : 'text-purple-600';
+  const greenNumberColor = currentTheme === 'dark' ? 'text-green-400' : 'text-green-600';
+
   return (
     <div className="px-8 pb-4">
       <div className="max-w-7xl mx-auto">
@@ -41,10 +51,10 @@ export const JobsStats = ({
                 )}
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide leading-tight">
+                <p className={`text-xs font-medium uppercase tracking-wide leading-tight ${labelTextColor}`}>
                   Needs Attention
                 </p>
-                <p className="text-lg font-bold text-orange-600 leading-none">
+                <p className={`text-lg font-bold leading-none ${orangeNumberColor}`}>
                   {stats.jobsNeedingAttention}
                 </p>
                 {needsAttentionActive && (
@@ -74,10 +84,10 @@ export const JobsStats = ({
                 )}
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide leading-tight">
+                <p className={`text-xs font-medium uppercase tracking-wide leading-tight ${labelTextColor}`}>
                   Active Jobs
                 </p>
-                <p className="text-lg font-bold text-[#007af6] leading-none">
+                <p className={`text-lg font-bold leading-none ${blueNumberColor}`}>
                   {stats.activeJobs}
                 </p>
                 {activeJobsFilterActive && (
@@ -97,10 +107,10 @@ export const JobsStats = ({
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide leading-tight">
+                <p className={`text-xs font-medium uppercase tracking-wide leading-tight ${labelTextColor}`}>
                   Total Applications
                 </p>
-                <p className="text-lg font-bold text-purple-600 leading-none">
+                <p className={`text-lg font-bold leading-none ${purpleNumberColor}`}>
                   {stats.totalApplications}
                 </p>
               </div>
@@ -115,10 +125,10 @@ export const JobsStats = ({
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide leading-tight">
+                <p className={`text-xs font-medium uppercase tracking-wide leading-tight ${labelTextColor}`}>
                   Applications This Week
                 </p>
-                <p className="text-lg font-bold text-green-600 leading-none">
+                <p className={`text-lg font-bold leading-none ${greenNumberColor}`}>
                   {stats.applicationsThisWeek}
                 </p>
               </div>
