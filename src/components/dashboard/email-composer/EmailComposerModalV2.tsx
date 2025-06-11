@@ -5,7 +5,7 @@ import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { useEmailComposer } from '@/hooks/useEmailComposer';
 import { useEmailSending } from '@/hooks/useEmailSending';
 import { EmailComposerHeader } from './v2/EmailComposerHeader';
-import { EmailComposerLayout } from './v2/EmailComposerLayout';
+import { CompactEmailComposerLayout } from './v2/CompactEmailComposerLayout';
 import { validateEmailForm } from '@/utils/emailValidation';
 import type { Application, Job } from '@/types';
 
@@ -65,37 +65,31 @@ export const EmailComposerModalV2 = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[95vh] p-0 bg-transparent border-0 shadow-none">
-        <div className="relative w-full h-full">
-          {/* Backdrop with blur and gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10 backdrop-blur-xl rounded-3xl" />
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-white border shadow-2xl">
+        <div className="flex flex-col h-full">
+          <EmailComposerHeader
+            currentStep={currentStep}
+            recipientCount={selectedApplications.length}
+            onClose={() => handleOpenChange(false)}
+            isLoading={isSending}
+          />
           
-          {/* Glass morphism container */}
-          <div className="relative bg-white/90 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl overflow-hidden">
-            <EmailComposerHeader
-              currentStep={currentStep}
-              recipientCount={selectedApplications.length}
-              onClose={() => handleOpenChange(false)}
-              isLoading={isSending}
-            />
-            
-            <EmailComposerLayout
-              templates={templates}
-              templatesLoading={templatesLoading}
-              formData={formData}
-              updateField={updateField}
-              selectTemplate={selectTemplate}
-              togglePreview={togglePreview}
-              onSend={handleSend}
-              isSending={isSending}
-              canSend={canSend}
-              selectedApplications={selectedApplications}
-              job={job}
-              fromEmail={fromEmail}
-              companyName={companyName}
-              currentStep={currentStep}
-            />
-          </div>
+          <CompactEmailComposerLayout
+            templates={templates}
+            templatesLoading={templatesLoading}
+            formData={formData}
+            updateField={updateField}
+            selectTemplate={selectTemplate}
+            togglePreview={togglePreview}
+            onSend={handleSend}
+            isSending={isSending}
+            canSend={canSend}
+            selectedApplications={selectedApplications}
+            job={job}
+            fromEmail={fromEmail}
+            companyName={companyName}
+            currentStep={currentStep}
+          />
         </div>
       </DialogContent>
     </Dialog>
