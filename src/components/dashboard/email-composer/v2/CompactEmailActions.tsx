@@ -14,13 +14,13 @@ export const CompactEmailActions = ({
   canSend
 }: CompactEmailActionsProps) => {
   return (
-    <div className="p-2 bg-gray-50/20">
+    <div className="p-2">
       <div className="flex items-center justify-end">
         {/* Send button */}
         <Button
           onClick={onSend}
           disabled={!canSend || isSending}
-          className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
+          className="h-7 text-xs glass-button shadow-glow-blue hover:shadow-glow-blue border-0"
         >
           {isSending ? (
             <>

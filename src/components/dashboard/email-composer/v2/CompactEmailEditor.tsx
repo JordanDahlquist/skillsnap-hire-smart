@@ -30,17 +30,17 @@ export const CompactEmailEditor = ({
   return (
     <div className="flex flex-col h-full">
       {/* Compact header */}
-      <div className="flex-shrink-0 p-2 border-b bg-gray-50/50 space-y-2">
+      <div className="flex-shrink-0 p-2 border-b border-white/10 glass-content space-y-2">
         {/* From field */}
         <div className="flex items-center gap-2">
-          <Label className="text-xs font-medium text-gray-600 w-12 flex-shrink-0">From:</Label>
+          <Label className="text-xs font-medium text-contrast-safe w-12 flex-shrink-0">From:</Label>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Input
               value={fromEmail}
               disabled
-              className="text-xs bg-gray-50 text-gray-600 h-6 border-0 p-1 flex-1"
+              className="text-xs glass-content text-contrast-safe-light h-6 border-white/20 p-1 flex-1"
             />
-            <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 h-4 px-1 flex-shrink-0">
+            <Badge variant="secondary" className="text-xs bg-green-100/80 text-green-700 h-4 px-1 flex-shrink-0">
               ✓
             </Badge>
           </div>
@@ -48,20 +48,20 @@ export const CompactEmailEditor = ({
 
         {/* Subject field */}
         <div className="flex items-center gap-2">
-          <Label className="text-xs font-medium text-gray-600 w-12 flex-shrink-0">Subject:</Label>
+          <Label className="text-xs font-medium text-contrast-safe w-12 flex-shrink-0">Subject:</Label>
           <Input
             value={subject}
             onChange={(e) => onSubjectChange(e.target.value)}
             placeholder="Enter email subject..."
-            className="text-xs h-6 flex-1"
+            className="text-xs h-6 flex-1 glass-content border-white/20 text-contrast-safe placeholder:text-contrast-safe-light"
           />
         </div>
       </div>
 
       {/* Content editor with expanded height */}
       <div className="flex-1 min-h-0 flex flex-col p-2">
-        <Label className="text-xs font-medium text-gray-600 mb-1">Message</Label>
-        <div className="flex-1 min-h-0 border rounded">
+        <Label className="text-xs font-medium text-contrast-safe mb-1">Message</Label>
+        <div className="flex-1 min-h-0 border border-white/20 rounded glass-content">
           <EmailRichTextEditor
             value={content}
             onChange={onContentChange}
