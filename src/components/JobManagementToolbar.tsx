@@ -42,41 +42,39 @@ export const JobManagementToolbar = ({
 }: JobManagementToolbarProps) => {
   return (
     <div className="glass-content border-b border-white/20 py-3 space-y-2">
-      <div className="py-4 px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Search and filters row */}
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between mb-3">
-            <div className="flex flex-1 gap-3 items-center">
-              <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
-              <FilterDropdowns
-                statusFilter={statusFilter}
-                onStatusFilterChange={onStatusFilterChange}
-                workTypeFilter={workTypeFilter}
-                onWorkTypeFilterChange={onWorkTypeFilterChange}
-              />
-            </div>
-            
-            <SortControls
-              sortBy={sortBy}
-              onSortChange={onSortChange}
-              onRefresh={onRefresh}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Search and filters row */}
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+          <div className="flex flex-1 gap-3 items-center">
+            <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
+            <FilterDropdowns
+              statusFilter={statusFilter}
+              onStatusFilterChange={onStatusFilterChange}
+              workTypeFilter={workTypeFilter}
+              onWorkTypeFilterChange={onWorkTypeFilterChange}
             />
           </div>
+          
+          <SortControls
+            sortBy={sortBy}
+            onSortChange={onSortChange}
+            onRefresh={onRefresh}
+          />
+        </div>
 
-          {/* Stats and bulk actions row */}
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <ToolbarStats
-              totalJobs={totalJobs}
-              selectedCount={selectedJobs.length}
-              activeFiltersCount={activeFiltersCount}
-              needsAttentionFilter={needsAttentionFilter}
-            />
-            
-            <BulkActions
-              selectedCount={selectedJobs.length}
-              onBulkAction={onBulkAction}
-            />
-          </div>
+        {/* Stats and bulk actions row */}
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+          <ToolbarStats
+            totalJobs={totalJobs}
+            selectedCount={selectedJobs.length}
+            activeFiltersCount={activeFiltersCount}
+            needsAttentionFilter={needsAttentionFilter}
+          />
+          
+          <BulkActions
+            selectedCount={selectedJobs.length}
+            onBulkAction={onBulkAction}
+          />
         </div>
       </div>
     </div>
