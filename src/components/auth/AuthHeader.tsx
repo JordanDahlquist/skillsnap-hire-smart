@@ -12,18 +12,18 @@ export const AuthHeader = ({ showForgotPassword }: AuthHeaderProps) => {
   return (
     <>
       {/* Simple Header */}
-      <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm">
+      <header className="border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-background rounded-lg flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
                   alt="Atract"
                   className="w-6 h-6"
                 />
               </div>
-              <span className="text-xl font-bold text-gray-900">Atract</span>
+              <span className="text-xl font-bold text-foreground">Atract</span>
             </Link>
             <Button variant="outline" asChild>
               <Link to="/">
@@ -38,7 +38,7 @@ export const AuthHeader = ({ showForgotPassword }: AuthHeaderProps) => {
       {/* Card Header */}
       <CardHeader className="text-center">
         <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-          <Mail className="w-6 h-6 text-[#007af6]" />
+          <Mail className="w-6 h-6 text-primary" />
           {showForgotPassword ? "Reset Password" : "Welcome to Atract"}
         </CardTitle>
       </CardHeader>

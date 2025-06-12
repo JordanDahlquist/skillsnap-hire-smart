@@ -44,12 +44,12 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+    <div className="light min-h-screen bg-background flex flex-col">
       <AuthHeader showForgotPassword={showForgotPassword} />
 
       {/* Auth Form */}
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 flex-1">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-card border-border">
           <CardContent>
             {showForgotPassword ? (
               <div className="space-y-4">

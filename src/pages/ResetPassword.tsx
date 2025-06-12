@@ -157,33 +157,33 @@ const ResetPassword = () => {
             className={`h-1 flex-1 rounded ${
               passwordStrength.score >= level
                 ? passwordStrength.score <= 2
-                  ? "bg-red-500"
+                  ? "bg-destructive"
                   : passwordStrength.score <= 3
-                  ? "bg-yellow-500"
-                  : "bg-green-500"
-                : "bg-gray-200"
+                  ? "bg-warning"
+                  : "bg-success"
+                : "bg-muted"
             }`}
           />
         ))}
       </div>
       <div className="text-xs space-y-1">
-        <div className={`flex items-center gap-1 ${passwordStrength.hasMinLength ? "text-green-600" : "text-gray-400"}`}>
+        <div className={`flex items-center gap-1 ${passwordStrength.hasMinLength ? "text-success" : "text-muted-foreground"}`}>
           {passwordStrength.hasMinLength ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
           At least 8 characters
         </div>
-        <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? "text-green-600" : "text-gray-400"}`}>
+        <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? "text-success" : "text-muted-foreground"}`}>
           {passwordStrength.hasUppercase ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
           Uppercase letter
         </div>
-        <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? "text-green-600" : "text-gray-400"}`}>
+        <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? "text-success" : "text-muted-foreground"}`}>
           {passwordStrength.hasLowercase ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
           Lowercase letter
         </div>
-        <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? "text-green-600" : "text-gray-400"}`}>
+        <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? "text-success" : "text-muted-foreground"}`}>
           {passwordStrength.hasNumber ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
           Number
         </div>
-        <div className={`flex items-center gap-1 ${passwordStrength.hasSpecialChar ? "text-green-600" : "text-gray-400"}`}>
+        <div className={`flex items-center gap-1 ${passwordStrength.hasSpecialChar ? "text-success" : "text-muted-foreground"}`}>
           {passwordStrength.hasSpecialChar ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
           Special character
         </div>
@@ -193,10 +193,10 @@ const ResetPassword = () => {
 
   if (isValidSession === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+      <div className="light min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#007af6]" />
-          <p className="text-gray-600">Verifying reset link...</p>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Verifying reset link...</p>
         </div>
       </div>
     );
@@ -204,20 +204,20 @@ const ResetPassword = () => {
 
   if (isValidSession === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <div className="light min-h-screen bg-background">
         {/* Header */}
-        <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm">
+        <header className="border-b border-border bg-background/80 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-background rounded-lg flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
                     alt="Atract"
                     className="w-6 h-6"
                   />
                 </div>
-                <span className="text-xl font-bold text-gray-900">Atract</span>
+                <span className="text-xl font-bold text-foreground">Atract</span>
               </Link>
               <Button variant="outline" asChild>
                 <Link to="/auth">
@@ -230,18 +230,18 @@ const ResetPassword = () => {
         </header>
 
         <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md bg-card">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-2xl text-red-600">
+              <CardTitle className="flex items-center justify-center gap-2 text-2xl text-destructive">
                 <X className="w-6 h-6" />
                 Invalid Reset Link
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 This password reset link is invalid or has expired. Please request a new password reset.
               </p>
-              <Button asChild className="w-full bg-[#007af6] hover:bg-[#0056b3]">
+              <Button asChild className="w-full bg-primary hover:bg-primary/90">
                 <Link to="/auth">Request New Reset</Link>
               </Button>
             </CardContent>
@@ -252,20 +252,20 @@ const ResetPassword = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="light min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm">
+      <header className="border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-background rounded-lg flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
                   alt="Atract"
                   className="w-6 h-6"
                 />
               </div>
-              <span className="text-xl font-bold text-gray-900">Atract</span>
+              <span className="text-xl font-bold text-foreground">Atract</span>
             </Link>
             <Button variant="outline" asChild>
               <Link to="/auth">
@@ -278,16 +278,16 @@ const ResetPassword = () => {
       </header>
 
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-card">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-              <Mail className="w-6 h-6 text-[#007af6]" />
+              <Mail className="w-6 h-6 text-primary" />
               Set New Password
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleResetPassword} className="space-y-4">
-              <div className="text-sm text-gray-600 text-center mb-4">
+              <div className="text-sm text-muted-foreground text-center mb-4">
                 Enter your new password below. Make sure it's strong and secure.
               </div>
               
@@ -326,7 +326,7 @@ const ResetPassword = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     placeholder="Confirm new password"
-                    className={confirmPassword && password !== confirmPassword ? "border-red-500" : ""}
+                    className={confirmPassword && password !== confirmPassword ? "border-destructive" : ""}
                   />
                   <Button
                     type="button"
@@ -339,13 +339,13 @@ const ResetPassword = () => {
                   </Button>
                 </div>
                 {confirmPassword && password !== confirmPassword && (
-                  <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                  <p className="text-xs text-destructive mt-1">Passwords do not match</p>
                 )}
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full bg-[#007af6] hover:bg-[#0056b3]" 
+                className="w-full bg-primary hover:bg-primary/90" 
                 disabled={loading || !isFormValid()}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}

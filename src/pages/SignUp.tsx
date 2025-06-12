@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -178,14 +179,14 @@ const SignUp = () => {
 
   return (
     <SignupErrorBoundary onReset={handleReset}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center p-4">
+      <div className="light min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Start Your Free Trial
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Join 500+ companies hiring smarter with Atract
             </p>
           </div>
@@ -193,7 +194,7 @@ const SignUp = () => {
           {/* Progress */}
           <div className="mb-6">
             <Progress value={progressPercentage} className="h-2" />
-            <div className="flex justify-between text-sm text-gray-500 mt-2">
+            <div className="flex justify-between text-sm text-muted-foreground mt-2">
               <span>Step {currentStep + 1} of {STEPS.length}</span>
               <span>{Math.round(progressPercentage)}% complete</span>
             </div>
@@ -207,7 +208,7 @@ const SignUp = () => {
           />
 
           {/* Main Card */}
-          <Card className="mt-8 shadow-xl border-0">
+          <Card className="mt-8 shadow-xl border-0 bg-card">
             <CardContent className="p-8">
               {renderCurrentStep()}
             </CardContent>
@@ -226,11 +227,11 @@ const SignUp = () => {
                 Back
               </Button>
               
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-muted-foreground">
                 Already have an account?{" "}
                 <button
                   onClick={handleSignInRedirect}
-                  className="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+                  className="text-primary hover:text-primary/80 font-medium disabled:opacity-50"
                   disabled={isProcessing}
                 >
                   Sign in
