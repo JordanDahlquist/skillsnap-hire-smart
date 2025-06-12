@@ -11,6 +11,18 @@ export const JobsPageBackground = memo(({ children }: JobsPageBackgroundProps) =
   const { currentImage, nextImage, isTransitioning, showSecondary } = useRotatingBackground();
   const { currentTheme } = useThemeContext();
 
+  // Check if this is a solid color theme
+  const isSolidColorTheme = currentTheme === 'white' || currentTheme === 'black';
+
+  if (isSolidColorTheme) {
+    // For solid color themes, just use a simple background
+    return (
+      <div className="min-h-screen bg-background">
+        {children}
+      </div>
+    );
+  }
+
   // Generate CSS class names for crossfade background
   const backgroundClass = `dashboard-crossfade-background ${
     isTransitioning ? 'transitioning' : ''

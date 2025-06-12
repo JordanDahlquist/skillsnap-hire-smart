@@ -39,8 +39,12 @@ const preloadImage = (src: string): Promise<void> => {
 export const useRotatingBackground = () => {
   const { currentTheme } = useThemeContext();
   
+  // Check if theme uses solid colors (no image backgrounds)
+  const isSolidColorTheme = currentTheme === 'white' || currentTheme === 'black';
+  
   // Initialize with a random index based on current theme
   const [currentImageIndex, setCurrentImageIndex] = useState(() => {
+    if (isSolidColorTheme) return 0; // Index doesn't matter for solid themes
     const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
     const randomIndex = getRandomIndex(backgroundArray.length);
     console.log(`[Background Rotation] Starting with random image ${randomIndex + 1}/${backgroundArray.length} (${currentTheme} mode)`);
@@ -54,16 +58,30 @@ export const useRotatingBackground = () => {
   // Handle theme changes - start with random image for new theme
   useEffect(() => {
     console.log(`[Background Rotation] Theme changed to: ${currentTheme}`);
+    
+    if (isSolidColorTheme) {
+      // For solid color themes, disable rotation
+      setIsTransitioning(false);
+      setShowSecondary(false);
+      console.log(`[Background Rotation] Using solid color theme: ${currentTheme}`);
+      return;
+    }
+    
     const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
     const randomIndex = getRandomIndex(backgroundArray.length);
     setCurrentImageIndex(randomIndex);
     setIsTransitioning(false);
     setShowSecondary(false);
     console.log(`[Background Rotation] Theme change: starting with random image ${randomIndex + 1}/${backgroundArray.length} (${currentTheme} mode)`);
-  }, [currentTheme]);
+  }, [currentTheme, isSolidColorTheme]);
 
-  // Main rotation effect - runs independently of theme changes
+  // Main rotation effect - runs independently of theme changes, but disabled for solid themes
   useEffect(() => {
+    if (isSolidColorTheme) {
+      console.log(`[Background Rotation] Skipping rotation for solid color theme: ${currentTheme}`);
+      return;
+    }
+    
     console.log('[Background Rotation] Starting rotation timer');
     
     const interval = setInterval(async () => {
@@ -109,7 +127,18 @@ export const useRotatingBackground = () => {
         clearTimeout(transitionTimeoutRef.current);
       }
     };
-  }, [currentImageIndex, currentTheme, showSecondary]);
+  }, [currentImageIndex, currentTheme, showSecondary, isSolidColorTheme]);
+
+  // Return solid colors for white/black themes, images for light/dark themes
+  if (isSolidColorTheme) {
+    const solidColor = currentTheme === 'white' ? '#ffffff' : '#000000';
+    return {
+      currentImage: solidColor,
+      nextImage: solidColor,
+      isTransitioning: false,
+      showSecondary: false,
+    };
+  }
 
   // Return the appropriate background based on theme
   const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;

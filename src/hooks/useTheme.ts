@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark' | 'white' | 'black' | 'system';
 
 export const useTheme = () => {
   const [theme, setTheme] = useState<Theme>(() => {
@@ -28,13 +28,24 @@ export const useTheme = () => {
   // Apply theme to document
   useEffect(() => {
     const root = document.documentElement;
-    const isDark = theme === 'dark' || (theme === 'system' && systemTheme === 'dark');
     
-    if (isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
+    // Remove all theme classes first
+    root.classList.remove('dark', 'white', 'black');
+    
+    let effectiveTheme = theme;
+    if (theme === 'system') {
+      effectiveTheme = systemTheme;
     }
+    
+    // Apply appropriate theme class
+    if (effectiveTheme === 'dark') {
+      root.classList.add('dark');
+    } else if (effectiveTheme === 'white') {
+      root.classList.add('white');
+    } else if (effectiveTheme === 'black') {
+      root.classList.add('black');
+    }
+    // 'light' doesn't need a class - it's the default
   }, [theme, systemTheme]);
 
   // Persist theme preference
@@ -44,19 +55,37 @@ export const useTheme = () => {
 
   const toggleTheme = () => {
     setTheme(prev => {
-      // Direct toggle between light and dark, no system cycling
-      const currentEffectiveTheme = prev === 'system' ? systemTheme : prev;
-      return currentEffectiveTheme === 'light' ? 'dark' : 'light';
+      // Cycle through all theme options: light -> dark -> white -> black -> light
+      switch (prev) {
+        case 'light':
+        case 'system':
+          return 'dark';
+        case 'dark':
+          return 'white';
+        case 'white':
+          return 'black';
+        case 'black':
+          return 'light';
+        default:
+          return 'light';
+      }
     });
   };
 
-  const currentTheme = theme === 'system' ? systemTheme : theme;
+  const getEffectiveTheme = () => {
+    if (theme === 'system') {
+      return systemTheme;
+    }
+    return theme;
+  };
+
+  const currentTheme = getEffectiveTheme();
 
   return {
     theme,
     currentTheme,
     setTheme,
     toggleTheme,
-    isDark: currentTheme === 'dark'
+    isDark: currentTheme === 'dark' || currentTheme === 'black'
   };
 };
