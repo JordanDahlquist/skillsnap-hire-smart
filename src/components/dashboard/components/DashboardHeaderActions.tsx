@@ -84,7 +84,7 @@ export const DashboardHeaderActions = ({
               <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent side="bottom" className="z-[9999]">
             <p>Refresh AI-powered application ratings for new applicants</p>
           </TooltipContent>
         </Tooltip>
