@@ -2,11 +2,8 @@
 export const parseMarkdown = (text: string): string => {
   if (!text) return '';
   
-  // First, clean any stray asterisks that shouldn't be there
-  let cleanedText = text.replace(/\*+/g, '');
-  
   // Split into lines for processing
-  let lines = cleanedText.split('\n');
+  let lines = text.split('\n');
   let result = '';
   let inList = false;
   let listItems: string[] = [];
@@ -23,6 +20,18 @@ export const parseMarkdown = (text: string): string => {
         inList = false;
       }
       result += '<br>';
+      continue;
+    }
+    
+    // Handle horizontal rules (--- or more dashes)
+    if (line.match(/^-{3,}$/)) {
+      // Close any open list
+      if (inList) {
+        result += `<ul class="list-disc pl-6 mb-4">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
+        listItems = [];
+        inList = false;
+      }
+      result += '<hr class="my-4 border-gray-300">';
       continue;
     }
     
@@ -97,7 +106,9 @@ export const parseMarkdown = (text: string): string => {
 };
 
 const formatInlineContent = (text: string): string => {
-  // Since we're now getting clean text from AI, just handle basic formatting
+  // Handle bold text (**text**)
+  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold">$1</strong>');
+  
   // Handle inline code (`code`)
   text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
   
