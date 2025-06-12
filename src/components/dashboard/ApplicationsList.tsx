@@ -98,11 +98,11 @@ export const ApplicationsList = memo(({
           )}
         </div>
         
-        {/* Top fade overlay */}
-        <div className="absolute top-4 left-0 right-0 h-6 bg-gradient-to-b from-white/80 to-transparent pointer-events-none z-10" />
+        {/* Top fade overlay - deeper and more intense */}
+        <div className="absolute top-4 left-0 right-0 h-10 bg-gradient-to-b from-background/95 via-background/60 to-transparent pointer-events-none z-10" />
         
-        {/* Bottom fade overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white/80 to-transparent pointer-events-none z-10" />
+        {/* Bottom fade overlay - deeper and more intense */}
+        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background/95 via-background/60 to-transparent pointer-events-none z-10" />
       </div>
     </div>
   );
