@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Clock, DollarSign, Target, Users } from "lucide-react";
 import { Job } from "@/types";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface JobOverviewSectionProps {
   job: Job;
@@ -78,7 +79,7 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
               <div 
                 className="text-gray-800"
                 dangerouslySetInnerHTML={{ 
-                  __html: job.generated_job_post.replace(/\n/g, '<br>') 
+                  __html: parseMarkdown(job.generated_job_post)
                 }} 
               />
             ) : (
