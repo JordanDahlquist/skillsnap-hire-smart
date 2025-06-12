@@ -51,10 +51,14 @@ export const ApplicationItem = memo(({
   // Ensure pipeline_stage defaults to "applied" if null or undefined
   const pipelineStage = application.pipeline_stage || 'applied';
 
+  const isSelected = selectedApplication?.id === application.id;
+
   return (
     <div
-      className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-        selectedApplication?.id === application.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+      className={`p-4 cursor-pointer hover:bg-accent/50 transition-colors border-l-4 ${
+        isSelected 
+          ? 'bg-accent/70 border-l-primary shadow-sm' 
+          : 'border-l-transparent'
       }`}
       onClick={handleApplicationClick}
     >
@@ -69,15 +73,15 @@ export const ApplicationItem = memo(({
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-medium text-gray-900 truncate">
+              <h3 className="text-sm font-medium text-foreground truncate">
                 {application.name}
               </h3>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {getTimeAgo(application.created_at)}
               </span>
             </div>
             
-            <p className="text-sm text-gray-600 truncate mb-2">
+            <p className="text-sm text-muted-foreground truncate mb-2">
               {application.email}
             </p>
             
@@ -106,7 +110,7 @@ export const ApplicationItem = memo(({
               <div className="flex items-center gap-4">
                 {/* Manual Rating */}
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-500">Your:</span>
+                  <span className="text-xs text-muted-foreground">Your:</span>
                   <div className="flex gap-0.5">
                     {renderManualRating(application.manual_rating)}
                   </div>
@@ -114,7 +118,7 @@ export const ApplicationItem = memo(({
                 
                 {/* AI Rating */}
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-500">AI:</span>
+                  <span className="text-xs text-muted-foreground">AI:</span>
                   <div className="flex gap-0.5">
                     {renderAIRating(application.ai_rating)}
                   </div>
@@ -123,7 +127,7 @@ export const ApplicationItem = memo(({
             </div>
             
             {application.ai_summary && (
-              <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+              <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
                 {application.ai_summary}
               </p>
             )}

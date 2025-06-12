@@ -66,10 +66,10 @@ export const ApplicationsListHeader = memo(({
   const hasSelection = selectedApplications.length > 0;
 
   return (
-    <div className="p-4 border-b border-gray-200 bg-white">
+    <div className="p-4 border-b border-border glass-card-no-hover">
       {/* Applications Title */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-foreground">
           Applications ({applicationsCount})
         </h2>
       </div>
@@ -105,7 +105,7 @@ export const ApplicationsListHeader = memo(({
                   variant="outline"
                   onClick={() => onSetRating?.(rating)}
                   disabled={isLoading}
-                  className="gap-1 hover:bg-blue-50 hover:border-blue-300 border-gray-200 h-7 px-2 min-w-[2.5rem]"
+                  className="gap-1 hover:bg-accent hover:border-accent-foreground/20 border-border h-7 px-2 min-w-[2.5rem]"
                   title={`Set ${rating} star rating`}
                 >
                   <span className="text-xs font-medium">{rating}</span>
@@ -164,7 +164,7 @@ export const ApplicationsListHeader = memo(({
                 onCheckedChange={handleSelectAll}
                 className={`${isSomeSelected ? "data-[state=checked]:bg-blue-600" : ""} w-4 h-4`}
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-muted-foreground">
                 Select All Applications
               </span>
             </div>
@@ -178,7 +178,7 @@ export const ApplicationsListHeader = memo(({
                 variant="ghost"
                 size="sm"
                 onClick={handleClearSelection}
-                className="text-gray-600 hover:text-gray-800 h-6 px-2 text-xs"
+                className="text-muted-foreground hover:text-foreground h-6 px-2 text-xs"
               >
                 Clear
               </Button>
