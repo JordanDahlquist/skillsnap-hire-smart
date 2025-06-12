@@ -150,7 +150,7 @@ export const MultiStepApplicationForm = ({
   };
 
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg glass-card-no-hover">
       <CardContent className="p-6">
         <ApplicationStepIndicator 
           steps={STEPS}

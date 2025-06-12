@@ -48,7 +48,7 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: Ap
 
   if (!isApplicationOpen) {
     return (
-      <Card>
+      <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg glass-card-no-hover">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {statusMessage?.icon}
