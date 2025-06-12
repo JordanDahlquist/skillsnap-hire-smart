@@ -54,83 +54,85 @@ export const ApplicationItem = memo(({
   const isSelected = selectedApplication?.id === application.id;
 
   return (
-    <div
-      className={`p-4 cursor-pointer hover:bg-accent/50 transition-colors border-l-4 ${
-        isSelected 
-          ? 'bg-accent/70 border-l-primary shadow-sm' 
-          : 'border-l-transparent'
-      }`}
-      onClick={handleApplicationClick}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3 flex-1">
-          {onSelectApplications && (
-            <Checkbox
-              checked={selectedApplications.includes(application.id)}
-              onCheckedChange={(checked) => handleSelectApplication(application.id, checked as boolean)}
-              onClick={(e) => e.stopPropagation()}
-            />
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-medium text-foreground truncate">
-                {application.name}
-              </h3>
-              <span className="text-xs text-muted-foreground">
-                {getTimeAgo(application.created_at)}
-              </span>
-            </div>
-            
-            <p className="text-sm text-muted-foreground truncate mb-2">
-              {application.email}
-            </p>
-            
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <Badge className={getStatusColor(application.status, application.manual_rating)}>
-                  {displayStatus}
-                </Badge>
+    <div className="mb-4">
+      <div
+        className={`glass-card cursor-pointer p-4 transition-all duration-300 ${
+          isSelected 
+            ? 'ring-2 ring-primary/50 shadow-lg scale-[1.02]' 
+            : 'hover:scale-[1.01]'
+        }`}
+        onClick={handleApplicationClick}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-3 flex-1">
+            {onSelectApplications && (
+              <Checkbox
+                checked={selectedApplications.includes(application.id)}
+                onCheckedChange={(checked) => handleSelectApplication(application.id, checked as boolean)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-medium text-foreground truncate">
+                  {application.name}
+                </h3>
+                <span className="text-xs text-muted-foreground">
+                  {getTimeAgo(application.created_at)}
+                </span>
               </div>
               
-              {/* Stage Selector */}
-              {jobId && (
-                <div onClick={(e) => e.stopPropagation()}>
-                  <StageSelector
-                    jobId={jobId}
-                    currentStage={pipelineStage}
-                    applicationId={application.id}
-                    size="sm"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Rating Section */}
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex items-center gap-4">
-                {/* Manual Rating */}
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">Your:</span>
-                  <div className="flex gap-0.5">
-                    {renderManualRating(application.manual_rating)}
-                  </div>
+              <p className="text-sm text-muted-foreground truncate mb-2">
+                {application.email}
+              </p>
+              
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Badge className={getStatusColor(application.status, application.manual_rating)}>
+                    {displayStatus}
+                  </Badge>
                 </div>
                 
-                {/* AI Rating */}
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">AI:</span>
-                  <div className="flex gap-0.5">
-                    {renderAIRating(application.ai_rating)}
+                {/* Stage Selector */}
+                {jobId && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <StageSelector
+                      jobId={jobId}
+                      currentStage={pipelineStage}
+                      applicationId={application.id}
+                      size="sm"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Rating Section */}
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center gap-4">
+                  {/* Manual Rating */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground">Your:</span>
+                    <div className="flex gap-0.5">
+                      {renderManualRating(application.manual_rating)}
+                    </div>
+                  </div>
+                  
+                  {/* AI Rating */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground">AI:</span>
+                    <div className="flex gap-0.5">
+                      {renderAIRating(application.ai_rating)}
+                    </div>
                   </div>
                 </div>
               </div>
+              
+              {application.ai_summary && (
+                <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                  {application.ai_summary}
+                </p>
+              )}
             </div>
-            
-            {application.ai_summary && (
-              <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                {application.ai_summary}
-              </p>
-            )}
           </div>
         </div>
       </div>
