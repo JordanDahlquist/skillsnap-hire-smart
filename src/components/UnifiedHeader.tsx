@@ -26,7 +26,7 @@ export const UnifiedHeader = ({ breadcrumbs, onCreateRole, showCreateButton = fa
 
   return (
     <>
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/30 border-b border-white/20 shadow-lg shadow-black/5">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/40 border-b border-border/40 shadow-lg shadow-foreground/10">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
           <div className="flex justify-between items-center h-20">
             <HeaderLogo />

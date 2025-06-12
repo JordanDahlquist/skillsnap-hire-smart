@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, Location } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export const MainNavigation = ({
             className={`px-3 py-2 text-sm font-medium transition-colors ${
               location.pathname === item.href
                 ? "text-[#007af6] border-b-2 border-[#007af6]"
-                : "text-gray-700 hover:text-[#007af6]"
+                : "text-foreground/80 hover:text-[#007af6]"
             }`}
           >
             {item.name}
@@ -53,7 +54,7 @@ export const MainNavigation = ({
       <Button
         variant="ghost"
         size="sm"
-        className="md:hidden"
+        className="md:hidden text-foreground/80"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       >
         {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -61,7 +62,7 @@ export const MainNavigation = ({
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 md:hidden">
+        <div className="absolute top-16 left-0 right-0 bg-background border-b border-border md:hidden backdrop-blur-xl">
           <nav className="px-4 py-2 space-y-1">
             {currentNavigation.map((item) => (
               <Link
@@ -69,8 +70,8 @@ export const MainNavigation = ({
                 to={item.href}
                 className={`block px-3 py-2 text-sm font-medium transition-colors ${
                   location.pathname === item.href
-                    ? "text-[#007af6] bg-blue-50"
-                    : "text-gray-700 hover:text-[#007af6] hover:bg-gray-50"
+                    ? "text-[#007af6] bg-accent"
+                    : "text-foreground/80 hover:text-[#007af6] hover:bg-accent/50"
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
