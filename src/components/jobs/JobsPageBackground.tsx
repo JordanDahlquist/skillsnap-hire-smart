@@ -8,14 +8,27 @@ interface JobsPageBackgroundProps {
 }
 
 export const JobsPageBackground = memo(({ children }: JobsPageBackgroundProps) => {
-  const { currentImage, isTransitioning } = useRotatingBackground();
+  const { currentImage, nextImage, isTransitioning, showSecondary } = useRotatingBackground();
   const { currentTheme } = useThemeContext();
+
+  // Generate CSS class names for crossfade background
+  const backgroundClass = `dashboard-crossfade-background ${
+    isTransitioning ? 'transitioning' : ''
+  } ${showSecondary ? 'show-secondary' : ''}`;
 
   return (
     <div 
-      className={`dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''}`}
-      style={{ backgroundImage: `url(${currentImage})` }}
+      className={backgroundClass}
+      style={{
+        '--bg-primary': `url(${currentImage})`,
+        '--bg-secondary': `url(${nextImage})`
+      } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
     >
+      <style>
+        {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
+        {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
+      </style>
+
       {/* Ambient Background Effects - Only show in light mode */}
       {currentTheme === 'light' && (
         <div className="absolute inset-0 z-0">

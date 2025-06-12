@@ -7,13 +7,26 @@ interface JobApplicationLayoutProps {
 }
 
 export const JobApplicationLayout = ({ children }: JobApplicationLayoutProps) => {
-  const { currentImage, isTransitioning } = useRotatingBackground();
+  const { currentImage, nextImage, isTransitioning, showSecondary } = useRotatingBackground();
+
+  // Generate CSS class names for crossfade background
+  const backgroundClass = `dashboard-crossfade-background ${
+    isTransitioning ? 'transitioning' : ''
+  } ${showSecondary ? 'show-secondary' : ''}`;
 
   return (
     <div
-      className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''}`}
-      style={{ backgroundImage: `url(${currentImage})` }}
+      className={backgroundClass}
+      style={{
+        '--bg-primary': `url(${currentImage})`,
+        '--bg-secondary': `url(${nextImage})`
+      } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
     >
+      <style>
+        {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
+        {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
+      </style>
+
       {/* Ambient Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>

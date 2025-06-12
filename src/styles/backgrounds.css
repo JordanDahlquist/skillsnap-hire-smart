@@ -59,7 +59,53 @@
     z-index: 2;
   }
 
-  /* Dashboard Rotating Background with extended 3-second transitions */
+  /* Dashboard Crossfade Background - New Implementation */
+  .dashboard-crossfade-background {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .dashboard-crossfade-background::before,
+  .dashboard-crossfade-background::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    transition: opacity 3s ease-in-out;
+    z-index: 0;
+  }
+
+  .dashboard-crossfade-background::before {
+    z-index: 0;
+  }
+
+  .dashboard-crossfade-background::after {
+    z-index: 1;
+    opacity: 0;
+  }
+
+  .dashboard-crossfade-background.transitioning::after {
+    opacity: 1;
+  }
+
+  .dashboard-crossfade-background.show-secondary::before {
+    opacity: 0;
+  }
+
+  .dashboard-crossfade-background.show-secondary::after {
+    opacity: 1;
+  }
+
+  .dashboard-crossfade-background > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Legacy Dashboard Rotating Background - Keep for compatibility */
   .dashboard-rotating-background {
     position: relative;
     background-size: cover;

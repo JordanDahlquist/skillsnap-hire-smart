@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useThemeContext } from '@/contexts/ThemeContext';
 
 const lightModeBackgrounds = [
@@ -27,6 +27,15 @@ const getRandomIndex = (arrayLength: number) => {
   return Math.floor(Math.random() * arrayLength);
 };
 
+const preloadImage = (src: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = reject;
+    img.src = src;
+  });
+};
+
 export const useRotatingBackground = () => {
   const { currentTheme } = useThemeContext();
   
@@ -39,6 +48,8 @@ export const useRotatingBackground = () => {
   });
   
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showSecondary, setShowSecondary] = useState(false);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Handle theme changes - start with random image for new theme
   useEffect(() => {
@@ -47,6 +58,7 @@ export const useRotatingBackground = () => {
     const randomIndex = getRandomIndex(backgroundArray.length);
     setCurrentImageIndex(randomIndex);
     setIsTransitioning(false);
+    setShowSecondary(false);
     console.log(`[Background Rotation] Theme change: starting with random image ${randomIndex + 1}/${backgroundArray.length} (${currentTheme} mode)`);
   }, [currentTheme]);
 
@@ -54,36 +66,62 @@ export const useRotatingBackground = () => {
   useEffect(() => {
     console.log('[Background Rotation] Starting rotation timer');
     
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       console.log('[Background Rotation] Starting transition...');
-      setIsTransitioning(true);
       
-      // After 1.5 seconds (half of the 3-second transition), change the image
-      setTimeout(() => {
-        setCurrentImageIndex((prev) => {
-          const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
-          const newIndex = (prev + 1) % backgroundArray.length;
-          console.log(`[Background Rotation] Switching to image ${newIndex + 1}/${backgroundArray.length} (${currentTheme} mode)`);
-          return newIndex;
-        });
+      const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
+      const nextIndex = (currentImageIndex + 1) % backgroundArray.length;
+      const nextImage = backgroundArray[nextIndex];
+      
+      try {
+        // Preload the next image
+        await preloadImage(nextImage);
+        console.log(`[Background Rotation] Next image preloaded: ${nextIndex + 1}/${backgroundArray.length}`);
+        
+        // Start crossfade transition
+        setIsTransitioning(true);
+        
+        // Clear any existing timeout
+        if (transitionTimeoutRef.current) {
+          clearTimeout(transitionTimeoutRef.current);
+        }
+        
+        // After 1.5 seconds, switch to the next image and complete transition
+        transitionTimeoutRef.current = setTimeout(() => {
+          setCurrentImageIndex(nextIndex);
+          setShowSecondary(!showSecondary);
+          setIsTransitioning(false);
+          console.log(`[Background Rotation] Crossfade completed to image ${nextIndex + 1}/${backgroundArray.length} (${currentTheme} mode)`);
+        }, 1500);
+        
+      } catch (error) {
+        console.error('[Background Rotation] Failed to preload next image:', error);
+        // Fallback to direct switch if preloading fails
+        setCurrentImageIndex(nextIndex);
         setIsTransitioning(false);
-      }, 1500);
+      }
     }, 120000); // 2 minutes = 120,000ms
 
     return () => {
       console.log('[Background Rotation] Clearing rotation timer');
       clearInterval(interval);
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
     };
-  }, []); // No dependencies - timer runs independently
+  }, [currentImageIndex, currentTheme, showSecondary]);
 
   // Return the appropriate background based on theme
   const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
   const currentImage = backgroundArray[currentImageIndex];
+  const nextImage = backgroundArray[(currentImageIndex + 1) % backgroundArray.length];
 
-  console.log(`[Background Rotation] Current: ${currentTheme} mode, image ${currentImageIndex + 1}/${backgroundArray.length}, transitioning: ${isTransitioning}`);
+  console.log(`[Background Rotation] Current: ${currentTheme} mode, image ${currentImageIndex + 1}/${backgroundArray.length}, transitioning: ${isTransitioning}, showSecondary: ${showSecondary}`);
 
   return {
     currentImage,
+    nextImage,
     isTransitioning,
+    showSecondary,
   };
 };

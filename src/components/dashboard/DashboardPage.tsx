@@ -19,7 +19,7 @@ export const DashboardPage = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const [searchParams] = useSearchParams();
   const { user } = useOptimizedAuth();
-  const { currentImage, isTransitioning } = useRotatingBackground();
+  const { currentImage, nextImage, isTransitioning, showSecondary } = useRotatingBackground();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
@@ -113,13 +113,26 @@ export const DashboardPage = () => {
     setCreateJobOpen(true);
   };
 
+  // Generate CSS class names for crossfade background
+  const backgroundClass = `dashboard-crossfade-background ${
+    isTransitioning ? 'transitioning' : ''
+  } ${showSecondary ? 'show-secondary' : ''}`;
+
   // Loading state with skeleton - faster loading with parallel queries
   if (isLoading) {
     return (
       <div
-        className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''}`}
-        style={{ backgroundImage: `url(${currentImage})` }}
+        className={backgroundClass}
+        style={{
+          '--bg-primary': `url(${currentImage})`,
+          '--bg-secondary': `url(${nextImage})`
+        } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
       >
+        <style>
+          {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
+          {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
+        </style>
+
         {/* Ambient Background Effects */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
@@ -143,9 +156,17 @@ export const DashboardPage = () => {
     });
     return (
       <div
-        className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''} flex items-center justify-center`}
-        style={{ backgroundImage: `url(${currentImage})` }}
+        className={`${backgroundClass} flex items-center justify-center`}
+        style={{
+          '--bg-primary': `url(${currentImage})`,
+          '--bg-secondary': `url(${nextImage})`
+        } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
       >
+        <style>
+          {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
+          {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
+        </style>
+
         {/* Ambient Background Effects */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
@@ -172,9 +193,17 @@ export const DashboardPage = () => {
   if (!job) {
     return (
       <div
-        className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''} flex items-center justify-center`}
-        style={{ backgroundImage: `url(${currentImage})` }}
+        className={`${backgroundClass} flex items-center justify-center`}
+        style={{
+          '--bg-primary': `url(${currentImage})`,
+          '--bg-secondary': `url(${nextImage})`
+        } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
       >
+        <style>
+          {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
+          {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
+        </style>
+
         {/* Ambient Background Effects */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
@@ -194,9 +223,17 @@ export const DashboardPage = () => {
 
   return (
     <div
-      className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''} flex flex-col`}
-      style={{ backgroundImage: `url(${currentImage})` }}
+      className={`${backgroundClass} flex flex-col`}
+      style={{
+        '--bg-primary': `url(${currentImage})`,
+        '--bg-secondary': `url(${nextImage})`
+      } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
     >
+      <style>
+        {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
+        {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
+      </style>
+
       {/* Ambient Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
