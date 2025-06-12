@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useOptimizedJob } from "@/hooks/useOptimizedJobs";
 import { useOptimizedApplications } from "@/hooks/useOptimizedApplications";
+import { useRotatingBackground } from "@/hooks/useRotatingBackground";
 import { UnifiedHeader } from "../UnifiedHeader";
 import { DashboardHeader } from "./DashboardHeader";
 import { ApplicationsManager } from "./ApplicationsManager";
@@ -12,16 +14,12 @@ import { DashboardSkeleton } from "./DashboardSkeleton";
 import { Footer } from "@/components/Footer";
 import { logger } from "@/services/loggerService";
 import { Application, Job } from "@/types";
+
 export const DashboardPage = () => {
-  const {
-    jobId
-  } = useParams<{
-    jobId: string;
-  }>();
+  const { jobId } = useParams<{ jobId: string }>();
   const [searchParams] = useSearchParams();
-  const {
-    user
-  } = useOptimizedAuth(); // Use optimized auth
+  const { user } = useOptimizedAuth();
+  const { currentImage, isTransitioning } = useRotatingBackground();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
@@ -101,22 +99,40 @@ export const DashboardPage = () => {
       }
     }
   }, [applications, selectedApplication]);
+
   const handleApplicationUpdate = () => {
     refetchApplications();
   };
+
   const handleJobUpdate = () => {
     refetchJob();
     refetchApplications();
   };
+
   const handleCreateJob = () => {
     setCreateJobOpen(true);
   };
 
   // Loading state with skeleton - faster loading with parallel queries
   if (isLoading) {
-    return <div className="dashboard-cosmos-background">
-        <DashboardSkeleton />
-      </div>;
+    return (
+      <div
+        className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''}`}
+        style={{ backgroundImage: `url(${currentImage})` }}
+      >
+        {/* Ambient Background Effects */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
+        </div>
+
+        {/* Content Layer */}
+        <div className="relative z-10">
+          <DashboardSkeleton />
+        </div>
+      </div>
+    );
   }
 
   // Error states
@@ -125,28 +141,62 @@ export const DashboardPage = () => {
       jobError,
       applicationsError
     });
-    return <div className="dashboard-cosmos-background min-h-screen flex items-center justify-center">
-        <div className="text-center glass-card p-8 mx-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h1>
-          <p className="text-gray-600 mb-4">
+    return (
+      <div
+        className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''} flex items-center justify-center`}
+        style={{ backgroundImage: `url(${currentImage})` }}
+      >
+        {/* Ambient Background Effects */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 text-center glass-card p-8 mx-4">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Error Loading Dashboard</h1>
+          <p className="text-muted-foreground mb-4">
             {jobError ? 'Failed to load job details.' : 'Failed to load applications.'}
           </p>
-          <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+          >
             Retry
           </button>
         </div>
-      </div>;
+      </div>
+    );
   }
+
   if (!job) {
-    return <div className="dashboard-cosmos-background min-h-screen flex items-center justify-center">
-        <div className="text-center glass-card p-8 mx-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Job Not Found</h1>
-          <p className="text-gray-600">The job you're looking for doesn't exist or you don't have access to it.</p>
+    return (
+      <div
+        className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''} flex items-center justify-center`}
+        style={{ backgroundImage: `url(${currentImage})` }}
+      >
+        {/* Ambient Background Effects */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
         </div>
-      </div>;
+
+        <div className="relative z-10 text-center glass-card p-8 mx-4">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Job Not Found</h1>
+          <p className="text-muted-foreground">The job you're looking for doesn't exist or you don't have access to it.</p>
+        </div>
+      </div>
+    );
   }
+
   const selectedApplicationsData = applications.filter(app => selectedApplications.includes(app.id));
-  return <div className="dashboard-cosmos-background min-h-screen flex flex-col">
+
+  return (
+    <div
+      className={`min-h-screen dashboard-rotating-background ${isTransitioning ? 'transitioning' : ''} flex flex-col`}
+      style={{ backgroundImage: `url(${currentImage})` }}
+    >
       {/* Ambient Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
@@ -161,14 +211,32 @@ export const DashboardPage = () => {
         <DashboardHeader job={job} applications={applications} onJobUpdate={handleJobUpdate} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-[9px] flex-1">
-          <ApplicationsManager applications={applications} selectedApplication={selectedApplication} onSelectApplication={setSelectedApplication} selectedApplications={selectedApplications} onSelectApplications={setSelectedApplications} onSendEmail={() => setEmailModalOpen(true)} onApplicationUpdate={handleApplicationUpdate} job={job} />
+          <ApplicationsManager 
+            applications={applications} 
+            selectedApplication={selectedApplication} 
+            onSelectApplication={setSelectedApplication} 
+            selectedApplications={selectedApplications} 
+            onSelectApplications={setSelectedApplications} 
+            onSendEmail={() => setEmailModalOpen(true)} 
+            onApplicationUpdate={handleApplicationUpdate} 
+            job={job} 
+          />
         </div>
 
         <Footer />
       </div>
 
-      <EmailComposerModal open={emailModalOpen} onOpenChange={setEmailModalOpen} selectedApplications={selectedApplicationsData} job={job} />
+      <EmailComposerModal 
+        open={emailModalOpen} 
+        onOpenChange={setEmailModalOpen} 
+        selectedApplications={selectedApplicationsData} 
+        job={job} 
+      />
 
-      <JobCreatorPanel open={createJobOpen} onOpenChange={setCreateJobOpen} />
-    </div>;
+      <JobCreatorPanel 
+        open={createJobOpen} 
+        onOpenChange={setCreateJobOpen} 
+      />
+    </div>
+  );
 };

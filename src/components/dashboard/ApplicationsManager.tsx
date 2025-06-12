@@ -51,7 +51,7 @@ export const ApplicationsManager = ({
           className={`w-4 h-4 ${
             i <= ratingValue 
               ? 'fill-yellow-400 text-yellow-400' 
-              : 'text-gray-300'
+              : 'text-muted-foreground'
           }`}
         />
       );
@@ -173,7 +173,7 @@ export const ApplicationsManager = ({
   }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
 
   return (
-    <div className="flex-1 bg-gray-50">
+    <div className="flex-1">
       <HiringStagesNav
         jobId={job.id}
         applications={applications}

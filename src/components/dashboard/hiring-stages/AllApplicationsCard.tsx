@@ -16,50 +16,50 @@ export const AllApplicationsCard = ({
   return (
     <div
       onClick={() => onStageSelect(null)}
-      className={`group relative bg-white rounded-xl border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden ${
+      className={`group relative glass-card-no-hover cursor-pointer overflow-hidden transition-all duration-300 ${
         selectedStage === null
-          ? 'border-blue-500 ring-2 ring-blue-100 scale-105'
-          : 'border-gray-200 hover:border-gray-300'
+          ? 'border-primary ring-2 ring-primary/20 scale-105 shadow-lg'
+          : 'hover:scale-102 hover:shadow-md'
       }`}
     >
       <div className="p-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${
-              selectedStage === null ? 'bg-blue-500' : 'bg-gray-400'
+              selectedStage === null ? 'bg-primary' : 'bg-muted-foreground/60'
             } transition-colors duration-200`}></div>
             <h3 className={`font-semibold text-sm ${
-              selectedStage === null ? 'text-blue-700' : 'text-gray-700'
+              selectedStage === null ? 'text-primary' : 'text-foreground/80'
             } transition-colors duration-200`}>
               All Applications
             </h3>
           </div>
           <Users className={`w-4 h-4 ${
-            selectedStage === null ? 'text-blue-500' : 'text-gray-400'
+            selectedStage === null ? 'text-primary' : 'text-muted-foreground'
           } transition-colors duration-200`} />
         </div>
         
         <div className="flex items-center justify-between">
           <Badge 
             variant={selectedStage === null ? "default" : "secondary"}
-            className={`text-lg font-bold px-3 py-1 ${
+            className={`text-lg font-bold px-3 py-1 transition-all duration-200 ${
               selectedStage === null 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-100 text-gray-600'
-            } transition-all duration-200`}
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-secondary text-secondary-foreground'
+            }`}
           >
             {totalApplications}
           </Badge>
           
-          <div className="text-xs text-gray-500 font-medium">
+          <div className="text-xs text-muted-foreground font-medium">
             Total
           </div>
         </div>
       </div>
       
       {/* Subtle gradient overlay on hover */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-        selectedStage === null ? 'opacity-100' : ''
+      <div className={`absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent transition-opacity duration-300 ${
+        selectedStage === null ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
       }`}></div>
     </div>
   );

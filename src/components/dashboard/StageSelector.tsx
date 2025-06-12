@@ -65,8 +65,8 @@ export const StageSelector = ({
         className={`
           ${size === "sm" ? "h-9" : "h-10"} 
           w-auto min-w-[120px] 
-          border border-input 
-          bg-background 
+          border border-border 
+          bg-background/80 backdrop-blur-sm
           hover:bg-accent 
           hover:text-accent-foreground 
           text-sm 
@@ -74,11 +74,12 @@ export const StageSelector = ({
           focus:ring-2 
           focus:ring-ring 
           focus:ring-offset-2
+          transition-all duration-200
         `}
       >
         <SelectValue placeholder={getCurrentStageName()} />
       </SelectTrigger>
-      <SelectContent className="bg-popover border border-border shadow-md z-50">
+      <SelectContent className="bg-popover/95 backdrop-blur-md border border-border shadow-md z-50">
         {stages.map((stage) => (
           <SelectItem 
             key={stage.id} 

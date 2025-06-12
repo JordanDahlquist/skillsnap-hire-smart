@@ -30,13 +30,14 @@ export const StageCard = ({
     <div className="flex items-center gap-3">
       <div
         onClick={() => onStageSelect(stageKey)}
-        className={`group relative bg-white rounded-xl border-2 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden flex-1 ${
+        className={`group relative glass-card-no-hover cursor-pointer overflow-hidden flex-1 transition-all duration-300 ${
           isSelected
-            ? 'border-2 ring-2 ring-opacity-20 scale-105'
-            : 'border-gray-200 hover:border-gray-300'
+            ? 'border-2 ring-2 ring-opacity-20 scale-105 shadow-lg'
+            : 'hover:scale-102 hover:shadow-md'
         }`}
         style={{
           borderColor: isSelected ? stage.color : undefined,
+          ringColor: isSelected ? `${stage.color}20` : undefined,
         }}
       >
         <div className="p-5">
@@ -47,7 +48,7 @@ export const StageCard = ({
                 style={{ backgroundColor: stage.color }}
               ></div>
               <h3 className={`font-semibold text-sm transition-colors duration-200 ${
-                isSelected ? 'text-gray-800' : 'text-gray-700'
+                isSelected ? 'text-foreground' : 'text-foreground/80'
               }`}>
                 {stage.name}
               </h3>
@@ -66,7 +67,7 @@ export const StageCard = ({
               {count}
             </Badge>
             
-            <div className="text-xs text-gray-500 font-medium">
+            <div className="text-xs text-muted-foreground font-medium">
               {count === 1 ? 'Application' : 'Applications'}
             </div>
           </div>
@@ -82,8 +83,8 @@ export const StageCard = ({
         
         {/* Subtle gradient overlay */}
         <div 
-          className={`absolute inset-0 bg-gradient-to-r from-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-            isSelected ? 'opacity-100' : ''
+          className={`absolute inset-0 transition-opacity duration-300 ${
+            isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
           }`}
           style={{ 
             background: isSelected 
@@ -95,7 +96,7 @@ export const StageCard = ({
       
       {/* Arrow connector */}
       {isNextStage && (
-        <ArrowRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
+        <ArrowRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
       )}
     </div>
   );
