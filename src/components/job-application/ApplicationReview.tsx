@@ -106,7 +106,7 @@ export const ApplicationReview = ({
           <CardTitle className="text-2xl font-bold text-gray-900">
             Review Your Application
           </CardTitle>
-          <p className="text-gray-600">
+          <p className="text-gray-700">
             Please review all information before submitting your application
           </p>
         </CardHeader>
@@ -115,23 +115,23 @@ export const ApplicationReview = ({
       {/* Personal Information */}
       <Card className="bg-white shadow-sm border border-gray-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
             <User className="w-5 h-5" />
             Personal Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div><span className="font-medium">Name:</span> {personalInfo.fullName}</div>
-          <div><span className="font-medium">Email:</span> {personalInfo.email}</div>
-          {personalInfo.phone && <div><span className="font-medium">Phone:</span> {personalInfo.phone}</div>}
-          {personalInfo.location && <div><span className="font-medium">Location:</span> {personalInfo.location}</div>}
+          <div className="text-gray-900"><span className="font-medium">Name:</span> {personalInfo.fullName}</div>
+          <div className="text-gray-900"><span className="font-medium">Email:</span> {personalInfo.email}</div>
+          {personalInfo.phone && <div className="text-gray-900"><span className="font-medium">Phone:</span> {personalInfo.phone}</div>}
+          {personalInfo.location && <div className="text-gray-900"><span className="font-medium">Location:</span> {personalInfo.location}</div>}
           
           {(personalInfo.portfolioUrl || personalInfo.linkedinUrl || personalInfo.githubUrl) && (
             <>
               <Separator />
               <div className="space-y-2">
                 {personalInfo.portfolioUrl && (
-                  <div>
+                  <div className="text-gray-900">
                     <span className="font-medium">Portfolio:</span>{' '}
                     <a href={personalInfo.portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                       {personalInfo.portfolioUrl}
@@ -139,7 +139,7 @@ export const ApplicationReview = ({
                   </div>
                 )}
                 {personalInfo.linkedinUrl && (
-                  <div>
+                  <div className="text-gray-900">
                     <span className="font-medium">LinkedIn:</span>{' '}
                     <a href={personalInfo.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                       {personalInfo.linkedinUrl}
@@ -147,7 +147,7 @@ export const ApplicationReview = ({
                   </div>
                 )}
                 {personalInfo.githubUrl && (
-                  <div>
+                  <div className="text-gray-900">
                     <span className="font-medium">GitHub:</span>{' '}
                     <a href={personalInfo.githubUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                       {personalInfo.githubUrl}
@@ -160,7 +160,7 @@ export const ApplicationReview = ({
           
           <Separator />
           <div className="flex items-center gap-2">
-            <span className="font-medium">Resume:</span>
+            <span className="font-medium text-gray-900">Resume:</span>
             {personalInfo.resumeFile ? (
               <Badge variant="outline" className="text-green-600 border-green-200">
                 <FileText className="w-3 h-3 mr-1" />
@@ -175,8 +175,8 @@ export const ApplicationReview = ({
             <>
               <Separator />
               <div>
-                <span className="font-medium">Cover Letter:</span>
-                <p className="text-gray-700 mt-1 text-sm bg-gray-50 p-3 rounded border">
+                <span className="font-medium text-gray-900">Cover Letter:</span>
+                <p className="text-gray-800 mt-1 text-sm bg-gray-50 p-3 rounded border">
                   {personalInfo.coverLetter}
                 </p>
               </div>
@@ -189,7 +189,7 @@ export const ApplicationReview = ({
       {skillsResponses.length > 0 && (
         <Card className="bg-white shadow-sm border border-gray-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
               <Brain className="w-5 h-5" />
               Skills Assessment
             </CardTitle>
@@ -207,7 +207,7 @@ export const ApplicationReview = ({
       {videoUrl && (
         <Card className="bg-white shadow-sm border border-gray-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
               <Video className="w-5 h-5" />
               Video Interview
             </CardTitle>
@@ -244,7 +244,7 @@ export const ApplicationReview = ({
               )}
             </Button>
             
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-600">
               By submitting this application, you confirm that all information provided is accurate and complete.
             </p>
           </div>

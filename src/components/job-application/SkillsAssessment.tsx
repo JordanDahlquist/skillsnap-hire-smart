@@ -68,7 +68,7 @@ export const SkillsAssessment = ({
       <div className="text-center py-8">
         <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900">Loading Assessment...</h3>
-        <p className="text-gray-600">Please wait while we prepare your skills assessment.</p>
+        <p className="text-gray-700">Please wait while we prepare your skills assessment.</p>
       </div>
     );
   }
@@ -80,12 +80,12 @@ export const SkillsAssessment = ({
           <CardTitle className="text-2xl font-bold text-gray-900">
             Skills Assessment
           </CardTitle>
-          <p className="text-gray-600">
+          <p className="text-gray-700">
             Please answer all questions to demonstrate your skills and knowledge
           </p>
           <div className="flex items-center gap-2 mt-4">
-            <Clock className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-500">
+            <Clock className="w-4 h-4 text-gray-600" />
+            <span className="text-sm text-gray-700">
               Progress: {completedQuestions} of {questions.length} questions completed
             </span>
           </div>
@@ -116,7 +116,7 @@ export const SkillsAssessment = ({
       {/* Current Question */}
       <Card className="bg-white shadow-sm border border-gray-200">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between text-lg">
+          <CardTitle className="flex items-center justify-between text-lg text-gray-900">
             <span>Question {currentQuestion + 1} of {questions.length}</span>
             {answers[currentQuestion] && (
               <CheckCircle className="w-5 h-5 text-green-600" />
@@ -125,13 +125,13 @@ export const SkillsAssessment = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-gray-50 p-4 rounded-lg border">
-            <p className="text-gray-800 leading-relaxed">
+            <p className="text-gray-900 leading-relaxed">
               {questions[currentQuestion]}
             </p>
           </div>
           
           <div>
-            <Label htmlFor={`question-${currentQuestion}`} className="text-gray-700">
+            <Label htmlFor={`question-${currentQuestion}`} className="text-gray-800">
               Your Answer
             </Label>
             <Textarea
@@ -140,7 +140,7 @@ export const SkillsAssessment = ({
               onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
               rows={6}
               placeholder="Type your answer here..."
-              className="mt-1"
+              className="mt-1 text-gray-900"
             />
           </div>
         </CardContent>

@@ -33,10 +33,10 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
             {job.title}
           </CardTitle>
           {job.company_name && (
-            <p className="text-xl text-gray-600">{job.company_name}</p>
+            <p className="text-xl text-gray-700">{job.company_name}</p>
           )}
           
-          <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm text-gray-600">
+          <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm text-gray-700">
             <div className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
               {getLocationDisplay()}
@@ -75,11 +75,14 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
         <CardContent>
           <div className="prose prose-gray max-w-none">
             {job.generated_job_post ? (
-              <div dangerouslySetInnerHTML={{ 
-                __html: job.generated_job_post.replace(/\n/g, '<br>') 
-              }} />
+              <div 
+                className="text-gray-800"
+                dangerouslySetInnerHTML={{ 
+                  __html: job.generated_job_post.replace(/\n/g, '<br>') 
+                }} 
+              />
             ) : (
-              <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
+              <p className="text-gray-800 whitespace-pre-wrap">{job.description}</p>
             )}
           </div>
         </CardContent>
@@ -95,7 +98,7 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {job.required_skills.split(',').map((skill, index) => (
-              <Badge key={index} variant="outline" className="text-sm border-gray-300">
+              <Badge key={index} variant="outline" className="text-sm border-gray-300 text-gray-800">
                 {skill.trim()}
               </Badge>
             ))}

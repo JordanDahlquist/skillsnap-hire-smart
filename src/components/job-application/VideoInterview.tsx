@@ -136,7 +136,7 @@ export const VideoInterview = ({
       <div className="text-center py-8">
         <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900">Loading Interview Questions...</h3>
-        <p className="text-gray-600">Please wait while we prepare your video interview.</p>
+        <p className="text-gray-700">Please wait while we prepare your video interview.</p>
       </div>
     );
   }
@@ -148,12 +148,12 @@ export const VideoInterview = ({
           <CardTitle className="text-2xl font-bold text-gray-900">
             Video Interview
           </CardTitle>
-          <p className="text-gray-600">
+          <p className="text-gray-700">
             Record your responses to the interview questions (max {maxLength} minutes each)
           </p>
           <div className="flex items-center gap-2 mt-4">
-            <Camera className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-500">
+            <Camera className="w-4 h-4 text-gray-600" />
+            <span className="text-sm text-gray-700">
               Progress: {completedVideos} of {interviewQuestions.length} questions recorded
             </span>
           </div>
@@ -178,7 +178,7 @@ export const VideoInterview = ({
       {/* Current Question */}
       <Card className="bg-white shadow-sm border border-gray-200">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between text-lg">
+          <CardTitle className="flex items-center justify-between text-lg text-gray-900">
             <span>Question {currentQuestion + 1} of {interviewQuestions.length}</span>
             {recordedVideos[currentQuestion] && (
               <CheckCircle className="w-5 h-5 text-green-600" />
@@ -187,7 +187,7 @@ export const VideoInterview = ({
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="bg-gray-50 p-4 rounded-lg border">
-            <p className="text-gray-800 leading-relaxed font-medium">
+            <p className="text-gray-900 leading-relaxed font-medium">
               {interviewQuestions[currentQuestion]}
             </p>
           </div>
@@ -230,7 +230,7 @@ export const VideoInterview = ({
           {/* Recorded Video Preview */}
           {recordedVideos[currentQuestion] && (
             <div className="space-y-3">
-              <h4 className="font-medium flex items-center gap-2">
+              <h4 className="font-medium flex items-center gap-2 text-gray-900">
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 Recorded Response
               </h4>

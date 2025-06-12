@@ -32,8 +32,8 @@ export const ApplicationProgress = ({
                     {
                       "bg-green-500 text-white border-green-500": isCompleted,
                       "bg-blue-500 text-white border-blue-500": isCurrent && !isCompleted,
-                      "bg-white text-gray-400 border-gray-300": !isCompleted && !isCurrent && isAccessible,
-                      "bg-gray-100 text-gray-300 border-gray-200": !isAccessible,
+                      "bg-white text-gray-900 border-gray-300": !isCompleted && !isCurrent && isAccessible,
+                      "bg-gray-100 text-gray-500 border-gray-200": !isAccessible,
                     }
                   )}
                 >
@@ -52,7 +52,7 @@ export const ApplicationProgress = ({
                         "text-blue-600": isCurrent,
                         "text-green-600": isCompleted,
                         "text-gray-900": !isCurrent && !isCompleted && isAccessible,
-                        "text-gray-400": !isAccessible,
+                        "text-gray-500": !isAccessible,
                       }
                     )}
                   >
