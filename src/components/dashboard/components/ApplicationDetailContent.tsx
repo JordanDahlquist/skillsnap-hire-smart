@@ -70,8 +70,8 @@ export const ApplicationDetailContent = ({
 
       {/* Rating Section */}
       <ApplicationRatingSection
-        application={application}
-        getRatingStars={getRatingStars}
+        manualRating={application.manual_rating}
+        aiRating={application.ai_rating}
         onManualRating={onManualRating}
         isUpdating={isUpdating}
       />
@@ -114,7 +114,7 @@ export const ApplicationDetailContent = ({
       )}
 
       {/* Resume Link */}
-      {application.resume_url && (
+      {application.resume_file_path && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-foreground">Resume</h3>
           <Button 
@@ -123,7 +123,7 @@ export const ApplicationDetailContent = ({
             className="w-full"
           >
             <a 
-              href={application.resume_url} 
+              href={application.resume_file_path} 
               target="_blank" 
               rel="noopener noreferrer"
               className="block text-center"
@@ -146,11 +146,15 @@ export const ApplicationDetailContent = ({
 
       {/* Action Buttons */}
       <ApplicationActionButtons
-        application={application}
+        status={application.status}
+        isUpdating={isUpdating}
         onReject={onReject}
         onUnreject={onUnreject}
         onEmail={onEmail}
-        isUpdating={isUpdating}
+        jobId={jobId}
+        applicationId={application.id}
+        currentStage={pipelineStage}
+        onStageChange={onStageChange}
       />
     </div>
   );
