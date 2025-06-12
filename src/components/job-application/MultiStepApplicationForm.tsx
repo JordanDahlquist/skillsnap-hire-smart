@@ -1,10 +1,8 @@
-
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ApplicationStepIndicator } from "./ApplicationStepIndicator";
-import { JobOverviewStep } from "./steps/JobOverviewStep";
 import { PersonalInfoStep } from "./steps/PersonalInfoStep";
 import { SkillsAssessmentStep } from "./steps/SkillsAssessmentStep";
 import { VideoInterviewStep } from "./steps/VideoInterviewStep";
