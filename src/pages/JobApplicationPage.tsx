@@ -1,6 +1,11 @@
 
 import { JobApplication } from "@/components/JobApplication";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export const JobApplicationPage = () => {
-  return <JobApplication />;
+  return (
+    <ThemeProvider>
+      <JobApplication />
+    </ThemeProvider>
+  );
 };
