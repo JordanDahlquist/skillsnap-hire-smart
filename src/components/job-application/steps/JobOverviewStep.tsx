@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, DollarSign, Users, Target } from "lucide-react";
 import { Job } from "@/types";
 import { useEffect } from "react";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface JobOverviewStepProps {
   job: Job;
@@ -80,7 +81,7 @@ export const JobOverviewStep = ({ job, onValidationChange }: JobOverviewStepProp
         <h2 className="text-xl font-semibold mb-4">About This Position</h2>
         <div className="prose prose-gray max-w-none">
           {job.generated_job_post ? (
-            <div dangerouslySetInnerHTML={{ __html: job.generated_job_post.replace(/\n/g, '<br>') }} />
+            <div dangerouslySetInnerHTML={{ __html: parseMarkdown(job.generated_job_post) }} />
           ) : (
             <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
           )}
