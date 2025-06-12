@@ -106,7 +106,7 @@ export const SkillsAssessment = ({
             variant={index === currentQuestion ? "default" : answers[index] ? "outline" : "ghost"}
             size="sm"
             onClick={() => setCurrentQuestion(index)}
-            className={`w-10 h-10 p-0 ${answers[index] ? 'bg-green-50 border-green-200' : ''}`}
+            className={`w-10 h-10 p-0 ${answers[index] ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-white hover:bg-gray-50'}`}
           >
             {answers[index] ? <CheckCircle className="w-4 h-4 text-green-600" /> : index + 1}
           </Button>
@@ -124,14 +124,14 @@ export const SkillsAssessment = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg border">
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <p className="text-gray-900 leading-relaxed">
               {questions[currentQuestion]}
             </p>
           </div>
           
           <div>
-            <Label htmlFor={`question-${currentQuestion}`} className="text-gray-800">
+            <Label htmlFor={`question-${currentQuestion}`} className="text-gray-800 font-medium">
               Your Answer
             </Label>
             <Textarea
@@ -140,7 +140,7 @@ export const SkillsAssessment = ({
               onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
               rows={6}
               placeholder="Type your answer here..."
-              className="mt-1 text-gray-900"
+              className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
         </CardContent>
@@ -149,13 +149,18 @@ export const SkillsAssessment = ({
       {/* Navigation */}
       <div className="flex justify-between">
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onBack}>
+          <Button 
+            variant="outline" 
+            onClick={onBack}
+            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
             Back
           </Button>
           <Button
             variant="outline"
             onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
             disabled={currentQuestion === 0}
+            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
           >
             Previous Question
           </Button>
@@ -166,10 +171,15 @@ export const SkillsAssessment = ({
             variant="outline"
             onClick={() => setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1))}
             disabled={currentQuestion === questions.length - 1}
+            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
           >
             Next Question
           </Button>
-          <Button onClick={onNext} disabled={!allCompleted}>
+          <Button 
+            onClick={onNext} 
+            disabled={!allCompleted}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
             Continue
           </Button>
         </div>

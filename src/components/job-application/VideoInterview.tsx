@@ -168,7 +168,7 @@ export const VideoInterview = ({
             variant={index === currentQuestion ? "default" : recordedVideos[index] ? "outline" : "ghost"}
             size="sm"
             onClick={() => setCurrentQuestion(index)}
-            className={`w-10 h-10 p-0 ${recordedVideos[index] ? 'bg-green-50 border-green-200' : ''}`}
+            className={`w-10 h-10 p-0 ${recordedVideos[index] ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-white hover:bg-gray-50'}`}
           >
             {recordedVideos[index] ? <CheckCircle className="w-4 h-4 text-green-600" /> : index + 1}
           </Button>
@@ -186,7 +186,7 @@ export const VideoInterview = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="bg-gray-50 p-4 rounded-lg border">
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <p className="text-gray-900 leading-relaxed font-medium">
               {interviewQuestions[currentQuestion]}
             </p>
@@ -248,19 +248,27 @@ export const VideoInterview = ({
               {!recordedVideos[currentQuestion] ? (
                 <>
                   {!isRecording ? (
-                    <Button onClick={startRecording} className="bg-red-600 hover:bg-red-700">
+                    <Button onClick={startRecording} className="bg-red-600 hover:bg-red-700 text-white">
                       <Camera className="w-4 h-4 mr-2" />
                       Start Recording
                     </Button>
                   ) : (
-                    <Button onClick={stopRecording} variant="outline">
+                    <Button 
+                      onClick={stopRecording} 
+                      variant="outline"
+                      className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
                       <Square className="w-4 h-4 mr-2" />
                       Stop Recording
                     </Button>
                   )}
                 </>
               ) : (
-                <Button onClick={retakeVideo} variant="outline">
+                <Button 
+                  onClick={retakeVideo} 
+                  variant="outline"
+                  className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Retake Video
                 </Button>
@@ -272,10 +280,18 @@ export const VideoInterview = ({
 
       {/* Navigation */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
+        <Button 
+          variant="outline" 
+          onClick={onBack}
+          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
           Back
         </Button>
-        <Button onClick={onNext} disabled={!allCompleted}>
+        <Button 
+          onClick={onNext} 
+          disabled={!allCompleted}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
           Continue
         </Button>
       </div>

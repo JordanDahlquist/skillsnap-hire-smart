@@ -162,7 +162,7 @@ export const ApplicationReview = ({
           <div className="flex items-center gap-2">
             <span className="font-medium text-gray-900">Resume:</span>
             {personalInfo.resumeFile ? (
-              <Badge variant="outline" className="text-green-600 border-green-200">
+              <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
                 <FileText className="w-3 h-3 mr-1" />
                 {personalInfo.resumeFile.name}
               </Badge>
@@ -176,7 +176,7 @@ export const ApplicationReview = ({
               <Separator />
               <div>
                 <span className="font-medium text-gray-900">Cover Letter:</span>
-                <p className="text-gray-800 mt-1 text-sm bg-gray-50 p-3 rounded border">
+                <p className="text-gray-800 mt-1 text-sm bg-gray-50 p-3 rounded border border-gray-200">
                   {personalInfo.coverLetter}
                 </p>
               </div>
@@ -195,7 +195,7 @@ export const ApplicationReview = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant="outline" className="text-green-600 border-green-200">
+            <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
               <CheckCircle className="w-3 h-3 mr-1" />
               {skillsResponses.length} questions answered
             </Badge>
@@ -213,7 +213,7 @@ export const ApplicationReview = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant="outline" className="text-green-600 border-green-200">
+            <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
               <CheckCircle className="w-3 h-3 mr-1" />
               Video responses recorded
             </Badge>
@@ -229,7 +229,7 @@ export const ApplicationReview = ({
               onClick={handleSubmit} 
               disabled={isSubmitting}
               size="lg"
-              className="px-8"
+              className="px-8 bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isSubmitting ? (
                 <>
@@ -253,7 +253,11 @@ export const ApplicationReview = ({
 
       {/* Navigation */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
+        <Button 
+          variant="outline" 
+          onClick={onBack}
+          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
           Back
         </Button>
       </div>

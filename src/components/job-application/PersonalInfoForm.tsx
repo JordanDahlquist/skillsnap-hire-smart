@@ -57,7 +57,7 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
           <CardTitle className="text-2xl font-bold text-gray-900">
             Personal Information
           </CardTitle>
-          <p className="text-gray-600">
+          <p className="text-gray-700">
             Tell us about yourself and provide your contact details
           </p>
         </CardHeader>
@@ -66,49 +66,49 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="fullName" className="text-gray-700">Full Name *</Label>
+              <Label htmlFor="fullName" className="text-gray-800 font-medium">Full Name *</Label>
               <Input
                 id="fullName"
                 value={data.fullName}
                 onChange={(e) => onChange({ ...data, fullName: e.target.value })}
                 placeholder="Enter your full name"
-                className="mt-1"
+                className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             
             <div>
-              <Label htmlFor="email" className="text-gray-700">Email Address *</Label>
+              <Label htmlFor="email" className="text-gray-800 font-medium">Email Address *</Label>
               <Input
                 id="email"
                 type="email"
                 value={data.email}
                 onChange={(e) => onChange({ ...data, email: e.target.value })}
                 placeholder="your.email@example.com"
-                className="mt-1"
+                className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="phone" className="text-gray-700">Phone Number</Label>
+              <Label htmlFor="phone" className="text-gray-800 font-medium">Phone Number</Label>
               <Input
                 id="phone"
                 value={data.phone}
                 onChange={(e) => onChange({ ...data, phone: e.target.value })}
                 placeholder="(555) 123-4567"
-                className="mt-1"
+                className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             
             <div>
-              <Label htmlFor="location" className="text-gray-700">Location</Label>
+              <Label htmlFor="location" className="text-gray-800 font-medium">Location</Label>
               <Input
                 id="location"
                 value={data.location}
                 onChange={(e) => onChange({ ...data, location: e.target.value })}
                 placeholder="City, State"
-                className="mt-1"
+                className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -119,38 +119,38 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="portfolio" className="text-gray-700">Portfolio URL</Label>
+                <Label htmlFor="portfolio" className="text-gray-800 font-medium">Portfolio URL</Label>
                 <Input
                   id="portfolio"
                   type="url"
                   value={data.portfolioUrl}
                   onChange={(e) => onChange({ ...data, portfolioUrl: e.target.value })}
                   placeholder="https://your-portfolio.com"
-                  className="mt-1"
+                  className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               
               <div>
-                <Label htmlFor="linkedin" className="text-gray-700">LinkedIn Profile</Label>
+                <Label htmlFor="linkedin" className="text-gray-800 font-medium">LinkedIn Profile</Label>
                 <Input
                   id="linkedin"
                   type="url"
                   value={data.linkedinUrl}
                   onChange={(e) => onChange({ ...data, linkedinUrl: e.target.value })}
                   placeholder="https://linkedin.com/in/yourname"
-                  className="mt-1"
+                  className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               
               <div>
-                <Label htmlFor="github" className="text-gray-700">GitHub Profile</Label>
+                <Label htmlFor="github" className="text-gray-800 font-medium">GitHub Profile</Label>
                 <Input
                   id="github"
                   type="url"
                   value={data.githubUrl}
                   onChange={(e) => onChange({ ...data, githubUrl: e.target.value })}
                   placeholder="https://github.com/yourusername"
-                  className="mt-1"
+                  className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -158,10 +158,10 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
 
           {/* Resume Upload */}
           <div>
-            <Label className="text-gray-700">Resume Upload *</Label>
+            <Label className="text-gray-800 font-medium">Resume Upload *</Label>
             {!data.resumeFile ? (
               <div
-                className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center transition-colors bg-white ${
                   dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
                 }`}
                 onDragEnter={() => setDragActive(true)}
@@ -181,11 +181,11 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                   type="button"
                   variant="outline"
                   onClick={() => document.getElementById('resume-upload')?.click()}
-                  className="mb-2"
+                  className="mb-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
                   Choose Resume File
                 </Button>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-600">
                   PDF, DOC, or DOCX files only. Drag and drop or click to upload.
                 </p>
               </div>
@@ -195,7 +195,7 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                   <FileText className="w-5 h-5 text-green-600" />
                   <div>
                     <p className="text-sm font-medium text-green-900">{data.resumeFile.name}</p>
-                    <p className="text-xs text-green-600">Resume uploaded successfully</p>
+                    <p className="text-xs text-green-700">Resume uploaded successfully</p>
                   </div>
                 </div>
                 <Button
@@ -203,7 +203,7 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                   variant="ghost"
                   size="sm"
                   onClick={() => onChange({ ...data, resumeFile: null })}
-                  className="text-red-600 hover:text-red-700"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -213,14 +213,14 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
 
           {/* Cover Letter */}
           <div>
-            <Label htmlFor="coverLetter" className="text-gray-700">Cover Letter / Introduction</Label>
+            <Label htmlFor="coverLetter" className="text-gray-800 font-medium">Cover Letter / Introduction</Label>
             <Textarea
               id="coverLetter"
               value={data.coverLetter}
               onChange={(e) => onChange({ ...data, coverLetter: e.target.value })}
               rows={4}
               placeholder="Tell us why you're interested in this position and what makes you a great fit..."
-              className="mt-1"
+              className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
         </CardContent>
@@ -228,10 +228,18 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
 
       {/* Navigation */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
+        <Button 
+          variant="outline" 
+          onClick={onBack}
+          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
           Back
         </Button>
-        <Button onClick={onNext} disabled={!isValid}>
+        <Button 
+          onClick={onNext} 
+          disabled={!isValid}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
           Continue
         </Button>
       </div>
