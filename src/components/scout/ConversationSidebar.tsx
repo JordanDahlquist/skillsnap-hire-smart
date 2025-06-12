@@ -38,12 +38,12 @@ export const ConversationSidebar = ({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Scout AI</h2>
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h2 className="text-lg font-semibold text-foreground">Scout AI</h2>
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-1 text-gray-500 hover:text-gray-700 rounded"
+            className="lg:hidden p-1 text-muted-foreground hover:text-foreground rounded"
           >
             <X className="w-5 h-5" />
           </button>
@@ -54,7 +54,7 @@ export const ConversationSidebar = ({
       <div className="p-4">
         <Button
           onClick={handleNewChat}
-          className="w-full justify-start gap-3 bg-blue-600 hover:bg-blue-700 text-white"
+          className="w-full justify-start gap-3 bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           <Plus className="w-4 h-4" />
           New Chat
@@ -67,14 +67,14 @@ export const ConversationSidebar = ({
           {isLoading ? (
             <div className="space-y-2 p-2">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
               ))}
             </div>
           ) : conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-              <MessageSquare className="w-8 h-8 text-gray-300 mb-3" />
-              <p className="text-sm text-gray-500 mb-1">No conversations yet</p>
-              <p className="text-xs text-gray-400">Start a new chat to begin</p>
+              <MessageSquare className="w-8 h-8 text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground mb-1">No conversations yet</p>
+              <p className="text-xs text-muted-foreground/80">Start a new chat to begin</p>
             </div>
           ) : (
             conversations.map((conversation) => (
@@ -84,30 +84,30 @@ export const ConversationSidebar = ({
                 className={`
                   group flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors
                   ${activeConversationId === conversation.id 
-                    ? 'bg-blue-50 border border-blue-200' 
-                    : 'hover:bg-gray-100'
+                    ? 'bg-accent border border-accent-foreground/20' 
+                    : 'hover:bg-muted/50'
                   }
                 `}
               >
                 <div className="flex-shrink-0 mt-1">
-                  <MessageSquare className="w-4 h-4 text-gray-400" />
+                  <MessageSquare className="w-4 h-4 text-muted-foreground" />
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium text-gray-900 truncate">
+                  <h4 className="text-sm font-medium text-foreground truncate">
                     {conversation.title}
                   </h4>
-                  <p className="text-xs text-gray-500 truncate mt-1">
+                  <p className="text-xs text-muted-foreground truncate mt-1">
                     {conversation.lastMessage}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-muted-foreground/80 mt-1">
                     {formatDistanceToNow(conversation.lastMessageAt, { addSuffix: true })}
                   </p>
                 </div>
                 
                 <button
                   onClick={(e) => handleDeleteConversation(e, conversation.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-600 transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive transition-all"
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>

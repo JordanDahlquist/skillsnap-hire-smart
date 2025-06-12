@@ -21,7 +21,7 @@ export const MainChatArea = ({ conversationId }: MainChatAreaProps) => {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Please log in to use Scout AI</p>
+          <p className="text-muted-foreground mb-4">Please log in to use Scout AI</p>
         </div>
       </div>
     );
@@ -40,7 +40,7 @@ export const MainChatArea = ({ conversationId }: MainChatAreaProps) => {
       </div>
       
       {/* Fixed Input at Bottom */}
-      <div className="border-t border-gray-200 bg-white">
+      <div className="border-t border-border bg-background">
         <ChatInputBox
           onSendMessage={sendMessage}
           isLoading={isLoading}

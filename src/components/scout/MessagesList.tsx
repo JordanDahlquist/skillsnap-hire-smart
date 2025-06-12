@@ -40,13 +40,13 @@ export const MessagesList = ({
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6" ref={messagesContainerRef}>
         {messages.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center h-96 text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <Bot className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Bot className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
+            <h3 className="text-xl font-medium text-foreground mb-2">
               Welcome to Scout AI
             </h3>
-            <p className="text-gray-600 max-w-md">
+            <p className="text-muted-foreground max-w-md">
               Your intelligent hiring assistant is ready to help. Ask me anything about your hiring pipeline, candidates, or recruitment strategies.
             </p>
           </div>
@@ -56,7 +56,7 @@ export const MessagesList = ({
           <div key={message.id} className="flex gap-4">
             {/* Avatar */}
             <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-              message.isAi ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+              message.isAi ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
             }`}>
               {message.isAi ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
             </div>
@@ -64,15 +64,15 @@ export const MessagesList = ({
             {/* Message Content */}
             <div className="flex-1 min-w-0">
               <div className="mb-1">
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-foreground">
                   {message.isAi ? 'Scout AI' : 'You'}
                 </span>
-                <span className="text-xs text-gray-500 ml-2">
+                <span className="text-xs text-muted-foreground ml-2">
                   {formatTime(message.timestamp)}
                 </span>
               </div>
               
-              <div className="prose prose-sm max-w-none text-gray-800">
+              <div className="prose prose-sm max-w-none text-foreground">
                 {message.isAi ? (
                   <div 
                     dangerouslySetInnerHTML={{ 
@@ -107,19 +107,19 @@ export const MessagesList = ({
         
         {isLoading && (
           <div className="flex gap-4">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <Bot className="w-4 h-4 text-blue-600" />
+            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+              <Bot className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1">
               <div className="mb-1">
-                <span className="text-sm font-medium text-gray-900">Scout AI</span>
+                <span className="text-sm font-medium text-foreground">Scout AI</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <span className="text-sm">Thinking...</span>
                 <div className="flex gap-1">
-                  <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce"></div>
+                  <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
             </div>

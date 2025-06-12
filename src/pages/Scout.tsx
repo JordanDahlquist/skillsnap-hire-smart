@@ -20,7 +20,7 @@ const Scout = () => {
   };
 
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <UnifiedHeader />
       <div className="flex-1 min-h-0 overflow-hidden">
         <NewChatLayout
