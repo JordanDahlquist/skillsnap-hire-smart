@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 export const JobApplicationLoading = () => {
   return (
     <JobApplicationLayout>
-      <Card className="mb-8 border-0 bg-white/95 backdrop-blur-sm shadow-lg glass-card-no-hover">
+      <Card className="mb-8 border bg-card shadow-lg">
         <CardContent className="p-6">
           <div className="space-y-4">
             <Skeleton className="h-8 w-3/4" />
@@ -27,7 +27,7 @@ export const JobApplicationLoading = () => {
         </CardContent>
       </Card>
       
-      <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg glass-card-no-hover">
+      <Card className="border bg-card shadow-lg">
         <CardContent className="p-6">
           <Skeleton className="h-6 w-48 mb-6" />
           <div className="space-y-4">
@@ -44,11 +44,11 @@ export const JobApplicationLoading = () => {
 export const JobNotFound = () => {
   return (
     <JobApplicationLayout>
-      <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg glass-card-no-hover">
+      <Card className="border bg-card shadow-lg">
         <CardContent className="p-8 text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Job Not Found</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Job Not Found</h1>
+          <p className="text-muted-foreground mb-6">
             The job you're looking for doesn't exist or is no longer available.
           </p>
           <Button asChild>
@@ -66,11 +66,11 @@ export const JobNotFound = () => {
 export const JobApplicationError = ({ error, onRetry }: { error: string; onRetry: () => void }) => {
   return (
     <JobApplicationLayout>
-      <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg glass-card-no-hover">
+      <Card className="border bg-card shadow-lg">
         <CardContent className="p-8 text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Job</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Error Loading Job</h1>
+          <p className="text-muted-foreground mb-6">{error}</p>
           <div className="flex gap-3 justify-center">
             <Button onClick={onRetry}>Try Again</Button>
             <Button variant="outline" asChild>

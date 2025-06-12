@@ -20,7 +20,7 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: Ap
     switch (jobStatus) {
       case 'draft':
         return {
-          icon: <FileX className="w-5 h-5 text-gray-500" />,
+          icon: <FileX className="w-5 h-5 text-muted-foreground" />,
           title: "Position Not Yet Published",
           description: "This position is still in draft mode and is not yet accepting applications. Please check back later when it becomes available.",
           variant: "default" as const
@@ -48,16 +48,16 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: Ap
 
   if (!isApplicationOpen) {
     return (
-      <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg glass-card-no-hover">
+      <Card className="border bg-card shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             {statusMessage?.icon}
             {statusMessage?.title}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant={statusMessage?.variant}>
-            <AlertDescription>
+            <AlertDescription className="text-foreground">
               {statusMessage?.description}
             </AlertDescription>
           </Alert>
@@ -79,13 +79,13 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: Ap
           </div>
           
           <div className="pt-4 border-t">
-            <p className="text-sm text-gray-600 mb-2">
+            <p className="text-sm text-muted-foreground mb-2">
               Job Status: 
               <Badge className="ml-2" variant={jobStatus === 'closed' ? 'destructive' : 'secondary'}>
                 {jobStatus.charAt(0).toUpperCase() + jobStatus.slice(1)}
               </Badge>
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Even though applications are not currently being accepted, you can still view the full job details above.
             </p>
           </div>

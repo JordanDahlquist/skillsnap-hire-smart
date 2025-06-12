@@ -36,7 +36,7 @@ export const JobApplicationHeader = ({
     <div className="flex items-start justify-between">
       <div className="flex-1">
         <div className="flex items-center gap-3 mb-3">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {job.title}
           </h1>
           <Badge className={getJobStatusColor(job.status)}>
@@ -53,7 +53,7 @@ export const JobApplicationHeader = ({
           </Badge>
         </div>
         
-        <div className="flex items-center flex-wrap gap-4 text-sm text-gray-600">
+        <div className="flex items-center flex-wrap gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4" />
             <span>{getLocationDisplay()}</span>
@@ -78,7 +78,7 @@ export const JobApplicationHeader = ({
             <Eye className="w-4 h-4" />
             <span>{job.view_count || 0} view{(job.view_count || 0) !== 1 ? 's' : ''}</span>
           </div>
-          <div className="flex items-center gap-1 text-gray-500">
+          <div className="flex items-center gap-1 text-muted-foreground">
             <Calendar className="w-4 h-4" />
             <span>Posted {getTimeAgo(job.created_at)}</span>
           </div>

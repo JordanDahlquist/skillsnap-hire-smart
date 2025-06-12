@@ -37,8 +37,8 @@ export const ApplicationStepIndicator = ({
                     {
                       "bg-green-500 text-white": isCompleted,
                       "bg-blue-500 text-white": isCurrent && !isCompleted,
-                      "bg-gray-200 text-gray-600": !isAccessible,
-                      "bg-gray-100 text-gray-400": isAccessible && !isCurrent && !isCompleted,
+                      "bg-muted text-muted-foreground": !isAccessible,
+                      "bg-muted text-muted-foreground": isAccessible && !isCurrent && !isCompleted,
                     }
                   )}
                 >
@@ -57,14 +57,14 @@ export const ApplicationStepIndicator = ({
                       {
                         "text-blue-600": isCurrent,
                         "text-green-600": isCompleted,
-                        "text-gray-900": isAccessible && !isCurrent && !isCompleted,
-                        "text-gray-400": !isAccessible,
+                        "text-foreground": isAccessible && !isCurrent && !isCompleted,
+                        "text-muted-foreground": !isAccessible,
                       }
                     )}
                   >
                     {step.title}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1 hidden sm:block">
+                  <div className="text-xs text-muted-foreground mt-1 hidden sm:block">
                     {step.description}
                   </div>
                 </div>
@@ -78,8 +78,8 @@ export const ApplicationStepIndicator = ({
                     {
                       "bg-green-500": isCompleted,
                       "bg-blue-500": isCurrent,
-                      "bg-gray-200": !isCompleted && index < currentStep,
-                      "bg-gray-100": index >= currentStep,
+                      "bg-border": !isCompleted && index < currentStep,
+                      "bg-border": index >= currentStep,
                     }
                   )}
                 />

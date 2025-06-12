@@ -16,8 +16,8 @@ export const JobDescription = ({ job }: JobDescriptionProps) => {
       )}
       
       <div className="prose max-w-none">
-        <h3 className="text-lg font-semibold mb-3">Job Description</h3>
-        <div className="whitespace-pre-wrap text-gray-700">
+        <h3 className="text-lg font-semibold mb-3 text-foreground">Job Description</h3>
+        <div className="whitespace-pre-wrap text-foreground">
           {job.description}
         </div>
       </div>
