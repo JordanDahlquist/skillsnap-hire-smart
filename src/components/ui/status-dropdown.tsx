@@ -21,26 +21,26 @@ const statusConfig = {
   draft: {
     label: "Draft",
     icon: FileText,
-    color: "bg-gray-100 text-gray-800",
-    buttonColor: "text-gray-600 border-gray-200"
+    color: "bg-muted text-muted-foreground",
+    buttonColor: "text-muted-foreground border-border"
   },
   active: {
     label: "Active",
     icon: Play,
-    color: "bg-green-100 text-green-800",
-    buttonColor: "text-green-600 border-green-200"
+    color: "bg-success/10 text-success",
+    buttonColor: "text-success border-success/20"
   },
   paused: {
     label: "Paused",
     icon: Pause,
-    color: "bg-yellow-100 text-yellow-800",
-    buttonColor: "text-yellow-600 border-yellow-200"
+    color: "bg-warning/10 text-warning",
+    buttonColor: "text-warning border-warning/20"
   },
   closed: {
     label: "Closed",
     icon: Archive,
-    color: "bg-red-100 text-red-800",
-    buttonColor: "text-red-600 border-red-200"
+    color: "bg-destructive/10 text-destructive",
+    buttonColor: "text-destructive border-destructive/20"
   }
 };
 
@@ -74,7 +74,7 @@ export const StatusDropdown = ({
           variant="outline"
           size={size}
           disabled={disabled}
-          className={`${currentConfig?.buttonColor} hover:bg-gray-50 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`${currentConfig?.buttonColor} hover:bg-accent ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {disabled ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -85,7 +85,7 @@ export const StatusDropdown = ({
           <ChevronDown className="w-4 h-4 ml-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white border shadow-lg">
+      <DropdownMenuContent align="end" className="bg-background border-border shadow-lg z-50">
         {Object.entries(statusConfig).map(([status, config]) => {
           const Icon = config.icon;
           const isCurrentStatus = currentStatus === status;
@@ -94,7 +94,7 @@ export const StatusDropdown = ({
             <DropdownMenuItem
               key={status}
               onClick={() => handleStatusSelect(status)}
-              className={`${isCurrentStatus ? "bg-gray-50" : ""} hover:bg-gray-100 cursor-pointer ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+              className={`${isCurrentStatus ? "bg-accent" : ""} hover:bg-accent/80 cursor-pointer ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
               disabled={disabled}
             >
               <Icon className="w-4 h-4 mr-2" />
