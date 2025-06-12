@@ -37,41 +37,39 @@ export const HiringStagesNav = ({
   }
 
   return (
-    <div className="bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="p-6 py-[17px]">
-        <div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-auto-fit gap-4" 
-          style={{
-            gridTemplateColumns: `repeat(${stages.length + 1}, minmax(200px, 1fr))`
-          }}
-        >
-          {/* All Applications Card */}
-          <AllApplicationsCard 
-            totalApplications={totalApplications} 
-            selectedStage={selectedStage} 
-            onStageSelect={onStageSelect} 
-          />
+    <div className="p-6 py-[17px]">
+      <div 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-auto-fit gap-4" 
+        style={{
+          gridTemplateColumns: `repeat(${stages.length + 1}, minmax(200px, 1fr))`
+        }}
+      >
+        {/* All Applications Card */}
+        <AllApplicationsCard 
+          totalApplications={totalApplications} 
+          selectedStage={selectedStage} 
+          onStageSelect={onStageSelect} 
+        />
 
-          {/* Stage Cards */}
-          {stages.map((stage, index) => {
-            const stageKey = getStageKey(stage.name);
-            const count = stageCounts[stageKey] || 0;
-            const isSelected = selectedStage === stageKey;
-            const isNextStage = index < stages.length - 1;
-            
-            return (
-              <StageCard 
-                key={stage.id} 
-                stage={stage} 
-                count={count} 
-                isSelected={isSelected} 
-                isNextStage={isNextStage} 
-                selectedStage={selectedStage} 
-                onStageSelect={onStageSelect} 
-              />
-            );
-          })}
-        </div>
+        {/* Stage Cards */}
+        {stages.map((stage, index) => {
+          const stageKey = getStageKey(stage.name);
+          const count = stageCounts[stageKey] || 0;
+          const isSelected = selectedStage === stageKey;
+          const isNextStage = index < stages.length - 1;
+          
+          return (
+            <StageCard 
+              key={stage.id} 
+              stage={stage} 
+              count={count} 
+              isSelected={isSelected} 
+              isNextStage={isNextStage} 
+              selectedStage={selectedStage} 
+              onStageSelect={onStageSelect} 
+            />
+          );
+        })}
       </div>
     </div>
   );
