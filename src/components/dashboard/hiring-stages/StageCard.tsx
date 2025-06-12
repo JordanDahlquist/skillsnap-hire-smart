@@ -30,17 +30,16 @@ export const StageCard = ({
     <div className="flex items-center gap-3">
       <div
         onClick={() => onStageSelect(stageKey)}
-        className={`group relative glass-card-no-hover cursor-pointer overflow-hidden flex-1 transition-all duration-300 ${
+        className={`group relative glass-card cursor-pointer overflow-hidden flex-1 transition-all duration-300 ${
           isSelected
-            ? 'border-2 ring-2 ring-opacity-20 scale-105 shadow-lg'
+            ? 'ring-2 ring-opacity-20 scale-105 shadow-lg'
             : 'hover:scale-102 hover:shadow-md'
         }`}
         style={{
           borderColor: isSelected ? stage.color : undefined,
-          ringColor: isSelected ? `${stage.color}20` : undefined,
         }}
       >
-        <div className="p-5">
+        <div className="p-5 relative z-10">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div 
@@ -83,7 +82,7 @@ export const StageCard = ({
         
         {/* Subtle gradient overlay */}
         <div 
-          className={`absolute inset-0 transition-opacity duration-300 ${
+          className={`absolute inset-0 transition-opacity duration-300 pointer-events-none ${
             isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
           }`}
           style={{ 
