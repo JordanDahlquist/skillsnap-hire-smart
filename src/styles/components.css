@@ -13,29 +13,6 @@
   opacity: 1;
 }
 
-/* Applications List Viewport Styles */
-.applications-list-viewport {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-.applications-list-viewport::-webkit-scrollbar {
-  width: 6px;
-}
-
-.applications-list-viewport::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.applications-list-viewport::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
-  border-radius: 3px;
-}
-
-.applications-list-viewport::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(156, 163, 175, 0.7);
-}
-
 /* Rich Text Message Display Styles */
 .rich-message-content a {
   color: #3b82f6;

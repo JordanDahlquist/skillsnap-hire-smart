@@ -70,39 +70,31 @@ export const ApplicationsList = memo(({
         isLoading={isLoading}
       />
 
-      <div className="relative pt-4">
-        <div className="overflow-y-auto applications-list-viewport" style={{ height: '750px' }}>
-          {filteredApplications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <div className="text-lg font-medium mb-2">
-                {searchTerm ? 'No candidates found' : 'No applications yet'}
-              </div>
-              <div className="text-sm">
-                {searchTerm ? 'Try adjusting your search terms.' : 'Applications will appear here once candidates apply.'}
-              </div>
+      <div className="overflow-y-auto pt-4" style={{ height: '750px' }}>
+        {filteredApplications.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            <div className="text-lg font-medium mb-2">
+              {searchTerm ? 'No candidates found' : 'No applications yet'}
             </div>
-          ) : (
-            filteredApplications.map((application) => (
-              <ApplicationItem
-                key={application.id}
-                application={application}
-                selectedApplication={selectedApplication}
-                onSelectApplication={onSelectApplication}
-                getStatusColor={getStatusColor}
-                getTimeAgo={getTimeAgo}
-                selectedApplications={selectedApplications}
-                onSelectApplications={onSelectApplications}
-                jobId={jobId}
-              />
-            ))
-          )}
-        </div>
-        
-        {/* Top fade overlay - deeper and more intense */}
-        <div className="absolute top-4 left-0 right-0 h-10 bg-gradient-to-b from-background/95 via-background/60 to-transparent pointer-events-none z-10" />
-        
-        {/* Bottom fade overlay - deeper and more intense */}
-        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background/95 via-background/60 to-transparent pointer-events-none z-10" />
+            <div className="text-sm">
+              {searchTerm ? 'Try adjusting your search terms.' : 'Applications will appear here once candidates apply.'}
+            </div>
+          </div>
+        ) : (
+          filteredApplications.map((application) => (
+            <ApplicationItem
+              key={application.id}
+              application={application}
+              selectedApplication={selectedApplication}
+              onSelectApplication={onSelectApplication}
+              getStatusColor={getStatusColor}
+              getTimeAgo={getTimeAgo}
+              selectedApplications={selectedApplications}
+              onSelectApplications={onSelectApplications}
+              jobId={jobId}
+            />
+          ))
+        )}
       </div>
     </div>
   );
