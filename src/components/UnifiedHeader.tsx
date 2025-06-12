@@ -46,10 +46,7 @@ export const UnifiedHeader = ({ breadcrumbs, onCreateRole, showCreateButton = fa
                   onCreateRole={onCreateRole}
                 />
               ) : (
-                <AuthButtons 
-                  showCreateButton={showCreateButton}
-                  onCreateRole={onCreateRole}
-                />
+                <AuthButtons />
               )}
             </div>
           </div>

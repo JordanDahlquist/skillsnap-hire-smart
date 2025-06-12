@@ -19,7 +19,6 @@ export const MainNavigation = ({
   setIsMobileMenuOpen 
 }: MainNavigationProps) => {
   const navigation = [
-    { name: "Jobs", href: "/jobs/public" },
     { name: "Pricing", href: "/pricing" },
   ];
 
