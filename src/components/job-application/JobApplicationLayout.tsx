@@ -7,12 +7,11 @@ interface JobApplicationLayoutProps {
 
 export const JobApplicationLayout = ({ children }: JobApplicationLayoutProps) => {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Professional ambient effects for white mode only */}
+    <div className="min-h-screen bg-background">
+      {/* Clean white background with subtle pattern */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-indigo-50/30 to-blue-50/30 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-slate-50/20 to-blue-50/20 rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 bg-white"></div>
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-50/30 to-transparent"></div>
       </div>
 
       {/* Content Layer */}

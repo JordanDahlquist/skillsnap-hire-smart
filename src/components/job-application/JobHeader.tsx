@@ -18,8 +18,8 @@ export const JobHeader = ({
   getTimeAgo 
 }: JobHeaderProps) => {
   return (
-    <Card className="mb-8 border bg-card shadow-lg">
-      <CardHeader>
+    <Card className="mb-8 bg-white border border-gray-200 shadow-sm">
+      <CardHeader className="pb-0">
         <JobApplicationHeader
           job={job}
           applicationsCount={applicationsCount}
@@ -28,7 +28,7 @@ export const JobHeader = ({
         />
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="pt-6">
         <JobDescription job={job} />
       </CardContent>
     </Card>

@@ -150,8 +150,8 @@ export const MultiStepApplicationForm = ({
   };
 
   return (
-    <Card className="border-0 bg-white/95 backdrop-blur-sm shadow-lg glass-card-no-hover">
-      <CardContent className="p-6">
+    <Card className="bg-white border border-gray-200 shadow-sm">
+      <CardContent className="p-8">
         <ApplicationStepIndicator 
           steps={STEPS}
           currentStep={currentStep}
@@ -162,12 +162,12 @@ export const MultiStepApplicationForm = ({
           {renderCurrentStep()}
         </div>
         
-        <div className="flex justify-between mt-8 pt-6 border-t">
+        <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
           <Button
             variant="outline"
             onClick={handlePrev}
             disabled={!canGoPrev}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
           >
             <ChevronLeft className="w-4 h-4" />
             Previous
@@ -177,7 +177,7 @@ export const MultiStepApplicationForm = ({
             <Button
               onClick={handleNext}
               disabled={!canGoNext}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
             >
               Next
               <ChevronRight className="w-4 h-4" />

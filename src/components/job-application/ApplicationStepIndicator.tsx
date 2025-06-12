@@ -33,12 +33,11 @@ export const ApplicationStepIndicator = ({
               <div className="flex flex-col items-center">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2",
                     {
-                      "bg-green-500 text-white": isCompleted,
-                      "bg-blue-500 text-white": isCurrent && !isCompleted,
-                      "bg-muted text-muted-foreground": !isAccessible,
-                      "bg-muted text-muted-foreground": isAccessible && !isCurrent && !isCompleted,
+                      "bg-green-500 text-white border-green-500": isCompleted,
+                      "bg-blue-500 text-white border-blue-500": isCurrent && !isCompleted,
+                      "bg-white text-muted-foreground border-border": !isCompleted && !isCurrent,
                     }
                   )}
                 >
@@ -57,7 +56,7 @@ export const ApplicationStepIndicator = ({
                       {
                         "text-blue-600": isCurrent,
                         "text-green-600": isCompleted,
-                        "text-foreground": isAccessible && !isCurrent && !isCompleted,
+                        "text-foreground": !isCurrent && !isCompleted && isAccessible,
                         "text-muted-foreground": !isAccessible,
                       }
                     )}
@@ -78,8 +77,7 @@ export const ApplicationStepIndicator = ({
                     {
                       "bg-green-500": isCompleted,
                       "bg-blue-500": isCurrent,
-                      "bg-border": !isCompleted && index < currentStep,
-                      "bg-border": index >= currentStep,
+                      "bg-border": !isCompleted,
                     }
                   )}
                 />

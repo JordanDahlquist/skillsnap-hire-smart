@@ -20,7 +20,7 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: Ap
     switch (jobStatus) {
       case 'draft':
         return {
-          icon: <FileX className="w-5 h-5 text-muted-foreground" />,
+          icon: <FileX className="w-5 h-5 text-gray-500" />,
           title: "Position Not Yet Published",
           description: "This position is still in draft mode and is not yet accepting applications. Please check back later when it becomes available.",
           variant: "default" as const
@@ -48,7 +48,7 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: Ap
 
   if (!isApplicationOpen) {
     return (
-      <Card className="border bg-card shadow-lg">
+      <Card className="bg-white border border-gray-200 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             {statusMessage?.icon}
@@ -56,14 +56,14 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: Ap
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Alert variant={statusMessage?.variant}>
+          <Alert variant={statusMessage?.variant} className="bg-gray-50 border-gray-200">
             <AlertDescription className="text-foreground">
               {statusMessage?.description}
             </AlertDescription>
           </Alert>
           
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button variant="outline" asChild className="flex-1">
+            <Button variant="outline" asChild className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50">
               <Link to="/jobs">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Browse Other Positions
@@ -71,14 +71,14 @@ export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: Ap
             </Button>
             
             {jobStatus === 'paused' && (
-              <Button variant="outline" className="flex-1" disabled>
+              <Button variant="outline" className="flex-1 border-gray-300 text-gray-700" disabled>
                 <Clock className="w-4 h-4 mr-2" />
                 Get Notified When Open
               </Button>
             )}
           </div>
           
-          <div className="pt-4 border-t">
+          <div className="pt-4 border-t border-gray-200">
             <p className="text-sm text-muted-foreground mb-2">
               Job Status: 
               <Badge className="ml-2" variant={jobStatus === 'closed' ? 'destructive' : 'secondary'}>
