@@ -70,7 +70,7 @@ export const ApplicationsList = memo(({
         isLoading={isLoading}
       />
 
-      <div className="overflow-y-auto pt-4" style={{ height: '600px' }}>
+      <div className="overflow-y-auto pt-4" style={{ height: '750px' }}>
         {filteredApplications.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <div className="text-lg font-medium mb-2">
