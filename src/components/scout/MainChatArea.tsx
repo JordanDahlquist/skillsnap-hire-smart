@@ -1,4 +1,5 @@
 
+import { MessageSquare } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { useChatScroll } from '@/hooks/useChatScroll';
