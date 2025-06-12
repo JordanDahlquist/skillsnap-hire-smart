@@ -23,16 +23,31 @@ const darkModeBackgrounds = [
   '/lovable-uploads/f1d65efc-b1d6-49f7-9e12-b1e70373d211.png', // Teal gradient night sky
 ];
 
+const getRandomIndex = (arrayLength: number) => {
+  return Math.floor(Math.random() * arrayLength);
+};
+
 export const useRotatingBackground = () => {
   const { currentTheme } = useThemeContext();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Initialize with a random index based on current theme
+  const [currentImageIndex, setCurrentImageIndex] = useState(() => {
+    const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
+    const randomIndex = getRandomIndex(backgroundArray.length);
+    console.log(`[Background Rotation] Starting with random image ${randomIndex + 1}/${backgroundArray.length} (${currentTheme} mode)`);
+    return randomIndex;
+  });
+  
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Handle theme changes - reset image index but don't affect rotation timer
+  // Handle theme changes - start with random image for new theme
   useEffect(() => {
     console.log(`[Background Rotation] Theme changed to: ${currentTheme}`);
-    setCurrentImageIndex(0);
+    const backgroundArray = currentTheme === 'dark' ? darkModeBackgrounds : lightModeBackgrounds;
+    const randomIndex = getRandomIndex(backgroundArray.length);
+    setCurrentImageIndex(randomIndex);
     setIsTransitioning(false);
+    console.log(`[Background Rotation] Theme change: starting with random image ${randomIndex + 1}/${backgroundArray.length} (${currentTheme} mode)`);
   }, [currentTheme]);
 
   // Main rotation effect - runs independently of theme changes
