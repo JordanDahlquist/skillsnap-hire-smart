@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ApplicationStepIndicator } from "./ApplicationStepIndicator";
+import { JobOverviewSection } from "./JobOverviewSection";
 import { PersonalInfoStep } from "./steps/PersonalInfoStep";
 import { SkillsAssessmentStep } from "./steps/SkillsAssessmentStep";
 import { VideoInterviewStep } from "./steps/VideoInterviewStep";
@@ -102,9 +103,9 @@ export const MultiStepApplicationForm = ({
     switch (currentStep) {
       case 0:
         return (
-          <JobOverviewStep 
+          <JobOverviewSection 
             job={job}
-            onValidationChange={(isValid) => updateStepValidation(0, isValid)}
+            onContinue={() => setCurrentStep(1)}
           />
         );
       case 1:
