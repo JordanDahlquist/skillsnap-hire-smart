@@ -1,8 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon } from "lucide-react";
+import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon, Circle, Monitor } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useThemeContext } from "@/contexts/ThemeContext";
 
@@ -15,7 +15,7 @@ interface UserMenuProps {
 }
 
 export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRole }: UserMenuProps) => {
-  const { currentTheme, toggleTheme } = useThemeContext();
+  const { theme, setTheme } = useThemeContext();
 
   const getUserInitials = () => {
     if (profile?.full_name) {
@@ -35,6 +35,42 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
   const getDisplayEmail = () => {
     return user?.email || '';
   };
+
+  const getThemeIcon = (themeOption: string) => {
+    switch (themeOption) {
+      case 'light':
+        return <Sun className="w-4 h-4" />;
+      case 'dark':
+        return <Moon className="w-4 h-4" />;
+      case 'white':
+        return <Circle className="w-4 h-4" />;
+      case 'black':
+        return <Circle className="w-4 h-4 fill-current" />;
+      case 'system':
+        return <Monitor className="w-4 h-4" />;
+      default:
+        return <Sun className="w-4 h-4" />;
+    }
+  };
+
+  const getThemeLabel = (themeOption: string) => {
+    switch (themeOption) {
+      case 'light':
+        return 'Light';
+      case 'dark':
+        return 'Dark';
+      case 'white':
+        return 'White';
+      case 'black':
+        return 'Black';
+      case 'system':
+        return 'System';
+      default:
+        return 'Light';
+    }
+  };
+
+  const themeOptions = ['light', 'dark', 'white', 'black', 'system'];
 
   return (
     <DropdownMenu>
@@ -62,14 +98,29 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={toggleTheme}>
-          {currentTheme === 'dark' ? (
-            <Sun className="w-4 h-4 mr-2" />
-          ) : (
-            <Moon className="w-4 h-4 mr-2" />
-          )}
-          {currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-        </DropdownMenuItem>
+        
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            {getThemeIcon(theme)}
+            <span className="ml-2">Theme: {getThemeLabel(theme)}</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {themeOptions.map((themeOption) => (
+              <DropdownMenuItem
+                key={themeOption}
+                onClick={() => setTheme(themeOption as any)}
+                className={`flex items-center ${theme === themeOption ? 'bg-accent' : ''}`}
+              >
+                {getThemeIcon(themeOption)}
+                <span className="ml-2">{getThemeLabel(themeOption)}</span>
+                {theme === themeOption && (
+                  <span className="ml-auto text-xs opacity-60">✓</span>
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/profile" className="flex items-center w-full">
