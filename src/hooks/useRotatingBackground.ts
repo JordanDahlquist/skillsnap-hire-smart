@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useThemeContext } from '@/contexts/ThemeContext';
 
@@ -19,7 +20,7 @@ const darkModeBackgrounds = [
   '/lovable-uploads/709e62f6-6954-46ad-bfcf-99596ba43e7c.png', // Purple cosmos flowers at night
   '/lovable-uploads/a3f6d4c4-b1e7-4d4f-bbea-9e99b5a67d4b.png', // Wheat field under starry sky
   '/lovable-uploads/2bee2e19-d279-41ab-8dd2-375b2ae62ffc.png', // Mountain peaks with Milky Way
-  '/lovable-uploads/a8eca387-4784-4837-966e-1ee558330510.png', // Purple cosmos under starry night sky
+  '/lovable-uploads/f1d65efc-b1d6-49f7-9e12-b1e70373d211.png', // Teal gradient night sky
 ];
 
 const getRandomIndex = (arrayLength: number) => {
