@@ -54,7 +54,7 @@ export const ApplicationsList = memo(({
   }, [applications, searchTerm]);
 
   return (
-    <div className="glass-card h-full">
+    <div className="glass-card h-full flex flex-col">
       <ApplicationsListHeader
         applicationsCount={filteredApplications.length}
         selectedApplications={selectedApplications}
@@ -70,7 +70,7 @@ export const ApplicationsList = memo(({
         isLoading={isLoading}
       />
 
-      <div className="overflow-y-auto pt-4" style={{ height: 'calc(100vh - 350px)' }}>
+      <div className="flex-1 overflow-y-auto pt-4">
         {filteredApplications.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <div className="text-lg font-medium mb-2">
