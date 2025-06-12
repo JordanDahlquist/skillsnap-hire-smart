@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { applicationService } from '@/services/applicationService';
@@ -173,7 +172,7 @@ export const ApplicationsManager = ({
   }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
 
   return (
-    <div className="flex-1 bg-gray-50">
+    <div className="flex-1">
       <HiringStagesNav
         jobId={job.id}
         applications={applications}
