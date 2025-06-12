@@ -1,37 +1,18 @@
 
 import { ReactNode } from 'react';
-import { useRotatingBackground } from '@/hooks/useRotatingBackground';
 
 interface JobApplicationLayoutProps {
   children: ReactNode;
 }
 
 export const JobApplicationLayout = ({ children }: JobApplicationLayoutProps) => {
-  const { currentImage, nextImage, isTransitioning, showSecondary } = useRotatingBackground();
-
-  // Generate CSS class names for crossfade background
-  const backgroundClass = `dashboard-crossfade-background ${
-    isTransitioning ? 'transitioning' : ''
-  } ${showSecondary ? 'show-secondary' : ''}`;
-
   return (
-    <div
-      className={backgroundClass}
-      style={{
-        '--bg-primary': `url(${currentImage})`,
-        '--bg-secondary': `url(${nextImage})`
-      } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
-    >
-      <style>
-        {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
-        {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
-      </style>
-
-      {/* Ambient Background Effects */}
+    <div className="min-h-screen bg-white">
+      {/* Professional ambient effects for white mode only */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-indigo-50/30 to-blue-50/30 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-slate-50/20 to-blue-50/20 rounded-full blur-3xl"></div>
       </div>
 
       {/* Content Layer */}
