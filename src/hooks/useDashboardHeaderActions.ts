@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -23,7 +24,7 @@ export const useDashboardHeaderActions = (
     try {
       toast({
         title: "Refreshing AI rankings",
-        description: `Analyzing ${applications.length} applications...`,
+        description: `Analyzing ${applications.length} applications... This can take 10-30 seconds.`,
       });
 
       // Process applications in batches to avoid overwhelming the system
