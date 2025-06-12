@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Job, Application } from "@/types";
 import { AIAnalysisService } from "@/services/aiAnalysisService";
 import { JobStatusService } from "@/services/jobStatusService";
@@ -49,7 +49,7 @@ export const useDashboardHeaderActions = (
     } catch (error) {
       console.error('AI refresh failed:', error);
       toast({
-        title: MESSAGES.AI_REFRESH_FAILED,
+        title: DASHBOARD_ACTION_CONSTANTS.MESSAGES.AI_REFRESH_FAILED,
         description: "An error occurred while refreshing AI rankings",
         variant: "destructive",
       });
