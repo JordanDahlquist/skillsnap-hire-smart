@@ -16,6 +16,7 @@ serve(async (req) => {
 
   try {
     const { type, jobData, existingJobPost, existingSkillsTest } = await req.json();
+    console.log('Received request type:', type);
     console.log('Received job data:', jobData);
 
     let prompt = '';
@@ -45,18 +46,23 @@ CRITICAL INSTRUCTIONS:
 Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates for a ${jobData.employmentType} position.`;
 
     } else if (type === 'skills-test') {
-      responseKey = 'test';
-      prompt = `Create a comprehensive skills assessment test based on this job posting:
+      responseKey = 'questions';
+      prompt = `Based on this job posting, create 5-7 specific skills assessment questions:
 
 ${existingJobPost}
 
-Create 5-8 practical questions that test:
+Create practical questions that test:
 1. Technical skills relevant to the role
 2. Problem-solving abilities
 3. Industry knowledge
 4. Practical application of skills
 
-Format the questions clearly with instructions for candidates. Include a mix of multiple choice, short answer, and practical scenario questions.`;
+Return ONLY a numbered list of questions, one per line, in this exact format:
+1. [First question here]
+2. [Second question here]
+3. [Third question here]
+
+Make each question clear, specific, and directly relevant to the job requirements. Questions should be answerable in a text response format.`;
 
     } else if (type === 'interview-questions') {
       responseKey = 'questions';
@@ -125,6 +131,22 @@ Make the questions challenging but fair, and ensure they can be answered well wi
     const generatedContent = data.choices[0].message.content;
 
     console.log(`Generated ${type} preview:`, generatedContent.substring(0, 200) + '...');
+
+    // For skills-test, parse the numbered list into an array
+    if (type === 'skills-test') {
+      const lines = generatedContent.split('\n').filter(line => line.trim().length > 0);
+      const questions = lines
+        .filter(line => line.match(/^\d+\./))
+        .map(line => line.replace(/^\d+\.\s*/, '').trim())
+        .filter(q => q.length > 0);
+      
+      console.log('Parsed questions:', questions);
+      
+      return new Response(
+        JSON.stringify({ questions }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     return new Response(
       JSON.stringify({ [responseKey]: generatedContent }),
