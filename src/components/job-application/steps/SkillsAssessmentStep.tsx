@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -38,52 +39,60 @@ const parseSkillsTestQuestions = (testContent: string): string[] => {
     .replace(/^#{1,6}\s+.*$/gm, '') // Remove markdown headers
     .replace(/\*\*Skills Assessment.*?\*\*/gi, '') // Remove assessment headers
     .replace(/Skills Assessment.*?Position/gi, '') // Remove title lines
+    .replace(/Instructions?:.*?(?=\d+\.|$)/gis, '') // Remove instruction blocks
     .trim();
   
   console.log('Cleaned content:', cleanContent);
   
-  // Split by numbered questions (1., 2., etc.)
-  let questions = cleanContent.split(/(?:^|\n)\s*(\d+)\.\s+/m);
+  // First try: Split by numbered questions (1., 2., etc.)
+  let questionMatches = cleanContent.match(/(?:^|\n)\s*(\d+)\.\s+(.+?)(?=(?:\n\s*\d+\.|$))/gs);
   
-  // Remove the first empty element and rebuild questions with their numbers
-  if (questions.length > 1) {
-    questions = questions.slice(1); // Remove first empty element
-    const parsedQuestions: string[] = [];
+  if (questionMatches && questionMatches.length > 0) {
+    const questions = questionMatches
+      .map(match => {
+        // Extract just the question text after the number
+        const questionText = match.replace(/^\s*\d+\.\s*/, '').trim();
+        return questionText;
+      })
+      .filter(q => q.length > 10 && !q.toLowerCase().includes('skills test'))
+      .filter(q => !q.toLowerCase().includes('instructions'))
+      .filter(q => !q.toLowerCase().includes('assessment'));
     
-    for (let i = 0; i < questions.length; i += 2) {
-      if (i + 1 < questions.length) {
-        const questionText = questions[i + 1].trim();
-        if (questionText.length > 10) {
-          parsedQuestions.push(questionText);
-        }
-      }
-    }
-    
-    if (parsedQuestions.length > 0) {
-      console.log('Parsed numbered questions:', parsedQuestions);
-      return parsedQuestions.slice(0, 10); // Limit to 10 questions
+    if (questions.length > 0) {
+      console.log('Parsed numbered questions:', questions);
+      return questions;
     }
   }
   
-  // Fallback: Try splitting by bullet points or dashes
-  questions = cleanContent
+  // Second try: Split by bullet points or dashes
+  let bulletQuestions = cleanContent
     .split(/\n\s*[-*•]\s+/)
     .map(q => q.trim())
-    .filter(q => q.length > 10);
+    .filter(q => q.length > 15)
+    .filter(q => !q.toLowerCase().includes('skills test'))
+    .filter(q => !q.toLowerCase().includes('instructions'))
+    .filter(q => !q.toLowerCase().includes('assessment'));
   
-  if (questions.length > 0) {
-    console.log('Parsed bullet questions:', questions);
-    return questions.slice(0, 10);
+  if (bulletQuestions.length > 1) {
+    // Remove the first item if it's likely a header
+    if (bulletQuestions[0].length < 50) {
+      bulletQuestions = bulletQuestions.slice(1);
+    }
+    console.log('Parsed bullet questions:', bulletQuestions);
+    return bulletQuestions;
   }
   
-  // Last fallback: Split by double newlines and filter
-  questions = cleanContent
+  // Third try: Split by double newlines and filter for question-like content
+  let paragraphQuestions = cleanContent
     .split(/\n\s*\n/)
     .map(q => q.trim())
-    .filter(q => q.length > 10 && !q.toLowerCase().includes('assessment'));
+    .filter(q => q.length > 20)
+    .filter(q => q.includes('?') || q.toLowerCase().includes('describe') || q.toLowerCase().includes('explain') || q.toLowerCase().includes('how'))
+    .filter(q => !q.toLowerCase().includes('assessment'))
+    .filter(q => !q.toLowerCase().includes('instructions'));
   
-  console.log('Final fallback questions:', questions);
-  return questions.slice(0, 10);
+  console.log('Final paragraph questions:', paragraphQuestions);
+  return paragraphQuestions;
 };
 
 export const SkillsAssessmentStep = ({ 
@@ -222,10 +231,14 @@ export const SkillsAssessmentStep = ({
         {questions.map((_, index) => (
           <Button
             key={index}
-            variant={index === currentQuestionIndex ? "default" : responses[index] ? "outline" : "ghost"}
+            variant={index === currentQuestionIndex ? "default" : responses[index] ? "secondary" : "outline"}
             size="sm"
             onClick={() => goToQuestion(index)}
-            className={`w-10 h-10 p-0 ${responses[index] ? 'bg-green-100 hover:bg-green-200' : ''}`}
+            className={`w-10 h-10 p-0 ${
+              responses[index] 
+                ? 'bg-green-100 hover:bg-green-200 text-green-800 border-green-300' 
+                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
+            }`}
           >
             {responses[index] ? <CheckCircle className="w-4 h-4 text-green-600" /> : index + 1}
           </Button>
@@ -269,6 +282,7 @@ export const SkillsAssessmentStep = ({
           variant="outline"
           onClick={prevQuestion}
           disabled={currentQuestionIndex === 0}
+          className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
         >
           Previous Question
         </Button>
@@ -276,6 +290,7 @@ export const SkillsAssessmentStep = ({
         <Button
           onClick={nextQuestion}
           disabled={currentQuestionIndex === questions.length - 1}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
         >
           Next Question
         </Button>
