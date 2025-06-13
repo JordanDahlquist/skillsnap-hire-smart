@@ -1,9 +1,9 @@
 
 // Backward compatibility wrapper
 import { UnifiedJobCreatorPanel } from "./UnifiedJobCreatorPanel";
-import { UnifiedJobCreatorPanelProps as JobCreatorPanelProps } from "@/types/jobForm";
+import type { UnifiedJobCreatorPanelProps as JobCreatorPanelProps } from "@/types/jobForm";
 
-export { JobCreatorPanelProps };
+export type { JobCreatorPanelProps };
 
 export const JobCreatorPanel = (props: JobCreatorPanelProps) => {
   return <UnifiedJobCreatorPanel {...props} />;

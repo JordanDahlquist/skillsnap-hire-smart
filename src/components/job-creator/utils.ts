@@ -1,9 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { JobFormData } from "./types";
+import { UnifiedJobFormData } from "@/types/jobForm";
 
 export const generateJobPost = async (
-  formData: JobFormData,
+  formData: UnifiedJobFormData,
   uploadedPdfContent: string | null,
   useOriginalPdf: boolean | null
 ) => {
@@ -54,7 +54,7 @@ export const generateSkillsTest = async (existingJobPost: string) => {
 export const generateInterviewQuestions = async (
   existingJobPost: string, 
   existingSkillsTest: string,
-  formData: JobFormData
+  formData: UnifiedJobFormData
 ) => {
   const { data, error } = await supabase.functions.invoke('generate-job-content', {
     body: {
@@ -77,7 +77,7 @@ export const generateInterviewQuestions = async (
 
 export const saveJob = async (
   userId: string,
-  formData: JobFormData,
+  formData: UnifiedJobFormData,
   generatedJobPost: string,
   generatedSkillsTest: string,
   generatedInterviewQuestions: string,
@@ -96,7 +96,11 @@ export const saveJob = async (
       required_skills: formData.skills,
       budget: formData.budget,
       duration: formData.duration,
-      location_type: formData.location,
+      location_type: formData.locationType,
+      country: formData.country,
+      state: formData.state,
+      city: formData.city,
+      company_name: formData.companyName,
       generated_job_post: generatedJobPost,
       generated_test: generatedSkillsTest,
       generated_interview_questions: generatedInterviewQuestions,
@@ -108,7 +112,7 @@ export const saveJob = async (
   return true;
 };
 
-export const getInitialFormData = (): JobFormData => ({
+export const getInitialFormData = (): UnifiedJobFormData => ({
   title: "",
   description: "",
   employmentType: "full-time",
@@ -116,5 +120,10 @@ export const getInitialFormData = (): JobFormData => ({
   skills: "",
   budget: "",
   duration: "",
-  location: "remote"
+  location: "remote",
+  locationType: "remote",
+  country: "",
+  state: "",
+  city: "",
+  companyName: ""
 });
