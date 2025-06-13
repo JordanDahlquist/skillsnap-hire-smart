@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,6 +56,10 @@ export const VideoInterview = ({
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
         console.log('Camera stream assigned to video element');
+        // Force the video to play after stream assignment
+        videoRef.current.play().catch((error) => {
+          console.error('Error playing video:', error);
+        });
       }
     } catch (error) {
       console.error('Error accessing camera/microphone:', error);
@@ -215,10 +218,13 @@ export const VideoInterview = ({
                   ref={videoRef}
                   autoPlay
                   playsInline
-                  volume={0}
+                  muted
                   className="w-full h-full object-cover"
                   onLoadedMetadata={() => {
                     console.log('Video metadata loaded, stream should be visible');
+                  }}
+                  onCanPlay={() => {
+                    console.log('Video can start playing');
                   }}
                   onError={(e) => {
                     console.error('Video element error:', e);
