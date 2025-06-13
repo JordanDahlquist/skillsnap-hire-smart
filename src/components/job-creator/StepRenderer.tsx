@@ -4,12 +4,12 @@ import { Step2JobPostGenerator } from "./Step2JobPostGenerator";
 import { Step3SkillsTestGenerator } from "./Step3SkillsTestGenerator";
 import { Step4InterviewGenerator } from "./Step4InterviewGenerator";
 import { Step5ReviewPublish } from "./Step5ReviewPublish";
-import { JobCreatorState, JobCreatorActions } from "./types";
+import { UnifiedJobCreatorState, UnifiedJobCreatorActions } from "@/types/jobForm";
 
 interface StepRendererProps {
   currentStep: number;
-  state: JobCreatorState;
-  actions: JobCreatorActions;
+  state: UnifiedJobCreatorState;
+  actions: UnifiedJobCreatorActions;
   onGenerateJobPost: () => Promise<void>;
   onGenerateSkillsTest: () => Promise<void>;
   onGenerateInterviewQuestions: () => Promise<void>;

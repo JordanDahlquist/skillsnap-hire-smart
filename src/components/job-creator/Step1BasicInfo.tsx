@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { JobFormData, JobCreatorActions } from "./types";
+import { UnifiedJobFormData, UnifiedJobCreatorActions } from "@/types/jobForm";
 
 interface Step1BasicInfoProps {
-  formData: JobFormData;
-  actions: JobCreatorActions;
+  formData: UnifiedJobFormData;
+  actions: UnifiedJobCreatorActions;
 }
 
 export const Step1BasicInfo = ({
@@ -108,6 +108,17 @@ export const Step1BasicInfo = ({
             value={formData.skills}
             onChange={(e) => actions.updateFormData('skills', e.target.value)}
             placeholder="React, TypeScript, Node.js..."
+            className="mt-1"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="location" className="text-sm">Location</Label>
+          <Input
+            id="location"
+            value={formData.location}
+            onChange={(e) => actions.updateFormData('location', e.target.value)}
+            placeholder="Remote, New York, etc."
             className="mt-1"
           />
         </div>

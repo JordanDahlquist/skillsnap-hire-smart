@@ -1,20 +1,19 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Edit3 } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { JobFormData, JobCreatorActions } from "./types";
+import { UnifiedJobFormData, UnifiedJobCreatorActions } from "@/types/jobForm";
 
 interface Step2JobPostGeneratorProps {
-  formData: JobFormData;
+  formData: UnifiedJobFormData;
   uploadedPdfContent: string | null;
   useOriginalPdf: boolean | null;
   generatedJobPost: string;
   isGenerating: boolean;
   isEditingJobPost: boolean;
-  actions: JobCreatorActions;
+  actions: UnifiedJobCreatorActions;
   onGenerateJobPost: () => Promise<void>;
 }
 
@@ -43,7 +42,7 @@ export const Step2JobPostGenerator = ({
           <CardHeader className="pb-3 flex-shrink-0">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Sparkles className="w-5 h-5 text-blue-600" />
-              {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "AI Job Post Generator"}
+              AI Job Post Generator
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex items-center justify-center">
@@ -55,12 +54,7 @@ export const Step2JobPostGenerator = ({
                 Ready to Generate Your Job Post
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                {uploadedPdfContent && useOriginalPdf === true
-                  ? "Use your uploaded job description as the final job post"
-                  : uploadedPdfContent && useOriginalPdf === false
-                  ? "Generate an improved version of your uploaded job description"
-                  : "Create a professional job posting based on your details"
-                }
+                Create a professional job posting based on your details
               </p>
               <Button 
                 onClick={onGenerateJobPost}
@@ -68,10 +62,7 @@ export const Step2JobPostGenerator = ({
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 size="default"
               >
-                {isGenerating ? 'Processing...' : 
-                 uploadedPdfContent && useOriginalPdf === true ? 'Use Original Content' :
-                 uploadedPdfContent && useOriginalPdf === false ? 'Rewrite with AI' :
-                 'Generate Job Post'}
+                {isGenerating ? 'Processing...' : 'Generate Job Post'}
                 <Sparkles className="w-4 h-4 ml-2" />
               </Button>
             </div>
@@ -83,9 +74,9 @@ export const Step2JobPostGenerator = ({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Sparkles className="w-5 h-5 text-blue-600" />
-                {uploadedPdfContent && useOriginalPdf === true ? "Original Job Post" : "Generated Job Post"}
+                Generated Job Post
               </CardTitle>
-              {!isEditingJobPost && !(uploadedPdfContent && useOriginalPdf === true) && (
+              {!isEditingJobPost && (
                 <Button 
                   variant="outline" 
                   size="sm"

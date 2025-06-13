@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,14 +5,14 @@ import { Sparkles, Edit3, SkipForward } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { JobCreatorActions } from "./types";
+import { UnifiedJobCreatorActions } from "@/types/jobForm";
 
 interface Step3SkillsTestGeneratorProps {
   generatedJobPost: string;
   generatedSkillsTest: string;
   isGenerating: boolean;
   isEditingSkillsTest: boolean;
-  actions: JobCreatorActions;
+  actions: UnifiedJobCreatorActions;
   onGenerateSkillsTest: () => Promise<void>;
 }
 

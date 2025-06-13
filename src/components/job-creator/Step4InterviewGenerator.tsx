@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +7,7 @@ import { Sparkles, Edit3, SkipForward, Video } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { JobCreatorActions } from "./types";
+import { UnifiedJobCreatorActions } from "@/types/jobForm";
 
 interface Step4InterviewGeneratorProps {
   generatedJobPost: string;
@@ -16,7 +15,7 @@ interface Step4InterviewGeneratorProps {
   interviewVideoMaxLength: number;
   isGenerating: boolean;
   isEditingInterviewQuestions: boolean;
-  actions: JobCreatorActions;
+  actions: UnifiedJobCreatorActions;
   onGenerateInterviewQuestions: () => Promise<void>;
 }
 
