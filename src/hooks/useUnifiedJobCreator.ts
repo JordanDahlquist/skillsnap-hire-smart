@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -36,7 +37,6 @@ const initialState: UnifiedJobCreatorState = {
   generatedInterviewQuestions: "",
   interviewVideoMaxLength: 5,
   isEditingJobPost: false,
-  isEditingSkillsTest: false,
   isEditingInterviewQuestions: false,
   isEditMode: false,
   editingJobId: undefined
@@ -64,11 +64,22 @@ export const useUnifiedJobCreator = (
     setGeneratedInterviewQuestions: (content) => setState(prev => ({ ...prev, generatedInterviewQuestions: content })),
     setInterviewVideoMaxLength: (length) => setState(prev => ({ ...prev, interviewVideoMaxLength: length })),
     setIsEditingJobPost: (editing) => setState(prev => ({ ...prev, isEditingJobPost: editing })),
-    setIsEditingSkillsTest: (editing) => setState(prev => ({ ...prev, isEditingSkillsTest: editing })),
     setIsEditingInterviewQuestions: (editing) => setState(prev => ({ ...prev, isEditingInterviewQuestions: editing })),
     setEditMode: (isEdit, jobId) => setState(prev => ({ ...prev, isEditMode: isEdit, editingJobId: jobId })),
     populateFormFromJob: (job) => {
       const budgetParts = parseBudgetRange(job.budget || "");
+      
+      // Parse existing skills test data
+      let parsedSkillsTestData: SkillsTestData = initialSkillsTestData;
+      if (job.generated_test) {
+        try {
+          parsedSkillsTestData = JSON.parse(job.generated_test);
+        } catch (error) {
+          console.error('Error parsing skills test data:', error);
+          parsedSkillsTestData = initialSkillsTestData;
+        }
+      }
+      
       setState(prev => ({
         ...prev,
         isEditMode: true,
@@ -89,7 +100,7 @@ export const useUnifiedJobCreator = (
           companyName: job.company_name || ""
         },
         generatedJobPost: job.generated_job_post || "",
-        skillsTestData: skillsTestData,
+        skillsTestData: parsedSkillsTestData,
         generatedInterviewQuestions: job.generated_interview_questions || "",
         interviewVideoMaxLength: job.interview_video_max_length || 5
       }));

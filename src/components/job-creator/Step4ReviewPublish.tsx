@@ -3,23 +3,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit3, FileText } from "lucide-react";
 import { parseMarkdown } from "@/utils/markdownParser";
+import { renderSkillsTestAsMarkdown } from "@/utils/skillsTestRenderer";
 import { JobFormData, JobCreatorActions } from "./types";
+import { SkillsTestData } from "@/types/skillsAssessment";
 
 interface Step4ReviewPublishProps {
   formData: JobFormData;
   pdfFileName: string | null;
   useOriginalPdf: boolean | null;
   generatedJobPost: string;
-  generatedSkillsTest: string;
+  skillsTestData: SkillsTestData;
   actions: JobCreatorActions;
 }
 
 export const Step4ReviewPublish = ({
   formData,
   generatedJobPost,
-  generatedSkillsTest,
+  skillsTestData,
   actions
 }: Step4ReviewPublishProps) => {
+  const skillsTestMarkdown = renderSkillsTestAsMarkdown(skillsTestData);
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex-shrink-0 mb-4">
@@ -84,7 +88,7 @@ export const Step4ReviewPublish = ({
           </Card>
         )}
 
-        {generatedSkillsTest && (
+        {skillsTestMarkdown && (
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -94,7 +98,7 @@ export const Step4ReviewPublish = ({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => actions.setIsEditingSkillsTest(true)}
+                  onClick={() => actions.setCurrentStep(3)}
                   className="text-xs h-8 px-3"
                 >
                   <Edit3 className="w-3 h-3 mr-1" />
@@ -111,14 +115,14 @@ export const Step4ReviewPublish = ({
                   wordWrap: 'break-word'
                 }}
                 dangerouslySetInnerHTML={{ 
-                  __html: parseMarkdown(generatedSkillsTest) 
+                  __html: parseMarkdown(skillsTestMarkdown) 
                 }}
               />
             </CardContent>
           </Card>
         )}
 
-        {!generatedJobPost && !generatedSkillsTest && (
+        {!generatedJobPost && !skillsTestMarkdown && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center text-gray-500">
               <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />

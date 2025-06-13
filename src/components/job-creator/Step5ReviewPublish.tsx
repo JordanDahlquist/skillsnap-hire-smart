@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Edit, Eye, FileText, HelpCircle, Video, Clock } from "lucide-react";
 import { parseMarkdown } from "@/utils/markdownParser";
+import { renderSkillsTestAsMarkdown } from "@/utils/skillsTestRenderer";
 import { JobFormData, JobCreatorActions } from "./types";
+import { SkillsTestData } from "@/types/skillsAssessment";
 
 interface Step5ReviewPublishProps {
   formData: JobFormData;
@@ -28,6 +30,18 @@ export const Step5ReviewPublish = ({
   interviewVideoMaxLength,
   actions
 }: Step5ReviewPublishProps) => {
+  // Parse skills test data if it's a JSON string
+  let skillsTestData: SkillsTestData | null = null;
+  if (generatedSkillsTest) {
+    try {
+      skillsTestData = JSON.parse(generatedSkillsTest);
+    } catch (error) {
+      console.error('Error parsing skills test data:', error);
+    }
+  }
+
+  const skillsTestMarkdown = skillsTestData ? renderSkillsTestAsMarkdown(skillsTestData) : "";
+
   return (
     <div className="h-full overflow-auto">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -124,7 +138,7 @@ export const Step5ReviewPublish = ({
           </Card>
 
           {/* Skills Test */}
-          {generatedSkillsTest && (
+          {skillsTestMarkdown && (
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -138,7 +152,7 @@ export const Step5ReviewPublish = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => actions.setIsEditingSkillsTest(true)}
+                    onClick={() => actions.setCurrentStep(3)}
                     className="flex items-center gap-1"
                   >
                     <Edit className="w-3 h-3" />
@@ -149,7 +163,7 @@ export const Step5ReviewPublish = ({
               <CardContent className="pt-0">
                 <div 
                   className="prose max-w-none text-sm"
-                  dangerouslySetInnerHTML={{ __html: parseMarkdown(generatedSkillsTest) }}
+                  dangerouslySetInnerHTML={{ __html: parseMarkdown(skillsTestMarkdown) }}
                 />
               </CardContent>
             </Card>
