@@ -56,6 +56,7 @@ export const VideoInterview = ({
       
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        console.log('Camera stream assigned to video element');
       }
     } catch (error) {
       console.error('Error accessing camera/microphone:', error);
@@ -213,8 +214,15 @@ export const VideoInterview = ({
                 <video
                   ref={videoRef}
                   autoPlay
-                  muted
+                  playsInline
+                  volume={0}
                   className="w-full h-full object-cover"
+                  onLoadedMetadata={() => {
+                    console.log('Video metadata loaded, stream should be visible');
+                  }}
+                  onError={(e) => {
+                    console.error('Video element error:', e);
+                  }}
                 />
                 
                 {isRecording && (
