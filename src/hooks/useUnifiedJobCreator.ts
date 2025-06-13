@@ -1,348 +1,39 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { UnifiedJobFormData, UnifiedJobCreatorState, UnifiedJobCreatorActions } from "@/types/jobForm";
-import { SkillsTestData } from "@/types/skillsAssessment";
 
-const initialFormData: UnifiedJobFormData = {
-  title: "",
-  description: "",
-  employmentType: "project",
-  experienceLevel: "intermediate",
-  skills: "",
-  budget: "",
-  duration: "",
-  location: "",
-  locationType: "remote",
-  country: "",
-  state: "",
-  city: "",
-  companyName: ""
-};
-
-const initialSkillsTestData: SkillsTestData = {
-  questions: [],
-  maxQuestions: 10
-};
-
-const initialState: UnifiedJobCreatorState = {
-  currentStep: 1,
-  isGenerating: false,
-  isSaving: false,
-  formData: initialFormData,
-  generatedJobPost: "",
-  skillsTestData: initialSkillsTestData,
-  generatedInterviewQuestions: "",
-  interviewVideoMaxLength: 5,
-  isEditingJobPost: false,
-  isEditingInterviewQuestions: false,
-  isEditMode: false,
-  editingJobId: undefined
-};
+import { useJobCreatorState } from "./job-creator/useJobCreatorState";
+import { createJobCreatorActions } from "./job-creator/useJobCreatorActions";
+import { useJobContentGeneration } from "./job-creator/useJobContentGeneration";
+import { useJobSaving } from "./job-creator/useJobSaving";
 
 export const useUnifiedJobCreator = (
   onJobCreated?: () => void,
   onClose?: (open: boolean) => void,
   editingJob?: any
 ) => {
-  const [state, setState] = useState<UnifiedJobCreatorState>(initialState);
-  const { toast } = useToast();
-  const { user, profile } = useAuth();
-
-  const actions: UnifiedJobCreatorActions = {
-    setCurrentStep: (step) => setState(prev => ({ ...prev, currentStep: step })),
-    setIsGenerating: (loading) => setState(prev => ({ ...prev, isGenerating: loading })),
-    setIsSaving: (saving) => setState(prev => ({ ...prev, isSaving: saving })),
-    updateFormData: (field, value) => setState(prev => ({
-      ...prev,
-      formData: { ...prev.formData, [field]: value }
-    })),
-    setGeneratedJobPost: (content) => setState(prev => ({ ...prev, generatedJobPost: content })),
-    setSkillsTestData: (data) => setState(prev => ({ ...prev, skillsTestData: data })),
-    setGeneratedInterviewQuestions: (content) => setState(prev => ({ ...prev, generatedInterviewQuestions: content })),
-    setInterviewVideoMaxLength: (length) => setState(prev => ({ ...prev, interviewVideoMaxLength: length })),
-    setIsEditingJobPost: (editing) => setState(prev => ({ ...prev, isEditingJobPost: editing })),
-    setIsEditingInterviewQuestions: (editing) => setState(prev => ({ ...prev, isEditingInterviewQuestions: editing })),
-    setEditMode: (isEdit, jobId) => setState(prev => ({ ...prev, isEditMode: isEdit, editingJobId: jobId })),
-    populateFormFromJob: (job) => {
-      const budgetParts = parseBudgetRange(job.budget || "");
-      
-      // Parse existing skills test data
-      let parsedSkillsTestData: SkillsTestData = initialSkillsTestData;
-      if (job.generated_test) {
-        try {
-          parsedSkillsTestData = JSON.parse(job.generated_test);
-        } catch (error) {
-          console.error('Error parsing skills test data:', error);
-          parsedSkillsTestData = initialSkillsTestData;
-        }
-      }
-      
-      setState(prev => ({
-        ...prev,
-        isEditMode: true,
-        editingJobId: job.id,
-        formData: {
-          title: job.title || "",
-          description: job.description || "",
-          employmentType: job.employment_type || job.role_type || "project",
-          experienceLevel: job.experience_level || "intermediate",
-          skills: job.required_skills || "",
-          budget: job.budget || "",
-          duration: job.duration || "",
-          location: job.location || "",
-          locationType: job.location_type || "remote",
-          country: job.country || "",
-          state: job.state || "",
-          city: job.city || "",
-          companyName: job.company_name || ""
-        },
-        generatedJobPost: job.generated_job_post || "",
-        skillsTestData: parsedSkillsTestData,
-        generatedInterviewQuestions: job.generated_interview_questions || "",
-        interviewVideoMaxLength: job.interview_video_max_length || 5
-      }));
-    }
-  };
-
-  // Helper function to parse budget range
-  const parseBudgetRange = (budget: string) => {
-    if (!budget) return { min: "", max: "" };
-    const rangeMatch = budget.match(/^(.+?)\s*-\s*(.+)$/);
-    if (rangeMatch) {
-      return { min: rangeMatch[1].trim(), max: rangeMatch[2].trim() };
-    }
-    const upToMatch = budget.match(/^Up to (.+)$/i);
-    if (upToMatch) {
-      return { min: "", max: upToMatch[1].trim() };
-    }
-    return { min: budget, max: "" };
-  };
+  const { state, setState, resetState } = useJobCreatorState();
+  const actions = createJobCreatorActions(setState);
+  const { generateJobPost, generateSkillsQuestions, generateInterviewQuestions } = useJobContentGeneration();
+  const { saveJob } = useJobSaving();
 
   const handleGenerateJobPost = async () => {
-    actions.setIsGenerating(true);
-    try {
-      const response = await supabase.functions.invoke('generate-job-content', {
-        body: {
-          type: 'job-post',
-          jobData: state.formData
-        }
-      });
-
-      if (response.error) throw response.error;
-      
-      actions.setGeneratedJobPost(response.data.jobPost);
-      toast({
-        title: "Job post generated!",
-        description: "Your job post has been generated successfully.",
-      });
-    } catch (error) {
-      console.error('Error generating job post:', error);
-      toast({
-        title: "Generation failed",
-        description: "Failed to generate job post. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      actions.setIsGenerating(false);
-    }
+    await generateJobPost(state.formData, actions.setIsGenerating, actions.setGeneratedJobPost);
   };
 
   const handleGenerateSkillsQuestions = async () => {
-    actions.setIsGenerating(true);
-    try {
-      console.log('Generating skills questions with job post:', state.generatedJobPost);
-      
-      const response = await supabase.functions.invoke('generate-job-content', {
-        body: {
-          type: 'skills-test',
-          existingJobPost: state.generatedJobPost
-        }
-      });
-
-      if (response.error) {
-        console.error('Edge function error:', response.error);
-        throw response.error;
-      }
-      
-      console.log('Skills questions response:', response.data);
-      
-      // Handle the response based on its structure
-      let skillsTestData: SkillsTestData;
-      
-      if (response.data.questions && Array.isArray(response.data.questions)) {
-        // If we get a structured response with questions array
-        skillsTestData = {
-          questions: response.data.questions.map((q: any, index: number) => ({
-            id: crypto.randomUUID(),
-            question: typeof q === 'string' ? q : q.question || q.text || '',
-            type: 'text' as const,
-            required: true,
-            order: index + 1
-          })),
-          maxQuestions: 10
-        };
-      } else if (response.data.test && typeof response.data.test === 'string') {
-        // If we get a raw test string, try to parse it
-        const testContent = response.data.test;
-        const lines = testContent.split('\n').filter(line => line.trim().length > 0);
-        const questions = lines
-          .filter(line => line.match(/^\d+\.|^Q\d+:|Question \d+/i))
-          .map((line, index) => line.replace(/^\d+\.\s*|^Q\d+:\s*|Question \d+:\s*/i, '').trim())
-          .filter(q => q.length > 0);
-        
-        skillsTestData = {
-          questions: questions.map((question, index) => ({
-            id: crypto.randomUUID(),
-            question,
-            type: 'text' as const,
-            required: true,
-            order: index + 1
-          })),
-          maxQuestions: 10
-        };
-      } else {
-        throw new Error('Invalid response format from skills test generation');
-      }
-      
-      actions.setSkillsTestData(skillsTestData);
-      toast({
-        title: "Questions generated!",
-        description: `${skillsTestData.questions.length} skills assessment questions have been generated successfully.`,
-      });
-    } catch (error) {
-      console.error('Error generating skills questions:', error);
-      toast({
-        title: "Generation failed",
-        description: "Failed to generate skills questions. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      actions.setIsGenerating(false);
-    }
+    await generateSkillsQuestions(state.generatedJobPost, actions.setIsGenerating, actions.setSkillsTestData);
   };
 
   const handleGenerateInterviewQuestions = async () => {
-    actions.setIsGenerating(true);
-    try {
-      const response = await supabase.functions.invoke('generate-job-content', {
-        body: {
-          type: 'interview-questions',
-          jobData: state.formData,
-          existingJobPost: state.generatedJobPost,
-          existingSkillsTest: state.skillsTestData.questions.length > 0 ? JSON.stringify(state.skillsTestData) : ""
-        }
-      });
-
-      if (response.error) throw response.error;
-      
-      actions.setGeneratedInterviewQuestions(response.data.questions);
-      toast({
-        title: "Interview questions generated!",
-        description: "Your interview questions have been generated successfully.",
-      });
-    } catch (error) {
-      console.error('Error generating interview questions:', error);
-      toast({
-        title: "Generation failed",
-        description: "Failed to generate interview questions. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      actions.setIsGenerating(false);
-    }
+    await generateInterviewQuestions(
+      state.formData,
+      state.generatedJobPost,
+      state.skillsTestData,
+      actions.setIsGenerating,
+      actions.setGeneratedInterviewQuestions
+    );
   };
 
   const handleSaveJob = async (status: 'draft' | 'active') => {
-    if (!user?.id) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to save jobs.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    actions.setIsSaving(true);
-    try {
-      const jobData = {
-        title: state.formData.title,
-        description: state.formData.description,
-        role_type: state.formData.employmentType,
-        experience_level: state.formData.experienceLevel,
-        required_skills: state.formData.skills,
-        budget: state.formData.budget || null,
-        duration: state.formData.duration || null,
-        location_type: state.formData.locationType,
-        employment_type: state.formData.employmentType,
-        country: state.formData.country || null,
-        state: state.formData.state || null,
-        city: state.formData.city || null,
-        company_name: state.formData.companyName || profile?.company_name || 'Your Company',
-        generated_job_post: state.generatedJobPost || null,
-        generated_test: state.skillsTestData.questions.length > 0 
-          ? JSON.stringify(state.skillsTestData) 
-          : null,
-        generated_interview_questions: state.generatedInterviewQuestions || null,
-        interview_video_max_length: state.interviewVideoMaxLength,
-        status,
-        user_id: user.id,
-        updated_at: new Date().toISOString()
-      };
-
-      let result;
-      if (state.isEditMode && state.editingJobId) {
-        // Update existing job
-        const { data, error } = await supabase
-          .from('jobs')
-          .update(jobData)
-          .eq('id', state.editingJobId)
-          .eq('user_id', user.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        result = data;
-
-        toast({
-          title: "Job updated!",
-          description: "Your job has been updated successfully.",
-        });
-      } else {
-        // Create new job
-        const { data, error } = await supabase
-          .from('jobs')
-          .insert(jobData)
-          .select()
-          .single();
-
-        if (error) throw error;
-        result = data;
-
-        toast({
-          title: status === 'active' ? "Job published!" : "Job saved as draft!",
-          description: status === 'active' 
-            ? "Your job has been published and is now live." 
-            : "Your job has been saved as a draft.",
-        });
-      }
-
-      // Reset form and close modal
-      setState(initialState);
-      onJobCreated?.();
-      onClose?.(false);
-
-    } catch (error) {
-      console.error('Error saving job:', error);
-      toast({
-        title: "Save failed",
-        description: "Failed to save job. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      actions.setIsSaving(false);
-    }
+    await saveJob(state, status, actions.setIsSaving, resetState, onJobCreated, onClose);
   };
 
   return {
