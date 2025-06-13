@@ -106,7 +106,7 @@ export const DashboardHeaderActions = ({
           disabled={isUpdating}
           title="View public job page"
         >
-          <a href={`/jobs/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
+          <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="w-4 h-4 text-muted-foreground" />
           </a>
         </Button>
