@@ -60,14 +60,14 @@ export const useJobCreatorLogic = (
     try {
       const response = await supabase.functions.invoke('generate-job-content', {
         body: {
-          type: 'job_post',
-          formData: state.formData
+          type: 'job-post',
+          jobData: state.formData
         }
       });
 
       if (response.error) throw response.error;
       
-      actions.setGeneratedJobPost(response.data.content);
+      actions.setGeneratedJobPost(response.data.jobPost);
       toast({
         title: "Job post generated!",
         description: "Your job post has been generated successfully.",
@@ -89,14 +89,14 @@ export const useJobCreatorLogic = (
     try {
       const response = await supabase.functions.invoke('generate-job-content', {
         body: {
-          type: 'skills_test',
-          jobPost: state.generatedJobPost
+          type: 'skills-test',
+          existingJobPost: state.generatedJobPost
         }
       });
 
       if (response.error) throw response.error;
       
-      actions.setGeneratedSkillsTest(response.data.content);
+      actions.setGeneratedSkillsTest(response.data.test);
       toast({
         title: "Skills test generated!",
         description: "Your skills test has been generated successfully.",
@@ -118,14 +118,16 @@ export const useJobCreatorLogic = (
     try {
       const response = await supabase.functions.invoke('generate-job-content', {
         body: {
-          type: 'interview_questions',
-          jobPost: state.generatedJobPost
+          type: 'interview-questions',
+          jobData: state.formData,
+          existingJobPost: state.generatedJobPost,
+          existingSkillsTest: state.generatedSkillsTest
         }
       });
 
       if (response.error) throw response.error;
       
-      actions.setGeneratedInterviewQuestions(response.data.content);
+      actions.setGeneratedInterviewQuestions(response.data.questions);
       toast({
         title: "Interview questions generated!",
         description: "Your interview questions have been generated successfully.",
