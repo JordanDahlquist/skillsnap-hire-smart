@@ -1,312 +1,217 @@
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Clock, AlertCircle } from "lucide-react";
-import { Job } from "@/types";
-
-interface ApplicationFormData {
-  name: string;
-  email: string;
-  portfolio: string;
-  resumeUrl: string | null;
-  answer1: string;
-  answer2: string;
-  answer3: string;
-  skillsTestResponses: Array<{
-    question: string;
-    answer: string;
-  }>;
-  videoUrl: string | null;
-}
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { VideoUploadField } from "../VideoUploadField";
+import { Brain, FileText, Video } from "lucide-react";
+import { SkillsTestData, SkillsQuestion } from "@/types/skillsAssessment";
 
 interface SkillsAssessmentStepProps {
-  job: Job;
-  formData: ApplicationFormData;
-  onFormDataChange: (updates: Partial<ApplicationFormData>) => void;
+  job: any;
+  formData: any;
+  onFormDataChange: (updates: any) => void;
   onValidationChange: (isValid: boolean) => void;
 }
 
-const parseSkillsTestQuestions = (testContent: string): string[] => {
-  if (!testContent) return [];
-  
-  console.log('Raw test content:', testContent);
-  
-  // Remove markdown headers and clean up the content
-  let cleanContent = testContent
-    .replace(/^#{1,6}\s+.*$/gm, '') // Remove markdown headers
-    .replace(/\*\*Skills Assessment.*?\*\*/gi, '') // Remove assessment headers
-    .replace(/Skills Assessment.*?Position/gi, '') // Remove title lines
-    .replace(/Instructions?:.*?(?=\d+\.|$)/gis, '') // Remove instruction blocks
-    .trim();
-  
-  console.log('Cleaned content:', cleanContent);
-  
-  // First try: Split by numbered questions (1., 2., etc.)
-  let questionMatches = cleanContent.match(/(?:^|\n)\s*(\d+)\.\s+(.+?)(?=(?:\n\s*\d+\.|$))/gs);
-  
-  if (questionMatches && questionMatches.length > 0) {
-    const questions = questionMatches
-      .map(match => {
-        // Extract just the question text after the number
-        const questionText = match.replace(/^\s*\d+\.\s*/, '').trim();
-        return questionText;
-      })
-      .filter(q => q.length > 10 && !q.toLowerCase().includes('skills test'))
-      .filter(q => !q.toLowerCase().includes('instructions'))
-      .filter(q => !q.toLowerCase().includes('assessment'));
-    
-    if (questions.length > 0) {
-      console.log('Parsed numbered questions:', questions);
-      return questions;
-    }
-  }
-  
-  // Second try: Split by bullet points or dashes
-  let bulletQuestions = cleanContent
-    .split(/\n\s*[-*•]\s+/)
-    .map(q => q.trim())
-    .filter(q => q.length > 15)
-    .filter(q => !q.toLowerCase().includes('skills test'))
-    .filter(q => !q.toLowerCase().includes('instructions'))
-    .filter(q => !q.toLowerCase().includes('assessment'));
-  
-  if (bulletQuestions.length > 1) {
-    // Remove the first item if it's likely a header
-    if (bulletQuestions[0].length < 50) {
-      bulletQuestions = bulletQuestions.slice(1);
-    }
-    console.log('Parsed bullet questions:', bulletQuestions);
-    return bulletQuestions;
-  }
-  
-  // Third try: Split by double newlines and filter for question-like content
-  let paragraphQuestions = cleanContent
-    .split(/\n\s*\n/)
-    .map(q => q.trim())
-    .filter(q => q.length > 20)
-    .filter(q => q.includes('?') || q.toLowerCase().includes('describe') || q.toLowerCase().includes('explain') || q.toLowerCase().includes('how'))
-    .filter(q => !q.toLowerCase().includes('assessment'))
-    .filter(q => !q.toLowerCase().includes('instructions'));
-  
-  console.log('Final paragraph questions:', paragraphQuestions);
-  return paragraphQuestions;
-};
+interface SkillsResponse {
+  questionId: string;
+  question: string;
+  answer: string;
+  answerType: 'text' | 'video';
+  videoUrl?: string;
+  videoFileName?: string;
+  videoFileSize?: number;
+}
 
-export const SkillsAssessmentStep = ({ 
-  job, 
-  formData, 
-  onFormDataChange, 
-  onValidationChange 
+export const SkillsAssessmentStep = ({
+  job,
+  formData,
+  onFormDataChange,
+  onValidationChange
 }: SkillsAssessmentStepProps) => {
-  const [questions, setQuestions] = useState<string[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<{ [key: number]: string }>({});
+  const [responses, setResponses] = useState<SkillsResponse[]>([]);
+  const [questions, setQuestions] = useState<SkillsQuestion[]>([]);
 
-  // Parse questions from the generated test
+  // Parse skills test data from job
   useEffect(() => {
     if (job.generated_test) {
-      const parsedQuestions = parseSkillsTestQuestions(job.generated_test);
-      setQuestions(parsedQuestions);
-      console.log('Final questions set:', parsedQuestions);
+      try {
+        const skillsTestData: SkillsTestData = JSON.parse(job.generated_test);
+        setQuestions(skillsTestData.questions || []);
+        
+        // Initialize responses if not already set
+        if (responses.length === 0) {
+          const initialResponses = skillsTestData.questions.map(q => ({
+            questionId: q.id,
+            question: q.question,
+            answer: '',
+            answerType: 'text' as const
+          }));
+          setResponses(initialResponses);
+        }
+      } catch (error) {
+        console.error('Error parsing skills test data:', error);
+      }
     }
   }, [job.generated_test]);
 
-  // Load existing responses
+  // Update form data when responses change
   useEffect(() => {
-    if (formData.skillsTestResponses.length > 0) {
-      const responseMap: { [key: number]: string } = {};
-      formData.skillsTestResponses.forEach((response, index) => {
-        responseMap[index] = response.answer;
-      });
-      setResponses(responseMap);
-    }
-  }, [formData.skillsTestResponses]);
+    const skillsTestResponses = responses
+      .filter(r => r.answer.trim() || r.videoUrl)
+      .map(r => ({
+        question: r.question,
+        answer: r.answerType === 'video' ? `[Video Response: ${r.videoFileName}]` : r.answer,
+        answerType: r.answerType,
+        videoUrl: r.videoUrl,
+        videoFileName: r.videoFileName,
+        videoFileSize: r.videoFileSize
+      }));
 
-  // Validate when responses change
-  useEffect(() => {
-    if (!job.generated_test) {
-      onValidationChange(true); // No test means this step is valid
-      return;
-    }
-
-    const allAnswered = questions.every((_, index) => 
-      responses[index] && responses[index].trim().length > 0
-    );
-    onValidationChange(allAnswered);
-  }, [responses, questions, job.generated_test, onValidationChange]);
-
-  const handleResponseChange = (questionIndex: number, answer: string) => {
-    const newResponses = { ...responses, [questionIndex]: answer };
-    setResponses(newResponses);
-
-    // Update form data
-    const skillsTestResponses = questions.map((question, index) => ({
-      question,
-      answer: newResponses[index] || ''
-    }));
-    
     onFormDataChange({ skillsTestResponses });
+    
+    // Validate - at least half the questions should be answered
+    const answeredCount = responses.filter(r => r.answer.trim() || r.videoUrl).length;
+    const isValid = answeredCount >= Math.ceil(questions.length / 2);
+    onValidationChange(isValid);
+  }, [responses, questions.length, onFormDataChange, onValidationChange]);
+
+  const updateResponse = (questionId: string, updates: Partial<SkillsResponse>) => {
+    setResponses(prev => prev.map(r => 
+      r.questionId === questionId ? { ...r, ...updates } : r
+    ));
   };
 
-  const goToQuestion = (index: number) => {
-    setCurrentQuestionIndex(index);
+  const toggleAnswerType = (questionId: string) => {
+    setResponses(prev => prev.map(r => 
+      r.questionId === questionId 
+        ? { 
+            ...r, 
+            answerType: r.answerType === 'text' ? 'video' : 'text',
+            answer: '',
+            videoUrl: undefined,
+            videoFileName: undefined,
+            videoFileSize: undefined
+          }
+        : r
+    ));
   };
-
-  const nextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
-
-  const prevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
-
-  // If no test is generated, show a message
-  if (!job.generated_test) {
-    useEffect(() => {
-      onValidationChange(true);
-    }, [onValidationChange]);
-
-    return (
-      <div className="text-center space-y-6">
-        <div className="bg-blue-50 rounded-lg p-8">
-          <CheckCircle className="w-12 h-12 text-blue-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Skills Assessment Required</h2>
-          <p className="text-gray-600">
-            This position doesn't require a skills assessment. You can proceed to the next step.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (questions.length === 0) {
     return (
-      <div className="text-center space-y-6">
-        <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
-        <h2 className="text-2xl font-bold text-gray-900">Unable to Parse Assessment</h2>
-        <p className="text-gray-600">
-          The skills assessment content could not be properly parsed. Please contact support.
-        </p>
-        <div className="bg-gray-50 p-4 rounded-lg text-left max-w-2xl mx-auto">
-          <p className="text-sm text-gray-700 font-medium mb-2">Raw Content:</p>
-          <pre className="text-xs text-gray-600 whitespace-pre-wrap">{job.generated_test}</pre>
-        </div>
+      <div className="text-center py-12">
+        <Brain className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No Skills Assessment</h3>
+        <p className="text-gray-600">This job doesn't have a skills assessment.</p>
       </div>
     );
   }
 
-  const completedQuestions = Object.keys(responses).filter(key => responses[parseInt(key)]?.trim()).length;
-  const progressPercentage = (completedQuestions / questions.length) * 100;
+  const answeredCount = responses.filter(r => r.answer.trim() || r.videoUrl).length;
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Skills Assessment</h2>
-        <p className="text-gray-600 mt-2">
-          Please answer all questions to the best of your ability
-        </p>
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <Clock className="w-4 h-4 text-gray-500" />
-          <span className="text-sm text-gray-500">
-            Progress: {completedQuestions} of {questions.length} questions
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-          <div 
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Question Navigation */}
-      <div className="flex flex-wrap gap-2 justify-center mb-6">
-        {questions.map((_, index) => (
-          <Button
-            key={index}
-            variant={index === currentQuestionIndex ? "default" : responses[index] ? "secondary" : "outline"}
-            size="sm"
-            onClick={() => goToQuestion(index)}
-            className={`w-10 h-10 p-0 ${
-              responses[index] 
-                ? 'bg-green-100 hover:bg-green-200 text-green-800 border-green-300' 
-                : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300'
-            }`}
-          >
-            {responses[index] ? <CheckCircle className="w-4 h-4 text-green-600" /> : index + 1}
-          </Button>
-        ))}
-      </div>
-
-      {/* Current Question */}
-      <Card>
+      <Card className="bg-white shadow-sm border border-gray-200">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-            {responses[currentQuestionIndex] && (
-              <CheckCircle className="w-5 h-5 text-green-600" />
-            )}
+          <CardTitle className="flex items-center gap-2 text-xl text-gray-900">
+            <Brain className="w-6 h-6 text-blue-600" />
+            Skills Assessment
           </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-gray-800 leading-relaxed">
-              {questions[currentQuestionIndex]}
+          <div className="flex items-center gap-4">
+            <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
+              {answeredCount} of {questions.length} answered
+            </Badge>
+            <p className="text-sm text-gray-600">
+              Answer at least {Math.ceil(questions.length / 2)} questions to continue
             </p>
           </div>
-          
-          <div>
-            <Label htmlFor={`question-${currentQuestionIndex}`}>Your Answer</Label>
-            <Textarea
-              id={`question-${currentQuestionIndex}`}
-              value={responses[currentQuestionIndex] || ''}
-              onChange={(e) => handleResponseChange(currentQuestionIndex, e.target.value)}
-              rows={6}
-              placeholder="Type your answer here..."
-              className="mt-2"
-            />
-          </div>
-        </CardContent>
+        </CardHeader>
       </Card>
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={prevQuestion}
-          disabled={currentQuestionIndex === 0}
-          className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-        >
-          Previous Question
-        </Button>
-        
-        <Button
-          onClick={nextQuestion}
-          disabled={currentQuestionIndex === questions.length - 1}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Next Question
-        </Button>
+      <div className="space-y-6">
+        {questions.map((question, index) => {
+          const response = responses.find(r => r.questionId === question.id);
+          if (!response) return null;
+
+          return (
+            <Card key={question.id} className="bg-white shadow-sm border border-gray-200">
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      Question {index + 1}
+                    </h3>
+                    <p className="text-gray-800 leading-relaxed">
+                      {question.question}
+                    </p>
+                    {question.description && (
+                      <p className="text-sm text-gray-600 mt-2 italic">
+                        {question.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button
+                      type="button"
+                      variant={response.answerType === 'text' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => response.answerType !== 'text' && toggleAnswerType(question.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Text
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={response.answerType === 'video' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => response.answerType !== 'video' && toggleAnswerType(question.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <Video className="w-4 h-4" />
+                      Video
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {response.answerType === 'text' ? (
+                  <Textarea
+                    placeholder="Type your response here..."
+                    value={response.answer}
+                    onChange={(e) => updateResponse(question.id, { answer: e.target.value })}
+                    className="min-h-[120px] resize-none"
+                    rows={5}
+                  />
+                ) : (
+                  <VideoUploadField
+                    questionId={question.id}
+                    onVideoUploaded={(videoUrl, fileName, fileSize) => {
+                      updateResponse(question.id, {
+                        answer: `Video response: ${fileName}`,
+                        videoUrl,
+                        videoFileName: fileName,
+                        videoFileSize: fileSize
+                      });
+                    }}
+                    existingVideoUrl={response.videoUrl}
+                    existingFileName={response.videoFileName}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Summary */}
-      {completedQuestions === questions.length && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="font-medium text-green-900">
-              All questions completed! You can now proceed to the next step.
-            </span>
-          </div>
-        </div>
-      )}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p className="text-sm text-blue-800">
+          <strong>Tip:</strong> You can answer questions with either text or video responses. 
+          Video responses allow you to demonstrate your skills more effectively and provide a personal touch to your application.
+        </p>
+      </div>
     </div>
   );
 };

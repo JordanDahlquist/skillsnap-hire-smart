@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { StageSelector } from "../StageSelector";
 import { ApplicationRatingSection } from "./ApplicationRatingSection";
 import { ApplicationActionButtons } from "./ApplicationActionButtons";
+import { VideoResponsePlayer } from "./VideoResponsePlayer";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Application } from "@/types";
 
@@ -36,6 +37,11 @@ export const ApplicationDetailContent = ({
 }: ApplicationDetailContentProps) => {
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
   const pipelineStage = application.pipeline_stage || 'applied';
+
+  // Parse skills test responses
+  const skillsResponses = Array.isArray(application.skills_test_responses) 
+    ? application.skills_test_responses 
+    : [];
 
   return (
     <div className="glass-card p-6 space-y-6">
@@ -90,8 +96,69 @@ export const ApplicationDetailContent = ({
               <p className="text-foreground">{application.phone}</p>
             </div>
           )}
+          {application.location && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Location</label>
+              <p className="text-foreground">{application.location}</p>
+            </div>
+          )}
+          {application.portfolio_url && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Portfolio</label>
+              <a 
+                href={application.portfolio_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                View Portfolio
+              </a>
+            </div>
+          )}
+          {application.linkedin_url && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">LinkedIn</label>
+              <a 
+                href={application.linkedin_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                View Profile
+              </a>
+            </div>
+          )}
+          {application.github_url && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">GitHub</label>
+              <a 
+                href={application.github_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                View Profile
+              </a>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Skills Assessment Responses */}
+      {skillsResponses.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-foreground">Skills Assessment Responses</h3>
+          <div className="space-y-4">
+            {skillsResponses.map((response: any, index: number) => (
+              <VideoResponsePlayer
+                key={index}
+                response={response}
+                questionIndex={index}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Cover Letter */}
       {application.cover_letter && (
@@ -131,6 +198,23 @@ export const ApplicationDetailContent = ({
               View Resume
             </a>
           </Button>
+        </div>
+      )}
+
+      {/* Video Interview */}
+      {application.interview_video_url && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-foreground">Video Interview</h3>
+          <div className="bg-black rounded-lg overflow-hidden">
+            <video
+              src={application.interview_video_url}
+              controls
+              className="w-full max-h-80 object-contain"
+              preload="metadata"
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
         </div>
       )}
 
