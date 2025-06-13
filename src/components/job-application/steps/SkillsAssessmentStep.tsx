@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -29,6 +28,64 @@ interface SkillsAssessmentStepProps {
   onValidationChange: (isValid: boolean) => void;
 }
 
+const parseSkillsTestQuestions = (testContent: string): string[] => {
+  if (!testContent) return [];
+  
+  console.log('Raw test content:', testContent);
+  
+  // Remove markdown headers and clean up the content
+  let cleanContent = testContent
+    .replace(/^#{1,6}\s+.*$/gm, '') // Remove markdown headers
+    .replace(/\*\*Skills Assessment.*?\*\*/gi, '') // Remove assessment headers
+    .replace(/Skills Assessment.*?Position/gi, '') // Remove title lines
+    .trim();
+  
+  console.log('Cleaned content:', cleanContent);
+  
+  // Split by numbered questions (1., 2., etc.)
+  let questions = cleanContent.split(/(?:^|\n)\s*(\d+)\.\s+/m);
+  
+  // Remove the first empty element and rebuild questions with their numbers
+  if (questions.length > 1) {
+    questions = questions.slice(1); // Remove first empty element
+    const parsedQuestions: string[] = [];
+    
+    for (let i = 0; i < questions.length; i += 2) {
+      if (i + 1 < questions.length) {
+        const questionText = questions[i + 1].trim();
+        if (questionText.length > 10) {
+          parsedQuestions.push(questionText);
+        }
+      }
+    }
+    
+    if (parsedQuestions.length > 0) {
+      console.log('Parsed numbered questions:', parsedQuestions);
+      return parsedQuestions.slice(0, 10); // Limit to 10 questions
+    }
+  }
+  
+  // Fallback: Try splitting by bullet points or dashes
+  questions = cleanContent
+    .split(/\n\s*[-*•]\s+/)
+    .map(q => q.trim())
+    .filter(q => q.length > 10);
+  
+  if (questions.length > 0) {
+    console.log('Parsed bullet questions:', questions);
+    return questions.slice(0, 10);
+  }
+  
+  // Last fallback: Split by double newlines and filter
+  questions = cleanContent
+    .split(/\n\s*\n/)
+    .map(q => q.trim())
+    .filter(q => q.length > 10 && !q.toLowerCase().includes('assessment'));
+  
+  console.log('Final fallback questions:', questions);
+  return questions.slice(0, 10);
+};
+
 export const SkillsAssessmentStep = ({ 
   job, 
   formData, 
@@ -42,13 +99,9 @@ export const SkillsAssessmentStep = ({
   // Parse questions from the generated test
   useEffect(() => {
     if (job.generated_test) {
-      // Simple parsing - split by numbers or question markers
-      const testQuestions = job.generated_test
-        .split(/\d+\.|\n-|\n\*/)
-        .map(q => q.trim())
-        .filter(q => q.length > 10 && !q.toLowerCase().includes('skills test') && !q.toLowerCase().includes('assessment'));
-      
-      setQuestions(testQuestions.slice(0, 10)); // Limit to 10 questions max
+      const parsedQuestions = parseSkillsTestQuestions(job.generated_test);
+      setQuestions(parsedQuestions);
+      console.log('Final questions set:', parsedQuestions);
     }
   }, [job.generated_test]);
 
@@ -128,8 +181,14 @@ export const SkillsAssessmentStep = ({
     return (
       <div className="text-center space-y-6">
         <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
-        <h2 className="text-2xl font-bold text-gray-900">Loading Assessment...</h2>
-        <p className="text-gray-600">Please wait while we prepare your skills assessment.</p>
+        <h2 className="text-2xl font-bold text-gray-900">Unable to Parse Assessment</h2>
+        <p className="text-gray-600">
+          The skills assessment content could not be properly parsed. Please contact support.
+        </p>
+        <div className="bg-gray-50 p-4 rounded-lg text-left max-w-2xl mx-auto">
+          <p className="text-sm text-gray-700 font-medium mb-2">Raw Content:</p>
+          <pre className="text-xs text-gray-600 whitespace-pre-wrap">{job.generated_test}</pre>
+        </div>
       </div>
     );
   }
