@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UnifiedJobCreatorPanelProps } from "@/types/jobForm";
@@ -17,7 +16,7 @@ export const UnifiedJobCreatorPanel = ({
     state,
     actions,
     handleGenerateJobPost,
-    handleGenerateSkillsTest,
+    handleGenerateSkillsQuestions,
     handleGenerateInterviewQuestions,
     handleSaveJob
   } = useUnifiedJobCreator(onJobCreated, onOpenChange, editingJob);
@@ -73,7 +72,7 @@ export const UnifiedJobCreatorPanel = ({
             state={state}
             actions={actions}
             onGenerateJobPost={handleGenerateJobPost}
-            onGenerateSkillsTest={handleGenerateSkillsTest}
+            onGenerateSkillsQuestions={handleGenerateSkillsQuestions}
             onGenerateInterviewQuestions={handleGenerateInterviewQuestions}
           />
         </div>
@@ -88,8 +87,12 @@ export const UnifiedJobCreatorPanel = ({
           canProceedToStep5={canProceedToStep5}
           canActivate={canActivate}
           isSaving={state.isSaving}
-          onPrevStep={prevStep}
-          onNextStep={nextStep}
+          onPrevStep={() => {
+            if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
+          }}
+          onNextStep={() => {
+            if (state.currentStep < 5) actions.setCurrentStep(state.currentStep + 1);
+          }}
           onSaveJob={handleSaveJob}
         />
       </div>

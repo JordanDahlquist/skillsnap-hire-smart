@@ -11,7 +11,7 @@ interface StepRendererProps {
   state: UnifiedJobCreatorState;
   actions: UnifiedJobCreatorActions;
   onGenerateJobPost: () => Promise<void>;
-  onGenerateSkillsTest: () => Promise<void>;
+  onGenerateSkillsQuestions: () => Promise<void>;
   onGenerateInterviewQuestions: () => Promise<void>;
 }
 
@@ -20,7 +20,7 @@ export const StepRenderer = ({
   state,
   actions,
   onGenerateJobPost,
-  onGenerateSkillsTest,
+  onGenerateSkillsQuestions,
   onGenerateInterviewQuestions
 }: StepRendererProps) => {
   switch (currentStep) {
@@ -48,11 +48,11 @@ export const StepRenderer = ({
       return (
         <Step3SkillsTestGenerator
           generatedJobPost={state.generatedJobPost}
-          generatedSkillsTest={state.generatedSkillsTest}
+          skillsTestData={state.skillsTestData}
           isGenerating={state.isGenerating}
-          isEditingSkillsTest={state.isEditingSkillsTest}
           actions={actions}
-          onGenerateSkillsTest={onGenerateSkillsTest}
+          onGenerateQuestions={onGenerateSkillsQuestions}
+          onSkillsTestDataChange={actions.setSkillsTestData}
         />
       );
     case 4:
@@ -74,7 +74,7 @@ export const StepRenderer = ({
           pdfFileName={null}
           useOriginalPdf={null}
           generatedJobPost={state.generatedJobPost}
-          generatedSkillsTest={state.generatedSkillsTest}
+          generatedSkillsTest={state.skillsTestData.questions.length > 0 ? JSON.stringify(state.skillsTestData) : ""}
           generatedInterviewQuestions={state.generatedInterviewQuestions}
           interviewVideoMaxLength={state.interviewVideoMaxLength}
           actions={actions}

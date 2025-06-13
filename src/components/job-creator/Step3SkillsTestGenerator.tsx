@@ -1,163 +1,115 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Edit3, SkipForward } from "lucide-react";
-import { RichTextEditor } from "@/components/RichTextEditor";
-import { parseMarkdown } from "@/utils/markdownParser";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sparkles, SkipForward } from "lucide-react";
+import { SkillsQuestionEditor } from "./SkillsQuestionEditor";
+import { SkillsTestData } from "@/types/skillsAssessment";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
 
 interface Step3SkillsTestGeneratorProps {
   generatedJobPost: string;
-  generatedSkillsTest: string;
+  skillsTestData: SkillsTestData;
   isGenerating: boolean;
-  isEditingSkillsTest: boolean;
   actions: UnifiedJobCreatorActions;
-  onGenerateSkillsTest: () => Promise<void>;
+  onGenerateQuestions: () => Promise<void>;
+  onSkillsTestDataChange: (data: SkillsTestData) => void;
 }
 
 export const Step3SkillsTestGenerator = ({
   generatedJobPost,
-  generatedSkillsTest,
+  skillsTestData,
   isGenerating,
-  isEditingSkillsTest,
   actions,
-  onGenerateSkillsTest
+  onGenerateQuestions,
+  onSkillsTestDataChange
 }: Step3SkillsTestGeneratorProps) => {
-  const handleSkillsTestSave = () => {
-    actions.setIsEditingSkillsTest(false);
-  };
+  const hasQuestions = skillsTestData.questions.length > 0;
 
-  const handleSkillsTestCancel = () => {
-    actions.setIsEditingSkillsTest(false);
-  };
+  if (!hasQuestions) {
+    return (
+      <Card className="h-full">
+        <CardHeader className="pb-3 flex-shrink-0">
+          <div className="flex items-center gap-2 mb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Sparkles className="w-5 h-5 text-blue-600" />
+              Skills Assessment Generator
+            </CardTitle>
+            <Badge variant="outline" className="text-xs text-gray-600 bg-gray-50">
+              Optional
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Create Skills Assessment
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Generate targeted assessment questions based on your job post to evaluate candidate skills effectively. This step is optional - you can skip it and proceed directly to publishing your job.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button 
+                onClick={onGenerateQuestions}
+                disabled={isGenerating || !generatedJobPost}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                size="default"
+              >
+                {isGenerating ? 'Generating...' : 'Generate Questions'}
+                <Sparkles className="w-4 h-4 ml-2" />
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => actions.setCurrentStep(4)}
+                className="text-gray-600 hover:text-gray-800"
+                size="default"
+              >
+                <SkipForward className="w-4 h-4 mr-2" />
+                Skip Skills Test
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 mt-4">
+              You can always add a skills test later after publishing your job
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {!generatedSkillsTest ? (
-        <Card className="h-full">
-          <CardHeader className="pb-3 flex-shrink-0">
-            <div className="flex items-center gap-2 mb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Sparkles className="w-5 h-5 text-blue-600" />
-                Skills Assessment Generator
-              </CardTitle>
-              <Badge variant="outline" className="text-xs text-gray-600 bg-gray-50">
-                Optional
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="flex-1 flex items-center justify-center">
-            <div className="text-center max-w-md">
-              <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Create Skills Assessment
-              </h3>
-              <p className="text-sm text-gray-600 mb-6">
-                Generate targeted assessment questions based on your job post to evaluate candidate skills effectively. This step is optional - you can skip it and proceed directly to publishing your job.
-              </p>
-              <div className="flex flex-col gap-3">
-                <Button 
-                  onClick={onGenerateSkillsTest}
-                  disabled={isGenerating || !generatedJobPost}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  size="default"
-                >
-                  {isGenerating ? 'Generating...' : 'Generate Skills Test'}
-                  <Sparkles className="w-4 h-4 ml-2" />
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => actions.setCurrentStep(4)}
-                  className="text-gray-600 hover:text-gray-800"
-                  size="default"
-                >
-                  <SkipForward className="w-4 h-4 mr-2" />
-                  Skip Skills Test
-                </Button>
-              </div>
-              <p className="text-xs text-gray-500 mt-4">
-                You can always add a skills test later after publishing your job
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="h-full flex flex-col overflow-hidden">
-          <CardHeader className="pb-3 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Sparkles className="w-5 h-5 text-blue-600" />
-                  Generated Skills Test
-                </CardTitle>
-                <Badge variant="outline" className="text-xs text-gray-600 bg-gray-50">
-                  Optional
-                </Badge>
-              </div>
-              {!isEditingSkillsTest && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={onGenerateSkillsTest}
-                  disabled={isGenerating}
-                  className="text-xs h-8 px-3"
-                >
-                  {isGenerating ? 'Regenerating...' : 'Regenerate'}
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden p-0">
-            {isEditingSkillsTest ? (
-              <RichTextEditor
-                value={generatedSkillsTest}
-                onChange={actions.setGeneratedSkillsTest}
-                onSave={handleSkillsTestSave}
-                onCancel={handleSkillsTestCancel}
-                placeholder="Enter your skills test questions here..."
-              />
-            ) : (
-              <div className="h-full flex flex-col">
-                <div className="flex-shrink-0 p-4 border-b bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      Click to edit or use the buttons on the right
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => actions.setIsEditingSkillsTest(true)}
-                      className="flex items-center gap-1 text-xs h-8 px-3"
-                    >
-                      <Edit3 className="w-3 h-3" />
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <ScrollArea className="h-full w-full">
-                    <div 
-                      className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-full"
-                      onClick={() => actions.setIsEditingSkillsTest(true)}
-                      style={{
-                        lineHeight: '1.6',
-                        fontSize: '14px',
-                        wordWrap: 'break-word'
-                      }}
-                      dangerouslySetInnerHTML={{ 
-                        __html: parseMarkdown(generatedSkillsTest) 
-                      }}
-                    />
-                  </ScrollArea>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </div>
+    <Card className="h-full flex flex-col overflow-hidden">
+      <CardHeader className="pb-3 flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Sparkles className="w-5 h-5 text-blue-600" />
+              Skills Assessment Questions
+            </CardTitle>
+            <Badge variant="outline" className="text-xs text-gray-600 bg-gray-50">
+              Optional
+            </Badge>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onGenerateQuestions}
+            disabled={isGenerating}
+            className="text-xs h-8 px-3"
+          >
+            {isGenerating ? 'Regenerating...' : 'Regenerate'}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 overflow-auto p-4">
+        <SkillsQuestionEditor
+          skillsTestData={skillsTestData}
+          onChange={onSkillsTestDataChange}
+        />
+      </CardContent>
+    </Card>
   );
 };

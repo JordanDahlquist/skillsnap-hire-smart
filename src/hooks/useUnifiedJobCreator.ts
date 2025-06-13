@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { UnifiedJobFormData, UnifiedJobCreatorState, UnifiedJobCreatorActions } from "@/types/jobForm";
+import { SkillsTestData } from "@/types/skillsAssessment";
 
 const initialFormData: UnifiedJobFormData = {
   title: "",
@@ -21,13 +21,18 @@ const initialFormData: UnifiedJobFormData = {
   companyName: ""
 };
 
+const initialSkillsTestData: SkillsTestData = {
+  questions: [],
+  maxQuestions: 10
+};
+
 const initialState: UnifiedJobCreatorState = {
   currentStep: 1,
   isGenerating: false,
   isSaving: false,
   formData: initialFormData,
   generatedJobPost: "",
-  generatedSkillsTest: "",
+  skillsTestData: initialSkillsTestData,
   generatedInterviewQuestions: "",
   interviewVideoMaxLength: 5,
   isEditingJobPost: false,
@@ -55,7 +60,7 @@ export const useUnifiedJobCreator = (
       formData: { ...prev.formData, [field]: value }
     })),
     setGeneratedJobPost: (content) => setState(prev => ({ ...prev, generatedJobPost: content })),
-    setGeneratedSkillsTest: (content) => setState(prev => ({ ...prev, generatedSkillsTest: content })),
+    setSkillsTestData: (data) => setState(prev => ({ ...prev, skillsTestData: data })),
     setGeneratedInterviewQuestions: (content) => setState(prev => ({ ...prev, generatedInterviewQuestions: content })),
     setInterviewVideoMaxLength: (length) => setState(prev => ({ ...prev, interviewVideoMaxLength: length })),
     setIsEditingJobPost: (editing) => setState(prev => ({ ...prev, isEditingJobPost: editing })),
@@ -84,7 +89,7 @@ export const useUnifiedJobCreator = (
           companyName: job.company_name || ""
         },
         generatedJobPost: job.generated_job_post || "",
-        generatedSkillsTest: job.generated_test || "",
+        skillsTestData: skillsTestData,
         generatedInterviewQuestions: job.generated_interview_questions || "",
         interviewVideoMaxLength: job.interview_video_max_length || 5
       }));
@@ -134,28 +139,41 @@ export const useUnifiedJobCreator = (
     }
   };
 
-  const handleGenerateSkillsTest = async () => {
+  const handleGenerateSkillsQuestions = async () => {
     actions.setIsGenerating(true);
     try {
       const response = await supabase.functions.invoke('generate-job-content', {
         body: {
-          type: 'skills-test',
+          type: 'skills-questions',
           existingJobPost: state.generatedJobPost
         }
       });
 
       if (response.error) throw response.error;
       
-      actions.setGeneratedSkillsTest(response.data.test);
+      // Parse the generated questions and convert to our structure
+      const generatedQuestions = response.data.questions || [];
+      const skillsTestData: SkillsTestData = {
+        questions: generatedQuestions.map((q: any, index: number) => ({
+          id: crypto.randomUUID(),
+          question: q.question || q,
+          type: 'text',
+          required: true,
+          order: index + 1
+        })),
+        maxQuestions: 10
+      };
+      
+      actions.setSkillsTestData(skillsTestData);
       toast({
-        title: "Skills test generated!",
-        description: "Your skills test has been generated successfully.",
+        title: "Questions generated!",
+        description: "Your skills assessment questions have been generated successfully.",
       });
     } catch (error) {
-      console.error('Error generating skills test:', error);
+      console.error('Error generating skills questions:', error);
       toast({
         title: "Generation failed",
-        description: "Failed to generate skills test. Please try again.",
+        description: "Failed to generate skills questions. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -171,7 +189,7 @@ export const useUnifiedJobCreator = (
           type: 'interview-questions',
           jobData: state.formData,
           existingJobPost: state.generatedJobPost,
-          existingSkillsTest: state.generatedSkillsTest
+          existingSkillsTest: state.skillsTestData.questions.length > 0 ? JSON.stringify(state.skillsTestData) : ""
         }
       });
 
@@ -221,7 +239,9 @@ export const useUnifiedJobCreator = (
         city: state.formData.city || null,
         company_name: state.formData.companyName || profile?.company_name || 'Your Company',
         generated_job_post: state.generatedJobPost || null,
-        generated_test: state.generatedSkillsTest || null,
+        generated_test: state.skillsTestData.questions.length > 0 
+          ? JSON.stringify(state.skillsTestData) 
+          : null,
         generated_interview_questions: state.generatedInterviewQuestions || null,
         interview_video_max_length: state.interviewVideoMaxLength,
         status,
@@ -287,7 +307,7 @@ export const useUnifiedJobCreator = (
     state,
     actions,
     handleGenerateJobPost,
-    handleGenerateSkillsTest,
+    handleGenerateSkillsQuestions,
     handleGenerateInterviewQuestions,
     handleSaveJob
   };

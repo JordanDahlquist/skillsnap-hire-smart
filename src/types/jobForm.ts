@@ -1,4 +1,6 @@
 
+import { SkillsTestData } from "./skillsAssessment";
+
 export interface UnifiedJobFormData {
   // Basic info
   title: string;
@@ -28,11 +30,10 @@ export interface UnifiedJobCreatorState {
   isSaving: boolean;
   formData: UnifiedJobFormData;
   generatedJobPost: string;
-  generatedSkillsTest: string;
+  skillsTestData: SkillsTestData;
   generatedInterviewQuestions: string;
   interviewVideoMaxLength: number;
   isEditingJobPost: boolean;
-  isEditingSkillsTest: boolean;
   isEditingInterviewQuestions: boolean;
   // Edit mode
   isEditMode: boolean;
@@ -45,11 +46,10 @@ export interface UnifiedJobCreatorActions {
   setIsSaving: (saving: boolean) => void;
   updateFormData: (field: keyof UnifiedJobFormData, value: string) => void;
   setGeneratedJobPost: (content: string) => void;
-  setGeneratedSkillsTest: (content: string) => void;
+  setSkillsTestData: (data: SkillsTestData) => void;
   setGeneratedInterviewQuestions: (content: string) => void;
   setInterviewVideoMaxLength: (length: number) => void;
   setIsEditingJobPost: (editing: boolean) => void;
-  setIsEditingSkillsTest: (editing: boolean) => void;
   setIsEditingInterviewQuestions: (editing: boolean) => void;
   setEditMode: (isEdit: boolean, jobId?: string) => void;
   populateFormFromJob: (job: any) => void;
