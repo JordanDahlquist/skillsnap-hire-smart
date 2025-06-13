@@ -7,7 +7,7 @@ import { ApplicationPageLayout } from "./ApplicationPageLayout";
 import { ApplicationProgress } from "./ApplicationProgress";
 import { JobOverviewSection } from "./JobOverviewSection";
 import { PersonalInfoForm } from "./PersonalInfoForm";
-import { SkillsAssessment } from "./SkillsAssessment";
+import { SkillsAssessmentStep } from "./steps/SkillsAssessmentStep";
 import { VideoInterview } from "./VideoInterview";
 import { ApplicationReview } from "./ApplicationReview";
 import { toast } from "sonner";
@@ -24,27 +24,35 @@ interface PersonalInfo {
   coverLetter: string;
 }
 
+interface ApplicationFormData {
+  personalInfo: PersonalInfo;
+  skillsTestResponses?: any[];
+  videoUrl?: string | null;
+}
+
 export const NewJobApplication = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   
-  // Form data
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    fullName: '',
-    email: '',
-    phone: '',
-    location: '',
-    portfolioUrl: '',
-    linkedinUrl: '',
-    githubUrl: '',
-    resumeFile: null,
-    coverLetter: ''
+  // Unified form data
+  const [formData, setFormData] = useState<ApplicationFormData>({
+    personalInfo: {
+      fullName: '',
+      email: '',
+      phone: '',
+      location: '',
+      portfolioUrl: '',
+      linkedinUrl: '',
+      githubUrl: '',
+      resumeFile: null,
+      coverLetter: ''
+    }
   });
-  
-  const [skillsResponses, setSkillsResponses] = useState<Array<{ question: string; answer: string }>>([]);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  // Validation states
+  const [stepValidations, setStepValidations] = useState<{ [key: number]: boolean }>({});
 
   // Fetch job data
   useEffect(() => {
@@ -109,29 +117,32 @@ export const NewJobApplication = () => {
   const stepLabels = steps;
   const completedSteps = Array(steps.length).fill(false);
   
-  // Mark completed steps
-  if (currentStep > 0) completedSteps[0] = true; // Overview
-  if (currentStep > 1 && personalInfo.fullName && personalInfo.email && personalInfo.resumeFile) {
-    completedSteps[1] = true; // Personal Info
-  }
-  
-  let stepIndex = 2;
-  if (job.generated_test) {
-    if (currentStep > stepIndex && skillsResponses.length > 0) {
-      completedSteps[stepIndex] = true;
+  // Mark completed steps based on validation states
+  Object.keys(stepValidations).forEach(stepIndex => {
+    if (stepValidations[parseInt(stepIndex)]) {
+      completedSteps[parseInt(stepIndex)] = true;
     }
-    stepIndex++;
-  }
-  
-  if (job.generated_interview_questions) {
-    if (currentStep > stepIndex && videoUrl) {
-      completedSteps[stepIndex] = true;
-    }
-    stepIndex++;
-  }
+  });
 
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+  const updateFormData = (updates: Partial<ApplicationFormData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  };
+
+  const updateStepValidation = (step: number, isValid: boolean) => {
+    setStepValidations(prev => ({ ...prev, [step]: isValid }));
+  };
+
+  const nextStep = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
 
   const renderCurrentStep = () => {
     if (currentStep === 0) {
@@ -152,8 +163,8 @@ export const NewJobApplication = () => {
     if (currentStep === stepIndex) {
       return (
         <PersonalInfoForm
-          data={personalInfo}
-          onChange={setPersonalInfo}
+          data={formData.personalInfo}
+          onChange={(personalInfo) => updateFormData({ personalInfo })}
           onNext={nextStep}
           onBack={prevStep}
         />
@@ -163,10 +174,11 @@ export const NewJobApplication = () => {
     
     if (job.generated_test && currentStep === stepIndex) {
       return (
-        <SkillsAssessment
-          testContent={job.generated_test}
-          responses={skillsResponses}
-          onChange={setSkillsResponses}
+        <SkillsAssessmentStep
+          job={job}
+          formData={formData}
+          onFormDataChange={updateFormData}
+          onValidationChange={(isValid) => updateStepValidation(stepIndex, isValid)}
           onNext={nextStep}
           onBack={prevStep}
         />
@@ -180,8 +192,8 @@ export const NewJobApplication = () => {
         <VideoInterview
           questions={job.generated_interview_questions}
           maxLength={job.interview_video_max_length || 5}
-          videoUrl={videoUrl}
-          onChange={setVideoUrl}
+          videoUrl={formData.videoUrl}
+          onChange={(videoUrl) => updateFormData({ videoUrl })}
           onNext={nextStep}
           onBack={prevStep}
         />
@@ -194,9 +206,9 @@ export const NewJobApplication = () => {
       return (
         <ApplicationReview
           job={job}
-          personalInfo={personalInfo}
-          skillsResponses={skillsResponses}
-          videoUrl={videoUrl}
+          personalInfo={formData.personalInfo}
+          skillsResponses={formData.skillsTestResponses || []}
+          videoUrl={formData.videoUrl}
           onBack={prevStep}
           onSubmit={() => {}}
         />

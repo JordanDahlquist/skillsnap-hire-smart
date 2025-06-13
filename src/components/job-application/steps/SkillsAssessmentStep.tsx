@@ -13,6 +13,8 @@ interface SkillsAssessmentStepProps {
   formData: any;
   onFormDataChange: (updates: any) => void;
   onValidationChange: (isValid: boolean) => void;
+  onNext?: () => void;
+  onBack?: () => void;
 }
 
 interface SkillsResponse {
@@ -29,7 +31,9 @@ export const SkillsAssessmentStep = ({
   job,
   formData,
   onFormDataChange,
-  onValidationChange
+  onValidationChange,
+  onNext,
+  onBack
 }: SkillsAssessmentStepProps) => {
   const [responses, setResponses] = useState<SkillsResponse[]>([]);
   const [questions, setQuestions] = useState<SkillsQuestion[]>([]);
@@ -105,11 +109,23 @@ export const SkillsAssessmentStep = ({
         <Brain className="w-12 h-12 mx-auto text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">No Skills Assessment</h3>
         <p className="text-gray-600">This job doesn't have a skills assessment.</p>
+        {onNext && (
+          <div className="flex justify-between mt-8">
+            <Button variant="outline" onClick={onBack}>
+              Back
+            </Button>
+            <Button onClick={onNext}>
+              Continue
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
 
   const answeredCount = responses.filter(r => r.answer.trim() || r.videoUrl).length;
+  const requiredAnswers = Math.ceil(questions.length / 2);
+  const isValid = answeredCount >= requiredAnswers;
 
   return (
     <div className="space-y-6">
@@ -124,7 +140,7 @@ export const SkillsAssessmentStep = ({
               {answeredCount} of {questions.length} answered
             </Badge>
             <p className="text-sm text-gray-600">
-              Answer at least {Math.ceil(questions.length / 2)} questions to continue
+              Answer at least {requiredAnswers} questions to continue
             </p>
           </div>
         </CardHeader>
@@ -212,6 +228,18 @@ export const SkillsAssessmentStep = ({
           Video responses allow you to demonstrate your skills more effectively and provide a personal touch to your application.
         </p>
       </div>
+
+      {/* Navigation buttons */}
+      {(onNext || onBack) && (
+        <div className="flex justify-between">
+          <Button variant="outline" onClick={onBack} disabled={!onBack}>
+            Back
+          </Button>
+          <Button onClick={onNext} disabled={!onNext || !isValid}>
+            Continue
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
