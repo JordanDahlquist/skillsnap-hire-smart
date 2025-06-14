@@ -30,31 +30,65 @@ serve(async (req) => {
                                    jobData.locationType === 'remote' ? 'Remote' : 
                                    jobData.locationType === 'hybrid' ? 'Hybrid' : jobData.locationType;
       
-      prompt = `Create a compelling job posting for a ${jobData.title} position at ${jobData.companyName}. 
+      // Build comprehensive location string
+      const locationParts = [];
+      if (jobData.location) locationParts.push(jobData.location);
+      if (jobData.city) locationParts.push(jobData.city);
+      if (jobData.state) locationParts.push(jobData.state);
+      if (jobData.country) locationParts.push(jobData.country);
+      const fullLocation = locationParts.length > 0 ? locationParts.join(', ') : 'Location to be determined';
+      
+      // Determine if this is project-based or employee position
+      const isProjectBased = jobData.employmentType === 'project';
+      
+      prompt = `Create a compelling and comprehensive job posting for a ${jobData.title} position at ${jobData.companyName}. 
 
-Company and Role details:
+**COMPANY AND ROLE DETAILS:**
 - Company: ${jobData.companyName}
-- Title: ${jobData.title}
-- Employment Type: ${jobData.employmentType} (IMPORTANT: This must be reflected accurately in the job posting)
+- Job Title: ${jobData.title}
+- Employment Type: ${jobData.employmentType} (CRITICAL: Must be clearly stated throughout)
 - Experience Level: ${jobData.experienceLevel}
-- Work Arrangement: ${workArrangementDisplay} (IMPORTANT: This must be prominently featured in the job posting)
-- Location: ${jobData.location || 'Not specified'}
-- Duration: ${jobData.duration || 'Not specified'}
-- Budget: ${jobData.budget || 'Not specified'}
-- Required skills: ${jobData.skills || 'Not specified'}
-- Description: ${jobData.description}
+- Work Arrangement: ${workArrangementDisplay} (CRITICAL: Must be prominently featured)
+- Location: ${fullLocation}
 
-CRITICAL INSTRUCTIONS:
-1. The employment type is ${jobData.employmentType} - make sure this is clearly stated and reflected throughout the job posting
-2. The work arrangement is ${workArrangementDisplay} - this must be prominently featured and clearly communicated
-3. If employment type is "full-time", this is a permanent full-time employee position, NOT freelance or contract work
-4. If employment type is "part-time", this is a part-time employee position
-5. If employment type is "contract", this is contract/freelance work
-6. If employment type is "project", this is project-based work
-7. Prominently feature ${jobData.companyName} as the hiring company throughout the posting
-8. Make the work arrangement (${workArrangementDisplay}) clear in the job summary and requirements sections
+**JOB DESCRIPTION:**
+${jobData.description ? `User-provided description: "${jobData.description}"` : 'No specific description provided - create a compelling one based on the role.'}
 
-Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates for a ${workArrangementDisplay} ${jobData.employmentType} position at ${jobData.companyName}.`;
+**REQUIREMENTS AND SKILLS:**
+- Required Skills: ${jobData.skills || 'To be determined based on role'}
+
+**COMPENSATION AND BENEFITS:**`;
+
+      if (isProjectBased) {
+        prompt += `
+- Budget: ${jobData.budget || 'Competitive project rate'}
+- Duration: ${jobData.duration || 'Project timeline to be discussed'}`;
+      } else {
+        prompt += `
+- Salary: ${jobData.salary || 'Competitive salary based on experience'}
+- Benefits: ${jobData.benefits || 'Comprehensive benefits package'}`;
+      }
+
+      prompt += `
+
+**CRITICAL FORMATTING REQUIREMENTS:**
+1. Employment Type (${jobData.employmentType}) must be clearly stated in the opening section
+2. Work Arrangement (${workArrangementDisplay}) must be prominently featured in both the summary and requirements
+3. Include ALL provided information in appropriate sections
+4. If user provided a description, incorporate it meaningfully into the job posting
+5. Create distinct sections for: Job Summary, Key Responsibilities, Requirements, and Compensation
+6. Make the posting engaging and specific to ${jobData.companyName}
+7. For ${isProjectBased ? 'project-based' : 'employee'} positions, emphasize ${isProjectBased ? 'project scope and deliverables' : 'career growth and company culture'}
+
+**STRUCTURE THE POSTING WITH:**
+- **Job Summary** (include work arrangement and employment type)
+- **About ${jobData.companyName}** (brief company section)
+- **Key Responsibilities** 
+- **Requirements** (include experience level and required skills)
+- **What We Offer** (compensation and benefits)
+- **How to Apply** (brief application instructions)
+
+Make this posting comprehensive, professional, and attractive to qualified ${jobData.experienceLevel} candidates for a ${workArrangementDisplay} ${jobData.employmentType} position.`;
 
     } else if (type === 'skills-test') {
       responseKey = 'questions';
@@ -125,7 +159,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
         messages: [
           {
             role: 'system',
-            content: 'You are an expert HR professional and recruiter who creates compelling job postings, comprehensive skills assessments, and insightful interview questions.'
+            content: 'You are an expert HR professional and recruiter who creates compelling job postings, comprehensive skills assessments, and insightful interview questions. Always include ALL provided information in your responses.'
           },
           {
             role: 'user',
