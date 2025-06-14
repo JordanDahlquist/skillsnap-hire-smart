@@ -17,7 +17,12 @@ export const jobService = {
         .from('jobs')
         .select(`
           *,
-          applications!inner(count)
+          applications!inner(count),
+          applications(
+            id,
+            status,
+            pipeline_stage
+          )
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -27,8 +32,27 @@ export const jobService = {
         return { data: [], error: null };
       }
       
-      logger.debug('Fetched jobs:', data?.length || 0);
-      return { data: data || [], error: null };
+      // Process the data to add computed application counts
+      const processedJobs = (data || []).map(job => {
+        const applications = job.applications || [];
+        const totalApplications = applications.length;
+        
+        // Calculate status counts from actual applications
+        const applicationStatusCounts = {
+          pending: applications.filter(app => app.status === 'pending').length,
+          approved: applications.filter(app => app.status === 'approved').length,
+          rejected: applications.filter(app => app.status === 'rejected').length,
+          total: totalApplications
+        };
+
+        return {
+          ...job,
+          applicationStatusCounts
+        };
+      });
+      
+      logger.debug('Fetched jobs with application counts:', processedJobs.length);
+      return { data: processedJobs, error: null };
     });
   },
 

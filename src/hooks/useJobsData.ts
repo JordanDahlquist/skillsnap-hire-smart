@@ -35,6 +35,21 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
 
   const stats = useJobStats(jobs, recentApplications);
 
+  // Custom sort handler that sets appropriate default sort orders
+  const handleSortChange = useCallback((newSortBy: string) => {
+    console.log('Sort change requested:', newSortBy);
+    setSortBy(newSortBy);
+    
+    // Set appropriate default sort order for different sort types
+    if (newSortBy === 'applications' || newSortBy === 'needs_attention' || newSortBy === 'budget') {
+      setSortOrder('desc'); // High to low for numbers
+    } else if (newSortBy === 'title') {
+      setSortOrder('asc'); // A to Z for titles
+    } else {
+      setSortOrder('desc'); // Most recent first for dates
+    }
+  }, []);
+
   const filteredJobs = useMemo(() => {
     console.log('Filtering jobs:', { 
       totalJobs: jobs.length, 
@@ -124,7 +139,7 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     setFilters,
     updateFilter,
     sortBy,
-    setSortBy,
+    setSortBy: handleSortChange,
     sortOrder,
     setSortOrder,
     needsAttentionFilter,

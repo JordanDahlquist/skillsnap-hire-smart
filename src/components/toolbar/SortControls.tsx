@@ -41,20 +41,9 @@ export const SortControls = ({
     }
   };
 
-  // Set default sort order based on sort type
   const handleSortChange = (newSortBy: string) => {
+    console.log('SortControls: Sort change to', newSortBy);
     onSortChange(newSortBy);
-    
-    // Set appropriate default sort order for different sort types
-    if (onSortOrderChange) {
-      if (newSortBy === 'applications' || newSortBy === 'needs_attention' || newSortBy === 'budget') {
-        onSortOrderChange('desc'); // High to low for numbers
-      } else if (newSortBy === 'title') {
-        onSortOrderChange('asc'); // A to Z for titles
-      } else {
-        onSortOrderChange('desc'); // Most recent first for dates
-      }
-    }
   };
 
   return (
@@ -80,7 +69,7 @@ export const SortControls = ({
           size="sm" 
           onClick={handleSortOrderToggle}
           className={`rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300 ${textColor} hover:${textColor}`}
-          title={`Sort ${sortOrder === 'asc' ? 'ascending' : 'descending'}`}
+          title={`Sort ${sortOrder === 'asc' ? 'ascending' : 'descending'} - Click to ${sortOrder === 'asc' ? 'sort descending' : 'sort ascending'}`}
         >
           <ArrowUpDown className={`w-4 h-4 ${iconColor} ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
         </Button>

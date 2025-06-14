@@ -38,10 +38,18 @@ export const OptimizedJobCard = memo(({
     [job.applicationStatusCounts?.pending]
   );
   
-  const applicationsCount = useMemo(() => 
-    job.applications?.[0]?.count || 0,
-    [job.applications]
-  );
+  const applicationsCount = useMemo(() => {
+    // Use the same logic as sorting for consistency
+    if (job.applicationStatusCounts?.total !== undefined) {
+      return job.applicationStatusCounts.total;
+    }
+    
+    if (job.applications && Array.isArray(job.applications)) {
+      return job.applications.length;
+    }
+    
+    return job.applications?.[0]?.count || 0;
+  }, [job.applicationStatusCounts?.total, job.applications]);
   
   const { isGeneratingDescription, getDisplayDescription } = useJobDescription(job, onJobUpdate);
   const { isUpdating, handleStatusChange, handleDuplicateJob, handleArchiveJob } = useJobActions(job, onJobUpdate);

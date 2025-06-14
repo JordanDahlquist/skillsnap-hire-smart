@@ -72,7 +72,28 @@ export const applyJobFiltersOptimized = (
   });
 };
 
+const getApplicationCount = (job: Job): number => {
+  // Use applicationStatusCounts.total first, then fallback to applications array
+  if (job.applicationStatusCounts?.total !== undefined) {
+    return job.applicationStatusCounts.total;
+  }
+  
+  // Fallback to applications array count
+  if (job.applications && Array.isArray(job.applications)) {
+    return job.applications.length;
+  }
+  
+  // Last fallback to applications[0].count if it exists
+  if (job.applications?.[0]?.count !== undefined) {
+    return job.applications[0].count;
+  }
+  
+  return 0;
+};
+
 export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc"): Job[] => {
+  console.log('Sorting jobs by:', sortBy, 'order:', sortOrder, 'total jobs:', jobs.length);
+  
   const sorted = [...jobs].sort((a, b) => {
     let aValue: any;
     let bValue: any;
@@ -95,15 +116,9 @@ export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc")
         bValue = parseFloat(b.budget?.replace(/[^0-9.-]/g, '') || '0');
         break;
       case 'applications':
-        // Calculate total applications from applicationStatusCounts
-        const aTotal = (a.applicationStatusCounts?.pending || 0) + 
-                      (a.applicationStatusCounts?.approved || 0) + 
-                      (a.applicationStatusCounts?.rejected || 0);
-        const bTotal = (b.applicationStatusCounts?.pending || 0) + 
-                      (b.applicationStatusCounts?.approved || 0) + 
-                      (b.applicationStatusCounts?.rejected || 0);
-        aValue = aTotal;
-        bValue = bTotal;
+        aValue = getApplicationCount(a);
+        bValue = getApplicationCount(b);
+        console.log(`Job ${a.title}: ${aValue} applications, Job ${b.title}: ${bValue} applications`);
         break;
       case 'needs_attention':
         // Sort by pending applications count
@@ -119,6 +134,11 @@ export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc")
     if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
     return 0;
   });
+
+  console.log('Sorted jobs result:', sorted.map(job => ({ 
+    title: job.title, 
+    applicationCount: getApplicationCount(job) 
+  })));
 
   return sorted;
 };
