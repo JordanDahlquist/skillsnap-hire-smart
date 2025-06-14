@@ -95,11 +95,11 @@ export const SkillsQuestionEditor = ({ skillsTestData, onChange }: SkillsQuestio
             </div>
 
             <div>
-              <Label htmlFor={`description-${question.id}`}>Description (Optional)</Label>
+              <Label htmlFor={`instructions-${question.id}`}>Instructions (Optional)</Label>
               <Input
-                id={`description-${question.id}`}
-                value={question.description || ""}
-                onChange={(e) => updateQuestion(question.id, { description: e.target.value })}
+                id={`instructions-${question.id}`}
+                value={question.candidateInstructions || ""}
+                onChange={(e) => updateQuestion(question.id, { candidateInstructions: e.target.value })}
                 placeholder="Additional context or instructions..."
                 className="mt-1"
               />

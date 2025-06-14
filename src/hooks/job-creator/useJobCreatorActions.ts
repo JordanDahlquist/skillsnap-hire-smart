@@ -24,16 +24,25 @@ export const createJobCreatorActions = (
     // Parse existing skills test data
     let parsedSkillsTestData: SkillsTestData = {
       questions: [],
-      maxQuestions: 10
+      maxQuestions: 10,
+      mode: 'ai_generated'
     };
     if (job.generated_test) {
       try {
-        parsedSkillsTestData = JSON.parse(job.generated_test);
+        const parsed = JSON.parse(job.generated_test);
+        parsedSkillsTestData = {
+          questions: parsed.questions || [],
+          maxQuestions: parsed.maxQuestions || 10,
+          mode: parsed.mode || 'ai_generated',
+          estimatedCompletionTime: parsed.estimatedCompletionTime,
+          instructions: parsed.instructions
+        };
       } catch (error) {
         console.error('Error parsing skills test data:', error);
         parsedSkillsTestData = {
           questions: [],
-          maxQuestions: 10
+          maxQuestions: 10,
+          mode: 'ai_generated'
         };
       }
     }

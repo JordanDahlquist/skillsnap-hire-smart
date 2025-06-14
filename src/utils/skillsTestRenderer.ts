@@ -12,8 +12,8 @@ export const renderSkillsTestAsMarkdown = (skillsTestData: SkillsTestData): stri
     markdown += `## Question ${index + 1}\n\n`;
     markdown += `**${question.question}**\n\n`;
     
-    if (question.description) {
-      markdown += `*${question.description}*\n\n`;
+    if (question.candidateInstructions) {
+      markdown += `*${question.candidateInstructions}*\n\n`;
     }
     
     markdown += `Response Type: ${question.type === 'text' ? 'Text Response' : 'File Upload'}\n\n`;

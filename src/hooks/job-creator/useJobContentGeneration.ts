@@ -71,7 +71,8 @@ export const useJobContentGeneration = () => {
             required: true,
             order: index + 1
           })),
-          maxQuestions: 10
+          maxQuestions: 10,
+          mode: 'ai_generated'
         };
       } else if (response.data.test && typeof response.data.test === 'string') {
         // If we get a raw test string, try to parse it
@@ -90,7 +91,8 @@ export const useJobContentGeneration = () => {
             required: true,
             order: index + 1
           })),
-          maxQuestions: 10
+          maxQuestions: 10,
+          mode: 'ai_generated'
         };
       } else {
         throw new Error('Invalid response format from skills test generation');

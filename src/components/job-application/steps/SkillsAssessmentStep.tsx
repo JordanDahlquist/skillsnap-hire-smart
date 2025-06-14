@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -169,9 +168,9 @@ export const SkillsAssessmentStep = ({
                     <p className="text-gray-800 leading-relaxed">
                       {question.question}
                     </p>
-                    {question.description && (
+                    {question.candidateInstructions && (
                       <p className="text-sm text-gray-600 mt-2 italic">
-                        {question.description}
+                        {question.candidateInstructions}
                       </p>
                     )}
                   </div>
