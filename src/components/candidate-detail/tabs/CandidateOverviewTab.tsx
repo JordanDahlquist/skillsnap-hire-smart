@@ -110,39 +110,38 @@ export const CandidateOverviewTab = ({
         </CardContent>
       </Card>
 
-      {/* Application Summary - Compact Layout */}
+      {/* Application Summary */}
       <Card className="glass-card">
-        <CardHeader className="pb-4">
+        <CardHeader>
           <CardTitle>Application Summary</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <div>
             <label className="text-sm font-medium text-muted-foreground">Applied</label>
             <p className="text-foreground">{getTimeAgo(application.created_at)}</p>
           </div>
 
-          {/* Compact row with Stage and Ratings */}
-          <div className="flex items-center justify-between gap-4 py-2 bg-muted/20 rounded-lg px-3">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Stage:</label>
-              <Badge variant="outline" className="text-xs">
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">Current Stage</label>
+            <div className="mt-1">
+              <Badge variant="outline">
                 {application.pipeline_stage || 'Applied'}
               </Badge>
             </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-muted-foreground">You:</label>
-                <div className="flex gap-0.5">
-                  {renderManualRating(application.manual_rating)}
-                </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Your Rating</label>
+              <div className="flex gap-0.5 mt-1">
+                {renderManualRating(application.manual_rating)}
               </div>
-              
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-muted-foreground">AI:</label>
-                <div className="flex gap-0.5">
-                  {renderAIRating(application.ai_rating)}
-                </div>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">AI Rating</label>
+              <div className="flex gap-0.5 mt-1">
+                {renderAIRating(application.ai_rating)}
               </div>
             </div>
           </div>
