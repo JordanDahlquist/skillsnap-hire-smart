@@ -1,5 +1,5 @@
 
-import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { Application } from '@/types/emailComposer';
 
@@ -8,34 +8,47 @@ interface CompactRecipientsSectionProps {
 }
 
 export const CompactRecipientsSection = ({ applications }: CompactRecipientsSectionProps) => {
-  const displayCount = 3;
-  const remainingCount = Math.max(0, applications.length - displayCount);
+  const displayLimit = 3;
+  const hasMore = applications.length > displayLimit;
+  const displayedApps = applications.slice(0, displayLimit);
 
   return (
-    <div className="flex items-center gap-2 p-2 bg-white rounded border text-sm">
-      <span className="text-xs font-medium text-gray-600 min-w-fit">To:</span>
-      
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <div className="flex -space-x-1">
-          {applications.slice(0, displayCount).map((app) => (
-            <Avatar key={app.id} className="w-6 h-6 border border-white">
-              <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
-                {app.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+    <div className="space-y-3">
+      {/* Preview Recipients */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {displayedApps.map((app) => (
+          <div key={app.id} className="flex items-center gap-2 bg-background/50 rounded-lg px-3 py-2 text-sm">
+            <Avatar className="w-6 h-6">
+              <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
+                {app.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
               </AvatarFallback>
             </Avatar>
-          ))}
-        </div>
+            <span className="font-medium text-foreground">{app.name}</span>
+            <span className="text-muted-foreground">•</span>
+            <span className="text-muted-foreground truncate max-w-32">{app.email}</span>
+          </div>
+        ))}
         
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs text-gray-600 truncate">
-            {applications.slice(0, 2).map(app => app.name).join(', ')}
-            {applications.length > 2 && '...'}
-          </span>
-          <Badge variant="secondary" className="text-xs py-0 px-1.5 h-4">
-            {applications.length}
-          </Badge>
-        </div>
+        {hasMore && (
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2 text-sm">
+            <span className="text-muted-foreground">+{applications.length - displayLimit} more</span>
+          </div>
+        )}
       </div>
+
+      {/* Full list when there are many recipients */}
+      {applications.length > 5 && (
+        <ScrollArea className="h-24 w-full">
+          <div className="space-y-1">
+            {applications.map((app) => (
+              <div key={app.id} className="flex items-center justify-between text-xs px-2 py-1 rounded hover:bg-background/50">
+                <span className="font-medium text-foreground">{app.name}</span>
+                <span className="text-muted-foreground truncate ml-2">{app.email}</span>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
     </div>
   );
 };

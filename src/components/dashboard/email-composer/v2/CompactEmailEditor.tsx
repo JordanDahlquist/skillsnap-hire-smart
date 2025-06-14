@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { EmailRichTextEditor } from '@/components/inbox/EmailRichTextEditor';
 import { Badge } from '@/components/ui/badge';
-import { User, AtSign, Building, Briefcase } from 'lucide-react';
+import { User, AtSign, Building, Briefcase, Shield } from 'lucide-react';
 
 interface CompactEmailEditorProps {
   subject: string;
@@ -29,39 +29,43 @@ export const CompactEmailEditor = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Compact header */}
-      <div className="flex-shrink-0 p-2 border-b bg-gray-50/50 space-y-2">
+      {/* Email Header Fields */}
+      <div className="flex-shrink-0 p-4 border-b border-border/30 bg-background/30 space-y-4">
         {/* From field */}
-        <div className="flex items-center gap-2">
-          <Label className="text-xs font-medium text-gray-600 w-12 flex-shrink-0">From:</Label>
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+            <Shield className="w-4 h-4 text-green-500" />
+            From Address
+          </Label>
+          <div className="flex items-center gap-2">
             <Input
               value={fromEmail}
               disabled
-              className="text-xs bg-gray-50 text-gray-600 h-6 border-0 p-1 flex-1"
+              className="glass-card-no-hover border-0 bg-background/50 text-muted-foreground text-sm h-9 flex-1"
             />
-            <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 h-4 px-1 flex-shrink-0">
-              ✓
+            <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs px-2 py-1 flex-shrink-0">
+              Verified
             </Badge>
           </div>
+          <p className="text-xs text-muted-foreground">Your unique email address for private conversations</p>
         </div>
 
         {/* Subject field */}
-        <div className="flex items-center gap-2">
-          <Label className="text-xs font-medium text-gray-600 w-12 flex-shrink-0">Subject:</Label>
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-foreground">Subject Line</Label>
           <Input
             value={subject}
             onChange={(e) => onSubjectChange(e.target.value)}
             placeholder="Enter email subject..."
-            className="text-xs h-6 flex-1"
+            className="glass-card-no-hover border-0 bg-background/50 text-sm h-9"
           />
         </div>
       </div>
 
-      {/* Content editor with expanded height */}
-      <div className="flex-1 min-h-0 flex flex-col p-2">
-        <Label className="text-xs font-medium text-gray-600 mb-1">Message</Label>
-        <div className="flex-1 min-h-0 border rounded">
+      {/* Content editor */}
+      <div className="flex-1 min-h-0 flex flex-col p-4">
+        <Label className="text-sm font-medium text-foreground mb-3">Message Content</Label>
+        <div className="flex-1 min-h-0 glass-card-no-hover rounded-xl overflow-hidden border-0">
           <EmailRichTextEditor
             value={content}
             onChange={onContentChange}
