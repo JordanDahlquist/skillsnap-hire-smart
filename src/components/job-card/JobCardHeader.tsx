@@ -43,7 +43,7 @@ export const JobCardHeader = ({
           <div className="flex items-center gap-3 mb-2">
             <CardTitle className="text-xl">
               <Link 
-                to={`/dashboard/${job.id}`}
+                to={`/jobs/${job.id}`}
                 className="hover:text-blue-600 transition-colors cursor-pointer"
               >
                 {job.title}
