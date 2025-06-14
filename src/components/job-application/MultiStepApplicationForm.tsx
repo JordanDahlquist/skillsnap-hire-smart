@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { ApplicationStepIndicator } from "./ApplicationStepIndicator";
 import { JobOverviewSection } from "./JobOverviewSection";
 import { PersonalInfoStep } from "./steps/PersonalInfoStep";
 import { SkillsAssessmentStep } from "./steps/SkillsAssessmentStep";
-import { VideoInterviewStep } from "./steps/VideoInterviewStep";
+import { VideoInterview } from "./VideoInterview";
 import { ReviewSubmitStep } from "./steps/ReviewSubmitStep";
 import { Job } from "@/types";
 
@@ -123,15 +124,22 @@ export const MultiStepApplicationForm = ({
             formData={formData}
             onFormDataChange={updateFormData}
             onValidationChange={(isValid) => updateStepValidation(2, isValid)}
+            onNext={handleNext}
+            onBack={handlePrev}
           />
         );
       case 3:
         return (
-          <VideoInterviewStep
-            job={job}
-            formData={formData}
-            onFormDataChange={updateFormData}
-            onValidationChange={(isValid) => updateStepValidation(3, isValid)}
+          <VideoInterview
+            questions={job.generated_interview_questions || ""}
+            maxLength={job.interview_video_max_length || 5}
+            videoUrl={formData.videoUrl}
+            onChange={(videoUrl) => {
+              updateFormData({ videoUrl });
+              updateStepValidation(3, !!videoUrl);
+            }}
+            onNext={handleNext}
+            onBack={handlePrev}
           />
         );
       case 4:
