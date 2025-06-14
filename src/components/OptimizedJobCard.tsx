@@ -2,7 +2,6 @@
 import { useState, memo, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { EditJobModal } from "./EditJobModal";
 import { useJobDescription } from "@/hooks/useJobDescription";
 import { useJobActions } from "@/hooks/useJobActions";
 import { useViewTracking } from "@/hooks/useViewTracking";
@@ -10,6 +9,7 @@ import { useThemeContext } from "@/contexts/ThemeContext";
 import { JobCardHeader } from "./job-card/JobCardHeader";
 import { JobCardDetails } from "./job-card/JobCardDetails";
 import { JobCardActions } from "./job-card/JobCardActions";
+import { UnifiedJobCreatorPanel } from "./UnifiedJobCreatorPanel";
 import { Job } from "@/types";
 
 interface OptimizedJobCardProps {
@@ -47,7 +47,7 @@ export const OptimizedJobCard = memo(({
   isSelected = false,
   onJobSelection
 }: OptimizedJobCardProps) => {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
   const { currentTheme } = useThemeContext();
   
   // Track views when card is rendered
@@ -83,13 +83,18 @@ export const OptimizedJobCard = memo(({
     return location_type ? location_type.charAt(0).toUpperCase() + location_type.slice(1) : 'Not specified';
   }, [job]);
 
-  const handleEditModalOpen = useCallback(() => {
-    setIsEditModalOpen(true);
+  const handleEditPanelOpen = useCallback(() => {
+    setIsEditPanelOpen(true);
   }, []);
 
-  const handleEditModalClose = useCallback(() => {
-    setIsEditModalOpen(false);
+  const handleEditPanelClose = useCallback(() => {
+    setIsEditPanelOpen(false);
   }, []);
+
+  const handleJobUpdated = useCallback(() => {
+    onJobUpdate();
+    setIsEditPanelOpen(false);
+  }, [onJobUpdate]);
 
   // Theme-aware text colors
   const textColor = currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-700';
@@ -132,18 +137,18 @@ export const OptimizedJobCard = memo(({
         <CardContent>
           <JobCardActions 
             jobId={job.id}
-            onEdit={handleEditModalOpen}
+            onEdit={handleEditPanelOpen}
             onDuplicate={handleDuplicateJob}
             onArchive={handleArchiveJob}
           />
         </CardContent>
       </Card>
 
-      <EditJobModal
-        open={isEditModalOpen}
-        onOpenChange={handleEditModalClose}
-        job={job}
-        onJobUpdate={onJobUpdate}
+      <UnifiedJobCreatorPanel
+        open={isEditPanelOpen}
+        onOpenChange={handleEditPanelClose}
+        onJobCreated={handleJobUpdated}
+        editingJob={job}
       />
     </>
   );
