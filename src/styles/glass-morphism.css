@@ -39,6 +39,23 @@
       0 0 60px rgba(255, 255, 255, 0.05);
   }
 
+  /* Black mode glass card styling - enhanced for better visibility */
+  .black .glass-card {
+    backdrop-filter: blur(32px) saturate(180%) brightness(1.2);
+    -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.2);
+    background: linear-gradient(135deg,
+      rgba(20, 20, 20, 0.8) 0%,
+      rgba(40, 40, 40, 0.6) 35%,
+      rgba(30, 30, 30, 0.65) 65%,
+      rgba(15, 15, 15, 0.75) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.8),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+      0 0 60px rgba(255, 255, 255, 0.1);
+  }
+
   /* Multi-layer lightening system */
   .glass-card::before {
     content: '';
@@ -57,6 +74,13 @@
     background:
       radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 60%, transparent 100%),
       linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 50%, rgba(255, 255, 255, 0.03) 100%);
+  }
+
+  /* Black mode before layer - enhanced brightness */
+  .black .glass-card::before {
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 60%, transparent 100%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.08) 100%);
   }
 
   /* Additional contrast layer for text safety */
@@ -81,6 +105,15 @@
       rgba(255, 255, 255, 0.01) 30%,
       rgba(255, 255, 255, 0.005) 70%,
       rgba(255, 255, 255, 0.02) 100%);
+  }
+
+  /* Black mode after layer - enhanced contrast */
+  .black .glass-card::after {
+    background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 30%,
+      rgba(255, 255, 255, 0.02) 70%,
+      rgba(255, 255, 255, 0.05) 100%);
   }
 
   .glass-card:hover {
@@ -117,6 +150,23 @@
     border-color: rgba(255, 255, 255, 0.2);
   }
 
+  /* Black mode hover styling - enhanced visibility */
+  .black .glass-card:hover {
+    backdrop-filter: blur(36px) saturate(200%) brightness(1.3);
+    -webkit-backdrop-filter: blur(36px) saturate(200%) brightness(1.3);
+    background: linear-gradient(135deg,
+      rgba(30, 30, 30, 0.9) 0%,
+      rgba(50, 50, 50, 0.7) 35%,
+      rgba(40, 40, 40, 0.75) 65%,
+      rgba(25, 25, 25, 0.85) 100%);
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.9),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.15),
+      0 0 80px rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
   /* Enhanced hover lightening */
   .glass-card:hover::before {
     background: 
@@ -129,6 +179,13 @@
     background:
       radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 60%, transparent 100%),
       linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.05) 100%);
+  }
+
+  /* Black mode hover before layer */
+  .black .glass-card:hover::before {
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.08) 60%, transparent 100%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.12) 100%);
   }
 
   .glass-card:hover::after {
@@ -146,6 +203,15 @@
       rgba(255, 255, 255, 0.02) 30%,
       rgba(255, 255, 255, 0.01) 70%,
       rgba(255, 255, 255, 0.03) 100%);
+  }
+
+  /* Black mode hover after layer */
+  .black .glass-card:hover::after {
+    background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.05) 30%,
+      rgba(255, 255, 255, 0.03) 70%,
+      rgba(255, 255, 255, 0.08) 100%);
   }
 
   /* Glass card variant without hover effects - for non-clickable cards - MORE TRANSPARENT */
@@ -185,6 +251,23 @@
       0 0 60px rgba(255, 255, 255, 0.04);
   }
 
+  /* Black mode no-hover variant - enhanced for better visibility */
+  .black .glass-card-no-hover {
+    backdrop-filter: blur(32px) saturate(180%) brightness(1.1);
+    -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.1);
+    background: linear-gradient(135deg,
+      rgba(15, 15, 15, 0.75) 0%,
+      rgba(35, 35, 35, 0.55) 35%,
+      rgba(25, 25, 25, 0.60) 65%,
+      rgba(10, 10, 10, 0.70) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+      0 0 60px rgba(255, 255, 255, 0.08);
+  }
+
   /* Multi-layer lightening system for no-hover variant - REDUCED OPACITY */
   .glass-card-no-hover::before {
     content: '';
@@ -203,6 +286,13 @@
     background:
       radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 60%, transparent 100%),
       linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.008) 50%, rgba(255, 255, 255, 0.02) 100%);
+  }
+
+  /* Black mode no-hover before layer - enhanced visibility */
+  .black .glass-card-no-hover::before {
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 60%, transparent 100%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.06) 100%);
   }
 
   /* Additional contrast layer for text safety for no-hover variant - REDUCED OPACITY */
@@ -229,6 +319,15 @@
       rgba(255, 255, 255, 0.015) 100%);
   }
 
+  /* Black mode no-hover after layer - enhanced contrast */
+  .black .glass-card-no-hover::after {
+    background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 30%,
+      rgba(255, 255, 255, 0.015) 70%,
+      rgba(255, 255, 255, 0.04) 100%);
+  }
+
   /* Enhanced liquid glass morphism */
   .glass-button {
     backdrop-filter: blur(20px) saturate(180%);
@@ -251,6 +350,16 @@
       inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   }
 
+  /* Black mode glass button - enhanced visibility */
+  .black .glass-button {
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.6) 0%, rgba(40, 40, 40, 0.4) 50%, rgba(15, 15, 15, 0.5) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  }
+
   .glass-button:hover {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.08) 100%);
     box-shadow: 
@@ -267,6 +376,15 @@
       0 16px 64px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.08),
       inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  }
+
+  /* Black mode glass button hover - enhanced visibility */
+  .black .glass-button:hover {
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.8) 0%, rgba(50, 50, 50, 0.6) 50%, rgba(25, 25, 25, 0.7) 100%);
+    box-shadow:
+      0 16px 64px rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.08);
   }
 
   /* Glass content container */
@@ -298,6 +416,20 @@
       0 0 40px rgba(255, 255, 255, 0.03);
   }
 
+  /* Black mode glass content - enhanced visibility */
+  .black .glass-content {
+    backdrop-filter: blur(24px) saturate(160%) brightness(1.1);
+    -webkit-backdrop-filter: blur(24px) saturate(160%) brightness(1.1);
+    background: linear-gradient(135deg,
+      rgba(18, 18, 18, 0.7) 0%,
+      rgba(35, 35, 35, 0.5) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 0 40px rgba(255, 255, 255, 0.08);
+  }
+
   /* Premium Glass Button Enhancements */
   .glass-button-premium {
     position: relative;
@@ -320,6 +452,11 @@
   /* Dark mode premium button before layer */
   .dark .glass-button-premium::before {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.15) 100%);
+  }
+
+  /* Black mode premium button before layer */
+  .black .glass-button-premium::before {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.25) 100%);
   }
 
   .glass-button-premium:hover::before {

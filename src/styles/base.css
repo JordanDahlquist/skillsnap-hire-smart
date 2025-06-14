@@ -177,61 +177,61 @@
     --attention-color: 38 92% 50%;
   }
 
-  /* Black theme - same as dark but with pure black background */
+  /* Black theme - enhanced for better visibility and contrast */
   .black {
     --background: 0 0% 0%;
-    --foreground: 210 40% 98%;
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 0%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 0%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 210 79% 46%;
+    --primary: 210 79% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 90%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 75%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 90%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%;
+    --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 38 85% 55%;
     --warning-foreground: 0 0% 100%;
 
-    --info: 210 79% 46%;
+    --info: 210 79% 55%;
     --info-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 210 79% 46%;
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 210 79% 55%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 210 79% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 210 79% 55%;
 
     /* App-specific semantic colors for black mode */
-    --brand-primary: 210 79% 46%;
-    --brand-secondary: 217.2 32.6% 17.5%;
-    --status-active: 142 76% 36%;
-    --status-pending: 38 92% 50%;
-    --status-inactive: 215 20.2% 65.1%;
-    --attention-color: 38 92% 50%;
+    --brand-primary: 210 79% 55%;
+    --brand-secondary: 0 0% 12%;
+    --status-active: 142 70% 45%;
+    --status-pending: 38 85% 55%;
+    --status-inactive: 0 0% 60%;
+    --attention-color: 38 85% 55%;
   }
 }
 
@@ -268,9 +268,14 @@
     background: #ffffff;
   }
 
-  /* Black theme - pure black background */
+  /* Black theme - enhanced with subtle gradient for depth */
   .black body {
     background-image: none;
-    background: #000000;
+    background: linear-gradient(135deg, 
+      rgba(0, 0, 0, 1) 0%, 
+      rgba(10, 10, 10, 1) 25%, 
+      rgba(5, 5, 5, 1) 50%, 
+      rgba(8, 8, 8, 1) 75%, 
+      rgba(0, 0, 0, 1) 100%);
   }
 }
