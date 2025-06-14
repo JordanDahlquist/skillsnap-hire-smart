@@ -41,7 +41,7 @@ export const NavigationFooter = ({
 
   const getNextButtonText = () => {
     switch (currentStep) {
-      case 1: return "Generate Job Post";
+      case 1: return "Next";
       case 2: return "Create Skills Test";
       case 3: return "Add Interview Questions";
       case 4: return "Review & Publish";

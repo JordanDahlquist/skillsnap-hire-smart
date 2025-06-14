@@ -1,7 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UnifiedJobFormData, UnifiedJobCreatorActions } from "@/types/jobForm";
@@ -24,12 +23,12 @@ export const Step1BasicInfo = ({
           <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
           <div className="text-sm text-blue-700">
             <p className="font-medium mb-1">How it works:</p>
-            <p>Step 1: Enter basic details • Step 2: AI generates professional job posting • Step 3: Create skills test • Step 4: Add interview questions • Step 5: Review & publish</p>
+            <p>Step 1: Enter basic details • Step 2: AI generates a professional job post • Step 3: Create a skills test • Step 4: Add interview questions • Step 5: Review & publish</p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-2 h-full overflow-y-auto">
-        <div className="grid grid-cols-2 gap-2">
+      <CardContent className="space-y-4 h-full overflow-y-auto pt-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="title" className="text-sm">Job Title *</Label>
             <Input
@@ -57,22 +56,7 @@ export const Step1BasicInfo = ({
           </div>
         </div>
 
-        <div>
-          <Label htmlFor="description" className="text-sm">AI Generation Prompt</Label>
-          <p className="text-xs text-gray-500 mb-1">
-            Enter any unique requirements, special skills, or key details that will help our AI create a tailored job description. This is optional - basic details work great too!
-          </p>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) => actions.updateFormData('description', e.target.value)}
-            placeholder="e.g. Must have experience with GraphQL, remote-first culture, startup environment, experience with microservices..."
-            rows={4}
-            className="mt-1"
-          />
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <Label htmlFor="experienceLevel" className="text-sm">Experience Level</Label>
             <Select value={formData.experienceLevel} onValueChange={(value) => actions.updateFormData('experienceLevel', value)}>
@@ -107,27 +91,29 @@ export const Step1BasicInfo = ({
             />
           </div>
         </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="skills" className="text-sm">Required Skills</Label>
+            <Input
+              id="skills"
+              value={formData.skills}
+              onChange={(e) => actions.updateFormData('skills', e.target.value)}
+              placeholder="React, TypeScript, Node.js..."
+              className="mt-1"
+            />
+          </div>
 
-        <div>
-          <Label htmlFor="skills" className="text-sm">Required Skills</Label>
-          <Input
-            id="skills"
-            value={formData.skills}
-            onChange={(e) => actions.updateFormData('skills', e.target.value)}
-            placeholder="React, TypeScript, Node.js..."
-            className="mt-1"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="location" className="text-sm">Location</Label>
-          <Input
-            id="location"
-            value={formData.location}
-            onChange={(e) => actions.updateFormData('location', e.target.value)}
-            placeholder="Remote, New York, etc."
-            className="mt-1"
-          />
+          <div>
+            <Label htmlFor="location" className="text-sm">Location</Label>
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) => actions.updateFormData('location', e.target.value)}
+              placeholder="Remote, New York, etc."
+              className="mt-1"
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

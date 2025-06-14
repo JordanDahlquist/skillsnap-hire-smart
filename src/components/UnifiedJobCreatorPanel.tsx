@@ -32,8 +32,15 @@ export const UnifiedJobCreatorPanel = ({
     }
   }, [editingJob, open, actions]);
 
-  const nextStep = () => {
-    if (state.currentStep < 5) actions.setCurrentStep(state.currentStep + 1);
+  const handleNextStep = () => {
+    if (state.currentStep === 1) {
+      if (!state.generatedJobPost && state.formData.title) {
+        handleGenerateJobPost();
+      }
+      actions.setCurrentStep(state.currentStep + 1);
+    } else if (state.currentStep < 5) {
+      actions.setCurrentStep(state.currentStep + 1);
+    }
   };
 
   const prevStep = () => {
@@ -89,12 +96,8 @@ export const UnifiedJobCreatorPanel = ({
           canProceedToStep5={canProceedToStep5}
           canActivate={canActivate}
           isSaving={state.isSaving}
-          onPrevStep={() => {
-            if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
-          }}
-          onNextStep={() => {
-            if (state.currentStep < 5) actions.setCurrentStep(state.currentStep + 1);
-          }}
+          onPrevStep={prevStep}
+          onNextStep={handleNextStep}
           onSaveJob={handleSaveJob}
         />
       </div>
