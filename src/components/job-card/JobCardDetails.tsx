@@ -1,5 +1,5 @@
 
-import { MapPin, Eye, TrendingUp, Calendar } from "lucide-react";
+import { MapPin, Eye, TrendingUp, Calendar, Building2 } from "lucide-react";
 import { Job } from "@/types";
 import { useJobMetrics } from "@/hooks/useJobMetrics";
 import { useThemeContext } from "@/contexts/ThemeContext";
@@ -36,6 +36,12 @@ export const JobCardDetails = ({
   return (
     <>
       <div className={`flex items-center gap-4 text-sm ${primaryTextColor} mb-2`}>
+        {job.company_name && (
+          <div className="flex items-center gap-1">
+            <Building2 className="w-4 h-4" />
+            <span className="font-medium">{job.company_name}</span>
+          </div>
+        )}
         <span>{displayEmploymentType} • {job.experience_level}</span>
         <div className="flex items-center gap-1">
           <MapPin className="w-4 h-4" />
