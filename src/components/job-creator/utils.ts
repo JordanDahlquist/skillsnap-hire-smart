@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { UnifiedJobFormData } from "@/types/jobForm";
 
@@ -120,6 +119,8 @@ export const getInitialFormData = (): UnifiedJobFormData => ({
   skills: "",
   budget: "",
   duration: "",
+  salary: "",
+  benefits: "",
   location: "remote",
   locationType: "remote",
   country: "",
