@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText, Plus } from "lucide-react";
+import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText, Plus, Briefcase, Calendar } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
 import { useJobs } from "@/hooks/useJobs";
 import { useHiringAnalytics } from "@/hooks/useHiringAnalytics";
+import { useBriefingMetrics } from "@/hooks/useBriefingMetrics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { parseMarkdown } from "@/utils/markdownParser";
@@ -23,6 +24,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const { regenerate, isRegenerating, remainingRegenerations, canRegenerate } = useRegenerateBriefing();
   const { data: jobs = [] } = useJobs();
   const analytics = useHiringAnalytics();
+  const metrics = useBriefingMetrics();
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
@@ -115,37 +117,29 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     );
   };
 
-  const getInsightIcons = () => {
-    if (!briefing?.briefing_data) return null;
-
-    const data = briefing.briefing_data;
-    const insights = [];
-
-    if (data.jobs_needing_attention > 0) {
-      insights.push({
+  const getMetricsData = () => {
+    return [
+      {
         icon: Bell,
-        label: `${data.jobs_needing_attention} need${data.jobs_needing_attention === 1 ? 's' : ''} attention`,
+        label: `${metrics.needsReview} need${metrics.needsReview === 1 ? 's' : ''} review`,
         color: "text-orange-500"
-      });
-    }
-
-    if (data.high_rated_applications > 0) {
-      insights.push({
-        icon: TrendingUp,
-        label: `${data.high_rated_applications} high-rated candidate${data.high_rated_applications === 1 ? '' : 's'}`,
-        color: "text-green-500"
-      });
-    }
-
-    if (data.recent_applications > 0) {
-      insights.push({
+      },
+      {
         icon: Users,
-        label: `${data.recent_applications} new this week`,
+        label: `${metrics.newApplicantsThisWeek} new this week`,
         color: "text-blue-500"
-      });
-    }
-
-    return insights.slice(0, 3); // Show max 3 insights
+      },
+      {
+        icon: Briefcase,
+        label: `${metrics.totalJobsActive} active job${metrics.totalJobsActive === 1 ? '' : 's'}`,
+        color: "text-green-500"
+      },
+      {
+        icon: Calendar,
+        label: `${metrics.newApplicantsToday} new today`,
+        color: "text-purple-500"
+      }
+    ];
   };
 
   const handleExportReport = async () => {
@@ -183,7 +177,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     }
   };
 
-  const insights = getInsightIcons();
+  const metricsData = getMetricsData();
 
   return (
     <div className="py-4 px-8">
@@ -220,20 +214,18 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
               {getDisplayContent()}
             </div>
             
-            {/* Insights */}
-            {insights && insights.length > 0 && (
-              <div className={`flex flex-wrap items-center gap-4 text-sm mb-6 pb-4 border-b ${borderColor}`}>
-                {insights.map((insight, index) => {
-                  const IconComponent = insight.icon;
-                  return (
-                    <div key={index} className="flex items-center gap-1.5">
-                      <IconComponent className={`w-3 h-3 ${insight.color}`} />
-                      <span className={`${subtleTextColor} text-xs`}>{insight.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            {/* Metrics */}
+            <div className={`flex flex-wrap items-center gap-4 text-sm mb-6 pb-4 border-b ${borderColor}`}>
+              {metricsData.map((metric, index) => {
+                const IconComponent = metric.icon;
+                return (
+                  <div key={index} className="flex items-center gap-1.5">
+                    <IconComponent className={`w-3 h-3 ${metric.color}`} />
+                    <span className={`${subtleTextColor} text-xs`}>{metric.label}</span>
+                  </div>
+                );
+              })}
+            </div>
 
             {/* Action Bar */}
             <div className="flex flex-wrap items-center gap-3">
