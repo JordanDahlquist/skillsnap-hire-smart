@@ -21,6 +21,7 @@ export const ApplicationRatingSection = ({
   };
 
   const normalizedAIRating = normalizeAIRating(aiRating);
+  const hasManualRating = manualRating && manualRating > 0;
 
   const renderCompactRating = (rating: number | null, isClickable: boolean = false, color: string = "blue") => {
     return (
@@ -36,10 +37,12 @@ export const ApplicationRatingSection = ({
                 onClick={() => onManualRating(starValue)}
                 disabled={isUpdating}
                 className={`transition-all duration-200 hover:scale-110 disabled:opacity-50 ${
-                  isActive ? `text-${color}-500` : 'text-muted-foreground/40 hover:text-blue-400'
+                  isActive ? `text-${color}-500` : !hasManualRating 
+                    ? 'text-blue-300 hover:text-blue-500' 
+                    : 'text-muted-foreground/40 hover:text-blue-400'
                 }`}
               >
-                <Star className={`w-4 h-4 ${isActive ? 'fill-current' : ''}`} />
+                <Star className={`w-5 h-5 ${isActive ? 'fill-current' : ''}`} />
               </button>
             );
           }
@@ -59,25 +62,33 @@ export const ApplicationRatingSection = ({
 
   return (
     <div className="glass-card-no-hover p-3 border border-border">
-      {/* Compact horizontal layout */}
+      {/* Enhanced layout with prominent manual rating */}
       <div className="flex items-center justify-between gap-4">
-        {/* Manual Rating */}
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="text-xs font-medium text-foreground shrink-0">Your:</span>
+        {/* Manual Rating - More Prominent */}
+        <div className={`flex items-center gap-2 min-w-0 flex-1 p-2 rounded-lg transition-all ${
+          !hasManualRating ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
+        }`}>
+          <span className={`text-sm font-medium shrink-0 ${
+            !hasManualRating ? 'text-blue-700' : 'text-muted-foreground'
+          }`}>
+            {!hasManualRating ? 'Rate this candidate:' : 'You:'}
+          </span>
           {renderCompactRating(manualRating, true, "blue")}
-          <span className="text-xs text-muted-foreground hidden sm:inline">
-            {manualRating ? `${manualRating}/3` : 'Rate'}
+          <span className={`text-sm font-medium ${
+            !hasManualRating ? 'text-blue-700' : 'text-blue-600'
+          }`}>
+            {manualRating ? `${manualRating}/3` : '--'}
           </span>
         </div>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-border shrink-0"></div>
+        <div className="w-px h-8 bg-border shrink-0"></div>
 
         {/* AI Rating */}
         <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-          <span className="text-xs font-medium text-foreground shrink-0">AI:</span>
+          <span className="text-sm font-medium text-muted-foreground shrink-0">AI:</span>
           {renderCompactRating(normalizedAIRating, false, "purple")}
-          <span className="text-xs text-purple-600 font-medium hidden sm:inline">
+          <span className="text-sm text-purple-600 font-medium">
             {normalizedAIRating ? `${normalizedAIRating}/3` : 'N/A'}
           </span>
         </div>
