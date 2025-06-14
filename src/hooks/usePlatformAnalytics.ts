@@ -22,16 +22,8 @@ export const usePlatformAnalytics = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        // Fetch all data separately to avoid view dependency issues
-        const [
-          { count: totalUsers },
-          { count: totalJobs },
-          { count: totalApplications },
-          { data: recentUsers },
-          { data: recentJobs },
-          { data: recentApplications },
-          { data: subscriptions }
-        ] = await Promise.all([
+        // Use Promise.allSettled to handle potential errors gracefully
+        const results = await Promise.allSettled([
           supabase.from('profiles').select('*', { count: 'exact', head: true }),
           supabase.from('jobs').select('*', { count: 'exact', head: true }),
           supabase.from('applications').select('*', { count: 'exact', head: true }),
@@ -41,6 +33,15 @@ export const usePlatformAnalytics = () => {
           supabase.from('subscriptions').select('status')
         ]);
 
+        // Extract data with fallbacks
+        const totalUsers = results[0].status === 'fulfilled' ? results[0].value.count || 0 : 0;
+        const totalJobs = results[1].status === 'fulfilled' ? results[1].value.count || 0 : 0;
+        const totalApplications = results[2].status === 'fulfilled' ? results[2].value.count || 0 : 0;
+        const recentUsers = results[3].status === 'fulfilled' ? results[3].value.data || [] : [];
+        const recentJobs = results[4].status === 'fulfilled' ? results[4].value.data || [] : [];
+        const recentApplications = results[5].status === 'fulfilled' ? results[5].value.data || [] : [];
+        const subscriptions = results[6].status === 'fulfilled' ? results[6].value.data || [] : [];
+
         const usersLast7Days = recentUsers?.filter(user => 
           new Date(user.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
         ).length || 0;
@@ -49,12 +50,12 @@ export const usePlatformAnalytics = () => {
         const trialSubscriptions = subscriptions?.filter(sub => sub.status === 'trial').length || 0;
 
         setAnalytics({
-          totalUsers: totalUsers || 0,
+          totalUsers,
           usersLast30Days: recentUsers?.length || 0,
           usersLast7Days,
-          totalJobs: totalJobs || 0,
+          totalJobs,
           jobsLast30Days: recentJobs?.length || 0,
-          totalApplications: totalApplications || 0,
+          totalApplications,
           applicationsLast30Days: recentApplications?.length || 0,
           activeSubscriptions,
           trialSubscriptions

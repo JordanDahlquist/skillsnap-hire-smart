@@ -9,19 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Search, MoreHorizontal, Eye, Shield } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface User {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-  company_name: string;
-  created_at: string;
-  industry: string | null;
-  role?: string;
-}
+import { AdminUser, UserRole } from "@/types/admin";
 
 export const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -43,23 +34,23 @@ export const UserManagement = () => {
 
         if (profilesError) throw profilesError;
 
-        // Try to fetch user roles, but handle gracefully if table doesn't exist
-        let userRoles: any[] = [];
+        // Fetch user roles using raw SQL to handle type issues
+        let userRoles: UserRole[] = [];
         try {
           const { data: rolesData, error: rolesError } = await supabase
-            .from('user_roles')
+            .from('user_roles' as any)
             .select('user_id, role');
           
           if (!rolesError && rolesData) {
             userRoles = rolesData;
           }
         } catch (error) {
-          console.warn('User roles table not available yet, showing users without roles');
+          console.warn('User roles table query failed, showing users without roles:', error);
         }
 
-        const usersWithRoles = profiles?.map(profile => ({
+        const usersWithRoles: AdminUser[] = profiles?.map(profile => ({
           ...profile,
-          role: userRoles.find((r: any) => r.user_id === profile.id)?.role || 'user'
+          role: userRoles.find(r => r.user_id === profile.id)?.role || 'user'
         })) || [];
 
         setUsers(usersWithRoles);
@@ -168,7 +159,7 @@ export const UserManagement = () => {
                   </TableCell>
                   <TableCell>{user.company_name}</TableCell>
                   <TableCell>{user.industry || 'Not specified'}</TableCell>
-                  <TableCell>{getRoleBadge(user.role || 'user')}</TableCell>
+                  <TableCell>{getRoleBadge(user.role)}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <DropdownMenu>

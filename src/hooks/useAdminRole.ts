@@ -17,13 +17,9 @@ export const useAdminRole = () => {
       }
 
       try {
-        // Use direct SQL query since the function might not be in generated types yet
+        // Use the security definer function to check super admin role
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'super_admin')
-          .maybeSingle();
+          .rpc('is_super_admin', { _user_id: user.id });
 
         if (error) {
           console.error('Error checking admin role:', error);

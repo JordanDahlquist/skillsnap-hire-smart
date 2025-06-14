@@ -717,6 +717,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -734,6 +758,17 @@ export type Database = {
         Args: { user_id: string }
         Returns: Json
       }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_super_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       track_job_view: {
         Args: {
           p_job_id: string
@@ -749,6 +784,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "super_admin" | "admin" | "user"
       plan_type: "starter" | "professional" | "enterprise"
       subscription_status:
         | "trial"
@@ -871,6 +907,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["super_admin", "admin", "user"],
       plan_type: ["starter", "professional", "enterprise"],
       subscription_status: [
         "trial",
