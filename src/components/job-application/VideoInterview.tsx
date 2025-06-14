@@ -103,6 +103,9 @@ export const VideoInterview = ({
       />
 
       <VideoRecordingArea 
+        currentQuestion={currentQuestion}
+        totalQuestions={interviewQuestions.length}
+        maxLength={maxLength}
         stream={stream}
         isRecording={isRecording}
         recordingTime={recordingTime}
