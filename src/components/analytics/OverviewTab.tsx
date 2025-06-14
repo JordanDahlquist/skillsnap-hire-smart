@@ -62,17 +62,17 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
       suggestion: metrics.avgRating < 2.0 ? "Refine job requirements to attract better candidates" : undefined
     },
     {
-      title: "Approval Rate",
-      value: `${metrics.approvalRate.toFixed(1)}%`,
+      title: "Hired Rate",
+      value: `${metrics.hiredRate.toFixed(1)}%`,
       icon: CheckCircle,
       color: "text-emerald-600",
       bgColor: "bg-emerald-50",
-      description: "Percentage of applications that have been approved for next stage",
-      benchmark: { label: "Industry avg", value: "20-30%" },
+      description: "Percentage of applications that resulted in successful hires",
+      benchmark: { label: "Competitive rate", value: "2-5%" },
       trend: {
-        direction: metrics.approvalRate > 25 ? 'up' as const : 'down' as const,
-        value: metrics.approvalRate > 25 ? "Above avg" : "Below avg",
-        isPositive: metrics.approvalRate > 25
+        direction: metrics.hiredRate > 3 ? 'up' as const : 'down' as const,
+        value: metrics.hiredRate > 3 ? "Above avg" : "Below avg",
+        isPositive: metrics.hiredRate > 3
       }
     },
     {

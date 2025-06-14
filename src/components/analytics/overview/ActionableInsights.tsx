@@ -41,10 +41,10 @@ export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsights
       type: "opportunity" as const,
       icon: TrendingUp,
       title: "Optimize Job Descriptions",
-      description: `Approval rate is ${metrics.approvalRate.toFixed(1)}% - industry average is 25%`,
+      description: `Hired rate is ${metrics.hiredRate.toFixed(1)}% - competitive rate is 2-5%`,
       action: "Improve JDs",
       priority: "Medium",
-      visible: metrics.approvalRate < 20,
+      visible: metrics.hiredRate < 2,
       impact: "Better job descriptions increase quality applications by 60%"
     },
     {

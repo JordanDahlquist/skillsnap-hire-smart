@@ -13,9 +13,9 @@ interface PerformanceScoreCardProps {
 export const PerformanceScoreCard = ({ metrics }: PerformanceScoreCardProps) => {
   const getPerformanceScore = () => {
     const ratingScore = (metrics.avgRating / 3) * 30;
-    const approvalScore = (metrics.approvalRate / 100) * 40;
+    const hiredScore = (metrics.hiredRate / 5) * 40; // Updated to use realistic 5% max
     const activityScore = Math.min(metrics.applicationsThisWeek / 10, 1) * 30;
-    return Math.round(ratingScore + approvalScore + activityScore);
+    return Math.round(ratingScore + hiredScore + activityScore);
   };
 
   const performanceScore = getPerformanceScore();
@@ -31,7 +31,7 @@ export const PerformanceScoreCard = ({ metrics }: PerformanceScoreCardProps) => 
 
   const breakdown = [
     { label: "Application Quality", value: (metrics.avgRating / 3) * 100, weight: "30%" },
-    { label: "Approval Rate", value: metrics.approvalRate, weight: "40%" },
+    { label: "Hired Rate", value: Math.min((metrics.hiredRate / 5) * 100, 100), weight: "40%" },
     { label: "Weekly Activity", value: Math.min((metrics.applicationsThisWeek / 10) * 100, 100), weight: "30%" }
   ];
 
@@ -47,7 +47,7 @@ export const PerformanceScoreCard = ({ metrics }: PerformanceScoreCardProps) => 
                 <HelpCircle className="w-4 h-4 text-gray-400" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>Your overall hiring effectiveness based on application quality (30%), approval rate (40%), and weekly activity (30%).</p>
+                <p>Your overall hiring effectiveness based on application quality (30%), hired rate (40%), and weekly activity (30%).</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
