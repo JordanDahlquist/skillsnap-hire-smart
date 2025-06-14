@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { EditJobModal } from "@/components/EditJobModal";
+import { UnifiedJobCreatorPanel } from "@/components/UnifiedJobCreatorPanel";
 import { DashboardHeaderInfo } from "./components/DashboardHeaderInfo";
 import { DashboardHeaderActions } from "./components/DashboardHeaderActions";
 import { DashboardHeaderLoader } from "./components/DashboardHeaderLoader";
@@ -50,6 +50,11 @@ export const CompactDashboardHeader = ({
     return "Loading...";
   };
 
+  const handleJobUpdated = () => {
+    onJobUpdate();
+    setIsEditModalOpen(false);
+  };
+
   return (
     <>
       <DashboardHeaderLoader 
@@ -90,11 +95,11 @@ export const CompactDashboardHeader = ({
         </div>
       </div>
 
-      <EditJobModal
+      <UnifiedJobCreatorPanel
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
-        job={job}
-        onJobUpdate={onJobUpdate}
+        onJobCreated={handleJobUpdated}
+        editingJob={job}
       />
     </>
   );
