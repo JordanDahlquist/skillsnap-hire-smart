@@ -6,7 +6,17 @@ VALUES (
   'application-files',
   true,
   1073741824, -- 1GB limit
-  ARRAY['video/webm', 'video/mp4', 'video/quicktime', 'application/pdf', 'image/jpeg', 'image/png']
+  ARRAY[
+    'video/webm', 
+    'video/mp4', 
+    'video/quicktime', 
+    'application/pdf', 
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain',
+    'image/jpeg', 
+    'image/png'
+  ]
 );
 
 -- Create storage policies for the application-files bucket

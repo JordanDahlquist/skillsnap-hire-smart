@@ -94,10 +94,20 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
 
 export const constructResumeUrl = (filePath: string): string => {
   // If it's already a complete URL, return as is
-  if (filePath.startsWith('http')) {
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+    return filePath;
+  }
+  
+  // If it's a blob URL (for local testing), return as is
+  if (filePath.startsWith('blob:')) {
     return filePath;
   }
   
   // If it's just a filename, construct the Supabase Storage URL
+  if (!filePath.includes('/')) {
+    return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
+  }
+  
+  // If it contains slashes but isn't a full URL, assume it's a relative path from the bucket
   return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
 };
