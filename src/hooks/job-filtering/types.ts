@@ -1,4 +1,3 @@
-
 export interface JobFilters {
   employmentType: string;
   locationType: string;
@@ -7,6 +6,7 @@ export interface JobFilters {
   state: string;
   budgetRange: number[];
   duration: string;
+  status: string;
 }
 
 export const defaultFilters: JobFilters = {
@@ -16,7 +16,8 @@ export const defaultFilters: JobFilters = {
   country: "all",
   state: "all",
   budgetRange: [0, 200000],
-  duration: "all"
+  duration: "all",
+  status: "all"
 };
 
 export interface AvailableOptions {
@@ -39,7 +40,8 @@ export const sanitizeFilters = (filters: Partial<JobFilters>): JobFilters => {
     budgetRange: Array.isArray(filters.budgetRange) && filters.budgetRange.length === 2 
       ? filters.budgetRange 
       : defaultFilters.budgetRange,
-    duration: filters.duration || defaultFilters.duration
+    duration: filters.duration || defaultFilters.duration,
+    status: filters.status || defaultFilters.status
   };
 };
 

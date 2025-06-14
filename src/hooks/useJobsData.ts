@@ -38,12 +38,24 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
   const filteredJobs = useMemo(() => {
     console.log('Filtering jobs:', { 
       totalJobs: jobs.length, 
+      statusFilter: filters.status,
       activeJobsFilter, 
       needsAttentionFilter,
       searchTerm: debouncedSearchTerm 
     });
     
     let filtered = applyJobFiltersOptimized(jobs, debouncedSearchTerm, filters);
+    
+    // Apply status filter
+    if (filters.status !== "all") {
+      console.log('Applying status filter:', filters.status);
+      filtered = filtered.filter(job => {
+        const matches = job.status === filters.status;
+        console.log(`Job ${job.id} status: ${job.status}, filter: ${filters.status}, matches: ${matches}`);
+        return matches;
+      });
+      console.log('After status filter:', filtered.length);
+    }
     
     if (needsAttentionFilter) {
       filtered = filtered.filter(job => {
@@ -76,6 +88,7 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     if (filters.country !== "all") count++;
     if (filters.state !== "all") count++;
     if (filters.duration !== "all") count++;
+    if (filters.status !== "all") count++;
     if (filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000) count++;
     if (needsAttentionFilter) count++;
     if (activeJobsFilter) count++;

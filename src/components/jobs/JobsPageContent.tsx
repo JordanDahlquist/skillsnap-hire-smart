@@ -1,4 +1,3 @@
-
 import { memo } from "react";
 import { Job } from "@/types";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
@@ -102,8 +101,8 @@ export const JobsPageContent = memo(({
       <JobsToolbar
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
-        statusFilter={filters.employmentType}
-        onStatusFilterChange={(value) => setFilters({ ...filters, employmentType: value })}
+        statusFilter={filters.status}
+        onStatusFilterChange={(value) => setFilters({ ...filters, status: value })}
         workTypeFilter={filters.locationType}
         onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
         sortBy={sortBy}
