@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell } from "lucide-react";
+import { Bell, Star } from "lucide-react";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
 import { Job } from "@/types";
 
@@ -49,12 +49,20 @@ export const JobCardHeader = ({
                 {job.title}
               </Link>
             </CardTitle>
-            {needsAttention && (
-              <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-xs font-medium">
-                <Bell className="w-3 h-3" />
-                <span>Needs attention</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {job.needsReview && (
+                <div className="flex items-center gap-1 bg-blue-100 text-blue-600 px-2 py-1 rounded-md text-xs font-medium">
+                  <Star className="w-3 h-3" />
+                  <span>Needs review</span>
+                </div>
+              )}
+              {needsAttention && (
+                <div className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-xs font-medium">
+                  <Bell className="w-3 h-3" />
+                  <span>Needs attention</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

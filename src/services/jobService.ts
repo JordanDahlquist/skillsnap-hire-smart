@@ -19,7 +19,9 @@ export const jobService = {
           applications(
             id,
             status,
-            pipeline_stage
+            pipeline_stage,
+            manual_rating,
+            ai_rating
           )
         `)
         .eq('user_id', userId)
@@ -40,12 +42,17 @@ export const jobService = {
           pending: applications.filter(app => app.status === 'pending').length,
           approved: applications.filter(app => app.status === 'approved').length,
           rejected: applications.filter(app => app.status === 'rejected').length,
+          unranked: applications.filter(app => !app.manual_rating && !app.ai_rating).length,
           total: totalApplications
         };
+
+        // Add needs review flag for unranked applications
+        const needsReview = applicationStatusCounts.unranked > 0;
 
         return {
           ...job,
           applicationStatusCounts,
+          needsReview,
           // Keep the applications array for backward compatibility
           applications: [{ count: totalApplications }]
         };

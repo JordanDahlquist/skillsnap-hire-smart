@@ -5,6 +5,7 @@ import { DatabaseApplication, DatabaseJob, ApplicationStatusCounts } from "./sup
 export interface Job extends DatabaseJob {
   applications?: { count: number }[];
   applicationStatusCounts?: ApplicationStatusCounts;
+  needsReview?: boolean;
 }
 
 export interface Application extends DatabaseApplication {
