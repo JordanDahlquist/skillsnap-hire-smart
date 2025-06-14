@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VideoResponsePlayer } from "@/components/dashboard/components/VideoResponsePlayer";
 import { Application } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { logger } from "@/services/loggerService";
 
 interface CandidateVideoTabProps {
   application: Application;
