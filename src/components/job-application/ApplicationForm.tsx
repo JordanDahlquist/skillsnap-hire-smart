@@ -54,23 +54,24 @@ export const ApplicationForm = ({ onSubmit, isSubmitting = false }: ApplicationF
       const result = await uploadResumeFile(file);
       setResumeUrl(result.url);
       
-      // Auto-fill form if parsing succeeded
+      // Only auto-fill empty fields, never override existing user input
       if (result.parsedData) {
-        const { personalInfo, workExperience, skills } = result.parsedData;
+        const { personalInfo, workExperience } = result.parsedData;
         setFormData(prev => ({
           ...prev,
-          name: personalInfo.name || prev.name,
-          email: personalInfo.email || prev.email,
-          phone: personalInfo.phone || prev.phone,
-          location: personalInfo.location || prev.location,
-          experience: workExperience.map(exp => 
+          // Only fill if the field is currently empty
+          name: prev.name || personalInfo.name || prev.name,
+          email: prev.email || personalInfo.email || prev.email,
+          phone: prev.phone || personalInfo.phone || prev.phone,
+          location: prev.location || personalInfo.location || prev.location,
+          experience: prev.experience || (workExperience.length > 0 ? workExperience.map(exp => 
             `${exp.position} at ${exp.company} (${exp.startDate} - ${exp.endDate}): ${exp.description}`
-          ).join('\n\n') || prev.experience,
+          ).join('\n\n') : prev.experience),
         }));
         
         toast({
           title: "Resume uploaded successfully",
-          description: "Your information has been extracted and filled in the form.",
+          description: "Empty fields have been filled with extracted information.",
         });
       } else {
         toast({
@@ -102,6 +103,7 @@ export const ApplicationForm = ({ onSubmit, isSubmitting = false }: ApplicationF
       return;
     }
 
+    // Always use the form data, not parsed resume data
     onSubmit({
       ...formData,
       resume_file_path: resumeUrl || null,

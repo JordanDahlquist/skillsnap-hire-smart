@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileText, X } from "lucide-react";
 import { toast } from "sonner";
+import { uploadResumeFile } from "@/utils/resumeUploadUtils";
 
 interface ApplicationFormData {
   name: string;
@@ -34,6 +35,7 @@ export const PersonalInfoStep = ({
   onValidationChange 
 }: PersonalInfoStepProps) => {
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Validate the form whenever data changes
   useEffect(() => {
@@ -47,16 +49,36 @@ export const PersonalInfoStep = ({
     onValidationChange(isValid);
   }, [formData, onValidationChange]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Simulate file upload - in production, upload to Supabase Storage
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const result = await uploadResumeFile(file);
       const fileName = file.name;
-      const filePath = `uploaded/${fileName}`;
       
-      onFormDataChange({ resumeUrl: filePath });
+      onFormDataChange({ resumeUrl: result.url });
       setUploadedFileName(fileName);
-      toast.success("Resume uploaded successfully");
+      
+      // Only auto-fill empty fields, never override user input
+      if (result.parsedData) {
+        const { personalInfo } = result.parsedData;
+        onFormDataChange({
+          resumeUrl: result.url,
+          // Only fill if the field is currently empty
+          name: formData.name || personalInfo.name || formData.name,
+          email: formData.email || personalInfo.email || formData.email,
+        });
+        toast.success("Resume uploaded and empty fields auto-filled");
+      } else {
+        toast.success("Resume uploaded successfully");
+      }
+    } catch (error) {
+      console.error('Resume upload failed:', error);
+      toast.error("Resume upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -122,6 +144,7 @@ export const PersonalInfoStep = ({
                 onChange={handleFileUpload}
                 className="hidden"
                 id="resume-upload"
+                disabled={isUploading}
               />
               <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
               <Button
@@ -129,8 +152,9 @@ export const PersonalInfoStep = ({
                 variant="outline"
                 onClick={() => document.getElementById('resume-upload')?.click()}
                 className="mb-2"
+                disabled={isUploading}
               >
-                Choose Resume File
+                {isUploading ? "Uploading..." : "Choose Resume File"}
               </Button>
               <p className="text-sm text-gray-500">
                 PDF, DOC, or DOCX files only
@@ -153,6 +177,7 @@ export const PersonalInfoStep = ({
                 size="sm"
                 onClick={handleRemoveFile}
                 className="text-red-600 hover:text-red-700"
+                disabled={isUploading}
               >
                 <X className="w-4 h-4" />
               </Button>

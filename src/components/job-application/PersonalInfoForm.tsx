@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,25 +30,28 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
     setIsUploading(true);
     try {
       const result = await uploadResumeFile(file);
+      
+      // Only update resume file and URL, don't auto-fill form fields
       onChange({ 
         ...data, 
         resumeFile: file, 
         resumeUrl: result.url 
       });
       
+      // Only auto-fill empty fields, never override user input
       if (result.parsedData) {
-        // Auto-fill form fields if parsing succeeded
         const { personalInfo } = result.parsedData;
         onChange({
           ...data,
           resumeFile: file,
           resumeUrl: result.url,
-          fullName: personalInfo.name || data.fullName,
-          email: personalInfo.email || data.email,
-          phone: personalInfo.phone || data.phone,
-          location: personalInfo.location || data.location,
+          // Only fill if the current field is empty
+          fullName: data.fullName || personalInfo.name || data.fullName,
+          email: data.email || personalInfo.email || data.email,
+          phone: data.phone || personalInfo.phone || data.phone,
+          location: data.location || personalInfo.location || data.location,
         });
-        toast.success('Resume uploaded and form auto-filled successfully');
+        toast.success('Resume uploaded and empty fields auto-filled');
       } else {
         toast.success('Resume uploaded successfully');
       }

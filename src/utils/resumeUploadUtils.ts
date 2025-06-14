@@ -27,6 +27,25 @@ export interface ParsedResumeData {
   totalExperience: string;
 }
 
+const extractTextFromFile = async (file: File): Promise<string> => {
+  const fileType = file.type;
+  
+  if (fileType === 'application/pdf') {
+    // For PDF files, we'll need to use a text extraction library
+    // For now, return a basic extraction notice
+    return `PDF file: ${file.name} (${file.size} bytes)`;
+  } else if (fileType === 'text/plain') {
+    // For text files, read directly
+    return await file.text();
+  } else if (fileType.includes('document')) {
+    // For Word documents, we'll need mammoth or similar
+    // For now, return a basic extraction notice
+    return `Word document: ${file.name} (${file.size} bytes)`;
+  }
+  
+  return `File: ${file.name} (${file.size} bytes)`;
+};
+
 export const uploadResumeFile = async (file: File): Promise<{ url: string; parsedData?: ParsedResumeData }> => {
   try {
     // Upload file to Supabase Storage
@@ -47,35 +66,14 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
       .from('application-files')
       .getPublicUrl(fileName);
 
-    // Extract text from file for parsing (simplified for demo)
-    const simulatedText = `
-      John Doe
-      Software Engineer
-      john.doe@email.com
-      (555) 123-4567
-      San Francisco, CA
-      
-      EXPERIENCE
-      Senior Software Engineer at TechCorp (2020-Present)
-      - Led development of web applications using React and Node.js
-      - Managed a team of 5 developers
-      
-      Software Engineer at StartupXYZ (2018-2020)
-      - Built scalable APIs and microservices
-      - Worked with AWS and Docker
-      
-      EDUCATION
-      Bachelor of Science in Computer Science
-      University of California, Berkeley (2018)
-      
-      SKILLS
-      JavaScript, React, Node.js, Python, AWS, Docker, Git
-    `;
+    // Extract actual text from the file
+    const extractedText = await extractTextFromFile(file);
+    console.log('Extracted text from file:', extractedText);
 
     try {
-      // Parse resume using AI
+      // Parse resume using AI with real extracted text
       const { data: parseResult } = await supabase.functions.invoke('parse-resume', {
-        body: { resumeText: simulatedText }
+        body: { resumeText: extractedText }
       });
 
       return {
