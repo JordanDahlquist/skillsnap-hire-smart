@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, SkipForward } from "lucide-react";
+import { Sparkles, SkipForward, Settings } from "lucide-react";
 import { SkillsTestData, SkillsTestTemplate } from "@/types/skillsAssessment";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
 import { SkillsTestModeSelector } from "./skills/SkillsTestModeSelector";
@@ -51,6 +51,18 @@ export const Step3SkillsTestGenerator = ({
     } else if (mode === 'preview') {
       setViewState('preview');
     }
+  };
+
+  const handleDirectCustomBuilder = () => {
+    // Start with empty custom template and go directly to editor
+    const updatedData: SkillsTestData = {
+      ...skillsTestData,
+      mode: 'custom_builder',
+      questions: [],
+      estimatedCompletionTime: 0
+    };
+    onSkillsTestDataChange(updatedData);
+    setViewState('editor');
   };
 
   const handleTemplateSelect = (template: SkillsTestTemplate | null) => {
@@ -212,6 +224,15 @@ export const Step3SkillsTestGenerator = ({
                 >
                   Create Skills Assessment
                   <Sparkles className="w-4 h-4 ml-2" />
+                </Button>
+                <Button 
+                  onClick={handleDirectCustomBuilder}
+                  variant="outline"
+                  className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                  size="default"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Generate Custom Skills Test
                 </Button>
                 <Button 
                   variant="outline"
