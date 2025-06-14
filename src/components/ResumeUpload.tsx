@@ -35,7 +35,8 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
     const resumeFile = files.find(file => 
       file.type === 'application/pdf' || 
       file.type === 'application/msword' ||
-      file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.type === 'text/plain'
     );
     
     if (resumeFile) {
@@ -43,7 +44,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
     } else {
       toast({
         title: "Invalid file type",
-        description: "Please upload a PDF or Word document.",
+        description: "Please upload a PDF, Word document, or text file.",
         variant: "destructive"
       });
     }
@@ -65,7 +66,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
         onResumeData(result.parsedData, result.url);
         toast({
           title: "Resume uploaded successfully",
-          description: "Your information has been extracted and filled in the form.",
+          description: "Your document has been processed and is ready for preview.",
         });
       } else {
         // Still pass the URL even if parsing failed
@@ -80,8 +81,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
         
         toast({
           title: "Resume uploaded",
-          description: "Resume uploaded successfully, but parsing failed. Please fill the form manually.",
-          variant: "destructive"
+          description: "Document uploaded successfully. You can preview it and fill the form manually.",
         });
       }
     } catch (error) {
@@ -103,7 +103,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">Resume uploaded and parsed successfully</span>
+              <span className="text-sm font-medium text-green-800">Document uploaded successfully</span>
             </div>
             <Button
               variant="ghost"
@@ -115,7 +115,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
             </Button>
           </div>
           <p className="text-xs text-green-600 mt-1">
-            Your information has been automatically filled in the form below.
+            Your document is ready for preview and any extracted information has been filled in the form.
           </p>
         </CardContent>
       </Card>
@@ -136,7 +136,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
           {isProcessing ? (
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              <p className="text-sm text-gray-600">Processing resume...</p>
+              <p className="text-sm text-gray-600">Processing document...</p>
             </div>
           ) : (
             <>
@@ -145,11 +145,11 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
                 Upload your resume for auto-fill
               </p>
               <p className="text-xs text-gray-500 mb-3">
-                Drag and drop or click to select a PDF or Word document
+                Drag and drop or click to select a PDF, Word, or text document
               </p>
               <input
                 type="file"
-                accept=".pdf,.doc,.docx"
+                accept=".pdf,.doc,.docx,.txt"
                 onChange={handleFileSelect}
                 className="hidden"
                 id="resume-upload"

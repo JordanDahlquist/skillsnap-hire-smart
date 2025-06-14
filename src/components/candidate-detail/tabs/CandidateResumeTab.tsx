@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 import { Application } from "@/types";
 import { constructResumeUrl } from "@/utils/resumeUploadUtils";
-import { PDFPreviewComponent } from "./PDFPreviewComponent";
+import { EnhancedDocumentViewer } from "./EnhancedDocumentViewer";
 
 interface CandidateResumeTabProps {
   application: Application;
@@ -29,6 +29,12 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
   }
 
   const resumeUrl = hasResume ? constructResumeUrl(application.resume_file_path) : '';
+  
+  // Determine file type from file path
+  const getFileType = (filePath: string) => {
+    const extension = filePath.split('.').pop()?.toLowerCase();
+    return extension || 'pdf';
+  };
 
   return (
     <div className="space-y-6">
@@ -42,9 +48,10 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <PDFPreviewComponent 
-              resumeUrl={resumeUrl} 
-              fileName="Resume.pdf"
+            <EnhancedDocumentViewer 
+              documentUrl={resumeUrl}
+              fileName="Resume"
+              fileType={getFileType(application.resume_file_path)}
             />
           </CardContent>
         </Card>
