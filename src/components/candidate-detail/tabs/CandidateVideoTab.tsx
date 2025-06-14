@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VideoResponsePlayer } from "@/components/dashboard/components/VideoResponsePlayer";
 import { Application } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 import { logger } from "@/services/loggerService";
 import { safeParseSkillsTestResponses, safeParseVideoTranscripts } from "@/utils/typeGuards";
 
@@ -128,6 +130,21 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
   const skillsTranscripts = safeParseVideoTranscripts(application.skills_video_transcripts || []);
   const interviewTranscripts = safeParseVideoTranscripts(application.interview_video_transcripts || []);
 
+  // Debug transcript data
+  console.log('Transcript Debug:', {
+    applicationId: application.id,
+    skillsTranscriptsCount: skillsTranscripts.length,
+    interviewTranscriptsCount: interviewTranscripts.length,
+    skillsTranscripts,
+    interviewTranscripts,
+    transcriptProcessingStatus: application.transcript_processing_status
+  });
+
+  const handleProcessTranscripts = () => {
+    // TODO: Implement transcript processing trigger
+    console.log('Process transcripts triggered for application:', application.id);
+  };
+
   if (allVideoResponses.length === 0) {
     return (
       <Card className="glass-card">
@@ -161,16 +178,55 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
     <div className="space-y-6">
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle>Video Responses</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {allVideoResponses.length} video response{allVideoResponses.length !== 1 ? 's' : ''} submitted
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Video Responses</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {allVideoResponses.length} video response{allVideoResponses.length !== 1 ? 's' : ''} submitted
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Transcript Status Badge */}
+              {application.transcript_processing_status && (
+                <Badge 
+                  variant="outline" 
+                  className={
+                    application.transcript_processing_status === 'completed' ? 'text-green-600' :
+                    application.transcript_processing_status === 'processing' ? 'text-blue-600' :
+                    application.transcript_processing_status === 'failed' ? 'text-red-600' :
+                    'text-yellow-600'
+                  }
+                >
+                  Transcripts: {application.transcript_processing_status}
+                </Badge>
+              )}
+              
+              {/* Manual Process Button (for development/testing) */}
+              {process.env.NODE_ENV === 'development' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleProcessTranscripts}
+                  className="flex items-center gap-1"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Process Transcripts
+                </Button>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
             {allVideoResponses.map((response, index) => {
               const transcripts = response.source === 'skills' ? skillsTranscripts : interviewTranscripts;
               const transcript = transcripts.find(t => t.questionIndex === response.questionIndex);
+              
+              console.log(`Transcript matching for ${response.source} question ${response.questionIndex}:`, {
+                availableTranscripts: transcripts.map(t => ({ questionIndex: t.questionIndex, hasText: !!t.transcript })),
+                foundTranscript: !!transcript,
+                transcript: transcript
+              });
               
               return (
                 <div key={`${response.source}-${response.questionIndex || index}`} className="space-y-4">
@@ -181,6 +237,11 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
                     <span className="text-sm text-muted-foreground">
                       Question {(response.questionIndex || 0) + 1}
                     </span>
+                    {transcript && (
+                      <Badge variant="outline" className="text-green-600 text-xs">
+                        Transcript Ready
+                      </Badge>
+                    )}
                   </div>
                   <VideoResponsePlayer
                     response={response}
