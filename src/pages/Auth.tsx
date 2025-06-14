@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,8 +31,8 @@ const Auth = () => {
         sessionStorage.removeItem('auth_redirect_url');
         navigate(storedRedirectUrl);
       } else {
-        console.log('No stored redirect URL, going to home page');
-        navigate("/");
+        console.log('No stored redirect URL, going to dashboard');
+        navigate("/jobs");
       }
     }
   }, [user, navigate]);

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +43,7 @@ export const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
         sessionStorage.removeItem('auth_redirect_url');
         navigate(storedRedirectUrl);
       } else {
-        navigate("/");
+        navigate("/jobs");
       }
     } catch (error: any) {
       toast({
