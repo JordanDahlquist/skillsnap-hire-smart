@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -38,14 +38,6 @@ interface MultiStepApplicationFormProps {
   jobStatus: string;
 }
 
-const STEPS = [
-  { id: 'overview', title: 'Job Overview', description: 'Review the position details' },
-  { id: 'personal', title: 'Personal Info', description: 'Your contact information' },
-  { id: 'skills', title: 'Skills Assessment', description: 'Complete the skills test' },
-  { id: 'video', title: 'Video Interview', description: 'Record your responses' },
-  { id: 'review', title: 'Review & Submit', description: 'Final review' }
-];
-
 export const MultiStepApplicationForm = ({ 
   job, 
   jobId, 
@@ -65,13 +57,31 @@ export const MultiStepApplicationForm = ({
     videoUrl: null,
   });
 
-  const [stepValidation, setStepValidation] = useState<boolean[]>([
-    true, // Job overview is always valid (just viewing)
-    false, // Personal info
-    false, // Skills assessment
-    false, // Video interview
-    false, // Review & submit
-  ]);
+  // Dynamically generate steps based on job configuration
+  const steps = useMemo(() => {
+    const baseSteps = [
+      { id: 'overview', title: 'Job Overview', description: 'Review the position details' },
+      { id: 'personal', title: 'Personal Info', description: 'Your contact information' }
+    ];
+
+    // Add skills step only if job has generated test
+    if (job.generated_test) {
+      baseSteps.push({ id: 'skills', title: 'Skills Assessment', description: 'Complete the skills test' });
+    }
+
+    // Add video interview step only if job has interview questions
+    if (job.generated_interview_questions) {
+      baseSteps.push({ id: 'video', title: 'Video Interview', description: 'Record your responses' });
+    }
+
+    baseSteps.push({ id: 'review', title: 'Review & Submit', description: 'Final review' });
+
+    return baseSteps;
+  }, [job.generated_test, job.generated_interview_questions]);
+
+  const [stepValidation, setStepValidation] = useState<boolean[]>(() => 
+    Array(steps.length).fill(false).map((_, index) => index === 0) // First step (overview) is always valid
+  );
 
   const updateFormData = useCallback((updates: Partial<ApplicationFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
@@ -89,7 +99,7 @@ export const MultiStepApplicationForm = ({
   const canGoPrev = currentStep > 0;
 
   const handleNext = () => {
-    if (canGoNext && currentStep < STEPS.length - 1) {
+    if (canGoNext && currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -100,35 +110,41 @@ export const MultiStepApplicationForm = ({
     }
   };
 
+  const getStepIndex = (stepId: string) => {
+    return steps.findIndex(step => step.id === stepId);
+  };
+
   const renderCurrentStep = () => {
-    switch (currentStep) {
-      case 0:
+    const currentStepId = steps[currentStep]?.id;
+
+    switch (currentStepId) {
+      case 'overview':
         return (
           <JobOverviewSection 
             job={job}
             onContinue={() => setCurrentStep(1)}
           />
         );
-      case 1:
+      case 'personal':
         return (
           <PersonalInfoStep
             formData={formData}
             onFormDataChange={updateFormData}
-            onValidationChange={(isValid) => updateStepValidation(1, isValid)}
+            onValidationChange={(isValid) => updateStepValidation(currentStep, isValid)}
           />
         );
-      case 2:
+      case 'skills':
         return (
           <SkillsAssessmentStep
             job={job}
             formData={formData}
             onFormDataChange={updateFormData}
-            onValidationChange={(isValid) => updateStepValidation(2, isValid)}
+            onValidationChange={(isValid) => updateStepValidation(currentStep, isValid)}
             onNext={handleNext}
             onBack={handlePrev}
           />
         );
-      case 3:
+      case 'video':
         return (
           <VideoInterview
             questions={job.generated_interview_questions || ""}
@@ -136,19 +152,19 @@ export const MultiStepApplicationForm = ({
             videoUrl={formData.videoUrl}
             onChange={(videoUrl) => {
               updateFormData({ videoUrl });
-              updateStepValidation(3, !!videoUrl);
+              updateStepValidation(currentStep, !!videoUrl);
             }}
             onNext={handleNext}
             onBack={handlePrev}
           />
         );
-      case 4:
+      case 'review':
         return (
           <ReviewSubmitStep
             job={job}
             jobId={jobId}
             formData={formData}
-            onValidationChange={(isValid) => updateStepValidation(4, isValid)}
+            onValidationChange={(isValid) => updateStepValidation(currentStep, isValid)}
           />
         );
       default:
@@ -160,7 +176,7 @@ export const MultiStepApplicationForm = ({
     <Card className="bg-white border border-gray-200 shadow-sm">
       <CardContent className="p-8">
         <ApplicationStepIndicator 
-          steps={STEPS}
+          steps={steps}
           currentStep={currentStep}
           completedSteps={stepValidation}
         />
@@ -180,7 +196,7 @@ export const MultiStepApplicationForm = ({
             Previous
           </Button>
           
-          {currentStep < STEPS.length - 1 && (
+          {currentStep < steps.length - 1 && (
             <Button
               onClick={handleNext}
               disabled={!canGoNext}
