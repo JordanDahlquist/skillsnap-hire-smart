@@ -2,7 +2,8 @@
 import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Square, RotateCcw, CheckCircle } from "lucide-react";
+import { Play, Square, RotateCcw, CheckCircle, Video } from "lucide-react";
+import { ViewMode } from "./useVideoRecording";
 
 interface VideoRecordingAreaProps {
   currentQuestion: number;
@@ -14,11 +15,14 @@ interface VideoRecordingAreaProps {
   videoReady: boolean;
   permissionGranted: boolean;
   videoLoading: boolean;
+  viewMode: ViewMode;
   recordedVideoUrl: string | null;
   onStartRecording: () => void;
   onStopRecording: () => void;
   onRetakeVideo: () => void;
   onPermissionRequest: () => Promise<void>;
+  onSwitchToLive: () => void;
+  onSwitchToPlayback: () => void;
 }
 
 export const VideoRecordingArea = ({
@@ -31,36 +35,50 @@ export const VideoRecordingArea = ({
   videoReady,
   permissionGranted,
   videoLoading,
+  viewMode,
   recordedVideoUrl,
   onStartRecording,
   onStopRecording,
   onRetakeVideo,
-  onPermissionRequest
+  onPermissionRequest,
+  onSwitchToLive,
+  onSwitchToPlayback
 }: VideoRecordingAreaProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const liveVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (stream && videoRef.current) {
-      console.log('Assigning stream to video element...');
-      videoRef.current.srcObject = stream;
+    if (stream && liveVideoRef.current && viewMode === 'live') {
+      console.log('Assigning stream to live video element...');
+      liveVideoRef.current.srcObject = stream;
       
-      videoRef.current.onloadedmetadata = () => {
-        console.log('Video metadata loaded, playing...');
-        videoRef.current?.play().catch(error => {
-          console.error('Error playing video:', error);
+      liveVideoRef.current.onloadedmetadata = () => {
+        console.log('Live video metadata loaded, playing...');
+        liveVideoRef.current?.play().catch(error => {
+          console.error('Error playing live video:', error);
         });
       };
       
-      videoRef.current.onerror = (error) => {
-        console.error('Video element error:', error);
+      liveVideoRef.current.onerror = (error) => {
+        console.error('Live video element error:', error);
       };
     }
-  }, [stream]);
+  }, [stream, viewMode]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleRetakeVideo = () => {
+    onRetakeVideo();
+    onSwitchToLive();
+  };
+
+  const handlePlayRecording = () => {
+    if (recordedVideoUrl) {
+      onSwitchToPlayback();
+    }
   };
 
   if (videoLoading) {
@@ -115,16 +133,17 @@ export const VideoRecordingArea = ({
     <Card className="bg-white shadow-sm border border-gray-200">
       <CardContent className="p-6 space-y-6">
         <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
-          {recordedVideoUrl && !isRecording ? (
+          {viewMode === 'playback' && recordedVideoUrl ? (
             <video
               src={recordedVideoUrl}
               className="w-full h-full object-cover"
               controls
               playsInline
+              key={recordedVideoUrl} // Force re-render when URL changes
             />
           ) : (
             <video
-              ref={videoRef}
+              ref={liveVideoRef}
               className="w-full h-full object-cover"
               autoPlay
               muted
@@ -140,10 +159,17 @@ export const VideoRecordingArea = ({
             </div>
           )}
           
-          {recordedVideoUrl && !isRecording && (
+          {recordedVideoUrl && viewMode === 'playback' && (
             <div className="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
               <CheckCircle className="w-4 h-4" />
               Recorded
+            </div>
+          )}
+
+          {recordedVideoUrl && viewMode === 'live' && !isRecording && (
+            <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
+              <Video className="w-4 h-4" />
+              Live Preview
             </div>
           )}
         </div>
@@ -151,18 +177,31 @@ export const VideoRecordingArea = ({
         <div className="flex justify-center gap-4">
           {!isRecording ? (
             <>
-              <Button
-                onClick={onStartRecording}
-                disabled={!videoReady}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg flex items-center gap-2"
-              >
-                <Play className="w-5 h-5" />
-                Start Recording
-              </Button>
+              {viewMode === 'live' && (
+                <Button
+                  onClick={onStartRecording}
+                  disabled={!videoReady}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg flex items-center gap-2"
+                >
+                  <Play className="w-5 h-5" />
+                  Start Recording
+                </Button>
+              )}
               
+              {recordedVideoUrl && viewMode === 'live' && (
+                <Button
+                  onClick={handlePlayRecording}
+                  variant="outline"
+                  className="px-6 py-3 rounded-lg flex items-center gap-2"
+                >
+                  <Play className="w-5 h-5" />
+                  Play Recording
+                </Button>
+              )}
+
               {recordedVideoUrl && (
                 <Button
-                  onClick={onRetakeVideo}
+                  onClick={handleRetakeVideo}
                   variant="outline"
                   className="px-6 py-3 rounded-lg flex items-center gap-2"
                 >
@@ -185,6 +224,9 @@ export const VideoRecordingArea = ({
         <div className="text-center text-sm text-gray-600">
           <p>Maximum recording time: {maxLength} minutes</p>
           <p>Question {currentQuestion + 1} of {totalQuestions}</p>
+          {viewMode === 'playback' && recordedVideoUrl && (
+            <p className="text-green-600 font-medium">Viewing recorded response</p>
+          )}
         </div>
       </CardContent>
     </Card>

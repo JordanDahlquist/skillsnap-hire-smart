@@ -2,6 +2,8 @@
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 
+export type ViewMode = 'live' | 'playback';
+
 export const useVideoRecording = () => {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -10,6 +12,7 @@ export const useVideoRecording = () => {
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('live');
   
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -29,6 +32,7 @@ export const useVideoRecording = () => {
       setStream(mediaStream);
       setPermissionGranted(true);
       setVideoReady(true);
+      setViewMode('live');
       
     } catch (error) {
       console.error('Error accessing camera/microphone:', error);
@@ -59,6 +63,7 @@ export const useVideoRecording = () => {
     setMediaRecorder(recorder);
     setIsRecording(true);
     setRecordingTime(0);
+    setViewMode('live'); // Ensure we're in live mode during recording
 
     const chunks: Blob[] = [];
     recorder.ondataavailable = (event) => {
@@ -73,6 +78,7 @@ export const useVideoRecording = () => {
       onRecordingComplete(url);
       
       setIsRecording(false);
+      setViewMode('playback'); // Switch to playback mode after recording
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
       }
@@ -90,6 +96,14 @@ export const useVideoRecording = () => {
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
     }
+  };
+
+  const switchToLiveMode = () => {
+    setViewMode('live');
+  };
+
+  const switchToPlaybackMode = () => {
+    setViewMode('playback');
   };
 
   // Cleanup streams on unmount
@@ -111,8 +125,11 @@ export const useVideoRecording = () => {
     permissionGranted,
     videoReady,
     videoLoading,
+    viewMode,
     requestPermissions,
     startRecording,
-    stopRecording
+    stopRecording,
+    switchToLiveMode,
+    switchToPlaybackMode
   };
 };
