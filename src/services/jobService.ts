@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { apiClient } from "./apiClient";
 import { logger } from "./loggerService";
@@ -17,7 +16,6 @@ export const jobService = {
         .from('jobs')
         .select(`
           *,
-          applications!inner(count),
           applications(
             id,
             status,
@@ -47,7 +45,9 @@ export const jobService = {
 
         return {
           ...job,
-          applicationStatusCounts
+          applicationStatusCounts,
+          // Keep the applications array for backward compatibility
+          applications: [{ count: totalApplications }]
         };
       });
       

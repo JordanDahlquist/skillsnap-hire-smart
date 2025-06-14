@@ -20,6 +20,26 @@ interface OptimizedJobCardProps {
   onJobSelection?: (checked: boolean) => void;
 }
 
+// Helper function to get application count consistently
+const getApplicationCount = (job: Job): number => {
+  // Use applicationStatusCounts.total first, then fallback to applications array
+  if (job.applicationStatusCounts?.total !== undefined) {
+    return job.applicationStatusCounts.total;
+  }
+  
+  // Fallback to applications array count
+  if (job.applications && Array.isArray(job.applications)) {
+    return job.applications.length;
+  }
+  
+  // Last fallback to applications[0].count if it exists
+  if (job.applications?.[0]?.count !== undefined) {
+    return job.applications[0].count;
+  }
+  
+  return 0;
+};
+
 export const OptimizedJobCard = memo(({ 
   job, 
   onJobUpdate, 
@@ -38,18 +58,7 @@ export const OptimizedJobCard = memo(({
     [job.applicationStatusCounts?.pending]
   );
   
-  const applicationsCount = useMemo(() => {
-    // Use the same logic as sorting for consistency
-    if (job.applicationStatusCounts?.total !== undefined) {
-      return job.applicationStatusCounts.total;
-    }
-    
-    if (job.applications && Array.isArray(job.applications)) {
-      return job.applications.length;
-    }
-    
-    return job.applications?.[0]?.count || 0;
-  }, [job.applicationStatusCounts?.total, job.applications]);
+  const applicationsCount = useMemo(() => getApplicationCount(job), [job]);
   
   const { isGeneratingDescription, getDisplayDescription } = useJobDescription(job, onJobUpdate);
   const { isUpdating, handleStatusChange, handleDuplicateJob, handleArchiveJob } = useJobActions(job, onJobUpdate);

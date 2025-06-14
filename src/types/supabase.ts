@@ -31,4 +31,5 @@ export interface ApplicationStatusCounts {
   pending?: number;
   approved?: number;
   rejected?: number;
+  total?: number;
 }
