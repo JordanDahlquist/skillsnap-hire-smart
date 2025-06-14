@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -521,6 +520,358 @@ const templates: SkillsTestTemplate[] = [
       }
     ],
     icon: 'Gamepad2'
+  },
+
+  // ADVERTISING CATEGORY - NEW
+  {
+    id: 'meta-ads-manager',
+    name: 'Meta Ads Manager',
+    description: 'Facebook & Instagram advertising expertise, campaign optimization',
+    category: 'advertising',
+    estimatedTime: 35,
+    questions: [
+      {
+        question: 'Share examples of Meta ad campaigns you\'ve managed',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include campaign performance metrics and case studies',
+        evaluationGuidelines: 'Look for ROI improvements, audience targeting expertise, and optimization skills',
+        required: true,
+        order: 1
+      },
+      {
+        question: 'How do you approach audience targeting and lookalike creation on Meta platforms?',
+        type: 'long_text',
+        candidateInstructions: 'Describe your strategy for audience research and segmentation',
+        evaluationGuidelines: 'Assess understanding of Meta\'s targeting capabilities and strategic thinking',
+        required: true,
+        order: 2,
+        characterLimit: 600
+      },
+      {
+        question: 'What metrics do you use to optimize Meta ad performance?',
+        type: 'text',
+        candidateInstructions: 'List key KPIs and explain your optimization process',
+        evaluationGuidelines: 'Look for data-driven approach and understanding of performance metrics',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'Target'
+  },
+  {
+    id: 'google-ads-specialist',
+    name: 'Google Ads Specialist',
+    description: 'Search, display, and YouTube advertising on Google platforms',
+    category: 'advertising',
+    estimatedTime: 35,
+    questions: [
+      {
+        question: 'Describe a Google Ads campaign you optimized for better performance',
+        type: 'long_text',
+        candidateInstructions: 'Include initial challenges, optimization strategies, and results achieved',
+        evaluationGuidelines: 'Assess problem-solving skills, Google Ads knowledge, and results focus',
+        required: true,
+        order: 1,
+        characterLimit: 700
+      },
+      {
+        question: 'How do you approach keyword research and match type strategy?',
+        type: 'text',
+        candidateInstructions: 'Explain your process for keyword selection and bidding strategy',
+        evaluationGuidelines: 'Look for understanding of search intent and bidding optimization',
+        required: true,
+        order: 2
+      },
+      {
+        question: 'What Google Ads certifications do you hold?',
+        type: 'text',
+        candidateInstructions: 'List your current Google Ads certifications and expertise areas',
+        evaluationGuidelines: 'Verify platform expertise and commitment to staying current',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'Search'
+  },
+  {
+    id: 'ppc-manager',
+    name: 'PPC Manager',
+    description: 'Multi-platform paid advertising management and optimization',
+    category: 'advertising',
+    estimatedTime: 40,
+    questions: [
+      {
+        question: 'How do you manage PPC campaigns across multiple platforms?',
+        type: 'long_text',
+        candidateInstructions: 'Describe your approach to multi-platform campaign coordination',
+        evaluationGuidelines: 'Look for strategic thinking and platform-specific optimization knowledge',
+        required: true,
+        order: 1,
+        characterLimit: 600
+      },
+      {
+        question: 'Share a portfolio of PPC campaigns with performance data',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include campaigns from different platforms with ROI metrics',
+        evaluationGuidelines: 'Assess campaign diversity, performance tracking, and results achievement',
+        required: true,
+        order: 2
+      },
+      {
+        question: 'How do you handle budget allocation across different campaigns?',
+        type: 'text',
+        candidateInstructions: 'Explain your budget optimization and allocation strategy',
+        evaluationGuidelines: 'Look for financial management skills and ROI-focused approach',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'TrendingUp'
+  },
+  {
+    id: 'ad-creative-specialist',
+    name: 'Ad Creative Specialist',
+    description: 'Ad design, copy creation, and creative testing strategies',
+    category: 'advertising',
+    estimatedTime: 35,
+    questions: [
+      {
+        question: 'Share your portfolio of ad creatives across different platforms',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include static ads, video ads, and carousel formats with performance data',
+        evaluationGuidelines: 'Assess creative quality, platform adaptation, and performance correlation',
+        required: true,
+        order: 1
+      },
+      {
+        question: 'How do you approach A/B testing for ad creatives?',
+        type: 'long_text',
+        candidateInstructions: 'Describe your testing methodology and decision-making process',
+        evaluationGuidelines: 'Look for systematic testing approach and data-driven creative decisions',
+        required: true,
+        order: 2,
+        characterLimit: 600
+      },
+      {
+        question: 'What tools do you use for ad creative production?',
+        type: 'text',
+        candidateInstructions: 'List design tools, video editing software, and automation platforms',
+        evaluationGuidelines: 'Assess technical proficiency and workflow efficiency',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'Palette'
+  },
+  {
+    id: 'media-buyer',
+    name: 'Media Buyer',
+    description: 'Programmatic advertising, media planning, and budget optimization',
+    category: 'advertising',
+    estimatedTime: 35,
+    questions: [
+      {
+        question: 'Describe your experience with programmatic advertising platforms',
+        type: 'long_text',
+        candidateInstructions: 'Include DSPs used, targeting strategies, and optimization techniques',
+        evaluationGuidelines: 'Assess programmatic knowledge and technical platform expertise',
+        required: true,
+        order: 1,
+        characterLimit: 600
+      },
+      {
+        question: 'How do you approach media planning and budget allocation?',
+        type: 'text',
+        candidateInstructions: 'Explain your process for channel selection and budget distribution',
+        evaluationGuidelines: 'Look for strategic planning skills and ROI optimization focus',
+        required: true,
+        order: 2
+      },
+      {
+        question: 'Share examples of media buying campaigns with performance metrics',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include campaign strategies, channels used, and results achieved',
+        evaluationGuidelines: 'Assess campaign performance and strategic media placement',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'BarChart3'
+  },
+  {
+    id: 'campaign-manager',
+    name: 'Campaign Manager',
+    description: 'End-to-end campaign management, strategy, and performance analysis',
+    category: 'advertising',
+    estimatedTime: 40,
+    questions: [
+      {
+        question: 'Walk through your process for launching a new advertising campaign',
+        type: 'long_text',
+        candidateInstructions: 'Include strategy development, execution steps, and optimization phases',
+        evaluationGuidelines: 'Look for systematic approach and comprehensive campaign management skills',
+        required: true,
+        order: 1,
+        characterLimit: 800
+      },
+      {
+        question: 'How do you coordinate with creative, analytics, and client teams?',
+        type: 'text',
+        candidateInstructions: 'Describe your project management and communication approach',
+        evaluationGuidelines: 'Assess collaboration skills and team coordination abilities',
+        required: true,
+        order: 2
+      },
+      {
+        question: 'Share a case study of a challenging campaign you managed',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include problems faced, solutions implemented, and results achieved',
+        evaluationGuidelines: 'Evaluate problem-solving skills and campaign recovery abilities',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'ClipboardList'
+  },
+  {
+    id: 'performance-marketing-manager',
+    name: 'Performance Marketing Manager',
+    description: 'Data-driven marketing, conversion optimization, and growth metrics',
+    category: 'advertising',
+    estimatedTime: 40,
+    questions: [
+      {
+        question: 'How do you set up and optimize conversion tracking across platforms?',
+        type: 'long_text',
+        candidateInstructions: 'Include tracking setup, attribution models, and optimization strategies',
+        evaluationGuidelines: 'Assess technical tracking knowledge and data-driven optimization skills',
+        required: true,
+        order: 1,
+        characterLimit: 700
+      },
+      {
+        question: 'Describe your approach to customer acquisition cost (CAC) optimization',
+        type: 'text',
+        candidateInstructions: 'Explain strategies for reducing CAC while maintaining quality',
+        evaluationGuidelines: 'Look for understanding of unit economics and growth efficiency',
+        required: true,
+        order: 2
+      },
+      {
+        question: 'Share performance marketing campaigns with detailed metrics',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include CAC, LTV, ROAS, and other performance indicators',
+        evaluationGuidelines: 'Assess results-driven approach and metric optimization success',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'TrendingUp'
+  },
+  {
+    id: 'advertising-analyst',
+    name: 'Advertising Analyst',
+    description: 'Campaign analysis, reporting, and performance insights',
+    category: 'advertising',
+    estimatedTime: 35,
+    questions: [
+      {
+        question: 'How do you analyze and report on advertising campaign performance?',
+        type: 'long_text',
+        candidateInstructions: 'Describe your analysis framework and reporting methodology',
+        evaluationGuidelines: 'Look for analytical thinking and clear communication of insights',
+        required: true,
+        order: 1,
+        characterLimit: 600
+      },
+      {
+        question: 'What tools do you use for advertising analytics and reporting?',
+        type: 'text',
+        candidateInstructions: 'List analytics platforms, visualization tools, and automation software',
+        evaluationGuidelines: 'Assess technical proficiency and tool expertise',
+        required: true,
+        order: 2
+      },
+      {
+        question: 'Share examples of advertising reports or dashboards you\'ve created',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include data visualizations and actionable insights',
+        evaluationGuidelines: 'Evaluate reporting quality and insight generation ability',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'BarChart3'
+  },
+  {
+    id: 'brand-advertising-manager',
+    name: 'Brand Advertising Manager',
+    description: 'Brand awareness campaigns, creative strategy, and brand positioning',
+    category: 'advertising',
+    estimatedTime: 35,
+    questions: [
+      {
+        question: 'How do you develop brand advertising strategies that drive awareness?',
+        type: 'long_text',
+        candidateInstructions: 'Include audience research, creative strategy, and measurement approach',
+        evaluationGuidelines: 'Look for strategic thinking and brand-focused campaign development',
+        required: true,
+        order: 1,
+        characterLimit: 700
+      },
+      {
+        question: 'Share examples of brand campaigns you\'ve managed',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include campaign objectives, creative execution, and brand impact metrics',
+        evaluationGuidelines: 'Assess brand campaign quality and awareness impact',
+        required: true,
+        order: 2
+      },
+      {
+        question: 'How do you measure brand advertising effectiveness?',
+        type: 'text',
+        candidateInstructions: 'Explain metrics and methodologies for brand campaign measurement',
+        evaluationGuidelines: 'Look for understanding of brand metrics beyond direct response',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'Megaphone'
+  },
+  {
+    id: 'affiliate-marketing-manager',
+    name: 'Affiliate Marketing Manager',
+    description: 'Affiliate program management, partnership development, and commission optimization',
+    category: 'advertising',
+    estimatedTime: 35,
+    questions: [
+      {
+        question: 'How do you recruit and manage affiliate partners?',
+        type: 'long_text',
+        candidateInstructions: 'Describe your partner acquisition and relationship management strategy',
+        evaluationGuidelines: 'Assess partnership development and management skills',
+        required: true,
+        order: 1,
+        characterLimit: 600
+      },
+      {
+        question: 'What affiliate networks and tracking platforms have you used?',
+        type: 'text',
+        candidateInstructions: 'List platforms and explain your experience with each',
+        evaluationGuidelines: 'Look for technical platform knowledge and tracking expertise',
+        required: true,
+        order: 2
+      },
+      {
+        question: 'Share results from affiliate programs you\'ve managed',
+        type: 'portfolio_link',
+        candidateInstructions: 'Include program growth, top performer metrics, and ROI data',
+        evaluationGuidelines: 'Evaluate program management success and performance optimization',
+        required: true,
+        order: 3
+      }
+    ],
+    icon: 'Users'
   },
 
   // MARKETING CATEGORY
@@ -1558,6 +1909,7 @@ export const SkillsTestTemplateSelector = ({
     { id: 'developer', name: 'Developer' },
     { id: 'designer', name: 'Designer' },
     { id: 'creative', name: 'Creative' },
+    { id: 'advertising', name: 'Advertising' },
     { id: 'marketing', name: 'Marketing' },
     { id: 'content', name: 'Content' },
     { id: 'administrative', name: 'Administrative' },
