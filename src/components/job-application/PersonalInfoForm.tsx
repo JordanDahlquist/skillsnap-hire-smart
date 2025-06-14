@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, X } from "lucide-react";
+import { Upload, FileText, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { uploadResumeFile } from "@/utils/resumeUploadUtils";
 
 interface PersonalInfo {
   fullName: string;
@@ -17,6 +18,7 @@ interface PersonalInfo {
   linkedinUrl: string;
   githubUrl: string;
   resumeFile: File | null;
+  resumeUrl: string | null;
   coverLetter: string;
 }
 
@@ -29,15 +31,45 @@ interface PersonalInfoFormProps {
 
 export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInfoFormProps) => {
   const [dragActive, setDragActive] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = async (file: File) => {
     if (file.type !== 'application/pdf' && !file.type.includes('document')) {
       toast.error('Please upload a PDF or Word document');
       return;
     }
     
-    onChange({ ...data, resumeFile: file });
-    toast.success('Resume uploaded successfully');
+    setIsUploading(true);
+    try {
+      const result = await uploadResumeFile(file);
+      onChange({ 
+        ...data, 
+        resumeFile: file, 
+        resumeUrl: result.url 
+      });
+      
+      if (result.parsedData) {
+        // Auto-fill form fields if parsing succeeded
+        const { personalInfo } = result.parsedData;
+        onChange({
+          ...data,
+          resumeFile: file,
+          resumeUrl: result.url,
+          fullName: personalInfo.name || data.fullName,
+          email: personalInfo.email || data.email,
+          phone: personalInfo.phone || data.phone,
+          location: personalInfo.location || data.location,
+        });
+        toast.success('Resume uploaded and form auto-filled successfully');
+      } else {
+        toast.success('Resume uploaded successfully');
+      }
+    } catch (error) {
+      console.error('Resume upload failed:', error);
+      toast.error('Resume upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -48,7 +80,11 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
     if (file) handleFileUpload(file);
   };
 
-  const isValid = data.fullName && data.email && data.resumeFile;
+  const handleRemoveFile = () => {
+    onChange({ ...data, resumeFile: null, resumeUrl: null });
+  };
+
+  const isValid = data.fullName && data.email && data.resumeUrl;
 
   return (
     <div className="space-y-6">
@@ -159,7 +195,7 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
           {/* Resume Upload */}
           <div>
             <Label className="text-gray-800 font-medium">Resume Upload *</Label>
-            {!data.resumeFile ? (
+            {!data.resumeUrl ? (
               <div
                 className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center transition-colors bg-white ${
                   dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
@@ -169,32 +205,43 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
               >
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                  className="hidden"
-                  id="resume-upload"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById('resume-upload')?.click()}
-                  className="mb-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Choose Resume File
-                </Button>
-                <p className="text-sm text-gray-600">
-                  PDF, DOC, or DOCX files only. Drag and drop or click to upload.
-                </p>
+                {isUploading ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    <p className="text-sm text-gray-600">Uploading resume...</p>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                      className="hidden"
+                      id="resume-upload"
+                      disabled={isUploading}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('resume-upload')?.click()}
+                      className="mb-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                      disabled={isUploading}
+                    >
+                      Choose Resume File
+                    </Button>
+                    <p className="text-sm text-gray-600">
+                      PDF, DOC, or DOCX files only. Drag and drop or click to upload.
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="mt-2 flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-green-600" />
                   <div>
-                    <p className="text-sm font-medium text-green-900">{data.resumeFile.name}</p>
+                    <p className="text-sm font-medium text-green-900">{data.resumeFile?.name || 'Resume uploaded'}</p>
                     <p className="text-xs text-green-700">Resume uploaded successfully</p>
                   </div>
                 </div>
@@ -202,8 +249,9 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => onChange({ ...data, resumeFile: null })}
+                  onClick={handleRemoveFile}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  disabled={isUploading}
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -237,10 +285,17 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
         </Button>
         <Button 
           onClick={onNext} 
-          disabled={!isValid}
+          disabled={!isValid || isUploading}
           className="bg-blue-600 hover:bg-blue-700 text-white"
         >
-          Continue
+          {isUploading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            'Continue'
+          )}
         </Button>
       </div>
     </div>

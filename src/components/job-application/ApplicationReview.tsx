@@ -18,6 +18,7 @@ interface PersonalInfo {
   linkedinUrl: string;
   githubUrl: string;
   resumeFile: File | null;
+  resumeUrl: string | null;
   coverLetter: string;
 }
 
@@ -58,7 +59,7 @@ export const ApplicationReview = ({
           linkedin_url: personalInfo.linkedinUrl,
           github_url: personalInfo.githubUrl,
           cover_letter: personalInfo.coverLetter,
-          resume_file_path: personalInfo.resumeFile?.name || null,
+          resume_file_path: personalInfo.resumeUrl, // Use the uploaded URL instead of filename
           skills_test_responses: skillsResponses,
           interview_video_url: videoUrl,
           status: 'pending',
@@ -161,10 +162,10 @@ export const ApplicationReview = ({
           <Separator />
           <div className="flex items-center gap-2">
             <span className="font-medium text-gray-900">Resume:</span>
-            {personalInfo.resumeFile ? (
+            {personalInfo.resumeUrl ? (
               <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
                 <FileText className="w-3 h-3 mr-1" />
-                {personalInfo.resumeFile.name}
+                {personalInfo.resumeFile?.name || 'Uploaded'}
               </Badge>
             ) : (
               <Badge variant="destructive">Not uploaded</Badge>
