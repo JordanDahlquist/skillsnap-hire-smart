@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -236,16 +235,15 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                     <p className="text-xs text-green-700">Resume uploaded successfully</p>
                   </div>
                 </div>
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
                   onClick={handleRemoveFile}
-                  className="text-gray-900 hover:text-red-700 hover:bg-red-50 border-2 border-gray-500 bg-white shadow-md h-8 w-8 p-0"
+                  className="text-black hover:text-red-700 hover:bg-red-50 border-2 border-black bg-white shadow-md h-8 w-8 p-0 rounded flex items-center justify-center"
+                  style={{ color: 'black !important' }}
                   disabled={isUploading}
                 >
-                  <X className="w-4 h-4" />
-                </Button>
+                  <X className="w-4 h-4" style={{ color: 'black !important' }} />
+                </button>
               </div>
             )}
           </div>
