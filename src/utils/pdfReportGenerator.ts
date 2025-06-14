@@ -62,7 +62,7 @@ export const generatePDFReport = async (data: ReportData): Promise<void> => {
   const summaryMetrics = [
     `Total Jobs: ${data.metrics.totalJobs}`,
     `Total Applications: ${data.metrics.totalApplications}`,
-    `Approval Rate: ${data.metrics.approvalRate.toFixed(1)}%`,
+    `Hired Rate: ${data.metrics.hiredRate.toFixed(1)}%`,
     `Average Rating: ${data.metrics.avgRating.toFixed(1)}/5`,
     `Applications This Week: ${data.metrics.applicationsThisWeek}`,
     `Applications This Month: ${data.metrics.applicationsThisMonth}`
@@ -113,7 +113,7 @@ export const generatePDFReport = async (data: ReportData): Promise<void> => {
   pdf.setFont('helvetica', 'bold');
   pdf.text('Job Title', 20, currentY);
   pdf.text('Applications', 80, currentY);
-  pdf.text('Approval Rate', 120, currentY);
+  pdf.text('Hired Rate', 120, currentY);
   pdf.text('Avg Rating', 160, currentY);
   currentY += 8;
 
@@ -126,7 +126,7 @@ export const generatePDFReport = async (data: ReportData): Promise<void> => {
     const titleLines = pdf.splitTextToSize(job.jobTitle, 55);
     pdf.text(titleLines[0], 20, currentY);
     pdf.text(job.applications.toString(), 80, currentY);
-    pdf.text(`${job.approvalRate.toFixed(1)}%`, 120, currentY);
+    pdf.text(`${job.hiredRate.toFixed(1)}%`, 120, currentY);
     pdf.text(job.avgRating.toFixed(1), 160, currentY);
     currentY += 8;
   });
@@ -195,7 +195,7 @@ export const generatePDFReport = async (data: ReportData): Promise<void> => {
 
   const insights = [
     `Your hiring pipeline has ${data.pipelineData.pending} applications pending review.`,
-    `Your approval rate of ${data.metrics.approvalRate.toFixed(1)}% is ${data.metrics.approvalRate > 25 ? 'above' : 'below'} industry average.`,
+    `Your hired rate of ${data.metrics.hiredRate.toFixed(1)}% is ${data.metrics.hiredRate > 3 ? 'above' : 'below'} industry average.`,
     `You've received ${data.metrics.applicationsThisWeek} new applications this week.`,
     data.metrics.topPerformingJob ? `"${data.metrics.topPerformingJob}" is your top performing job.` : 'Consider optimizing job descriptions for better performance.',
     data.pipelineData.pending > 10 ? 'Consider reviewing pending applications to improve response time.' : 'Your application review process is up to date.'

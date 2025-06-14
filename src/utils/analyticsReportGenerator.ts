@@ -55,7 +55,7 @@ export const generateAnalyticsReport = async (
   const summaryMetrics = [
     `Total Jobs: ${data.metrics.totalJobs}`,
     `Total Applications: ${data.metrics.totalApplications}`,
-    `Approval Rate: ${data.metrics.approvalRate.toFixed(1)}%`,
+    `Hired Rate: ${data.metrics.hiredRate.toFixed(1)}%`,
     `Average Rating: ${data.metrics.avgRating.toFixed(1)}/5`,
     `Applications This Week: ${data.metrics.applicationsThisWeek}`,
     `Applications This Month: ${data.metrics.applicationsThisMonth}`

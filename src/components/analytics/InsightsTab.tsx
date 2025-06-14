@@ -28,12 +28,12 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
 
   const topPerformingJobs = jobPerformanceData
     .filter(job => job.applications >= 3)
-    .sort((a, b) => b.approvalRate - a.approvalRate)
+    .sort((a, b) => b.hiredRate - a.hiredRate)
     .slice(0, 5);
 
   const needsAttentionJobs = jobPerformanceData
-    .filter(job => job.applications >= 10 && job.approvalRate < 20)
-    .sort((a, b) => a.approvalRate - b.approvalRate)
+    .filter(job => job.applications >= 10 && job.hiredRate < 2)
+    .sort((a, b) => a.hiredRate - b.hiredRate)
     .slice(0, 3);
 
   const insights = [
@@ -41,14 +41,14 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
       type: "success",
       icon: Trophy,
       title: "High Performer Identified",
-      description: `${topPerformingJobs[0]?.jobTitle || 'No job'} has the highest approval rate at ${topPerformingJobs[0]?.approvalRate.toFixed(1) || 0}%`,
+      description: `${topPerformingJobs[0]?.jobTitle || 'No job'} has the highest hired rate at ${topPerformingJobs[0]?.hiredRate.toFixed(1) || 0}%`,
       actionable: true
     },
     {
       type: "warning",
       icon: AlertTriangle,
       title: "Applications Need Review",
-      description: `${metrics.totalApplications > 0 ? Math.round((metrics.totalApplications - metrics.approvalRate * metrics.totalApplications / 100)) : 0} applications are still pending review`,
+      description: `${metrics.totalApplications > 0 ? Math.round((metrics.totalApplications - metrics.hiredRate * metrics.totalApplications / 100)) : 0} applications are still pending review`,
       actionable: true
     },
     {
@@ -148,9 +148,9 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-green-600">
-                    {job.approvalRate.toFixed(1)}%
+                    {job.hiredRate.toFixed(1)}%
                   </div>
-                  <div className="text-sm text-gray-600">approval rate</div>
+                  <div className="text-sm text-gray-600">hired rate</div>
                 </div>
               </div>
             )) : (
@@ -172,10 +172,10 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
           <CardContent className="space-y-4">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Approval Rate Target</span>
-                <span className="text-sm text-gray-600">{metrics.approvalRate.toFixed(1)}% / 25%</span>
+                <span className="text-sm font-medium">Hired Rate Target</span>
+                <span className="text-sm text-gray-600">{metrics.hiredRate.toFixed(1)}% / 5%</span>
               </div>
-              <Progress value={Math.min((metrics.approvalRate / 25) * 100, 100)} className="h-2" />
+              <Progress value={Math.min((metrics.hiredRate / 5) * 100, 100)} className="h-2" />
             </div>
             
             <div>
@@ -215,9 +215,9 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold text-orange-600">
-                        {job.approvalRate.toFixed(1)}%
+                        {job.hiredRate.toFixed(1)}%
                       </div>
-                      <div className="text-xs text-gray-600">low approval</div>
+                      <div className="text-xs text-gray-600">low hired rate</div>
                     </div>
                   </div>
                 ))}
