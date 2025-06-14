@@ -52,7 +52,7 @@ export const MainNavigation = ({
             className={`px-3 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
               location.pathname === item.href || location.pathname.startsWith(item.href + '/')
                 ? "text-[#007af6] border-b-2 border-[#007af6]"
-                : "text-foreground/80 hover:text-[#007af6]"
+                : "text-gray-700 hover:text-[#007af6]"
             }`}
           >
             {item.name === "Admin Panel" && <Shield className="w-4 h-4 text-red-500" />}
@@ -65,7 +65,7 @@ export const MainNavigation = ({
       <Button
         variant="ghost"
         size="sm"
-        className="md:hidden text-foreground/80"
+        className="md:hidden text-gray-700 hover:text-gray-900 hover:bg-gray-100"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       >
         {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -73,16 +73,16 @@ export const MainNavigation = ({
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-background border-b border-border md:hidden backdrop-blur-xl">
+        <div className="absolute top-16 left-0 right-0 bg-white border-b border-gray-200 md:hidden backdrop-blur-xl shadow-lg">
           <nav className="px-4 py-2 space-y-1">
             {currentNavigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`block px-3 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`block px-3 py-2 text-sm font-medium transition-colors flex items-center gap-2 rounded-md ${
                   location.pathname === item.href || location.pathname.startsWith(item.href + '/')
-                    ? "text-[#007af6] bg-accent"
-                    : "text-foreground/80 hover:text-[#007af6] hover:bg-accent/50"
+                    ? "text-[#007af6] bg-blue-50"
+                    : "text-gray-700 hover:text-[#007af6] hover:bg-gray-50"
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >

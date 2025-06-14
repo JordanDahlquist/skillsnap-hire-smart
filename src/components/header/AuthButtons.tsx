@@ -9,7 +9,7 @@ export const AuthButtons = () => {
       <Button 
         variant="ghost" 
         asChild
-        className="text-foreground/80 hover:text-foreground hover:bg-accent/50 transition-all duration-200 font-medium"
+        className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 font-medium"
       >
         <Link to="/auth" className="flex items-center gap-2">
           <LogIn className="w-4 h-4" />
