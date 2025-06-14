@@ -1,4 +1,3 @@
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -27,6 +26,11 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
 import { LinkedInCallback } from "./pages/LinkedInCallback";
 import NotFound from "./pages/NotFound";
+
+// Admin components
+import { AdminLayout } from "./components/admin/AdminLayout";
+import { AdminOverview } from "./components/admin/AdminOverview";
+import { UserManagement } from "./components/admin/UserManagement";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,6 +70,15 @@ function App() {
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/refund" element={<RefundPolicy />} />
                 <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout><AdminOverview /></AdminLayout>} />
+                <Route path="/admin/users" element={<AdminLayout><UserManagement /></AdminLayout>} />
+                <Route path="/admin/content" element={<AdminLayout><div className="p-8"><h1 className="text-3xl font-bold">Content Management</h1><p className="text-muted-foreground">Coming soon...</p></div></AdminLayout>} />
+                <Route path="/admin/analytics" element={<AdminLayout><div className="p-8"><h1 className="text-3xl font-bold">Advanced Analytics</h1><p className="text-muted-foreground">Coming soon...</p></div></AdminLayout>} />
+                <Route path="/admin/activity" element={<AdminLayout><div className="p-8"><h1 className="text-3xl font-bold">Activity Logs</h1><p className="text-muted-foreground">Coming soon...</p></div></AdminLayout>} />
+                <Route path="/admin/system" element={<AdminLayout><div className="p-8"><h1 className="text-3xl font-bold">System Settings</h1><p className="text-muted-foreground">Coming soon...</p></div></AdminLayout>} />
+                
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>

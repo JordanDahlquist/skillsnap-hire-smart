@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { Link, Location } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Shield } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 interface MainNavigationProps {
   location: Location;
@@ -18,6 +19,8 @@ export const MainNavigation = ({
   isMobileMenuOpen, 
   setIsMobileMenuOpen 
 }: MainNavigationProps) => {
+  const { isSuperAdmin } = useAdminRole();
+
   const navigation = [
     { name: "Pricing", href: "/pricing" },
   ];
@@ -27,6 +30,14 @@ export const MainNavigation = ({
     { name: "Scout AI", href: "/scout" },
     { name: "Inbox", href: "/inbox" },
   ];
+
+  // Add admin panel for super admins
+  if (isSuperAdmin) {
+    authenticatedNavigation.push({
+      name: "Admin Panel",
+      href: "/admin"
+    });
+  }
 
   const currentNavigation = isAuthenticated ? authenticatedNavigation : navigation;
 
@@ -38,12 +49,13 @@ export const MainNavigation = ({
           <Link
             key={item.name}
             to={item.href}
-            className={`px-3 py-2 text-sm font-medium transition-colors ${
-              location.pathname === item.href
+            className={`px-3 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+              location.pathname === item.href || location.pathname.startsWith(item.href + '/')
                 ? "text-[#007af6] border-b-2 border-[#007af6]"
                 : "text-foreground/80 hover:text-[#007af6]"
             }`}
           >
+            {item.name === "Admin Panel" && <Shield className="w-4 h-4 text-red-500" />}
             {item.name}
           </Link>
         ))}
@@ -67,13 +79,14 @@ export const MainNavigation = ({
               <Link
                 key={item.name}
                 to={item.href}
-                className={`block px-3 py-2 text-sm font-medium transition-colors ${
-                  location.pathname === item.href
+                className={`block px-3 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+                  location.pathname === item.href || location.pathname.startsWith(item.href + '/')
                     ? "text-[#007af6] bg-accent"
                     : "text-foreground/80 hover:text-[#007af6] hover:bg-accent/50"
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
+                {item.name === "Admin Panel" && <Shield className="w-4 h-4 text-red-500" />}
                 {item.name}
               </Link>
             ))}
