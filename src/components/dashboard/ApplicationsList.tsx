@@ -54,23 +54,25 @@ export const ApplicationsList = memo(({
   }, [applications, searchTerm]);
 
   return (
-    <div className="glass-card">
-      <ApplicationsListHeader
-        applicationsCount={filteredApplications.length}
-        selectedApplications={selectedApplications}
-        onSelectApplications={onSelectApplications}
-        applications={filteredApplications}
-        searchTerm={searchTerm}
-        onSearchChange={onSearchChange}
-        onSendEmail={onSendEmail}
-        onSetRating={onSetRating}
-        onMoveToStage={onMoveToStage}
-        onReject={onReject}
-        jobId={jobId}
-        isLoading={isLoading}
-      />
+    <div>
+      <div className="glass-card mb-4">
+        <ApplicationsListHeader
+          applicationsCount={filteredApplications.length}
+          selectedApplications={selectedApplications}
+          onSelectApplications={onSelectApplications}
+          applications={filteredApplications}
+          searchTerm={searchTerm}
+          onSearchChange={onSearchChange}
+          onSendEmail={onSendEmail}
+          onSetRating={onSetRating}
+          onMoveToStage={onMoveToStage}
+          onReject={onReject}
+          jobId={jobId}
+          isLoading={isLoading}
+        />
+      </div>
 
-      <div className="overflow-y-auto pt-4" style={{ height: '750px' }}>
+      <div className="overflow-y-auto" style={{ height: '750px' }}>
         {filteredApplications.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <div className="text-lg font-medium mb-2">
