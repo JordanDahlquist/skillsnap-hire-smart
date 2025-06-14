@@ -79,13 +79,14 @@ export const DashboardHeaderActions = ({
               size="sm" 
               onClick={onRefreshAI}
               disabled={isUpdating || isRefreshingAI}
-              className="border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300 gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">AI Rank</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="z-[9999]">
-            <p>Refresh AI-powered application ratings for new applicants</p>
+            <p>Refresh AI-powered application rankings for new applicants</p>
           </TooltipContent>
         </Tooltip>
 
