@@ -24,6 +24,7 @@ export type Database = {
           experience: string | null
           github_url: string | null
           id: string
+          interview_video_responses: Json | null
           interview_video_url: string | null
           job_id: string
           linkedin_url: string | null
@@ -57,6 +58,7 @@ export type Database = {
           experience?: string | null
           github_url?: string | null
           id?: string
+          interview_video_responses?: Json | null
           interview_video_url?: string | null
           job_id: string
           linkedin_url?: string | null
@@ -90,6 +92,7 @@ export type Database = {
           experience?: string | null
           github_url?: string | null
           id?: string
+          interview_video_responses?: Json | null
           interview_video_url?: string | null
           job_id?: string
           linkedin_url?: string | null

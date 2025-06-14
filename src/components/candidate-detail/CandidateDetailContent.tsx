@@ -27,8 +27,22 @@ export const CandidateDetailContent = ({
     ? application.skills_test_responses 
     : [];
 
+  // Parse interview video responses
+  const interviewResponses = Array.isArray(application.interview_video_responses) 
+    ? application.interview_video_responses 
+    : [];
+
+  // Check for video content in both skills and interview responses
+  const skillsVideoResponses = skillsResponses.filter((response: any) => 
+    response.answerType === 'video' && response.videoUrl
+  );
+  
+  const interviewVideoResponses = interviewResponses.filter((response: any) => 
+    response.answerType === 'video' && response.videoUrl
+  );
+
   const hasSkillsAssessment = skillsResponses.length > 0;
-  const hasVideoInterview = !!application.interview_video_url;
+  const hasVideoContent = skillsVideoResponses.length > 0 || interviewVideoResponses.length > 0;
   const hasDocuments = !!(application.resume_file_path || application.cover_letter);
 
   return (
@@ -39,8 +53,8 @@ export const CandidateDetailContent = ({
           <TabsTrigger value="skills" disabled={!hasSkillsAssessment}>
             Skills {!hasSkillsAssessment && "(None)"}
           </TabsTrigger>
-          <TabsTrigger value="video" disabled={!hasVideoInterview}>
-            Video {!hasVideoInterview && "(None)"}
+          <TabsTrigger value="video" disabled={!hasVideoContent}>
+            Video {!hasVideoContent && "(None)"}
           </TabsTrigger>
           <TabsTrigger value="documents" disabled={!hasDocuments}>
             Documents {!hasDocuments && "(None)"}

@@ -1,105 +1,202 @@
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Clock, XCircle, FileX, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
-import { MultiStepApplicationForm } from "./MultiStepApplicationForm";
-import { Job } from "@/types";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { VideoInterview } from "./VideoInterview";
+import { ApplicationReview } from "./ApplicationReview";
+import { ApplicationProgress } from "./ApplicationProgress";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { PersonalInfoForm } from "./PersonalInfoForm";
+import { logger } from "@/services/loggerService";
 
-interface ApplicationFormProps {
-  jobId: string;
-  isApplicationOpen: boolean;
-  jobStatus: string;
-  job: Job;
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  availableStartDate: string;
+  portfolioUrl: string;
+  linkedinUrl: string;
+  githubUrl: string;
+  resumeFile: File | null;
+  coverLetter: string;
+  interviewVideoUrl: string | null;
 }
 
-export const ApplicationForm = ({ jobId, isApplicationOpen, jobStatus, job }: ApplicationFormProps) => {
-  const getStatusMessage = () => {
-    switch (jobStatus) {
-      case 'draft':
-        return {
-          icon: <FileX className="w-5 h-5 text-gray-500" />,
-          title: "Position Not Yet Published",
-          description: "This position is still in draft mode and is not yet accepting applications. Please check back later when it becomes available.",
-          variant: "default" as const
-        };
-      case 'paused':
-        return {
-          icon: <Clock className="w-5 h-5 text-yellow-600" />,
-          title: "Applications Temporarily Paused",
-          description: "Applications for this position are currently paused. The employer may resume accepting applications soon. Please check back later.",
-          variant: "default" as const
-        };
-      case 'closed':
-        return {
-          icon: <XCircle className="w-5 h-5 text-red-600" />,
-          title: "Applications Closed",
-          description: "This position is no longer accepting new applications. The application period has ended or the position has been filled.",
-          variant: "destructive" as const
-        };
-      default:
+const ApplicationForm = () => {
+  const { jobId } = useParams();
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [job, setJob] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    availableStartDate: "",
+    portfolioUrl: "",
+    linkedinUrl: "",
+    githubUrl: "",
+    resumeFile: null,
+    coverLetter: "",
+    interviewVideoUrl: null,
+  });
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      if (!jobId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('jobs')
+          .select('*')
+          .eq('id', jobId)
+          .single();
+
+        if (error) throw error;
+        setJob(data);
+      } catch (error) {
+        logger.error('Error fetching job:', error);
+        toast.error('Failed to load job details');
+        navigate('/jobs');
+      }
+    };
+
+    fetchJob();
+  }, [jobId, navigate]);
+
+  const uploadResumeFile = async (file: File): Promise<string | null> => {
+    try {
+      const fileName = `resume-${Date.now()}-${file.name}`;
+      const filePath = `resumes/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('application-files')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Error uploading resume:', error);
         return null;
+      }
+
+      return filePath;
+    } catch (error) {
+      console.error('Error uploading resume:', error);
+      return null;
     }
   };
 
-  const statusMessage = getStatusMessage();
+  const handleSubmit = async () => {
+    if (!jobId) return;
 
-  if (!isApplicationOpen) {
-    return (
-      <Card className="bg-white border border-gray-200 shadow-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            {statusMessage?.icon}
-            {statusMessage?.title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert variant={statusMessage?.variant} className="bg-gray-50 border-gray-200">
-            <AlertDescription className="text-foreground">
-              {statusMessage?.description}
-            </AlertDescription>
-          </Alert>
-          
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button variant="outline" asChild className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50">
-              <Link to="/jobs">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Browse Other Positions
-              </Link>
-            </Button>
-            
-            {jobStatus === 'paused' && (
-              <Button variant="outline" className="flex-1 border-gray-300 text-gray-700" disabled>
-                <Clock className="w-4 h-4 mr-2" />
-                Get Notified When Open
-              </Button>
-            )}
-          </div>
-          
-          <div className="pt-4 border-t border-gray-200">
-            <p className="text-sm text-muted-foreground mb-2">
-              Job Status: 
-              <Badge className="ml-2" variant={jobStatus === 'closed' ? 'destructive' : 'secondary'}>
-                {jobStatus.charAt(0).toUpperCase() + jobStatus.slice(1)}
-              </Badge>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Even though applications are not currently being accepted, you can still view the full job details above.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    setIsLoading(true);
+    try {
+      let resumeFilePath = null;
+      if (formData.resumeFile) {
+        resumeFilePath = await uploadResumeFile(formData.resumeFile);
+        if (!resumeFilePath) {
+          toast.error('Failed to upload resume');
+          return;
+        }
+      }
+
+      // Parse interview video responses if they exist
+      let interviewVideoResponses = [];
+      if (formData.interviewVideoUrl) {
+        try {
+          interviewVideoResponses = JSON.parse(formData.interviewVideoUrl);
+        } catch (error) {
+          console.error('Error parsing interview video responses:', error);
+        }
+      }
+
+      const applicationData = {
+        job_id: jobId,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        location: formData.location || null,
+        available_start_date: formData.availableStartDate || null,
+        portfolio_url: formData.portfolioUrl || null,
+        linkedin_url: formData.linkedinUrl || null,
+        github_url: formData.githubUrl || null,
+        resume_file_path: resumeFilePath,
+        cover_letter: formData.coverLetter || null,
+        interview_video_responses: interviewVideoResponses,
+        status: 'pending',
+      };
+
+      const { error } = await supabase
+        .from('applications')
+        .insert([applicationData]);
+
+      if (error) throw error;
+
+      toast.success('Application submitted successfully!');
+      navigate('/jobs');
+    } catch (error) {
+      logger.error('Error submitting application:', error);
+      toast.error('Failed to submit application');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNext = () => {
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const handleBack = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const updateFormData = (updates: Partial<FormData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  };
+
+  if (!job) {
+    return <div>Loading...</div>;
   }
 
+  const totalSteps = job.generated_interview_questions ? 3 : 2;
+
   return (
-    <MultiStepApplicationForm 
-      job={job}
-      jobId={jobId}
-      isApplicationOpen={isApplicationOpen}
-      jobStatus={jobStatus}
-    />
+    <div className="max-w-4xl mx-auto py-8 px-4">
+      <ApplicationProgress currentStep={currentStep} totalSteps={totalSteps} />
+      
+      <div className="mt-8">
+        {currentStep === 1 && (
+          <PersonalInfoForm
+            formData={formData}
+            onUpdate={updateFormData}
+            onNext={handleNext}
+          />
+        )}
+        
+        {currentStep === 2 && job.generated_interview_questions && (
+          <VideoInterview
+            questions={job.generated_interview_questions}
+            maxLength={job.interview_video_max_length || 5}
+            videoUrl={formData.interviewVideoUrl}
+            onChange={(url) => updateFormData({ interviewVideoUrl: url })}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
+        )}
+        
+        {currentStep === (job.generated_interview_questions ? 3 : 2) && (
+          <ApplicationReview
+            formData={formData}
+            job={job}
+            onSubmit={handleSubmit}
+            onBack={handleBack}
+            isLoading={isLoading}
+          />
+        )}
+      </div>
+    </div>
   );
 };
+
+export default ApplicationForm;

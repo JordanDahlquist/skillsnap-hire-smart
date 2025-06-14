@@ -9,6 +9,8 @@ import { CompletionCard } from "./video-interview/CompletionCard";
 import { VideoInterviewNavigation } from "./video-interview/VideoInterviewNavigation";
 import { useVideoRecording, ViewMode } from "./video-interview/useVideoRecording";
 import { useInterviewQuestions } from "./video-interview/useInterviewQuestions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface VideoInterviewProps {
   questions: string;
@@ -30,6 +32,8 @@ export const VideoInterview = ({
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [recordedVideos, setRecordedVideos] = useState<{ [key: number]: string }>({});
   const [questionViewModes, setQuestionViewModes] = useState<{ [key: number]: ViewMode }>({});
+  const [uploadedVideos, setUploadedVideos] = useState<{ [key: number]: string }>({});
+  const [isUploading, setIsUploading] = useState(false);
   
   const { interviewQuestions } = useInterviewQuestions(questions);
   const {
@@ -47,8 +51,40 @@ export const VideoInterview = ({
     switchToPlaybackMode
   } = useVideoRecording();
 
+  const uploadVideoToStorage = async (blob: Blob, questionIndex: number): Promise<string | null> => {
+    try {
+      setIsUploading(true);
+      const fileName = `interview-video-${Date.now()}-q${questionIndex + 1}.webm`;
+      const filePath = `interview-videos/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('application-files')
+        .upload(filePath, blob, {
+          contentType: 'video/webm',
+        });
+
+      if (error) {
+        console.error('Error uploading video:', error);
+        toast.error('Failed to upload video');
+        return null;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('application-files')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading video:', error);
+      toast.error('Failed to upload video');
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleStartRecording = () => {
-    startRecording((url) => {
+    startRecording(async (url) => {
       setRecordedVideos(prev => ({
         ...prev,
         [currentQuestion]: url
@@ -57,6 +93,24 @@ export const VideoInterview = ({
         ...prev,
         [currentQuestion]: 'playback'
       }));
+
+      // Convert blob URL to actual blob and upload
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const uploadedUrl = await uploadVideoToStorage(blob, currentQuestion);
+        
+        if (uploadedUrl) {
+          setUploadedVideos(prev => ({
+            ...prev,
+            [currentQuestion]: uploadedUrl
+          }));
+          toast.success(`Video ${currentQuestion + 1} uploaded successfully`);
+        }
+      } catch (error) {
+        console.error('Error processing recorded video:', error);
+        toast.error('Failed to process recorded video');
+      }
     });
   };
 
@@ -70,6 +124,10 @@ export const VideoInterview = ({
       const newViewModes = { ...questionViewModes };
       delete newViewModes[currentQuestion];
       setQuestionViewModes(newViewModes);
+
+      const newUploadedVideos = { ...uploadedVideos };
+      delete newUploadedVideos[currentQuestion];
+      setUploadedVideos(newUploadedVideos);
     }
   };
 
@@ -129,10 +187,19 @@ export const VideoInterview = ({
   const canGoNext = currentQuestion < interviewQuestions.length - 1;
 
   useEffect(() => {
-    if (allCompleted) {
-      onChange('recorded'); // Placeholder - in production, upload to storage
+    if (allCompleted && Object.keys(uploadedVideos).length === interviewQuestions.length) {
+      // Create interview responses array with uploaded video URLs
+      const interviewResponses = interviewQuestions.map((question, index) => ({
+        question,
+        questionIndex: index,
+        answerType: 'video',
+        videoUrl: uploadedVideos[index],
+        recordedAt: new Date().toISOString()
+      }));
+      
+      onChange(JSON.stringify(interviewResponses));
     }
-  }, [allCompleted, onChange]);
+  }, [allCompleted, uploadedVideos, interviewQuestions, onChange]);
 
   // Initialize view mode for current question when questions load
   useEffect(() => {
@@ -190,11 +257,11 @@ export const VideoInterview = ({
         totalQuestions={interviewQuestions.length}
         maxLength={maxLength}
         stream={stream}
-        isRecording={isRecording}
+        isRecording={isRecording || isUploading}
         recordingTime={recordingTime}
         videoReady={videoReady}
         permissionGranted={permissionGranted}
-        videoLoading={videoLoading}
+        videoLoading={videoLoading || isUploading}
         viewMode={viewMode}
         recordedVideoUrl={recordedVideos[currentQuestion] || null}
         onStartRecording={handleStartRecording}
@@ -218,6 +285,12 @@ export const VideoInterview = ({
       />
 
       <CompletionCard isAllCompleted={allCompleted} />
+      
+      {isUploading && (
+        <div className="text-center text-sm text-muted-foreground">
+          Uploading video... Please wait.
+        </div>
+      )}
     </div>
   );
 };
