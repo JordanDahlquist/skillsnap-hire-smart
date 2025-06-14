@@ -23,6 +23,19 @@ interface FormData {
   interviewVideoUrl: string | null;
 }
 
+// Convert FormData to PersonalInfo format expected by PersonalInfoForm
+interface PersonalInfo {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  portfolioUrl: string;
+  linkedinUrl: string;
+  githubUrl: string;
+  resumeFile: File | null;
+  coverLetter: string;
+}
+
 const ApplicationForm = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -155,22 +168,68 @@ const ApplicationForm = () => {
     setFormData(prev => ({ ...prev, ...updates }));
   };
 
+  // Convert FormData to PersonalInfo format
+  const convertToPersonalInfo = (data: FormData): PersonalInfo => ({
+    fullName: data.name,
+    email: data.email,
+    phone: data.phone,
+    location: data.location,
+    portfolioUrl: data.portfolioUrl,
+    linkedinUrl: data.linkedinUrl,
+    githubUrl: data.githubUrl,
+    resumeFile: data.resumeFile,
+    coverLetter: data.coverLetter,
+  });
+
+  // Convert PersonalInfo back to FormData format
+  const convertFromPersonalInfo = (personalInfo: PersonalInfo): Partial<FormData> => ({
+    name: personalInfo.fullName,
+    email: personalInfo.email,
+    phone: personalInfo.phone,
+    location: personalInfo.location,
+    portfolioUrl: personalInfo.portfolioUrl,
+    linkedinUrl: personalInfo.linkedinUrl,
+    githubUrl: personalInfo.githubUrl,
+    resumeFile: personalInfo.resumeFile,
+    coverLetter: personalInfo.coverLetter,
+  });
+
   if (!job) {
     return <div>Loading...</div>;
   }
 
   const totalSteps = job.generated_interview_questions ? 3 : 2;
+  
+  // Define step labels and completion status
+  const stepLabels = job.generated_interview_questions 
+    ? ['Personal Info', 'Video Interview', 'Review & Submit']
+    : ['Personal Info', 'Review & Submit'];
+  
+  const completedSteps = [
+    // Step 1 (Personal Info) is completed if basic info is filled
+    !!(formData.name && formData.email && formData.resumeFile),
+    // Step 2 (Video Interview) is completed if video responses exist or if there's no video interview
+    !job.generated_interview_questions || !!formData.interviewVideoUrl,
+    // Step 3 (Review) is never pre-completed
+    false
+  ];
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
-      <ApplicationProgress currentStep={currentStep} totalSteps={totalSteps} />
+      <ApplicationProgress 
+        currentStep={currentStep} 
+        totalSteps={totalSteps}
+        stepLabels={stepLabels}
+        completedSteps={completedSteps}
+      />
       
       <div className="mt-8">
         {currentStep === 1 && (
           <PersonalInfoForm
-            formData={formData}
-            onUpdate={updateFormData}
+            data={convertToPersonalInfo(formData)}
+            onChange={(personalInfo) => updateFormData(convertFromPersonalInfo(personalInfo))}
             onNext={handleNext}
+            onBack={handleBack}
           />
         )}
         
@@ -187,11 +246,12 @@ const ApplicationForm = () => {
         
         {currentStep === (job.generated_interview_questions ? 3 : 2) && (
           <ApplicationReview
-            formData={formData}
             job={job}
-            onSubmit={handleSubmit}
+            personalInfo={convertToPersonalInfo(formData)}
+            skillsResponses={[]} // Empty array since this form doesn't handle skills responses
+            videoUrl={formData.interviewVideoUrl}
             onBack={handleBack}
-            isLoading={isLoading}
+            onSubmit={handleSubmit}
           />
         )}
       </div>

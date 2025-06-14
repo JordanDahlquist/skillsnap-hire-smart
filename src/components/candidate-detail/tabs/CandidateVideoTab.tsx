@@ -14,6 +14,7 @@ interface VideoResponse {
   answerType: string;
   videoUrl: string;
   source: 'skills' | 'interview';
+  answer: string; // Add this required property for VideoResponsePlayer
 }
 
 export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
@@ -27,7 +28,8 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
     .map((response: any, index: number) => ({
       ...response,
       source: 'skills' as const,
-      questionIndex: index
+      questionIndex: index,
+      answer: response.answer || '' // Ensure answer property exists
     }));
 
   // Parse interview video responses
@@ -39,7 +41,8 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
     .filter((response: any) => response.answerType === 'video' && response.videoUrl)
     .map((response: any) => ({
       ...response,
-      source: 'interview' as const
+      source: 'interview' as const,
+      answer: response.answer || 'Video response' // Provide a default answer for video responses
     }));
 
   // Combine all video responses
