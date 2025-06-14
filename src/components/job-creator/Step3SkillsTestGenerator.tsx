@@ -33,11 +33,6 @@ export const Step3SkillsTestGenerator = ({
   
   const hasQuestions = skillsTestData.questions.length > 0;
 
-  // If we have questions, show the editor directly
-  if (hasQuestions && viewState === 'initial') {
-    setViewState('editor');
-  }
-
   const handleGenerateWithAI = async () => {
     // Update mode and generate questions directly
     const updatedData = { ...skillsTestData, mode: 'ai_generated' as const };
@@ -94,6 +89,14 @@ export const Step3SkillsTestGenerator = ({
   };
 
   const handleBackToInitial = () => {
+    // Clear questions and reset to initial state for a fresh start
+    const clearedData: SkillsTestData = {
+      ...skillsTestData,
+      questions: [],
+      estimatedCompletionTime: 0,
+      mode: 'ai_generated'
+    };
+    onSkillsTestDataChange(clearedData);
     setViewState('initial');
   };
 
