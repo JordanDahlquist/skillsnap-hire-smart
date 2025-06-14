@@ -83,7 +83,7 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
             </AvatarFallback>
           </Avatar>
           <div className="hidden sm:block text-left">
-            <p className="text-sm font-medium flex items-center gap-1">
+            <p className="text-sm font-medium flex items-center gap-1 text-gray-900">
               {getUserDisplayName()}
               {profileLoading && <Loader2 className="w-3 h-3 animate-spin opacity-50" />}
             </p>
