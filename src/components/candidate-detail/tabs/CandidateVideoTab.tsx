@@ -1,5 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { VideoResponsePlayer } from "@/components/dashboard/components/VideoResponsePlayer";
 import { Application } from "@/types";
 
 interface CandidateVideoTabProps {
@@ -7,15 +8,24 @@ interface CandidateVideoTabProps {
 }
 
 export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
-  if (!application.interview_video_url) {
+  // Parse skills test responses and filter for video responses
+  const skillsResponses = Array.isArray(application.skills_test_responses) 
+    ? application.skills_test_responses 
+    : [];
+
+  const videoResponses = skillsResponses.filter((response: any) => 
+    response.answerType === 'video' && response.videoUrl
+  );
+
+  if (videoResponses.length === 0) {
     return (
       <Card className="glass-card">
         <CardContent className="p-8 text-center">
           <div className="text-lg font-medium text-muted-foreground mb-2">
-            No Video Interview
+            No Video Responses
           </div>
           <p className="text-sm text-muted-foreground">
-            This candidate did not submit a video interview.
+            This candidate did not submit any video responses during the skills assessment.
           </p>
         </CardContent>
       </Card>
@@ -26,21 +36,24 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
     <div className="space-y-6">
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle>Video Interview</CardTitle>
+          <CardTitle>Video Interview Responses</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Candidate's video interview submission
+            {videoResponses.length} video response{videoResponses.length !== 1 ? 's' : ''} submitted
           </p>
         </CardHeader>
         <CardContent>
-          <div className="aspect-video bg-black rounded-lg overflow-hidden">
-            <video
-              src={application.interview_video_url}
-              controls
-              className="w-full h-full object-contain"
-              preload="metadata"
-            >
-              Your browser does not support the video tag.
-            </video>
+          <div className="grid gap-6">
+            {videoResponses.map((response: any, index: number) => (
+              <div key={index} className="space-y-4">
+                <VideoResponsePlayer
+                  response={response}
+                  questionIndex={index}
+                />
+                {index < videoResponses.length - 1 && (
+                  <div className="border-b border-border" />
+                )}
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
