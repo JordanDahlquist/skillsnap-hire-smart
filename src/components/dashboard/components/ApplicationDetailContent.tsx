@@ -174,7 +174,13 @@ export const ApplicationDetailContent = ({
             ))}
             {skillsResponses.length > 1 && (
               <p className="text-sm text-muted-foreground">
-                +{skillsResponses.length - 1} more responses. View full profile to see all.
+                +{skillsResponses.length - 1} more responses. 
+                <button
+                  onClick={handleViewFullProfile}
+                  className="text-blue-600 hover:underline ml-1 cursor-pointer"
+                >
+                  View full profile to see all.
+                </button>
               </p>
             )}
           </div>
@@ -188,9 +194,12 @@ export const ApplicationDetailContent = ({
           <div className="p-4 bg-muted/30 rounded-lg border border-border">
             <p className="text-foreground line-clamp-3">{application.cover_letter}</p>
             {application.cover_letter.length > 200 && (
-              <p className="text-sm text-muted-foreground mt-2">
+              <button
+                onClick={handleViewFullProfile}
+                className="text-sm text-blue-600 hover:underline mt-2 cursor-pointer"
+              >
                 View full profile to read complete cover letter.
-              </p>
+              </button>
             )}
           </div>
         </div>
@@ -241,9 +250,12 @@ export const ApplicationDetailContent = ({
               Your browser does not support the video tag.
             </video>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <button
+            onClick={handleViewFullProfile}
+            className="text-sm text-blue-600 hover:underline cursor-pointer"
+          >
             View full profile for better video player experience.
-          </p>
+          </button>
         </div>
       )}
 
