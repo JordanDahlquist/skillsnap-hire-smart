@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -100,7 +99,7 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
           </Link>
         </DropdownMenuItem>
 
-        {/* Admin Panel Access */}
+        {/* Admin Panel Access - only show when not loading and confirmed as super admin */}
         {!adminLoading && isSuperAdmin && (
           <>
             <DropdownMenuSeparator />
