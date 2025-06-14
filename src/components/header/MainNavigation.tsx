@@ -19,7 +19,9 @@ export const MainNavigation = ({
   isMobileMenuOpen, 
   setIsMobileMenuOpen 
 }: MainNavigationProps) => {
-  const { isSuperAdmin } = useAdminRole();
+  const { isSuperAdmin, isLoading } = useAdminRole();
+
+  console.log('MainNavigation: Admin role state - isSuperAdmin:', isSuperAdmin, 'isLoading:', isLoading);
 
   const navigation = [
     { name: "Pricing", href: "/pricing" },
@@ -31,8 +33,9 @@ export const MainNavigation = ({
     { name: "Inbox", href: "/inbox" },
   ];
 
-  // Add admin panel for super admins
-  if (isSuperAdmin) {
+  // Add admin panel for super admins only when not loading and confirmed as super admin
+  if (!isLoading && isSuperAdmin) {
+    console.log('MainNavigation: Adding admin panel to navigation');
     authenticatedNavigation.push({
       name: "Admin Panel",
       href: "/admin"
@@ -54,6 +57,12 @@ export const MainNavigation = ({
                 ? "text-[#007af6] border-b-2 border-[#007af6]"
                 : "text-foreground/80 hover:text-[#007af6]"
             }`}
+            onClick={() => {
+              console.log('MainNavigation: Navigating to:', item.href);
+              if (item.name === "Admin Panel") {
+                console.log('MainNavigation: Admin panel link clicked');
+              }
+            }}
           >
             {item.name === "Admin Panel" && <Shield className="w-4 h-4 text-red-500" />}
             {item.name}
@@ -84,7 +93,10 @@ export const MainNavigation = ({
                     ? "text-[#007af6] bg-accent"
                     : "text-foreground/80 hover:text-[#007af6] hover:bg-accent/50"
                 }`}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => {
+                  console.log('MainNavigation Mobile: Navigating to:', item.href);
+                  setIsMobileMenuOpen(false);
+                }}
               >
                 {item.name === "Admin Panel" && <Shield className="w-4 h-4 text-red-500" />}
                 {item.name}

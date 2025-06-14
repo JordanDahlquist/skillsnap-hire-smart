@@ -2,10 +2,14 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { AdminOverview } from "@/components/admin/AdminOverview";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("overview");
+
+  useEffect(() => {
+    console.log('AdminPanel: Component mounted, current path:', window.location.pathname);
+  }, []);
 
   return (
     <AdminLayout>

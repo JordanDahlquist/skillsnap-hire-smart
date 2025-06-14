@@ -11,13 +11,13 @@ export const useAdminRole = () => {
   useEffect(() => {
     const checkAdminRole = async () => {
       if (!user?.id) {
-        console.log('No user ID, setting admin to false');
+        console.log('useAdminRole: No user ID, setting admin to false');
         setIsSuperAdmin(false);
         setIsLoading(false);
         return;
       }
 
-      console.log('Checking admin role for user:', user.id);
+      console.log('useAdminRole: Checking admin role for user:', user.id);
 
       try {
         // Use the security definer function to check super admin role
@@ -25,14 +25,17 @@ export const useAdminRole = () => {
           .rpc('is_super_admin', { _user_id: user.id });
 
         if (error) {
-          console.error('Error checking admin role:', error);
+          console.error('useAdminRole: Error checking admin role:', error);
           setIsSuperAdmin(false);
         } else {
-          console.log('Admin role check result:', data);
+          console.log('useAdminRole: Admin role check result:', data);
           setIsSuperAdmin(!!data);
+          if (data) {
+            console.log('useAdminRole: User is confirmed super admin');
+          }
         }
       } catch (error) {
-        console.error('Error checking admin role:', error);
+        console.error('useAdminRole: Exception checking admin role:', error);
         setIsSuperAdmin(false);
       } finally {
         setIsLoading(false);
@@ -41,6 +44,8 @@ export const useAdminRole = () => {
 
     checkAdminRole();
   }, [user?.id]);
+
+  console.log('useAdminRole: Current state - isSuperAdmin:', isSuperAdmin, 'isLoading:', isLoading);
 
   return { isSuperAdmin, isLoading };
 };

@@ -2,9 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon, Circle, Monitor } from "lucide-react";
+import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon, Circle, Monitor, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useThemeContext } from "@/contexts/ThemeContext";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 interface UserMenuProps {
   user: any;
@@ -16,6 +17,7 @@ interface UserMenuProps {
 
 export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRole }: UserMenuProps) => {
   const { theme, setTheme } = useThemeContext();
+  const { isSuperAdmin, isLoading: adminLoading } = useAdminRole();
 
   const getUserInitials = () => {
     if (profile?.full_name) {
@@ -97,6 +99,20 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
             Dashboard
           </Link>
         </DropdownMenuItem>
+
+        {/* Admin Panel Access */}
+        {!adminLoading && isSuperAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/admin" className="flex items-center w-full">
+                <Shield className="w-4 h-4 mr-2 text-red-500" />
+                <span>Admin Panel</span>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+
         <DropdownMenuSeparator />
         
         <DropdownMenuSub>
