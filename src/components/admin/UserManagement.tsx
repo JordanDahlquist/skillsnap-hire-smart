@@ -43,24 +43,23 @@ export const UserManagement = () => {
 
         if (profilesError) throw profilesError;
 
-        // Fetch user roles separately
-        const { data: userRoles, error: rolesError } = await supabase
-          .rpc('has_role', { _user_id: profiles?.[0]?.id || '', _role: 'super_admin' })
-          .then(() => {
-            // If the function works, fetch all roles
-            return supabase
-              .from('user_roles')
-              .select('user_id, role');
-          })
-          .catch(() => {
-            // If function doesn't exist or fails, return empty array
-            console.warn('User roles function not available, showing users without roles');
-            return { data: [], error: null };
-          });
+        // Try to fetch user roles, but handle gracefully if table doesn't exist
+        let userRoles: any[] = [];
+        try {
+          const { data: rolesData, error: rolesError } = await supabase
+            .from('user_roles')
+            .select('user_id, role');
+          
+          if (!rolesError && rolesData) {
+            userRoles = rolesData;
+          }
+        } catch (error) {
+          console.warn('User roles table not available yet, showing users without roles');
+        }
 
         const usersWithRoles = profiles?.map(profile => ({
           ...profile,
-          role: userRoles?.data?.find(r => r.user_id === profile.id)?.role || 'user'
+          role: userRoles.find((r: any) => r.user_id === profile.id)?.role || 'user'
         })) || [];
 
         setUsers(usersWithRoles);
