@@ -22,7 +22,7 @@ export const usePlatformAnalytics = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        // Fetch all data separately since view had issues
+        // Fetch all data separately to avoid view dependency issues
         const [
           { count: totalUsers },
           { count: totalJobs },

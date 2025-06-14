@@ -28,7 +28,8 @@ export const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const { data: profiles, error } = await supabase
+        // Fetch all profiles
+        const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select(`
             id,
@@ -40,16 +41,26 @@ export const UserManagement = () => {
           `)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (profilesError) throw profilesError;
 
-        // Fetch user roles
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('user_id, role');
+        // Fetch user roles separately
+        const { data: userRoles, error: rolesError } = await supabase
+          .rpc('has_role', { _user_id: profiles?.[0]?.id || '', _role: 'super_admin' })
+          .then(() => {
+            // If the function works, fetch all roles
+            return supabase
+              .from('user_roles')
+              .select('user_id, role');
+          })
+          .catch(() => {
+            // If function doesn't exist or fails, return empty array
+            console.warn('User roles function not available, showing users without roles');
+            return { data: [], error: null };
+          });
 
         const usersWithRoles = profiles?.map(profile => ({
           ...profile,
-          role: roles?.find(r => r.user_id === profile.id)?.role || 'user'
+          role: userRoles?.data?.find(r => r.user_id === profile.id)?.role || 'user'
         })) || [];
 
         setUsers(usersWithRoles);
