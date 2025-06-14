@@ -38,18 +38,7 @@ class VideoUploadService {
           onProgress({ loaded: 0, total: blob.size, percentage: 0 });
         }
 
-        // First check if bucket is accessible
-        const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-        
-        if (listError) {
-          throw new Error(`Storage not accessible: ${listError.message}`);
-        }
-
-        const bucketExists = buckets?.some(bucket => bucket.name === 'application-files');
-        if (!bucketExists) {
-          throw new Error('Storage bucket not found. Please contact support.');
-        }
-
+        // Direct upload without redundant validation checks
         const { data, error } = await supabase.storage
           .from('application-files')
           .upload(filePath, blob, {
@@ -59,11 +48,13 @@ class VideoUploadService {
           });
 
         if (error) {
-          // Provide more helpful error messages
+          // Provide helpful error messages based on common issues
           if (error.message.includes('not found')) {
-            throw new Error('Storage bucket not accessible. Please contact support.');
-          } else if (error.message.includes('policy')) {
-            throw new Error('Upload permission denied. Please contact support.');
+            throw new Error('Storage system not available. Please contact support.');
+          } else if (error.message.includes('policy') || error.message.includes('permission')) {
+            throw new Error('Upload permission issue. Please contact support.');
+          } else if (error.message.includes('size') || error.message.includes('large')) {
+            throw new Error('Video file too large. Please try recording a shorter video.');
           } else {
             throw new Error(`Upload failed: ${error.message}`);
           }
@@ -76,12 +67,6 @@ class VideoUploadService {
         const { data: { publicUrl } } = supabase.storage
           .from('application-files')
           .getPublicUrl(filePath);
-
-        // Simplified verification - just check the URL format
-        if (!publicUrl || !publicUrl.includes(filePath)) {
-          logger.warn('Upload verification warning - URL may be invalid:', publicUrl);
-          // Don't fail completely, just warn
-        }
 
         logger.debug(`Video upload successful: ${publicUrl}`);
         return {

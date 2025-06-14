@@ -40,7 +40,6 @@ export const VideoInterview = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [storageReady, setStorageReady] = useState(false);
-  const [storageValidated, setStorageValidated] = useState(false);
   
   const { interviewQuestions } = useInterviewQuestions(questions);
   const {
@@ -115,10 +114,6 @@ export const VideoInterview = ({
   };
 
   const handleStartRecording = () => {
-    if (!storageValidated) {
-      toast.warning('Storage validation incomplete. Recording will work, but upload may fail.');
-    }
-
     startRecording(async (url) => {
       setRecordedVideos(prev => ({
         ...prev,
@@ -150,7 +145,6 @@ export const VideoInterview = ({
 
   const handleStorageValidation = (isValid: boolean) => {
     setStorageReady(isValid);
-    setStorageValidated(true);
     logger.debug('Storage validation completed:', { isValid });
   };
 
@@ -300,7 +294,7 @@ export const VideoInterview = ({
         stream={stream}
         isRecording={isRecording || isUploading}
         recordingTime={recordingTime}
-        videoReady={videoReady && storageValidated}
+        videoReady={videoReady && storageReady}
         permissionGranted={permissionGranted}
         videoLoading={videoLoading || isUploading}
         viewMode={viewMode}

@@ -21,33 +21,9 @@ export const ensureStorageBucket = async (): Promise<boolean> => {
       return false;
     }
 
-    // Test bucket accessibility with a small test
-    try {
-      const testBlob = new Blob(['test'], { type: 'text/plain' });
-      const testPath = `test-uploads/bucket-test-${Date.now()}.txt`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('application-files')
-        .upload(testPath, testBlob);
-
-      if (uploadError) {
-        logger.error('Bucket upload test failed:', uploadError);
-        return false;
-      }
-
-      // Clean up test file
-      await supabase.storage
-        .from('application-files')
-        .remove([testPath]);
-
-      logger.debug('Storage bucket validation successful');
-      return true;
-      
-    } catch (testError) {
-      logger.error('Bucket accessibility test failed:', testError);
-      return false;
-    }
-
+    logger.debug('Storage bucket validation successful');
+    return true;
+    
   } catch (error) {
     logger.error('Error checking storage bucket:', error);
     return false;
