@@ -56,14 +56,14 @@ export const ForgotPasswordForm = ({ email, setEmail, onBack }: ForgotPasswordFo
 
   if (resetEmailSent) {
     return (
-      <div className="text-center space-y-4">
+      <div className="text-center space-y-4 bg-white">
         <div className="text-green-600 text-sm">
           Password reset email sent! Check your inbox and follow the instructions to reset your password.
         </div>
         <Button 
           variant="outline" 
           onClick={onBack}
-          className="w-full"
+          className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Sign In
@@ -73,12 +73,12 @@ export const ForgotPasswordForm = ({ email, setEmail, onBack }: ForgotPasswordFo
   }
 
   return (
-    <form onSubmit={handleForgotPassword} className="space-y-4">
+    <form onSubmit={handleForgotPassword} className="space-y-4 bg-white">
       <div className="text-sm text-gray-600 text-center">
         Enter your email address and we'll send you a link to reset your password.
       </div>
       <div>
-        <Label htmlFor="reset-email">Email</Label>
+        <Label htmlFor="reset-email" className="text-gray-700">Email</Label>
         <Input
           id="reset-email"
           type="email"
@@ -86,11 +86,12 @@ export const ForgotPasswordForm = ({ email, setEmail, onBack }: ForgotPasswordFo
           onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="Enter your email"
+          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
         />
       </div>
       <Button 
         type="submit" 
-        className="w-full bg-[#007af6] hover:bg-[#0056b3]" 
+        className="w-full bg-[#007af6] hover:bg-[#0056b3] text-white" 
         disabled={loading}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -100,7 +101,7 @@ export const ForgotPasswordForm = ({ email, setEmail, onBack }: ForgotPasswordFo
         type="button" 
         variant="outline" 
         onClick={onBack}
-        className="w-full"
+        className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to Sign In

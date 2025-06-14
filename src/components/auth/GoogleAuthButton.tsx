@@ -46,7 +46,7 @@ export const GoogleAuthButton = ({ mode, disabled }: GoogleAuthButtonProps) => {
       variant="outline"
       onClick={handleGoogleSignIn}
       disabled={googleLoading || disabled}
-      className="w-full border-gray-300 hover:bg-gray-50"
+      className="w-full border-gray-300 hover:bg-gray-50 text-gray-700 bg-white"
     >
       {googleLoading ? (
         <Loader2 className="w-4 h-4 animate-spin mr-2" />

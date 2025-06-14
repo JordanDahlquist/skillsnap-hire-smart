@@ -60,23 +60,24 @@ export const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-white">
       <GoogleAuthButton mode="signin" disabled={loading} />
       <AuthDivider />
       
       <form onSubmit={handleSignIn} className="space-y-4">
         <div>
-          <Label htmlFor="signin-email">Email</Label>
+          <Label htmlFor="signin-email" className="text-gray-700">Email</Label>
           <Input
             id="signin-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
           />
         </div>
         <div>
-          <Label htmlFor="signin-password">Password</Label>
+          <Label htmlFor="signin-password" className="text-gray-700">Password</Label>
           <div className="relative">
             <Input
               id="signin-password"
@@ -84,6 +85,7 @@ export const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
             />
             <button
               type="button"
@@ -96,7 +98,7 @@ export const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
         </div>
         <Button 
           type="submit" 
-          className="w-full bg-[#007af6] hover:bg-[#0056b3]" 
+          className="w-full bg-[#007af6] hover:bg-[#0056b3] text-white" 
           disabled={loading}
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}

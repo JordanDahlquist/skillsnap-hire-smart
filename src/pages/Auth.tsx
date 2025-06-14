@@ -44,13 +44,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="light min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <AuthHeader showForgotPassword={showForgotPassword} />
 
       {/* Auth Form */}
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 flex-1">
-        <Card className="w-full max-w-md bg-card border-border">
-          <CardContent>
+      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 flex-1 bg-white">
+        <Card className="w-full max-w-md bg-white border border-gray-200 shadow-sm">
+          <CardContent className="bg-white">
             {showForgotPassword ? (
               <div className="space-y-4">
                 <ForgotPasswordForm 
@@ -61,9 +61,9 @@ const Auth = () => {
               </div>
             ) : (
               <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="signin">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+                  <TabsTrigger value="signin" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900">Sign Up</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="signin">
