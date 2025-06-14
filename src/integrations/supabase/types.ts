@@ -25,6 +25,7 @@ export type Database = {
           github_url: string | null
           id: string
           interview_video_responses: Json | null
+          interview_video_transcripts: Json | null
           interview_video_url: string | null
           job_id: string
           linkedin_url: string | null
@@ -40,7 +41,10 @@ export type Database = {
           resume_file_path: string | null
           skills: Json | null
           skills_test_responses: Json | null
+          skills_video_transcripts: Json | null
           status: string
+          transcript_last_processed_at: string | null
+          transcript_processing_status: string | null
           updated_at: string
           work_experience: Json | null
         }
@@ -59,6 +63,7 @@ export type Database = {
           github_url?: string | null
           id?: string
           interview_video_responses?: Json | null
+          interview_video_transcripts?: Json | null
           interview_video_url?: string | null
           job_id: string
           linkedin_url?: string | null
@@ -74,7 +79,10 @@ export type Database = {
           resume_file_path?: string | null
           skills?: Json | null
           skills_test_responses?: Json | null
+          skills_video_transcripts?: Json | null
           status?: string
+          transcript_last_processed_at?: string | null
+          transcript_processing_status?: string | null
           updated_at?: string
           work_experience?: Json | null
         }
@@ -93,6 +101,7 @@ export type Database = {
           github_url?: string | null
           id?: string
           interview_video_responses?: Json | null
+          interview_video_transcripts?: Json | null
           interview_video_url?: string | null
           job_id?: string
           linkedin_url?: string | null
@@ -108,7 +117,10 @@ export type Database = {
           resume_file_path?: string | null
           skills?: Json | null
           skills_test_responses?: Json | null
+          skills_video_transcripts?: Json | null
           status?: string
+          transcript_last_processed_at?: string | null
+          transcript_processing_status?: string | null
           updated_at?: string
           work_experience?: Json | null
         }

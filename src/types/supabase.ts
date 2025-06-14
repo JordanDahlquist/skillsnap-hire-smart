@@ -13,6 +13,16 @@ export interface SkillsTestResponse {
   [key: string]: any; // Index signature to make it compatible with Json type
 }
 
+// Video transcript structure
+export interface VideoTranscript {
+  questionIndex: number;
+  questionText: string;
+  transcript: string;
+  confidence: number;
+  processedAt: string;
+  videoUrl?: string;
+}
+
 // Application status counts for UI
 export interface ApplicationStatusCounts {
   pending?: number;

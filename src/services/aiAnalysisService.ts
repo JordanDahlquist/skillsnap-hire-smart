@@ -30,6 +30,11 @@ interface ComprehensiveAnalysisData {
   has_video_content?: boolean;
   video_response_count?: number;
   
+  // NEW: Video Transcripts
+  skills_video_transcripts?: any[];
+  interview_video_transcripts?: any[];
+  has_video_transcripts?: boolean;
+  
   // Structured Data
   skills?: any[];
   work_experience?: any[];
@@ -78,6 +83,16 @@ export class AIAnalysisService {
 
       const videoResponseCount = skillsResponses.length + interviewResponses.length + 
         (application.interview_video_url ? 1 : 0);
+
+      // Process video transcripts
+      const skillsTranscripts = Array.isArray(application.skills_video_transcripts) 
+        ? application.skills_video_transcripts 
+        : [];
+      const interviewTranscripts = Array.isArray(application.interview_video_transcripts) 
+        ? application.interview_video_transcripts 
+        : [];
+      
+      const hasVideoTranscripts = skillsTranscripts.length > 0 || interviewTranscripts.length > 0;
 
       // Process structured data
       const processedSkills = Array.isArray(application.skills) 
@@ -131,6 +146,11 @@ export class AIAnalysisService {
         interview_video_responses: interviewResponses.length > 0 ? interviewResponses : undefined,
         has_video_content: hasVideoContent,
         video_response_count: videoResponseCount,
+        
+        // NEW: Video Transcripts
+        skills_video_transcripts: skillsTranscripts.length > 0 ? skillsTranscripts : undefined,
+        interview_video_transcripts: interviewTranscripts.length > 0 ? interviewTranscripts : undefined,
+        has_video_transcripts: hasVideoTranscripts,
         
         // Structured Data
         skills: processedSkills.length > 0 ? processedSkills : undefined,

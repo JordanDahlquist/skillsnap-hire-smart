@@ -28,8 +28,20 @@ serve(async (req) => {
       return `${title}: ${JSON.stringify(data, null, 2)}`;
     };
 
-    // Build comprehensive analysis prompt
-    const analysisPrompt = `You are an expert technical recruiter conducting a comprehensive analysis of a job application. Analyze ALL available candidate data to provide the most accurate assessment possible.
+    // Helper function to format video transcripts for analysis
+    const formatTranscripts = (transcripts: any[]): string => {
+      if (!transcripts || transcripts.length === 0) return 'No transcripts available';
+      
+      return transcripts.map((transcript, index) => {
+        return `Question ${index + 1}: ${transcript.questionText || 'Unknown Question'}
+Response Transcript: "${transcript.transcript || 'No transcript'}"
+Processing Quality: ${transcript.confidence ? `${Math.round(transcript.confidence * 100)}% confidence` : 'Standard quality'}
+---`;
+      }).join('\n');
+    };
+
+    // Build comprehensive analysis prompt with enhanced transcript analysis
+    const analysisPrompt = `You are an expert technical recruiter conducting a comprehensive analysis of a job application. Analyze ALL available candidate data including VIDEO TRANSCRIPTS to provide the most accurate assessment possible.
 
 JOB REQUIREMENTS:
 - Position: ${jobData.title}
@@ -80,9 +92,16 @@ ${formatSection('Skills Test Responses', applicationData.skills_test_responses)}
 
 VIDEO CONTENT ANALYSIS:
 - Has Video Content: ${applicationData.has_video_content ? 'Yes' : 'No'}
+- Has Video Transcripts: ${applicationData.has_video_transcripts ? 'Yes' : 'No'}
 - Video Response Count: ${applicationData.video_response_count || 0}
 - Interview Video URL: ${applicationData.interview_video_url ? 'Provided' : 'Not provided'}
 ${formatSection('Video Interview Responses', applicationData.interview_video_responses)}
+
+SKILLS ASSESSMENT VIDEO TRANSCRIPTS:
+${formatTranscripts(applicationData.skills_video_transcripts || [])}
+
+INTERVIEW VIDEO TRANSCRIPTS:
+${formatTranscripts(applicationData.interview_video_transcripts || [])}
 
 RESUME DATA:
 - Resume File: ${applicationData.resume_file_path ? 'Provided' : 'Not provided'}
@@ -92,40 +111,48 @@ PREVIOUS AI ANALYSIS (for reference):
 - Previous Rating: ${applicationData.existing_ai_rating || 'None'}
 - Previous Summary: ${applicationData.existing_ai_summary || 'None'}
 
-COMPREHENSIVE EVALUATION FRAMEWORK:
-===================================
+ENHANCED COMPREHENSIVE EVALUATION FRAMEWORK:
+==========================================
 
 Analyze the candidate across these dimensions with specific weighting:
 
-1. TECHNICAL COMPETENCY (30%):
+1. TECHNICAL COMPETENCY (25%):
    - Skill alignment with job requirements
    - Technical experience depth and relevance
    - Portfolio/GitHub quality and relevance
    - Skills assessment performance
 
-2. EXPERIENCE FIT (25%):
+2. COMMUNICATION & VIDEO ANALYSIS (30%):
+   - Video transcript quality and communication clarity
+   - Technical explanation ability (from video responses)
+   - Problem articulation and thought process
+   - Professional presentation and confidence
+   - Language proficiency and articulation
+
+3. EXPERIENCE FIT (20%):
    - Years of experience vs. job requirements
    - Industry experience relevance
    - Role progression and career growth
    - Project complexity and impact
 
-3. COMMUNICATION & ENGAGEMENT (20%):
-   - Cover letter quality, motivation, and cultural fit indicators
-   - Skills assessment written responses quality
-   - Video content presence and completion (shows engagement)
-   - Professional presentation across all materials
+4. PROBLEM-SOLVING & CRITICAL THINKING (15%):
+   - Approach to technical challenges (from transcripts)
+   - Analytical thinking demonstrated in responses
+   - Creativity and innovation in solutions
+   - Learning agility and adaptability
 
-4. CULTURAL & SOFT SKILLS (15%):
-   - Problem-solving approach demonstrated
-   - Initiative and proactivity shown
-   - Attention to detail in application
-   - Professional communication style
-
-5. COMPLETENESS & EFFORT (10%):
-   - Application completeness (more complete = higher score)
+5. COMPLETENESS & ENGAGEMENT (10%):
+   - Application completeness and effort
    - Quality of responses across all sections
-   - Evidence of research about the role/company
-   - Effort invested in application process
+   - Video submission completeness
+   - Professional attention to detail
+
+SPECIAL FOCUS ON VIDEO TRANSCRIPT ANALYSIS:
+- Evaluate the candidate's verbal communication skills
+- Assess technical knowledge demonstrated through explanations
+- Analyze problem-solving methodology and thought process
+- Consider confidence, clarity, and professional demeanor
+- Weight video insights heavily as they provide authentic candidate assessment
 
 RATING SCALE (1.0 - 3.0):
 - 1.0-1.5: Below expectations - significant gaps in requirements or poor application quality
@@ -134,14 +161,16 @@ RATING SCALE (1.0 - 3.0):
 
 DELIVERABLES:
 Provide a comprehensive 3-4 sentence summary highlighting:
-1. Key strengths and standout qualities
+1. Key strengths and standout qualities (especially from video content)
 2. How well they align with the specific job requirements
-3. Any notable concerns or gaps
+3. Communication and technical competency assessment from transcripts
 4. Overall recommendation and next steps
 
 Then provide a precise numerical rating between 1.0 and 3.0 based on the weighted evaluation framework above.
 
-Consider ALL provided data in your analysis. A candidate with more complete information and stronger responses across multiple dimensions should score higher than one with limited data or weak responses.
+${applicationData.has_video_transcripts ? 
+  'IMPORTANT: This candidate has provided video responses with transcripts. Weight the video analysis heavily in your assessment as it provides authentic insight into their communication skills, technical knowledge, and problem-solving approach.' : 
+  'NOTE: This candidate has not provided video transcripts, so focus more heavily on written responses and traditional application materials.'}
 
 Format your response as JSON:
 {
@@ -156,11 +185,11 @@ Format your response as JSON:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4-1106-preview',
         messages: [
           {
             role: 'system',
-            content: 'You are an expert technical recruiter with 15+ years of experience in comprehensive candidate assessment. You excel at analyzing all available candidate data to provide nuanced, accurate evaluations that predict job success. Your assessments are thorough, fair, and highly predictive of candidate performance.'
+            content: 'You are an expert technical recruiter with 15+ years of experience in comprehensive candidate assessment. You excel at analyzing all available candidate data including video transcripts to provide nuanced, accurate evaluations that predict job success. Your assessments are thorough, fair, and highly predictive of candidate performance.'
           },
           {
             role: 'user',
@@ -197,7 +226,7 @@ Format your response as JSON:
       analysis.rating = Math.max(1.0, Math.min(3.0, analysis.rating))
     }
 
-    console.log('Comprehensive analysis completed. Rating:', analysis.rating, 'Summary length:', analysis.summary.length)
+    console.log('Enhanced comprehensive analysis completed. Rating:', analysis.rating, 'Summary length:', analysis.summary.length)
 
     return new Response(
       JSON.stringify(analysis),
@@ -207,7 +236,7 @@ Format your response as JSON:
       },
     )
   } catch (error) {
-    console.error('Error in comprehensive application analysis:', error)
+    console.error('Error in enhanced comprehensive application analysis:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,8 +45,39 @@ export const ApplicationDetailContent = ({
     ? application.skills_test_responses 
     : [];
 
+  // Parse video transcripts
+  const skillsTranscripts = Array.isArray(application.skills_video_transcripts) 
+    ? application.skills_video_transcripts 
+    : [];
+  const interviewTranscripts = Array.isArray(application.interview_video_transcripts) 
+    ? application.interview_video_transcripts 
+    : [];
+
   const handleViewFullProfile = () => {
     navigate(`/dashboard/${jobId}/candidate/${application.id}`);
+  };
+
+  // Get transcript processing status display
+  const getTranscriptStatusDisplay = () => {
+    const status = application.transcript_processing_status;
+    const hasVideos = skillsResponses.some((r: any) => r.answerType === 'video') || 
+                     application.interview_video_url || 
+                     (Array.isArray(application.interview_video_responses) && application.interview_video_responses.length > 0);
+    
+    if (!hasVideos) return null;
+
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="text-yellow-600">Transcripts Pending</Badge>;
+      case 'processing':
+        return <Badge variant="outline" className="text-blue-600">Processing Transcripts...</Badge>;
+      case 'completed':
+        return <Badge variant="outline" className="text-green-600">Transcripts Ready</Badge>;
+      case 'failed':
+        return <Badge variant="outline" className="text-red-600">Transcript Failed</Badge>;
+      default:
+        return <Badge variant="outline" className="text-gray-600">Unknown Status</Badge>;
+    }
   };
 
   return (
@@ -78,6 +108,7 @@ export const ApplicationDetailContent = ({
             <Badge className={getStatusColor(displayStatus)}>
               {displayStatus}
             </Badge>
+            {getTranscriptStatusDisplay()}
             <p className="text-xs text-muted-foreground">
               Applied {getTimeAgo(application.created_at)}
             </p>
@@ -164,17 +195,27 @@ export const ApplicationDetailContent = ({
         </div>
       </div>
 
-      {/* Skills Assessment Responses - Truncated */}
+      {/* Skills Assessment Responses - Truncated with Transcript Preview */}
       {skillsResponses.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-foreground">Skills Assessment (Preview)</h3>
           <div className="space-y-4">
             {skillsResponses.slice(0, 1).map((response: any, index: number) => (
-              <VideoResponsePlayer
-                key={index}
-                response={response}
-                questionIndex={index}
-              />
+              <div key={index} className="space-y-2">
+                <VideoResponsePlayer
+                  response={response}
+                  questionIndex={index}
+                />
+                {/* Show transcript preview if available */}
+                {skillsTranscripts.length > index && skillsTranscripts[index]?.transcript && (
+                  <div className="p-3 bg-muted/20 rounded border-l-4 border-blue-500">
+                    <h4 className="text-sm font-medium text-foreground mb-1">Video Transcript:</h4>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      "{skillsTranscripts[index].transcript}"
+                    </p>
+                  </div>
+                )}
+              </div>
             ))}
             {skillsResponses.length > 1 && (
               <p className="text-sm text-muted-foreground">
@@ -209,12 +250,22 @@ export const ApplicationDetailContent = ({
         </div>
       )}
 
-      {/* AI Summary */}
+      {/* AI Summary with Enhanced Context */}
       {application.ai_summary && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-foreground">AI Summary</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-foreground">AI Analysis</h3>
+            {(skillsTranscripts.length > 0 || interviewTranscripts.length > 0) && (
+              <Badge variant="outline" className="text-green-600">Enhanced with Video Analysis</Badge>
+            )}
+          </div>
           <div className="p-4 bg-muted/30 rounded-lg border border-border">
             <p className="text-foreground">{application.ai_summary}</p>
+            {application.transcript_last_processed_at && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Analysis includes video transcripts processed {getTimeAgo(application.transcript_last_processed_at)}
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -240,7 +291,7 @@ export const ApplicationDetailContent = ({
         </div>
       )}
 
-      {/* Video Interview - Show if exists */}
+      {/* Video Interview - Show if exists with Transcript Preview */}
       {application.interview_video_url && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-foreground">Video Interview (Preview)</h3>
@@ -254,11 +305,20 @@ export const ApplicationDetailContent = ({
               Your browser does not support the video tag.
             </video>
           </div>
+          {/* Show transcript preview if available */}
+          {interviewTranscripts.length > 0 && interviewTranscripts[0]?.transcript && (
+            <div className="p-3 bg-muted/20 rounded border-l-4 border-green-500">
+              <h4 className="text-sm font-medium text-foreground mb-1">Interview Transcript:</h4>
+              <p className="text-sm text-muted-foreground line-clamp-3">
+                "{interviewTranscripts[0].transcript}"
+              </p>
+            </div>
+          )}
           <button
             onClick={handleViewFullProfile}
             className="text-sm text-blue-600 hover:underline cursor-pointer"
           >
-            View full profile for better video player experience.
+            View full profile for complete transcript and better video player experience.
           </button>
         </div>
       )}
