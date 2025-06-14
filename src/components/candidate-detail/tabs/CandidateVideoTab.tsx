@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VideoResponsePlayer } from "@/components/dashboard/components/VideoResponsePlayer";
 import { Application } from "@/types";
@@ -14,7 +15,7 @@ interface VideoResponse {
   answerType: string;
   videoUrl: string;
   source: 'skills' | 'interview';
-  answer: string; // Add this required property for VideoResponsePlayer
+  answer: string;
 }
 
 export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
@@ -29,17 +30,45 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
       ...response,
       source: 'skills' as const,
       questionIndex: index,
-      answer: response.answer || '' // Ensure answer property exists
+      answer: response.answer || ''
     }));
 
-  // Parse interview video responses with better error handling
-  const interviewResponses = Array.isArray(application.interview_video_responses) 
-    ? application.interview_video_responses 
-    : [];
+  // Parse interview video responses with improved handling
+  let interviewResponses = [];
+  
+  // Try to parse interview_video_responses first (new format)
+  if (application.interview_video_responses) {
+    try {
+      if (Array.isArray(application.interview_video_responses)) {
+        interviewResponses = application.interview_video_responses;
+        logger.debug('Using interview_video_responses array:', interviewResponses);
+      } else if (typeof application.interview_video_responses === 'string') {
+        interviewResponses = JSON.parse(application.interview_video_responses);
+        logger.debug('Parsed interview_video_responses from string:', interviewResponses);
+      }
+    } catch (error) {
+      logger.error('Error parsing interview_video_responses:', error);
+      interviewResponses = [];
+    }
+  }
+  
+  // Fallback to old interview_video_url format for backward compatibility
+  if (interviewResponses.length === 0 && application.interview_video_url) {
+    try {
+      const parsed = JSON.parse(application.interview_video_url);
+      if (Array.isArray(parsed)) {
+        interviewResponses = parsed;
+        logger.debug('Using fallback interview_video_url:', interviewResponses);
+      }
+    } catch (error) {
+      logger.warn('Could not parse interview_video_url as JSON:', error);
+    }
+  }
 
-  logger.debug('Interview video responses data:', {
+  logger.debug('Final interview responses processing:', {
     applicationId: application.id,
     interviewResponsesRaw: application.interview_video_responses,
+    interviewVideoUrl: application.interview_video_url,
     parsedResponses: interviewResponses,
     responseCount: interviewResponses.length
   });
@@ -57,8 +86,8 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
       return {
         ...response,
         source: 'interview' as const,
-        questionIndex: response.questionIndex || index,
-        answer: response.answer || 'Video response' // Provide a default answer for video responses
+        questionIndex: response.questionIndex !== undefined ? response.questionIndex : index,
+        answer: response.answer || 'Video response'
       };
     });
 
@@ -72,7 +101,6 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
   const allVideoResponses = [...skillsVideoResponses, ...interviewVideoResponses];
 
   if (allVideoResponses.length === 0) {
-    // Enhanced no-video state with debugging info
     return (
       <Card className="glass-card">
         <CardContent className="p-8 text-center">
@@ -88,7 +116,11 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
               <pre className="mt-2 whitespace-pre-wrap">
                 Skills responses: {JSON.stringify(skillsResponses, null, 2)}
                 {'\n'}
-                Interview responses: {JSON.stringify(interviewResponses, null, 2)}
+                Interview responses (interview_video_responses): {JSON.stringify(application.interview_video_responses, null, 2)}
+                {'\n'}
+                Interview responses (interview_video_url): {JSON.stringify(application.interview_video_url, null, 2)}
+                {'\n'}
+                Parsed interview responses: {JSON.stringify(interviewResponses, null, 2)}
               </pre>
             </details>
           )}

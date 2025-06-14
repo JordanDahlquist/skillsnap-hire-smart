@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +15,7 @@ import {
 import { Job } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logger } from "@/services/loggerService";
 
 interface ApplicationFormData {
   name: string;
@@ -89,7 +89,20 @@ export const ReviewSubmitStep = ({
     setIsSubmitting(true);
 
     try {
-      // Insert the application
+      // Parse video interview responses from the JSON string
+      let interviewVideoResponses = [];
+      if (formData.videoUrl) {
+        try {
+          const parsedVideoResponses = JSON.parse(formData.videoUrl);
+          interviewVideoResponses = Array.isArray(parsedVideoResponses) ? parsedVideoResponses : [];
+          logger.debug('Parsed video responses for storage:', interviewVideoResponses);
+        } catch (parseError) {
+          logger.error('Error parsing video responses:', parseError);
+          console.error('Video URL parsing failed:', formData.videoUrl);
+        }
+      }
+
+      // Insert the application with properly structured video responses
       const { data: applicationData, error: insertError } = await supabase
         .from('applications')
         .insert({
@@ -102,7 +115,7 @@ export const ReviewSubmitStep = ({
           answer_2: formData.answer2,
           answer_3: formData.answer3,
           skills_test_responses: formData.skillsTestResponses,
-          interview_video_url: formData.videoUrl,
+          interview_video_responses: interviewVideoResponses, // Store in the correct field
           status: 'pending',
           created_at: new Date().toISOString(),
         })
@@ -110,6 +123,11 @@ export const ReviewSubmitStep = ({
         .single();
 
       if (insertError) throw insertError;
+
+      logger.debug('Application submitted successfully with video responses:', {
+        applicationId: applicationData.id,
+        videoResponsesCount: interviewVideoResponses.length
+      });
 
       toast.success("Application submitted successfully!");
       setSubmitted(true);

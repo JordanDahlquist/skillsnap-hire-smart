@@ -220,6 +220,7 @@ export const VideoInterview = ({
   const canGoNext = currentQuestion < interviewQuestions.length - 1;
   const canProceedToReview = allCompleted && !isUploading && !uploadError;
 
+  // Update the onChange callback to pass properly structured video responses
   useEffect(() => {
     if (allCompleted && Object.keys(uploadedVideos).length === interviewQuestions.length) {
       const interviewResponses = interviewQuestions.map((question, index) => ({
@@ -231,6 +232,7 @@ export const VideoInterview = ({
         answer: 'Video response'
       }));
       
+      logger.debug('Generating video interview responses:', interviewResponses);
       onChange(JSON.stringify(interviewResponses));
     }
   }, [allCompleted, uploadedVideos, interviewQuestions, onChange]);
