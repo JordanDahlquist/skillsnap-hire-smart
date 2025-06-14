@@ -591,7 +591,7 @@ export const SkillsTestTemplateSelector = ({
   return (
     <Card className="h-full flex flex-col overflow-hidden">
       <CardHeader className="pb-3 flex-shrink-0">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-3">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -603,18 +603,22 @@ export const SkillsTestTemplateSelector = ({
           <CardTitle className="text-lg">Choose a Template</CardTitle>
         </div>
         
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-2">
+        {/* Compact Category Filter */}
+        <div className="flex flex-wrap gap-1">
           {categories.map(category => (
-            <Button
+            <button
               key={category.id}
-              variant={selectedCategory === category.id ? "default" : "outline"}
-              size="sm"
               onClick={() => setSelectedCategory(category.id)}
-              className="text-xs"
+              className={`
+                px-2 py-1 rounded-full text-[11px] font-medium transition-all duration-200 whitespace-nowrap
+                ${selectedCategory === category.id 
+                  ? 'bg-blue-600 text-white shadow-sm' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+                }
+              `}
             >
               {category.name}
-            </Button>
+            </button>
           ))}
         </div>
       </CardHeader>
