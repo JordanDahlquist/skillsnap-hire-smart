@@ -53,7 +53,7 @@ export const applyJobFiltersOptimized = (
       return false;
     }
 
-    // Status filter - this was missing before
+    // Status filter
     if (filters.status !== "all" && job.status !== filters.status) {
       return false;
     }
@@ -97,8 +97,15 @@ export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc")
         break;
       case 'applications_desc':
       case 'applications_asc':
-        aValue = a.applicationStatusCounts?.total || 0;
-        bValue = b.applicationStatusCounts?.total || 0;
+        // Calculate total applications from applicationStatusCounts
+        const aTotal = (a.applicationStatusCounts?.pending || 0) + 
+                      (a.applicationStatusCounts?.approved || 0) + 
+                      (a.applicationStatusCounts?.rejected || 0);
+        const bTotal = (b.applicationStatusCounts?.pending || 0) + 
+                      (b.applicationStatusCounts?.approved || 0) + 
+                      (b.applicationStatusCounts?.rejected || 0);
+        aValue = aTotal;
+        bValue = bTotal;
         break;
       default:
         aValue = a.updated_at;
