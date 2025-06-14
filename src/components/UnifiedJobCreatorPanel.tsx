@@ -57,12 +57,12 @@ export const UnifiedJobCreatorPanel = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2">
-      <div className="bg-white rounded-lg max-w-4xl w-full h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[95vh] min-h-[60vh] flex flex-col">
         {/* Header */}
-        <div className="p-3 border-b flex-shrink-0">
+        <div className="p-3 sm:p-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">
+            <h2 className="text-lg sm:text-xl font-bold truncate">
               {state.isEditMode ? `Edit Job: ${state.formData.title || 'Untitled'}` : 'Create New Job'}
             </h2>
             <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
@@ -75,7 +75,7 @@ export const UnifiedJobCreatorPanel = ({
         <StepIndicator currentStep={state.currentStep} totalSteps={5} />
 
         {/* Content Area */}
-        <div className="flex-1 overflow-hidden p-3">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4">
           <StepRenderer
             currentStep={state.currentStep}
             state={state}

@@ -19,7 +19,7 @@ export const Step1BasicInfo = ({
   const isProjectBased = formData.employmentType === 'project';
 
   return (
-    <Card className="h-full">
+    <Card className="w-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">Basic Job Information</CardTitle>
         <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -30,8 +30,8 @@ export const Step1BasicInfo = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 h-full overflow-y-auto pt-4">
-        <div className="grid grid-cols-2 gap-4">
+      <CardContent className="space-y-4 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="title" className="text-sm">Job Title *</Label>
             <Input
@@ -59,7 +59,7 @@ export const Step1BasicInfo = ({
           </div>
         </div>
 
-        <div className={`grid ${isProjectBased ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
+        <div className={`grid ${isProjectBased ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
           <div>
             <Label htmlFor="experienceLevel" className="text-sm">Experience Level</Label>
             <Select value={formData.experienceLevel} onValueChange={(value) => actions.updateFormData('experienceLevel', value)}>
@@ -125,7 +125,7 @@ export const Step1BasicInfo = ({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="skills" className="text-sm">Required Skills</Label>
             <Input
