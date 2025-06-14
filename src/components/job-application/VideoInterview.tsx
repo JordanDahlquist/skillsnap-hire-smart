@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Camera } from "lucide-react";
 import { VideoInterviewHeader } from "./video-interview/VideoInterviewHeader";
@@ -11,6 +10,10 @@ import { useVideoRecording, ViewMode } from "./video-interview/useVideoRecording
 import { useInterviewQuestions } from "./video-interview/useInterviewQuestions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { StorageBucketValidator } from "./video-interview/StorageBucketValidator";
+import { VideoUploadErrorHandler } from "./video-interview/VideoUploadErrorHandler";
+import { videoUploadService } from "@/services/videoUploadService";
+import { logger } from "@/services/loggerService";
 
 interface VideoInterviewProps {
   questions: string;
@@ -34,6 +37,9 @@ export const VideoInterview = ({
   const [questionViewModes, setQuestionViewModes] = useState<{ [key: number]: ViewMode }>({});
   const [uploadedVideos, setUploadedVideos] = useState<{ [key: number]: string }>({});
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [storageReady, setStorageReady] = useState(false);
   
   const { interviewQuestions } = useInterviewQuestions(questions);
   const {
@@ -54,36 +60,65 @@ export const VideoInterview = ({
   const uploadVideoToStorage = async (blob: Blob, questionIndex: number): Promise<string | null> => {
     try {
       setIsUploading(true);
-      const fileName = `interview-video-${Date.now()}-q${questionIndex + 1}.webm`;
-      const filePath = `interview-videos/${fileName}`;
+      setUploadError(null);
+      setUploadProgress(0);
+      
+      const result = await videoUploadService.uploadVideo(
+        blob, 
+        questionIndex,
+        (progress) => {
+          setUploadProgress(progress.percentage);
+        }
+      );
 
-      const { data, error } = await supabase.storage
-        .from('application-files')
-        .upload(filePath, blob, {
-          contentType: 'video/webm',
-        });
-
-      if (error) {
-        console.error('Error uploading video:', error);
-        toast.error('Failed to upload video');
+      if (!result.success) {
+        setUploadError(result.error || 'Upload failed');
+        toast.error(`Failed to upload video ${questionIndex + 1}: ${result.error}`);
         return null;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('application-files')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
+      toast.success(`Video ${questionIndex + 1} uploaded successfully`);
+      return result.url || null;
+      
     } catch (error) {
-      console.error('Error uploading video:', error);
-      toast.error('Failed to upload video');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+      logger.error('Error uploading video:', error);
+      setUploadError(errorMessage);
+      toast.error(`Failed to upload video: ${errorMessage}`);
       return null;
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const retryUpload = async () => {
+    if (recordedVideos[currentQuestion]) {
+      try {
+        const response = await fetch(recordedVideos[currentQuestion]);
+        const blob = await response.blob();
+        const uploadedUrl = await uploadVideoToStorage(blob, currentQuestion);
+        
+        if (uploadedUrl) {
+          setUploadedVideos(prev => ({
+            ...prev,
+            [currentQuestion]: uploadedUrl
+          }));
+          setUploadError(null);
+        }
+      } catch (error) {
+        logger.error('Error retrying upload:', error);
+        toast.error('Failed to retry upload');
+      }
     }
   };
 
   const handleStartRecording = () => {
+    if (!storageReady) {
+      toast.error('Storage system not ready. Please wait and try again.');
+      return;
+    }
+
     startRecording(async (url) => {
       setRecordedVideos(prev => ({
         ...prev,
@@ -105,11 +140,10 @@ export const VideoInterview = ({
             ...prev,
             [currentQuestion]: uploadedUrl
           }));
-          toast.success(`Video ${currentQuestion + 1} uploaded successfully`);
         }
       } catch (error) {
-        console.error('Error processing recorded video:', error);
-        toast.error('Failed to process recorded video');
+        logger.error('Error processing recorded video:', error);
+        setUploadError('Failed to process recorded video');
       }
     });
   };
@@ -180,11 +214,14 @@ export const VideoInterview = ({
     }
   };
 
-  const completedVideos = Object.keys(recordedVideos).length;
+  const completedVideos = Object.keys(uploadedVideos).length; // Changed from recordedVideos to uploadedVideos
   const allCompleted = completedVideos === interviewQuestions.length;
-  const isCurrentQuestionRecorded = !!recordedVideos[currentQuestion];
+  const isCurrentQuestionRecorded = !!uploadedVideos[currentQuestion]; // Changed from recordedVideos to uploadedVideos
   const canGoPrevious = currentQuestion > 0;
   const canGoNext = currentQuestion < interviewQuestions.length - 1;
+
+  // Prevent proceeding if uploads are in progress or failed
+  const canProceedToReview = allCompleted && !isUploading && !uploadError;
 
   useEffect(() => {
     if (allCompleted && Object.keys(uploadedVideos).length === interviewQuestions.length) {
@@ -194,7 +231,8 @@ export const VideoInterview = ({
         questionIndex: index,
         answerType: 'video',
         videoUrl: uploadedVideos[index],
-        recordedAt: new Date().toISOString()
+        recordedAt: new Date().toISOString(),
+        answer: 'Video response' // Add required answer field
       }));
       
       onChange(JSON.stringify(interviewResponses));
@@ -232,6 +270,8 @@ export const VideoInterview = ({
 
   return (
     <div className="space-y-6">
+      <StorageBucketValidator onValidationComplete={setStorageReady} />
+      
       <VideoInterviewHeader 
         maxLength={maxLength}
         completedVideos={completedVideos}
@@ -241,7 +281,7 @@ export const VideoInterview = ({
       <QuestionNavigation 
         questions={interviewQuestions}
         currentQuestion={currentQuestion}
-        recordedVideos={recordedVideos}
+        recordedVideos={uploadedVideos} // Changed to show uploaded videos status
         onQuestionChange={handleQuestionChange}
       />
 
@@ -249,7 +289,7 @@ export const VideoInterview = ({
         questionNumber={currentQuestion + 1}
         totalQuestions={interviewQuestions.length}
         questionText={interviewQuestions[currentQuestion]}
-        isRecorded={!!recordedVideos[currentQuestion]}
+        isRecorded={!!uploadedVideos[currentQuestion]} // Changed to check uploaded videos
       />
 
       <VideoRecordingArea 
@@ -259,7 +299,7 @@ export const VideoInterview = ({
         stream={stream}
         isRecording={isRecording || isUploading}
         recordingTime={recordingTime}
-        videoReady={videoReady}
+        videoReady={videoReady && storageReady}
         permissionGranted={permissionGranted}
         videoLoading={videoLoading || isUploading}
         viewMode={viewMode}
@@ -272,11 +312,17 @@ export const VideoInterview = ({
         onSwitchToPlayback={handleSwitchToPlayback}
       />
 
+      <VideoUploadErrorHandler 
+        error={uploadError}
+        onRetry={retryUpload}
+        isRetrying={isUploading}
+      />
+
       <VideoInterviewNavigation
         currentQuestion={currentQuestion}
         totalQuestions={interviewQuestions.length}
         isCurrentQuestionRecorded={isCurrentQuestionRecorded}
-        allCompleted={allCompleted}
+        allCompleted={canProceedToReview} // Updated to include upload validation
         onPrevious={handlePreviousQuestion}
         onNext={handleNextQuestion}
         onContinueToReview={onNext}
@@ -284,11 +330,19 @@ export const VideoInterview = ({
         canGoNext={canGoNext}
       />
 
-      <CompletionCard isAllCompleted={allCompleted} />
+      <CompletionCard isAllCompleted={canProceedToReview} />
       
       {isUploading && (
-        <div className="text-center text-sm text-muted-foreground">
-          Uploading video... Please wait.
+        <div className="text-center space-y-2">
+          <div className="text-sm text-muted-foreground">
+            Uploading video... {uploadProgress}% complete
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
         </div>
       )}
     </div>

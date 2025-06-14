@@ -32,32 +32,66 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
       answer: response.answer || '' // Ensure answer property exists
     }));
 
-  // Parse interview video responses
+  // Parse interview video responses with better error handling
   const interviewResponses = Array.isArray(application.interview_video_responses) 
     ? application.interview_video_responses 
     : [];
 
+  logger.debug('Interview video responses data:', {
+    applicationId: application.id,
+    interviewResponsesRaw: application.interview_video_responses,
+    parsedResponses: interviewResponses,
+    responseCount: interviewResponses.length
+  });
+
   const interviewVideoResponses: VideoResponse[] = interviewResponses
-    .filter((response: any) => response.answerType === 'video' && response.videoUrl)
-    .map((response: any) => ({
-      ...response,
-      source: 'interview' as const,
-      answer: response.answer || 'Video response' // Provide a default answer for video responses
-    }));
+    .filter((response: any) => {
+      const hasVideo = response.answerType === 'video' && response.videoUrl;
+      if (!hasVideo) {
+        logger.debug('Filtering out non-video response:', response);
+      }
+      return hasVideo;
+    })
+    .map((response: any, index: number) => {
+      logger.debug(`Processing interview video response ${index}:`, response);
+      return {
+        ...response,
+        source: 'interview' as const,
+        questionIndex: response.questionIndex || index,
+        answer: response.answer || 'Video response' // Provide a default answer for video responses
+      };
+    });
+
+  logger.debug('Final processed video responses:', {
+    skillsVideoCount: skillsVideoResponses.length,
+    interviewVideoCount: interviewVideoResponses.length,
+    interviewVideos: interviewVideoResponses
+  });
 
   // Combine all video responses
   const allVideoResponses = [...skillsVideoResponses, ...interviewVideoResponses];
 
   if (allVideoResponses.length === 0) {
+    // Enhanced no-video state with debugging info
     return (
       <Card className="glass-card">
         <CardContent className="p-8 text-center">
           <div className="text-lg font-medium text-muted-foreground mb-2">
-            No Video Responses
+            No Video Responses Found
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mb-4">
             This candidate did not submit any video responses during the skills assessment or interview.
           </p>
+          {process.env.NODE_ENV === 'development' && (
+            <details className="text-xs text-left bg-gray-50 p-4 rounded">
+              <summary className="cursor-pointer font-medium">Debug Info</summary>
+              <pre className="mt-2 whitespace-pre-wrap">
+                Skills responses: {JSON.stringify(skillsResponses, null, 2)}
+                {'\n'}
+                Interview responses: {JSON.stringify(interviewResponses, null, 2)}
+              </pre>
+            </details>
+          )}
         </CardContent>
       </Card>
     );
