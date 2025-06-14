@@ -1,11 +1,10 @@
-
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 const TermsOfService = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <UnifiedHeader 
         breadcrumbs={[
           { label: "Home", href: "/" },
@@ -14,15 +13,15 @@ const TermsOfService = () => {
         showCreateButton={false}
       />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card>
-          <CardContent className="p-8 space-y-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white">
+        <Card className="bg-white border-gray-200">
+          <CardContent className="p-8 space-y-8 bg-white">
             <div className="text-center">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Terms of Service</h1>
               <p className="text-gray-600">Last updated: January 2025</p>
             </div>
 
-            <Separator />
+            <Separator className="border-gray-200" />
 
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
@@ -199,7 +198,7 @@ const TermsOfService = () => {
               <p className="text-gray-700 mb-2">
                 If you have any questions about these Terms of Service, please contact us at:
               </p>
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <p className="text-gray-700"><strong>Email:</strong> jordan@aeonmarketing.co</p>
                 <p className="text-gray-700"><strong>Company:</strong> Atract</p>
                 <div className="text-gray-700">
@@ -212,7 +211,7 @@ const TermsOfService = () => {
               </div>
             </section>
 
-            <Separator />
+            <Separator className="border-gray-200" />
 
             <div className="text-center text-sm text-gray-500">
               <p>These terms of service are effective as of the date listed above and apply to all users of the Atract platform.</p>
