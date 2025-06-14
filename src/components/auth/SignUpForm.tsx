@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,43 +105,46 @@ export const SignUpForm = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-white">
       <form onSubmit={handleSignUp} className="space-y-4">
         <div>
-          <Label htmlFor="signup-fullname">Full Name</Label>
+          <Label htmlFor="signup-fullname" className="text-gray-700">Full Name</Label>
           <Input
             id="signup-fullname"
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Enter your full name"
+            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
             required
           />
         </div>
         <div>
-          <Label htmlFor="signup-company">Company Name</Label>
+          <Label htmlFor="signup-company" className="text-gray-700">Company Name</Label>
           <Input
             id="signup-company"
             type="text"
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
             placeholder="Your company name"
+            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
             required
           />
         </div>
         <div>
-          <Label htmlFor="signup-email">Work Email</Label>
+          <Label htmlFor="signup-email" className="text-gray-700">Work Email</Label>
           <Input
             id="signup-email"
             type="email"
             value={signupEmail}
             onChange={(e) => setSignupEmail(e.target.value)}
             placeholder="your.email@company.com"
+            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
             required
           />
         </div>
         <div>
-          <Label htmlFor="signup-password">Password</Label>
+          <Label htmlFor="signup-password" className="text-gray-700">Password</Label>
           <div className="relative">
             <Input
               id="signup-password"
@@ -150,6 +152,7 @@ export const SignUpForm = () => {
               value={signupPassword}
               onChange={(e) => setSignupPassword(e.target.value)}
               placeholder="Create a strong password"
+              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
               required
             />
             <button
@@ -180,7 +183,7 @@ export const SignUpForm = () => {
         </div>
         <Button 
           type="submit" 
-          className="w-full bg-[#007af6] hover:bg-[#0056b3]" 
+          className="w-full bg-[#007af6] hover:bg-[#0056b3] text-white" 
           disabled={loading}
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
