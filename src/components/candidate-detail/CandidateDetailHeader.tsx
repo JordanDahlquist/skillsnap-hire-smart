@@ -84,7 +84,7 @@ export const CandidateDetailHeader = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Navigation Section */}
-          <div className="py-3 border-b border-border/10">
+          <div className="py-2 border-b border-border/10">
             <div className="flex items-center justify-between">
               <Breadcrumb>
                 <BreadcrumbList>
@@ -117,11 +117,11 @@ export const CandidateDetailHeader = ({
             </div>
           </div>
 
-          {/* Compact Main Information Row */}
-          <div className="py-4">
-            <div className="flex items-center justify-between gap-6 flex-wrap lg:flex-nowrap">
+          {/* Compact Single Row Layout */}
+          <div className="py-3">
+            <div className="flex items-center justify-between gap-4 flex-wrap lg:flex-nowrap">
               
-              {/* Left: Candidate Info */}
+              {/* Left: Candidate Info & Status */}
               <div className="flex items-center gap-4 min-w-0 flex-shrink-0">
                 <div className="min-w-0">
                   <h1 className="text-xl font-bold text-foreground truncate">
@@ -156,7 +156,7 @@ export const CandidateDetailHeader = ({
                   </span>
                 </div>
 
-                {/* Manual Rating - More Prominent */}
+                {/* Manual Rating */}
                 <div className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
                   !hasManualRating ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
                 }`}>
@@ -193,7 +193,7 @@ export const CandidateDetailHeader = ({
                 </div>
               </div>
 
-              {/* Right: Stage & Actions */}
+              {/* Right: Stage & Actions - All on same line */}
               <div className="flex items-center gap-3 flex-shrink-0">
                 {/* Pipeline Stage */}
                 <div className="flex items-center gap-2">
@@ -205,6 +205,16 @@ export const CandidateDetailHeader = ({
                     size="sm"
                   />
                 </div>
+
+                {/* View Full Profile Button */}
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="px-3 py-1 text-xs"
+                  disabled={isUpdating}
+                >
+                  View Full Profile
+                </Button>
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2">
