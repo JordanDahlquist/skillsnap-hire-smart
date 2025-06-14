@@ -6,6 +6,7 @@ import { CandidateSkillsTab } from "./tabs/CandidateSkillsTab";
 import { CandidateVideoTab } from "./tabs/CandidateVideoTab";
 import { CandidateDocumentsTab } from "./tabs/CandidateDocumentsTab";
 import { CandidateActivityTab } from "./tabs/CandidateActivityTab";
+import { CandidateFloatingActions } from "./CandidateFloatingActions";
 import { Application, Job } from "@/types";
 
 interface CandidateDetailContentProps {
@@ -26,13 +27,8 @@ export const CandidateDetailContent = ({
     ? application.skills_test_responses 
     : [];
 
-  // Get video responses for the video tab
-  const videoResponses = skillsResponses.filter((response: any) => 
-    response.answerType === 'video' && response.videoUrl
-  );
-
   const hasSkillsAssessment = skillsResponses.length > 0;
-  const hasVideoInterview = videoResponses.length > 0;
+  const hasVideoInterview = !!application.interview_video_url;
   const hasDocuments = !!(application.resume_file_path || application.cover_letter);
 
   return (
@@ -70,7 +66,6 @@ export const CandidateDetailContent = ({
         <TabsContent value="video" className="space-y-6">
           <CandidateVideoTab 
             application={application}
-            videoResponses={videoResponses}
           />
         </TabsContent>
 
@@ -86,6 +81,12 @@ export const CandidateDetailContent = ({
           />
         </TabsContent>
       </Tabs>
+
+      <CandidateFloatingActions 
+        application={application}
+        job={job}
+        onApplicationUpdate={onApplicationUpdate}
+      />
     </div>
   );
 };
