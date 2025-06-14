@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -192,6 +193,7 @@ export const NewJobApplication = () => {
     if (job.generated_interview_questions) stepIndex++;
     
     if (currentStep === stepIndex) {
+      // Use ApplicationReview instead of ReviewSubmitStep to ensure correct data flow
       return (
         <ApplicationReview
           job={job}
@@ -199,7 +201,10 @@ export const NewJobApplication = () => {
           skillsResponses={formData.skillsTestResponses || []}
           videoUrl={formData.videoUrl}
           onBack={prevStep}
-          onSubmit={() => {}}
+          onSubmit={() => {
+            console.log('Application submitted successfully');
+            // Application submission is handled within ApplicationReview
+          }}
         />
       );
     }

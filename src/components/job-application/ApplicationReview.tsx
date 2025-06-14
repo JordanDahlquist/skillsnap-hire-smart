@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,33 +31,67 @@ export const ApplicationReview = ({
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async () => {
+    // Add validation to prevent placeholder data submission
+    if (!personalInfo.fullName || personalInfo.fullName.trim() === '' || personalInfo.fullName === 'John Doe') {
+      toast.error("Please enter your actual name in the personal information section");
+      return;
+    }
+
+    if (!personalInfo.email || personalInfo.email.trim() === '' || personalInfo.email === 'john@example.com') {
+      toast.error("Please enter your actual email address in the personal information section");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Insert the application
+      console.log('Submitting application with data:', {
+        name: personalInfo.fullName,
+        email: personalInfo.email,
+        personalInfo
+      });
+
+      // Parse video interview responses from the JSON string if needed
+      let interviewVideoResponses = [];
+      if (videoUrl) {
+        try {
+          const parsedVideoResponses = JSON.parse(videoUrl);
+          interviewVideoResponses = Array.isArray(parsedVideoResponses) ? parsedVideoResponses : [];
+        } catch (parseError) {
+          console.warn('Could not parse video responses:', parseError);
+          // If it's not JSON, treat as a simple URL
+          interviewVideoResponses = [];
+        }
+      }
+
+      // Insert the application using the actual form data from personalInfo
       const { data: applicationData, error: insertError } = await supabase
         .from('applications')
         .insert({
           job_id: job.id,
-          name: personalInfo.fullName,
-          email: personalInfo.email,
+          name: personalInfo.fullName, // Use actual form data
+          email: personalInfo.email, // Use actual form data
           phone: personalInfo.phone,
           location: personalInfo.location,
           portfolio_url: personalInfo.portfolioUrl,
           linkedin_url: personalInfo.linkedinUrl,
           github_url: personalInfo.githubUrl,
           cover_letter: personalInfo.coverLetter,
-          resume_file_path: personalInfo.resumeUrl, // Use the uploaded URL
+          resume_file_path: personalInfo.resumeUrl,
           skills_test_responses: skillsResponses,
-          interview_video_url: videoUrl,
+          interview_video_responses: interviewVideoResponses,
           status: 'pending',
           created_at: new Date().toISOString(),
         })
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
 
+      console.log('Application submitted successfully:', applicationData);
       toast.success("Application submitted successfully!");
       setSubmitted(true);
       onSubmit();
