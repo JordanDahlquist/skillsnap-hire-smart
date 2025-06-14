@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Video } from 'lucide-react';
 import { StageSelector } from './StageSelector';
 import { logger } from '@/services/loggerService';
 import { renderManualRating, renderAIRating } from './utils/ratingUtils';
@@ -20,6 +20,23 @@ interface ApplicationItemProps {
   onSelectApplications?: (ids: string[]) => void;
   jobId?: string;
 }
+
+// Helper function to check if application has video content
+const hasVideoContent = (application: Application): boolean => {
+  // Check for single interview video
+  if (application.interview_video_url) {
+    return true;
+  }
+  
+  // Check for video responses in skills test
+  const skillsResponses = Array.isArray(application.skills_test_responses) 
+    ? application.skills_test_responses 
+    : [];
+  
+  return skillsResponses.some((response: any) => 
+    response?.video_url || response?.videoUrl || response?.answer_video_url
+  );
+};
 
 export const ApplicationItem = memo(({ 
   application, 
@@ -61,6 +78,17 @@ export const ApplicationItem = memo(({
     }
   }, [navigate, jobId, application.id]);
 
+  const handleVideoIndicatorClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (jobId) {
+      navigate(`/dashboard/${jobId}/candidate/${application.id}`);
+      logger.debug('Navigating to candidate detail page via video indicator', { 
+        jobId, 
+        applicationId: application.id 
+      });
+    }
+  }, [navigate, jobId, application.id]);
+
   // Get the display status - if status is "reviewed" but no manual rating, show as "pending"
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
 
@@ -68,6 +96,7 @@ export const ApplicationItem = memo(({
   const pipelineStage = application.pipeline_stage || 'applied';
 
   const isSelected = selectedApplication?.id === application.id;
+  const hasVideo = hasVideoContent(application);
 
   return (
     <div className="mb-4">
@@ -107,6 +136,16 @@ export const ApplicationItem = memo(({
                   <Badge className={getStatusColor(application.status, application.manual_rating)}>
                     {displayStatus}
                   </Badge>
+                  {hasVideo && (
+                    <button
+                      onClick={handleVideoIndicatorClick}
+                      className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
+                      title="Has video interview"
+                    >
+                      <Video className="w-3 h-3" />
+                      Video
+                    </button>
+                  )}
                 </div>
                 
                 {/* Stage Selector */}
