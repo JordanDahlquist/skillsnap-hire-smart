@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -87,13 +86,17 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('resumes')
-        .upload(filePath, file);
+        .from('application-files')
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
+
+      // Construct the complete URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('application-files')
+        .getPublicUrl(fileName);
 
       // Extract text from file (simplified for demo - in production, use proper PDF/DOC parsing)
       const reader = new FileReader();
@@ -131,7 +134,8 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
           });
 
           if (parseResult?.parsedData) {
-            onResumeData(parseResult.parsedData, filePath);
+            // Pass the complete URL instead of just the filename
+            onResumeData(parseResult.parsedData, publicUrl);
             toast({
               title: "Resume uploaded successfully",
               description: "Your information has been extracted and filled in the form.",

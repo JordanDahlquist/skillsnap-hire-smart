@@ -16,6 +16,17 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
   const hasResume = !!(application.resume_file_path);
   const hasCoverLetter = !!(application.cover_letter);
 
+  // Construct the proper resume URL
+  const getResumeUrl = (filePath: string) => {
+    // If it's already a complete URL, return as is
+    if (filePath.startsWith('http')) {
+      return filePath;
+    }
+    
+    // If it's just a filename, construct the Supabase Storage URL
+    return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
+  };
+
   if (!hasResume && !hasCoverLetter) {
     return (
       <Card className="glass-card">
@@ -39,6 +50,8 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
     setIsLoading(false);
     setHasError(true);
   };
+
+  const resumeUrl = hasResume ? getResumeUrl(application.resume_file_path) : '';
 
   return (
     <div className="space-y-6">
@@ -67,7 +80,7 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
                 className="flex items-center gap-2"
               >
                 <a 
-                  href={application.resume_file_path} 
+                  href={resumeUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                 >
@@ -99,7 +112,7 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
                   </div>
                 ) : (
                   <iframe
-                    src={`${application.resume_file_path}#toolbar=0&navpanes=0&scrollbar=0`}
+                    src={`${resumeUrl}#toolbar=0&navpanes=0&scrollbar=0`}
                     className={`w-full h-96 border-0 ${isLoading ? 'hidden' : 'block'}`}
                     onLoad={handleIframeLoad}
                     onError={handleIframeError}
