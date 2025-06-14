@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { UnifiedJobFormData, UnifiedJobCreatorActions } from "@/types/jobForm";
 import { Info } from "lucide-react";
 
@@ -15,6 +16,8 @@ export const Step1BasicInfo = ({
   formData,
   actions
 }: Step1BasicInfoProps) => {
+  const isProjectBased = formData.employmentType === 'project';
+
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
@@ -56,7 +59,7 @@ export const Step1BasicInfo = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className={`grid ${isProjectBased ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
           <div>
             <Label htmlFor="experienceLevel" className="text-sm">Experience Level</Label>
             <Select value={formData.experienceLevel} onValueChange={(value) => actions.updateFormData('experienceLevel', value)}>
@@ -70,28 +73,58 @@ export const Step1BasicInfo = ({
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label htmlFor="budget" className="text-sm">Budget</Label>
-            <Input
-              id="budget"
-              value={formData.budget}
-              onChange={(e) => actions.updateFormData('budget', e.target.value)}
-              placeholder="$50-100/hr"
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="duration" className="text-sm">Duration</Label>
-            <Input
-              id="duration"
-              value={formData.duration}
-              onChange={(e) => actions.updateFormData('duration', e.target.value)}
-              placeholder="3 months"
-              className="mt-1"
-            />
-          </div>
+
+          {isProjectBased ? (
+            <>
+              <div>
+                <Label htmlFor="budget" className="text-sm">Budget</Label>
+                <Input
+                  id="budget"
+                  value={formData.budget}
+                  onChange={(e) => actions.updateFormData('budget', e.target.value)}
+                  placeholder="$50-100/hr or $5k project"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="duration" className="text-sm">Duration</Label>
+                <Input
+                  id="duration"
+                  value={formData.duration}
+                  onChange={(e) => actions.updateFormData('duration', e.target.value)}
+                  placeholder="3 months"
+                  className="mt-1"
+                />
+              </div>
+            </>
+          ) : (
+            <div>
+              <Label htmlFor="salary" className="text-sm">Salary</Label>
+              <Input
+                id="salary"
+                value={formData.salary}
+                onChange={(e) => actions.updateFormData('salary', e.target.value)}
+                placeholder="$100,000 - $120,000 per year"
+                className="mt-1"
+              />
+            </div>
+          )}
         </div>
         
+        {!isProjectBased && (
+          <div>
+            <Label htmlFor="benefits" className="text-sm">Benefits</Label>
+            <Textarea
+              id="benefits"
+              value={formData.benefits}
+              onChange={(e) => actions.updateFormData('benefits', e.target.value)}
+              placeholder="e.g. Health insurance, 401(k), paid time off..."
+              className="mt-1"
+              rows={3}
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="skills" className="text-sm">Required Skills</Label>

@@ -26,6 +26,10 @@ export interface UnifiedJobFormData {
   budget: string;
   duration: string;
   
+  // Salary and Benefits
+  salary: string;
+  benefits: string;
+
   // Location
   location: string;
   locationType: string;

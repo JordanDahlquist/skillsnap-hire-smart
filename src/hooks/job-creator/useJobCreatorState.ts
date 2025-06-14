@@ -11,6 +11,8 @@ const initialFormData: UnifiedJobFormData = {
   skills: "",
   budget: "",
   duration: "",
+  salary: "",
+  benefits: "",
   location: "",
   locationType: "remote",
   country: "",

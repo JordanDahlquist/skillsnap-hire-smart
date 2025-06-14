@@ -27,14 +27,15 @@ export const useJobSaving = () => {
 
     setIsSaving(true);
     try {
+      const isProjectBased = state.formData.employmentType === 'project';
       const jobData = {
         title: state.formData.title,
         description: state.formData.description,
         role_type: state.formData.employmentType,
         experience_level: state.formData.experienceLevel,
         required_skills: state.formData.skills,
-        budget: state.formData.budget || null,
-        duration: state.formData.duration || null,
+        budget: isProjectBased ? (state.formData.budget || null) : (state.formData.salary || null),
+        duration: isProjectBased ? (state.formData.duration || null) : null,
         location_type: state.formData.locationType,
         employment_type: state.formData.employmentType,
         country: state.formData.country || null,
@@ -51,6 +52,10 @@ export const useJobSaving = () => {
         user_id: user.id,
         updated_at: new Date().toISOString()
       };
+
+      if (!isProjectBased && state.formData.benefits) {
+        jobData.generated_job_post = (jobData.generated_job_post || '') + `\n\n## Benefits\n\n${state.formData.benefits}`;
+      }
 
       let result;
       if (state.isEditMode && state.editingJobId) {

@@ -1,4 +1,3 @@
-
 import { UnifiedJobCreatorActions, UnifiedJobFormData } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
 
@@ -39,30 +38,48 @@ export const createJobCreatorActions = (
       }
     }
     
-    setState((prev: any) => ({
-      ...prev,
-      isEditMode: true,
-      editingJobId: job.id,
-      formData: {
-        title: job.title || "",
-        description: job.description || "",
-        employmentType: job.employment_type || job.role_type || "project",
-        experienceLevel: job.experience_level || "intermediate",
-        skills: job.required_skills || "",
-        budget: job.budget || "",
-        duration: job.duration || "",
-        location: job.location || "",
-        locationType: job.location_type || "remote",
-        country: job.country || "",
-        state: job.state || "",
-        city: job.city || "",
-        companyName: job.company_name || ""
-      },
-      generatedJobPost: job.generated_job_post || "",
-      skillsTestData: parsedSkillsTestData,
-      generatedInterviewQuestions: job.generated_interview_questions || "",
-      interviewVideoMaxLength: job.interview_video_max_length || 5
-    }));
+    // Benefits parsing
+    const benefitsMarker = /\n\n## Benefits\n\n([\s\S]+)/;
+    let benefits = "";
+    let jobPost = job.generated_job_post || "";
+    const benefitsMatch = jobPost.match(benefitsMarker);
+
+    if (benefitsMatch && benefitsMatch[1]) {
+      benefits = benefitsMatch[1].trim();
+      jobPost = jobPost.replace(benefitsMarker, "").trim();
+    }
+    
+    setState((prev: any) => {
+      const employmentType = job.employment_type || job.role_type || "project";
+      const isProjectBased = employmentType === 'project';
+      
+      return {
+        ...prev,
+        isEditMode: true,
+        editingJobId: job.id,
+        formData: {
+          title: job.title || "",
+          description: job.description || "",
+          employmentType: employmentType,
+          experienceLevel: job.experience_level || "intermediate",
+          skills: job.required_skills || "",
+          budget: isProjectBased ? (job.budget || "") : "",
+          duration: job.duration || "",
+          salary: !isProjectBased ? (job.budget || "") : "",
+          benefits: benefits,
+          location: job.location || "",
+          locationType: job.location_type || "remote",
+          country: job.country || "",
+          state: job.state || "",
+          city: job.city || "",
+          companyName: job.company_name || ""
+        },
+        generatedJobPost: jobPost,
+        skillsTestData: parsedSkillsTestData,
+        generatedInterviewQuestions: job.generated_interview_questions || "",
+        interviewVideoMaxLength: job.interview_video_max_length || 5
+      }
+    });
   }
 });
 
