@@ -1,4 +1,3 @@
-
 import { Step1BasicInfo } from "./Step1BasicInfo";
 import { Step2JobPostGenerator } from "./Step2JobPostGenerator";
 import { Step3SkillsTestGenerator } from "./Step3SkillsTestGenerator";
@@ -34,9 +33,6 @@ export const StepRenderer = ({
     case 2:
       return (
         <Step2JobPostGenerator
-          formData={state.formData}
-          uploadedPdfContent={null}
-          useOriginalPdf={null}
           generatedJobPost={state.generatedJobPost}
           isGenerating={state.isGenerating}
           isEditingJobPost={state.isEditingJobPost}
