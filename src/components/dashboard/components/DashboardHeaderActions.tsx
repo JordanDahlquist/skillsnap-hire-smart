@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DashboardHeaderDropdown } from "./DashboardHeaderDropdown";
 import { Job } from "@/types";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface DashboardHeaderActionsProps {
   job: Job;
@@ -50,6 +51,7 @@ export const DashboardHeaderActions = ({
   isRefreshingAI
 }: DashboardHeaderActionsProps) => {
   const isArchived = job.status === 'closed';
+  const { currentTheme } = useThemeContext();
 
   console.log('DashboardHeaderActions render:', { 
     jobId: job.id, 
@@ -61,6 +63,14 @@ export const DashboardHeaderActions = ({
   const handleStatusChange = (newStatus: string) => {
     console.log('Status change triggered from actions:', { from: job.status, to: newStatus });
     onStatusChange(newStatus);
+  };
+
+  // Get theme-aware AI Rank button classes
+  const getAIRankButtonClasses = () => {
+    if (currentTheme === 'black') {
+      return "border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/30 gap-2";
+    }
+    return "border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300 gap-2";
   };
 
   return (
@@ -79,7 +89,7 @@ export const DashboardHeaderActions = ({
               size="sm" 
               onClick={onRefreshAI}
               disabled={isUpdating || isRefreshingAI}
-              className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300 gap-2"
+              className={getAIRankButtonClasses()}
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">AI Rank</span>

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, FileText, Play, Pause, Archive, Loader2 } from "lucide-react";
+import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface StatusDropdownProps {
   currentStatus: string;
@@ -51,6 +52,7 @@ export const StatusDropdown = ({
   size = "default"
 }: StatusDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { currentTheme } = useThemeContext();
   const currentConfig = statusConfig[currentStatus as keyof typeof statusConfig];
   const CurrentIcon = currentConfig?.icon || FileText;
 
@@ -67,6 +69,15 @@ export const StatusDropdown = ({
     onStatusChange(newStatus);
   };
 
+  // Get theme-aware button color class
+  const getButtonColorClass = () => {
+    if (currentTheme === 'black') {
+      // In black mode, use white text for all status buttons
+      return "text-white border-white/20 hover:bg-white/10";
+    }
+    return currentConfig?.buttonColor || "text-muted-foreground border-border";
+  };
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
@@ -74,7 +85,7 @@ export const StatusDropdown = ({
           variant="outline"
           size={size}
           disabled={disabled}
-          className={`${currentConfig?.buttonColor} hover:bg-accent ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`${getButtonColorClass()} hover:bg-accent ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {disabled ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
