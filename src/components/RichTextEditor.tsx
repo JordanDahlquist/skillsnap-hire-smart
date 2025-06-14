@@ -1,10 +1,9 @@
 
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bold, Italic, Link, List, Save, X } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -21,13 +20,73 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
   const [savedRange, setSavedRange] = useState<Range | null>(null);
+  const isInitializedRef = useRef(false);
+  const lastValueRef = useRef(value);
+
+  // Initialize content only once when component mounts or value changes from external source
+  React.useEffect(() => {
+    if (editorRef.current && !isInitializedRef.current) {
+      const htmlContent = value.startsWith('<') ? value : convertToHtml(value);
+      editorRef.current.innerHTML = htmlContent;
+      isInitializedRef.current = true;
+      lastValueRef.current = value;
+    } else if (editorRef.current && value !== lastValueRef.current) {
+      // Only update if value changed externally (not from user input)
+      const currentContent = editorRef.current.innerHTML;
+      if (currentContent !== value) {
+        const htmlContent = value.startsWith('<') ? value : convertToHtml(value);
+        editorRef.current.innerHTML = htmlContent;
+        lastValueRef.current = value;
+      }
+    }
+  }, [value]);
+
+  // Cursor position utilities
+  const saveCursorPosition = useCallback(() => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0 && editorRef.current) {
+      const range = selection.getRangeAt(0);
+      return {
+        startContainer: range.startContainer,
+        startOffset: range.startOffset,
+        endContainer: range.endContainer,
+        endOffset: range.endOffset
+      };
+    }
+    return null;
+  }, []);
+
+  const restoreCursorPosition = useCallback((position: any) => {
+    if (position && editorRef.current) {
+      try {
+        const selection = window.getSelection();
+        if (selection) {
+          const range = document.createRange();
+          range.setStart(position.startContainer, position.startOffset);
+          range.setEnd(position.endContainer, position.endOffset);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      } catch (error) {
+        // Silently handle cases where the position is no longer valid
+        console.warn('Could not restore cursor position:', error);
+      }
+    }
+  }, []);
 
   const handleCommand = useCallback((command: string, value?: string) => {
+    const cursorPosition = saveCursorPosition();
     document.execCommand(command, false, value);
+    
     if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
+      const newContent = editorRef.current.innerHTML;
+      lastValueRef.current = newContent;
+      onChange(newContent);
     }
-  }, [onChange]);
+    
+    // Restore cursor position after a brief delay to ensure DOM updates
+    setTimeout(() => restoreCursorPosition(cursorPosition), 0);
+  }, [onChange, saveCursorPosition, restoreCursorPosition]);
 
   const handleBold = () => handleCommand('bold');
   const handleItalic = () => handleCommand('italic');
@@ -113,7 +172,9 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
         }
       }
 
-      onChange(editorRef.current.innerHTML);
+      const newContent = editorRef.current.innerHTML;
+      lastValueRef.current = newContent;
+      onChange(newContent);
     }
 
     setShowLinkDialog(false);
@@ -122,11 +183,16 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
     setSavedRange(null);
   };
 
-  const handleInput = () => {
+  // Debounced input handler to prevent excessive updates
+  const handleInput = useCallback(() => {
     if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
+      const newContent = editorRef.current.innerHTML;
+      if (newContent !== lastValueRef.current) {
+        lastValueRef.current = newContent;
+        onChange(newContent);
+      }
     }
-  };
+  }, [onChange]);
 
   const convertToHtml = (text: string) => {
     return text
@@ -158,14 +224,8 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
     }
   };
 
-  useEffect(() => {
-    if (editorRef.current && value) {
-      const htmlContent = value.startsWith('<') ? value : convertToHtml(value);
-      editorRef.current.innerHTML = htmlContent;
-    }
-  }, [value]);
-
-  useEffect(() => {
+  // Add editor styles
+  React.useEffect(() => {
     const styleElement = document.createElement('style');
     styleElement.textContent = `
       .rich-text-editor [contenteditable][data-placeholder]:empty::before {
@@ -266,9 +326,9 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
         </div>
       </div>
 
-      {/* Flexible Content Area - Scrollable Editor */}
+      {/* Flexible Content Area - Simple Scrollable Editor */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        <ScrollArea className="h-full w-full">
+        <div className="h-full w-full overflow-y-auto">
           <div
             ref={editorRef}
             contentEditable
@@ -281,7 +341,7 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
             }}
             data-placeholder={placeholder}
           />
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Redesigned Link Dialog */}
