@@ -40,9 +40,10 @@ export const CompactEmailComposerLayout = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      <ScrollArea className="flex-1">
-        <div className="flex flex-col">
+    <div className="flex-1 flex flex-col">
+      {/* Config Section with its own scroll area */}
+      <div className="flex-shrink-0">
+        <ScrollArea className="max-h-60">
           <EmailConfigSection
             applications={selectedApplications}
             templates={templates}
@@ -50,17 +51,19 @@ export const CompactEmailComposerLayout = ({
             formData={formData}
             selectTemplate={selectTemplate}
           />
+        </ScrollArea>
+      </div>
 
-          <div className="min-h-[400px]">
-            <EmailFormSection
-              formData={formData}
-              fromEmail={fromEmail}
-              updateField={updateField}
-            />
-          </div>
-        </div>
-      </ScrollArea>
+      {/* Email Form Section - takes remaining space */}
+      <div className="flex-1 flex flex-col min-h-0">
+        <EmailFormSection
+          formData={formData}
+          fromEmail={fromEmail}
+          updateField={updateField}
+        />
+      </div>
 
+      {/* Actions Section - always visible at bottom */}
       <div className="flex-shrink-0 border-t bg-white">
         <CompactEmailActions
           onSend={onSend}

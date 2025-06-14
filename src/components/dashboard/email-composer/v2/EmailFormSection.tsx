@@ -15,10 +15,10 @@ export const EmailFormSection = ({
   updateField
 }: EmailFormSectionProps) => {
   return (
-    <div className="flex-1 flex min-h-0 overflow-hidden p-4">
-      <div className="w-full flex flex-col glass-card-no-hover rounded-2xl overflow-hidden">
+    <div className="flex-1 flex flex-col p-4">
+      <div className="flex-1 flex flex-col glass-card-no-hover rounded-2xl">
         {/* Editor Header */}
-        <div className="p-4 border-b border-border/50 bg-background/50">
+        <div className="flex-shrink-0 p-4 border-b border-border/50 bg-background/50">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-500 rounded-xl text-white">
               <Edit3 className="w-5 h-5" />
@@ -30,8 +30,8 @@ export const EmailFormSection = ({
           </div>
         </div>
 
-        {/* Email Editor */}
-        <div className="flex-1 min-h-0">
+        {/* Email Editor - takes remaining space */}
+        <div className="flex-1 flex flex-col">
           <CompactEmailEditor
             subject={formData.subject}
             content={formData.content}
