@@ -25,6 +25,11 @@ import RefundPolicy from "./pages/RefundPolicy";
 import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminContentPage from "./pages/admin/AdminContentPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
+import AdminActivityPage from "./pages/admin/AdminActivityPage";
+import AdminSystemPage from "./pages/admin/AdminSystemPage";
 import "./App.css";
 
 const queryClient = new QueryClient({
@@ -66,6 +71,31 @@ function App() {
                 <Route path="/admin" element={
                   <AdminRoute>
                     <AdminPanel />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/users" element={
+                  <AdminRoute>
+                    <AdminUsersPage />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/content" element={
+                  <AdminRoute>
+                    <AdminContentPage />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/analytics" element={
+                  <AdminRoute>
+                    <AdminAnalyticsPage />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/activity" element={
+                  <AdminRoute>
+                    <AdminActivityPage />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/system" element={
+                  <AdminRoute>
+                    <AdminSystemPage />
                   </AdminRoute>
                 } />
                 <Route path="*" element={<NotFound />} />
