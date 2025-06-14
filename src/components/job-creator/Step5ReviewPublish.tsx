@@ -198,7 +198,7 @@ export const Step5ReviewPublish = ({
                     <Badge variant="outline" className="text-xs">Optional</Badge>
                     <div className="flex items-center gap-1 text-sm text-gray-600">
                       <Clock className="w-4 h-4" />
-                      Max {interviewVideoMaxLength} min
+                      Max {interviewVideoMaxLength} min per question
                     </div>
                   </div>
                   <Button 
@@ -215,8 +215,8 @@ export const Step5ReviewPublish = ({
               <CardContent className="pt-0">
                 <div className="bg-purple-50 p-4 rounded-lg mb-4">
                   <p className="text-sm text-purple-700">
-                    <strong>Note:</strong> Candidates will be required to submit a video response to these questions. 
-                    Maximum video length is set to {interviewVideoMaxLength} minutes.
+                    <strong>Note:</strong> Candidates will record a separate video response for each question below. 
+                    Each individual video response is limited to {interviewVideoMaxLength} minutes.
                   </p>
                 </div>
                 <div 
