@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,6 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
-
 interface Step4InterviewGeneratorProps {
   generatedJobPost: string;
   generatedInterviewQuestions: string;
@@ -19,7 +17,6 @@ interface Step4InterviewGeneratorProps {
   actions: UnifiedJobCreatorActions;
   onGenerateInterviewQuestions: () => Promise<void>;
 }
-
 export const Step4InterviewGenerator = ({
   generatedJobPost,
   generatedInterviewQuestions,
@@ -32,15 +29,11 @@ export const Step4InterviewGenerator = ({
   const handleInterviewQuestionsSave = () => {
     actions.setIsEditingInterviewQuestions(false);
   };
-
   const handleInterviewQuestionsCancel = () => {
     actions.setIsEditingInterviewQuestions(false);
   };
-
-  return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {!generatedInterviewQuestions ? (
-        <Card className="h-full">
+  return <div className="h-full flex flex-col overflow-hidden">
+      {!generatedInterviewQuestions ? <Card className="h-full">
           <CardHeader className="pb-3 flex-shrink-0">
             <div className="flex items-center gap-2 mb-2">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -69,10 +62,7 @@ export const Step4InterviewGenerator = ({
                 <Label htmlFor="video-length" className="text-sm font-medium text-gray-700 mb-2 block">
                   Maximum Video Length
                 </Label>
-                <Select 
-                  value={interviewVideoMaxLength.toString()} 
-                  onValueChange={(value) => actions.setInterviewVideoMaxLength(parseInt(value))}
-                >
+                <Select value={interviewVideoMaxLength.toString()} onValueChange={value => actions.setInterviewVideoMaxLength(parseInt(value))}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select video length" />
                   </SelectTrigger>
@@ -87,21 +77,11 @@ export const Step4InterviewGenerator = ({
               </div>
               
               <div className="flex flex-col gap-3">
-                <Button 
-                  onClick={onGenerateInterviewQuestions}
-                  disabled={isGenerating || !generatedJobPost}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                  size="default"
-                >
+                <Button onClick={onGenerateInterviewQuestions} disabled={isGenerating || !generatedJobPost} className="bg-purple-600 hover:bg-purple-700 text-white" size="default">
                   {isGenerating ? 'Generating...' : 'Generate Interview Questions'}
                   <Sparkles className="w-4 h-4 ml-2" />
                 </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => actions.setCurrentStep(5)}
-                  className="text-gray-600 hover:text-gray-800"
-                  size="default"
-                >
+                <Button variant="outline" onClick={() => actions.setCurrentStep(5)} className="text-gray-600 hover:text-gray-800" size="default">
                   <SkipForward className="w-4 h-4 mr-2" />
                   Skip Interview Questions
                 </Button>
@@ -111,9 +91,7 @@ export const Step4InterviewGenerator = ({
               </p>
             </div>
           </CardContent>
-        </Card>
-      ) : (
-        <Card className="h-full flex flex-col overflow-hidden">
+        </Card> : <Card className="h-full flex flex-col overflow-hidden">
           <CardHeader className="pb-3 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -125,35 +103,18 @@ export const Step4InterviewGenerator = ({
                   Optional
                 </Badge>
               </div>
-              {!isEditingInterviewQuestions && (
-                <div className="flex items-center gap-2">
+              {!isEditingInterviewQuestions && <div className="flex items-center gap-2">
                   <div className="text-sm text-gray-600">
                     Max length: {interviewVideoMaxLength} min
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={onGenerateInterviewQuestions}
-                    disabled={isGenerating}
-                    className="text-xs h-8 px-3"
-                  >
+                  <Button variant="outline" size="sm" onClick={onGenerateInterviewQuestions} disabled={isGenerating} className="text-xs h-8 px-3">
                     {isGenerating ? 'Regenerating...' : 'Regenerate'}
                   </Button>
-                </div>
-              )}
+                </div>}
             </div>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0">
-            {isEditingInterviewQuestions ? (
-              <RichTextEditor
-                value={generatedInterviewQuestions}
-                onChange={actions.setGeneratedInterviewQuestions}
-                onSave={handleInterviewQuestionsSave}
-                onCancel={handleInterviewQuestionsCancel}
-                placeholder="Enter your interview questions here..."
-              />
-            ) : (
-              <div className="h-full flex flex-col">
+            {isEditingInterviewQuestions ? <RichTextEditor value={generatedInterviewQuestions} onChange={actions.setGeneratedInterviewQuestions} onSave={handleInterviewQuestionsSave} onCancel={handleInterviewQuestionsCancel} placeholder="Enter your interview questions here..." /> : <div className="h-full flex flex-col">
                 <div className="flex-shrink-0 p-4 border-b bg-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -162,13 +123,8 @@ export const Step4InterviewGenerator = ({
                       </p>
                       {/* Video Length Setting in View Mode */}
                       <div className="flex items-center gap-2">
-                        <Label htmlFor="video-length-view" className="text-sm font-medium text-gray-700">
-                          Video Length:
-                        </Label>
-                        <Select 
-                          value={interviewVideoMaxLength.toString()} 
-                          onValueChange={(value) => actions.setInterviewVideoMaxLength(parseInt(value))}
-                        >
+                        <Label htmlFor="video-length-view" className="text-sm font-medium text-gray-700">Max Video Length Per Question:</Label>
+                        <Select value={interviewVideoMaxLength.toString()} onValueChange={value => actions.setInterviewVideoMaxLength(parseInt(value))}>
                           <SelectTrigger className="w-32 h-8 text-sm">
                             <SelectValue />
                           </SelectTrigger>
@@ -182,12 +138,7 @@ export const Step4InterviewGenerator = ({
                         </Select>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => actions.setIsEditingInterviewQuestions(true)}
-                      className="flex items-center gap-1 text-xs h-8 px-3"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => actions.setIsEditingInterviewQuestions(true)} className="flex items-center gap-1 text-xs h-8 px-3">
                       <Edit3 className="w-3 h-3" />
                       Edit
                     </Button>
@@ -195,25 +146,17 @@ export const Step4InterviewGenerator = ({
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <ScrollArea className="h-full w-full">
-                    <div 
-                      className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-full"
-                      onClick={() => actions.setIsEditingInterviewQuestions(true)}
-                      style={{
-                        lineHeight: '1.6',
-                        fontSize: '14px',
-                        wordWrap: 'break-word'
-                      }}
-                      dangerouslySetInnerHTML={{ 
-                        __html: parseMarkdown(generatedInterviewQuestions) 
-                      }}
-                    />
+                    <div className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-full" onClick={() => actions.setIsEditingInterviewQuestions(true)} style={{
+                lineHeight: '1.6',
+                fontSize: '14px',
+                wordWrap: 'break-word'
+              }} dangerouslySetInnerHTML={{
+                __html: parseMarkdown(generatedInterviewQuestions)
+              }} />
                   </ScrollArea>
                 </div>
-              </div>
-            )}
+              </div>}
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+        </Card>}
+    </div>;
 };
