@@ -10,10 +10,12 @@ export interface SkillsTestResponse {
   question: string;
   answer: string;
   questionType?: string;
+  answerType?: string;
+  videoUrl?: string;
   [key: string]: any; // Index signature to make it compatible with Json type
 }
 
-// Video transcript structure
+// Video transcript structure - compatible with Json type
 export interface VideoTranscript {
   questionIndex: number;
   questionText: string;
@@ -21,6 +23,7 @@ export interface VideoTranscript {
   confidence: number;
   processedAt: string;
   videoUrl?: string;
+  [key: string]: any; // Index signature for Json compatibility
 }
 
 // Application status counts for UI

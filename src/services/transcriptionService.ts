@@ -2,15 +2,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "./loggerService";
 import { Application } from "@/types";
-
-interface VideoTranscript {
-  questionIndex: number;
-  questionText: string;
-  transcript: string;
-  confidence: number;
-  processedAt: string;
-  videoUrl?: string;
-}
+import { VideoTranscript } from "@/types/supabase";
+import { safeParseSkillsTestResponses } from "@/utils/typeGuards";
 
 export class TranscriptionService {
   static async transcribeVideo(videoUrl: string, questionIndex: number, questionText: string): Promise<VideoTranscript> {
@@ -51,9 +44,7 @@ export class TranscriptionService {
       const interviewTranscripts: VideoTranscript[] = [];
 
       // Process skills assessment videos
-      const skillsResponses = Array.isArray(application.skills_test_responses) 
-        ? application.skills_test_responses 
-        : [];
+      const skillsResponses = safeParseSkillsTestResponses(application.skills_test_responses || []);
 
       for (let i = 0; i < skillsResponses.length; i++) {
         const response = skillsResponses[i];
@@ -136,8 +127,8 @@ export class TranscriptionService {
       const { error: updateError } = await supabase
         .from('applications')
         .update({
-          skills_video_transcripts: skillsTranscripts,
-          interview_video_transcripts: interviewTranscripts,
+          skills_video_transcripts: skillsTranscripts as any,
+          interview_video_transcripts: interviewTranscripts as any,
           transcript_processing_status: 'completed',
           transcript_last_processed_at: new Date().toISOString()
         })

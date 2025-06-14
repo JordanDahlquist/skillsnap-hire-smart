@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
 import { 
@@ -22,7 +23,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DashboardHeaderDropdown } from "./DashboardHeaderDropdown";
 import { Job } from "@/types";
-import { DashboardTranscriptService } from "@/services/dashboardTranscriptService";
 
 interface DashboardHeaderActionsProps {
   job: Job;
@@ -61,41 +61,6 @@ export const DashboardHeaderActions = ({
   const handleStatusChange = (newStatus: string) => {
     console.log('Status change triggered from actions:', { from: job.status, to: newStatus });
     onStatusChange(newStatus);
-  };
-
-  const handleAIRefresh = async () => {
-    if (!applications?.length) {
-      toast.error("No applications to analyze");
-      return;
-    }
-
-    setIsLoading(true);
-    toast.info("Starting enhanced AI analysis with video transcripts...");
-    
-    try {
-      const { successCount, errorCount } = await DashboardTranscriptService.batchProcessAndAnalyze(
-        applications,
-        job
-      );
-      
-      if (successCount > 0) {
-        toast.success(`Enhanced AI analysis completed for ${successCount} applications`);
-        onJobUpdate();
-      }
-      
-      if (errorCount > 0) {
-        toast.error(`Failed to analyze ${errorCount} applications`);
-      }
-      
-      if (successCount === 0 && errorCount === 0) {
-        toast.info("All applications already have current AI analysis");
-      }
-    } catch (error) {
-      console.error('Error in AI refresh:', error);
-      toast.error("Failed to refresh AI analysis");
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (

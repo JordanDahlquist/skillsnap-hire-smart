@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { ApplicationActionButtons } from "./ApplicationActionButtons";
 import { VideoResponsePlayer } from "./VideoResponsePlayer";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Application } from "@/types";
+import { safeParseSkillsTestResponses, safeParseVideoTranscripts } from "@/utils/typeGuards";
 
 interface ApplicationDetailContentProps {
   application: Application;
@@ -40,18 +42,12 @@ export const ApplicationDetailContent = ({
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
   const pipelineStage = application.pipeline_stage || 'applied';
 
-  // Parse skills test responses
-  const skillsResponses = Array.isArray(application.skills_test_responses) 
-    ? application.skills_test_responses 
-    : [];
+  // Parse skills test responses safely
+  const skillsResponses = safeParseSkillsTestResponses(application.skills_test_responses || []);
 
-  // Parse video transcripts
-  const skillsTranscripts = Array.isArray(application.skills_video_transcripts) 
-    ? application.skills_video_transcripts 
-    : [];
-  const interviewTranscripts = Array.isArray(application.interview_video_transcripts) 
-    ? application.interview_video_transcripts 
-    : [];
+  // Parse video transcripts safely
+  const skillsTranscripts = safeParseVideoTranscripts(application.skills_video_transcripts || []);
+  const interviewTranscripts = safeParseVideoTranscripts(application.interview_video_transcripts || []);
 
   const handleViewFullProfile = () => {
     navigate(`/dashboard/${jobId}/candidate/${application.id}`);

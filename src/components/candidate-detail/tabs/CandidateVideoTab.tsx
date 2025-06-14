@@ -4,6 +4,7 @@ import { VideoResponsePlayer } from "@/components/dashboard/components/VideoResp
 import { Application } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { logger } from "@/services/loggerService";
+import { safeParseSkillsTestResponses, safeParseVideoTranscripts } from "@/utils/typeGuards";
 
 interface CandidateVideoTabProps {
   application: Application;
@@ -20,9 +21,7 @@ interface VideoResponse {
 
 export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
   // Parse skills test responses and filter for video responses
-  const skillsResponses = Array.isArray(application.skills_test_responses) 
-    ? application.skills_test_responses 
-    : [];
+  const skillsResponses = safeParseSkillsTestResponses(application.skills_test_responses || []);
 
   const skillsVideoResponses: VideoResponse[] = skillsResponses
     .filter((response: any) => response.answerType === 'video' && response.videoUrl)
@@ -125,6 +124,10 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
   // Combine all video responses
   const allVideoResponses = [...skillsVideoResponses, ...interviewVideoResponses];
 
+  // Parse video transcripts
+  const skillsTranscripts = safeParseVideoTranscripts(application.skills_video_transcripts || []);
+  const interviewTranscripts = safeParseVideoTranscripts(application.interview_video_transcripts || []);
+
   if (allVideoResponses.length === 0) {
     return (
       <Card className="glass-card">
@@ -165,25 +168,42 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
-            {allVideoResponses.map((response, index) => (
-              <div key={`${response.source}-${response.questionIndex || index}`} className="space-y-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge variant={response.source === 'skills' ? 'default' : 'secondary'}>
-                    {response.source === 'skills' ? 'Skills Assessment' : 'Video Interview'}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    Question {(response.questionIndex || 0) + 1}
-                  </span>
+            {allVideoResponses.map((response, index) => {
+              const transcripts = response.source === 'skills' ? skillsTranscripts : interviewTranscripts;
+              const transcript = transcripts.find(t => t.questionIndex === response.questionIndex);
+              
+              return (
+                <div key={`${response.source}-${response.questionIndex || index}`} className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant={response.source === 'skills' ? 'default' : 'secondary'}>
+                      {response.source === 'skills' ? 'Skills Assessment' : 'Video Interview'}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      Question {(response.questionIndex || 0) + 1}
+                    </span>
+                  </div>
+                  <VideoResponsePlayer
+                    response={response}
+                    questionIndex={response.questionIndex || index}
+                  />
+                  {/* Show transcript if available */}
+                  {transcript && (
+                    <div className="p-3 bg-muted/20 rounded border-l-4 border-purple-500">
+                      <h4 className="text-sm font-medium text-foreground mb-1">Video Transcript:</h4>
+                      <p className="text-sm text-muted-foreground mb-2">"{transcript.transcript}"</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>Confidence: {Math.round(transcript.confidence * 100)}%</span>
+                        <span>•</span>
+                        <span>Processed: {new Date(transcript.processedAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  )}
+                  {index < allVideoResponses.length - 1 && (
+                    <div className="border-b border-border" />
+                  )}
                 </div>
-                <VideoResponsePlayer
-                  response={response}
-                  questionIndex={response.questionIndex || index}
-                />
-                {index < allVideoResponses.length - 1 && (
-                  <div className="border-b border-border" />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

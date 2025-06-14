@@ -1,6 +1,6 @@
 
 import { Json } from "@/integrations/supabase/types";
-import { SkillsTestResponse } from "@/types/supabase";
+import { SkillsTestResponse, VideoTranscript } from "@/types/supabase";
 
 export function isSkillsTestResponseArray(data: Json): data is SkillsTestResponse[] {
   if (!Array.isArray(data)) return false;
@@ -16,6 +16,25 @@ export function isSkillsTestResponseArray(data: Json): data is SkillsTestRespons
 
 export function safeParseSkillsTestResponses(data: Json): SkillsTestResponse[] {
   if (isSkillsTestResponseArray(data)) {
+    return data;
+  }
+  return [];
+}
+
+export function isVideoTranscriptArray(data: Json): data is VideoTranscript[] {
+  if (!Array.isArray(data)) return false;
+  return data.every(item => 
+    typeof item === 'object' && 
+    item !== null && 
+    'transcript' in item && 
+    'questionText' in item &&
+    typeof item.transcript === 'string' &&
+    typeof item.questionText === 'string'
+  );
+}
+
+export function safeParseVideoTranscripts(data: Json): VideoTranscript[] {
+  if (isVideoTranscriptArray(data)) {
     return data;
   }
   return [];
