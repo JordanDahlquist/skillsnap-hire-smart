@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,21 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, User, FileText, Brain, Video, Send, Loader2 } from "lucide-react";
 import { Job } from "@/types";
+import { PersonalInfo } from "@/types/jobForm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface PersonalInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  location: string;
-  portfolioUrl: string;
-  linkedinUrl: string;
-  githubUrl: string;
-  resumeFile: File | null;
-  resumeUrl: string | null;
-  coverLetter: string;
-}
 
 interface ApplicationReviewProps {
   job: Job;
@@ -59,7 +46,7 @@ export const ApplicationReview = ({
           linkedin_url: personalInfo.linkedinUrl,
           github_url: personalInfo.githubUrl,
           cover_letter: personalInfo.coverLetter,
-          resume_file_path: personalInfo.resumeUrl, // Use the uploaded URL instead of filename
+          resume_file_path: personalInfo.resumeUrl, // Use the uploaded URL
           skills_test_responses: skillsResponses,
           interview_video_url: videoUrl,
           status: 'pending',

@@ -1,22 +1,10 @@
 
 import { useState } from "react";
 import { Job } from "@/types";
+import { PersonalInfo } from "@/types/jobForm";
 import { ApplicationStepIndicator } from "./ApplicationStepIndicator";
 import { PersonalInfoForm } from "./PersonalInfoForm";
 import { ApplicationReview } from "./ApplicationReview";
-
-interface PersonalInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  location: string;
-  portfolioUrl: string;
-  linkedinUrl: string;
-  githubUrl: string;
-  resumeFile: File | null;
-  resumeUrl: string | null;
-  coverLetter: string;
-}
 
 interface MultiStepApplicationFormProps {
   job: Job;
@@ -39,8 +27,22 @@ export const MultiStepApplicationForm = ({ job, onApplicationSubmitted }: MultiS
   });
 
   const steps = [
-    { number: 1, title: "Personal Info", isActive: currentStep === 1, isCompleted: currentStep > 1 },
-    { number: 2, title: "Review & Submit", isActive: currentStep === 2, isCompleted: false },
+    { 
+      id: "personal-info", 
+      title: "Personal Info", 
+      description: "Your contact details and resume",
+      number: 1, 
+      isActive: currentStep === 1, 
+      isCompleted: currentStep > 1 
+    },
+    { 
+      id: "review-submit", 
+      title: "Review & Submit", 
+      description: "Final review and submission",
+      number: 2, 
+      isActive: currentStep === 2, 
+      isCompleted: false 
+    },
   ];
 
   const handleNext = () => {
@@ -57,7 +59,11 @@ export const MultiStepApplicationForm = ({ job, onApplicationSubmitted }: MultiS
 
   return (
     <div className="space-y-8">
-      <ApplicationStepIndicator steps={steps} />
+      <ApplicationStepIndicator 
+        steps={steps} 
+        currentStep={currentStep - 1} 
+        completedSteps={steps.map(step => step.isCompleted)} 
+      />
       
       {currentStep === 1 && (
         <PersonalInfoForm

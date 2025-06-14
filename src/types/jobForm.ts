@@ -1,6 +1,19 @@
 
 import { SkillsTestData } from "./skillsAssessment";
 
+export interface PersonalInfo {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  portfolioUrl: string;
+  linkedinUrl: string;
+  githubUrl: string;
+  resumeFile: File | null;
+  resumeUrl: string | null;
+  coverLetter: string;
+}
+
 export interface UnifiedJobFormData {
   // Basic info
   title: string;

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,19 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, FileText, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadResumeFile } from "@/utils/resumeUploadUtils";
-
-interface PersonalInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  location: string;
-  portfolioUrl: string;
-  linkedinUrl: string;
-  githubUrl: string;
-  resumeFile: File | null;
-  resumeUrl: string | null;
-  coverLetter: string;
-}
+import { PersonalInfo } from "@/types/jobForm";
 
 interface PersonalInfoFormProps {
   data: PersonalInfo;

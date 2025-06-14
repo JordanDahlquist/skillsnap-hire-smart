@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Job } from "@/types";
+import { PersonalInfo } from "@/types/jobForm";
 import { ApplicationPageLayout } from "./ApplicationPageLayout";
 import { ApplicationProgress } from "./ApplicationProgress";
 import { JobOverviewSection } from "./JobOverviewSection";
@@ -11,18 +11,6 @@ import { SkillsAssessmentStep } from "./steps/SkillsAssessmentStep";
 import { VideoInterview } from "./VideoInterview";
 import { ApplicationReview } from "./ApplicationReview";
 import { toast } from "sonner";
-
-interface PersonalInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  location: string;
-  portfolioUrl: string;
-  linkedinUrl: string;
-  githubUrl: string;
-  resumeFile: File | null;
-  coverLetter: string;
-}
 
 interface ApplicationFormData {
   personalInfo: PersonalInfo;
@@ -47,6 +35,7 @@ export const NewJobApplication = () => {
       linkedinUrl: '',
       githubUrl: '',
       resumeFile: null,
+      resumeUrl: null,
       coverLetter: ''
     }
   });
