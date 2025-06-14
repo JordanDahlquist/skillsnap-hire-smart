@@ -71,7 +71,7 @@ ${jobData.description ? `User-provided description: "${jobData.description}"` : 
 
       prompt += `
 
-**CRITICAL FORMATTING REQUIREMENTS:**
+**CRITICAL FORMATTING AND ENDING REQUIREMENTS:**
 1. Employment Type (${jobData.employmentType}) must be clearly stated in the opening section
 2. Work Arrangement (${workArrangementDisplay}) must be prominently featured in both the summary and requirements
 3. Include ALL provided information in appropriate sections
@@ -80,19 +80,28 @@ ${jobData.description ? `User-provided description: "${jobData.description}"` : 
 6. Make the posting engaging and specific to ${jobData.companyName}
 7. For ${isProjectBased ? 'project-based' : 'employee'} positions, emphasize ${isProjectBased ? 'project scope and deliverables' : 'career growth and company culture'}
 
-**STRUCTURE THE POSTING WITH:**
+**STRUCTURE THE POSTING WITH THESE SECTIONS ONLY:**
 - **Job Summary** (include work arrangement and employment type)
 - **About ${jobData.companyName}** (brief company section)
 - **Key Responsibilities** 
 - **Requirements** (include experience level and required skills)
 - **What We Offer** (compensation and benefits)
 
-**CRITICAL APPLICATION INSTRUCTIONS:**
-- NEVER ask candidates to email their applications or resumes
-- NEVER include email addresses for applications
-- NEVER say "send your resume to" or similar email-based instructions
-- End with a simple, motivational call-to-action like "Ready to join our team? Apply now!"
-- Remember: candidates will apply directly through our platform, not via email
+**ABSOLUTELY FORBIDDEN - DO NOT INCLUDE:**
+- "How to Apply" sections
+- Email addresses for applications
+- "Send your resume to" instructions
+- "Submit your application to" instructions
+- "Contact us at" for applications
+- Any application submission instructions
+- Links to external application sites
+- References to emailing CVs or resumes
+
+**MANDATORY ENDING:**
+End the job posting immediately after the "What We Offer" section with EXACTLY this call-to-action:
+"Ready to make an impact? Click the apply button below!"
+
+Do NOT add any additional sections, application instructions, or contact information after this call-to-action.
 
 Make this posting comprehensive, professional, and attractive to qualified ${jobData.experienceLevel} candidates for a ${workArrangementDisplay} ${jobData.employmentType} position.`;
 
@@ -165,7 +174,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
         messages: [
           {
             role: 'system',
-            content: 'You are an expert HR professional and recruiter who creates compelling job postings, comprehensive skills assessments, and insightful interview questions. Always include ALL provided information in your responses. NEVER ask candidates to email applications - they will apply through the platform directly.'
+            content: 'You are an expert HR professional and recruiter who creates compelling job postings, comprehensive skills assessments, and insightful interview questions. Always include ALL provided information in your responses. CRITICAL: For job postings, NEVER include application instructions, email addresses, or "How to Apply" sections. Job postings should end with the mandatory call-to-action only. Candidates apply directly through the platform.'
           },
           {
             role: 'user',
