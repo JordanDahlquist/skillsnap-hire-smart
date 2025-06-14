@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -109,7 +108,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
               variant="ghost"
               size="sm"
               onClick={onRemove}
-              className="text-green-600 hover:text-green-800 h-6 w-6 p-0"
+              className="text-black hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0 bg-white border border-gray-400 shadow-sm"
             >
               <X className="w-3 h-3" />
             </Button>
