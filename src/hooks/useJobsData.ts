@@ -41,7 +41,9 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
       statusFilter: filters.status,
       activeJobsFilter, 
       needsAttentionFilter,
-      searchTerm: debouncedSearchTerm 
+      searchTerm: debouncedSearchTerm,
+      sortBy,
+      sortOrder
     });
     
     let filtered = applyJobFiltersOptimized(jobs, debouncedSearchTerm, filters);

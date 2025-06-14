@@ -11,6 +11,8 @@ interface JobManagementToolbarProps {
   onStatusFilterChange: (status: string) => void;
   sortBy: string;
   onSortChange: (sort: string) => void;
+  sortOrder?: "asc" | "desc";
+  onSortOrderChange?: (order: "asc" | "desc") => void;
   totalJobs: number;
   selectedJobs: string[];
   onBulkAction: (action: string) => void;
@@ -30,6 +32,8 @@ export const JobManagementToolbar = ({
   onStatusFilterChange,
   sortBy,
   onSortChange,
+  sortOrder,
+  onSortOrderChange,
   totalJobs,
   selectedJobs,
   onBulkAction,
@@ -62,7 +66,13 @@ export const JobManagementToolbar = ({
           </div>
           
           <div className="flex-shrink-0">
-            <SortControls sortBy={sortBy} onSortChange={onSortChange} onRefresh={onRefresh} />
+            <SortControls 
+              sortBy={sortBy} 
+              onSortChange={onSortChange}
+              sortOrder={sortOrder}
+              onSortOrderChange={onSortOrderChange}
+              onRefresh={onRefresh} 
+            />
           </div>
         </div>
 

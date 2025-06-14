@@ -86,8 +86,7 @@ export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc")
         aValue = new Date(a.created_at || 0);
         bValue = new Date(b.created_at || 0);
         break;
-      case 'title_asc':
-      case 'title_desc':
+      case 'title':
         aValue = a.title?.toLowerCase() || '';
         bValue = b.title?.toLowerCase() || '';
         break;
@@ -95,8 +94,7 @@ export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc")
         aValue = parseFloat(a.budget?.replace(/[^0-9.-]/g, '') || '0');
         bValue = parseFloat(b.budget?.replace(/[^0-9.-]/g, '') || '0');
         break;
-      case 'applications_desc':
-      case 'applications_asc':
+      case 'applications':
         // Calculate total applications from applicationStatusCounts
         const aTotal = (a.applicationStatusCounts?.pending || 0) + 
                       (a.applicationStatusCounts?.approved || 0) + 
@@ -107,9 +105,14 @@ export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc")
         aValue = aTotal;
         bValue = bTotal;
         break;
+      case 'needs_attention':
+        // Sort by pending applications count
+        aValue = a.applicationStatusCounts?.pending || 0;
+        bValue = b.applicationStatusCounts?.pending || 0;
+        break;
       default:
-        aValue = a.updated_at;
-        bValue = b.updated_at;
+        aValue = new Date(a.updated_at || 0);
+        bValue = new Date(b.updated_at || 0);
     }
 
     if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;

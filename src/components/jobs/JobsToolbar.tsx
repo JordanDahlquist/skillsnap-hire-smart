@@ -10,6 +10,8 @@ interface JobsToolbarProps {
   onWorkTypeFilterChange: (workType: string) => void;
   sortBy: string;
   onSortChange: (sort: string) => void;
+  sortOrder?: "asc" | "desc";
+  onSortOrderChange?: (order: "asc" | "desc") => void;
   totalJobs: number;
   selectedJobs: string[];
   onBulkAction: (action: string) => void;

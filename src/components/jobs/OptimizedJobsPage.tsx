@@ -1,3 +1,4 @@
+
 import { memo } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useJobSelection } from "@/hooks/useJobSelection";
@@ -27,6 +28,8 @@ export const OptimizedJobsPage = memo(() => {
     setFilters,
     sortBy,
     setSortBy,
+    sortOrder,
+    setSortOrder,
     clearAllFilters,
     needsAttentionFilter,
     setNeedsAttentionFilter,
@@ -87,6 +90,8 @@ export const OptimizedJobsPage = memo(() => {
           setFilters={setFilters}
           sortBy={sortBy}
           setSortBy={setSortBy}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
           activeFiltersCount={activeFiltersCount}
           selectedJobs={selectedJobs}
           onJobSelection={handleJobSelection}

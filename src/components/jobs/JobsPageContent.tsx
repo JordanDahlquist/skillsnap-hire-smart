@@ -1,3 +1,4 @@
+
 import { memo } from "react";
 import { Job } from "@/types";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
@@ -31,6 +32,8 @@ interface JobsPageContentProps {
   setFilters: (filters: any) => void;
   sortBy: string;
   setSortBy: (value: string) => void;
+  sortOrder?: "asc" | "desc";
+  setSortOrder?: (order: "asc" | "desc") => void;
   activeFiltersCount: number;
   
   // Job selection
@@ -65,6 +68,8 @@ export const JobsPageContent = memo(({
   setFilters,
   sortBy,
   setSortBy,
+  sortOrder,
+  setSortOrder,
   activeFiltersCount,
   selectedJobs,
   onJobSelection,
@@ -107,6 +112,8 @@ export const JobsPageContent = memo(({
         onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
         sortBy={sortBy}
         onSortChange={setSortBy}
+        sortOrder={sortOrder}
+        onSortOrderChange={setSortOrder}
         totalJobs={jobs.length}
         selectedJobs={selectedJobs}
         onBulkAction={onBulkAction}
