@@ -25,13 +25,13 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
       ref={ref} 
       className={cn(
         "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 backdrop-blur-xl bg-white/30 border border-white/40 p-8 shadow-3xl shadow-black/10 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-3xl",
-        "max-h-[calc(100vh-2rem)] overflow-hidden m-4",
+        "max-h-[90vh] overflow-hidden m-4",
         className
       )} 
       {...props}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-transparent rounded-3xl pointer-events-none"></div>
-      <div className="relative z-10 h-full">
+      <div className="relative z-10 h-full overflow-hidden">
         {children}
       </div>
     </DialogPrimitive.Content>

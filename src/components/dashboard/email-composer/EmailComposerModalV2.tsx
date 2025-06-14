@@ -1,8 +1,7 @@
 
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useEmailTemplates } from '@/hooks/useEmailTemplates';
 import { useEmailSending } from '@/hooks/useEmailSending';
-import { useViewportHeight } from '@/hooks/useViewportHeight';
 import { useEmailComposerState } from '@/hooks/useEmailComposerState';
 import { EmailComposerHeader } from './v2/EmailComposerHeader';
 import { CompactEmailComposerLayout } from './v2/CompactEmailComposerLayout';
@@ -69,7 +68,13 @@ export const EmailComposerModalV2 = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl h-[60vh] max-h-[600px] min-h-[500px] p-0 glass-card border-0 shadow-3xl [&>button]:hidden overflow-hidden">
+      <DialogContent className="max-w-3xl h-[80vh] max-h-[700px] min-h-[600px] p-0 border-0 shadow-3xl overflow-hidden">
+        {/* Hidden accessibility components */}
+        <DialogTitle className="sr-only">Compose Email</DialogTitle>
+        <DialogDescription className="sr-only">
+          Compose and send emails to {selectedApplications.length} selected candidate{selectedApplications.length > 1 ? 's' : ''}
+        </DialogDescription>
+        
         <div className="flex flex-col h-full overflow-hidden bg-background/95 backdrop-blur-xl rounded-3xl">
           <EmailComposerHeader
             currentStep={currentStep}
