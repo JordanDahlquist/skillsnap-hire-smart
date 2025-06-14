@@ -13,20 +13,33 @@ export const useFilteredJobs = (
   activeJobsFilter: boolean
 ) => {
   return useMemo(() => {
+    console.log('useFilteredJobs - Starting filter process:', {
+      totalJobs: jobs.length,
+      activeJobsFilter,
+      needsAttentionFilter
+    });
+    
     let filtered = applyJobFilters(jobs, searchTerm, filters);
     
     if (needsAttentionFilter) {
       filtered = filtered.filter(job => 
         (job.applicationStatusCounts?.pending || 0) >= 10
       );
+      console.log('After needs attention filter:', filtered.length);
     }
     
     if (activeJobsFilter) {
-      filtered = filtered.filter(job => 
-        job.status === 'active'
-      );
+      console.log('Job statuses before active filter:', jobs.map(job => ({ id: job.id, status: job.status })));
+      filtered = filtered.filter(job => {
+        // Check for various possible active status values
+        const isActive = job.status === 'active' || job.status === 'published' || job.status === 'open';
+        return isActive;
+      });
+      console.log('After active jobs filter:', filtered.length);
     }
     
-    return sortJobs(filtered, sortBy, sortOrder);
+    const result = sortJobs(filtered, sortBy, sortOrder);
+    console.log('Final filtered result count:', result.length);
+    return result;
   }, [jobs, searchTerm, filters, sortBy, sortOrder, needsAttentionFilter, activeJobsFilter]);
 };

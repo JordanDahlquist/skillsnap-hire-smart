@@ -1,15 +1,20 @@
+
 import { useMemo, useCallback, useState } from "react";
-import { useOptimizedJobs } from "./useOptimizedJobs"; // Use optimized hook
 import { useRecentApplications } from "./useApplications";
 import { useJobStats } from "./useJobStats";
-import { useOptimizedAuth } from "./useOptimizedAuth"; // Use optimized auth
 import { JobFilters, defaultFilters } from "./job-filtering/types";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
 import { applyJobFiltersOptimized, sortJobs } from "./job-filtering/optimizedFilterUtils";
 import { useDebounce } from "./useDebounce";
+import { Job } from "@/types";
 
-export const useJobsData = () => {
-  const { user } = useOptimizedAuth(); // Use optimized auth
+interface UseJobsDataProps {
+  jobs: Job[];
+  isLoading?: boolean;
+  refetch?: () => void;
+}
+
+export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<JobFilters>(defaultFilters);
   const [sortBy, setSortBy] = useState("updated_at");
@@ -20,8 +25,7 @@ export const useJobsData = () => {
   // Debounce search to prevent excessive filtering
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // Data fetching with optimized hooks
-  const { data: jobs = [], isLoading, refetch } = useOptimizedJobs(user?.id);
+  // Data fetching with the provided jobs
   const { data: recentApplications = [] } = useRecentApplications(jobs.map(job => job.id));
 
   // Memoized calculations
@@ -32,21 +36,36 @@ export const useJobsData = () => {
   const stats = useJobStats(jobs, recentApplications);
 
   const filteredJobs = useMemo(() => {
+    console.log('Filtering jobs:', { 
+      totalJobs: jobs.length, 
+      activeJobsFilter, 
+      needsAttentionFilter,
+      searchTerm: debouncedSearchTerm 
+    });
+    
     let filtered = applyJobFiltersOptimized(jobs, debouncedSearchTerm, filters);
     
     if (needsAttentionFilter) {
-      filtered = filtered.filter(job => 
-        (job.applicationStatusCounts?.pending || 0) >= 10
-      );
+      filtered = filtered.filter(job => {
+        const pendingCount = job.applicationStatusCounts?.pending || 0;
+        return pendingCount >= 10;
+      });
     }
     
     if (activeJobsFilter) {
-      filtered = filtered.filter(job => 
-        job.status === 'active'
-      );
+      console.log('Applying active jobs filter. Job statuses:', jobs.map(job => ({ id: job.id, status: job.status })));
+      filtered = filtered.filter(job => {
+        // Check for various possible active status values
+        const isActive = job.status === 'active' || job.status === 'published' || job.status === 'open';
+        console.log(`Job ${job.id} status: ${job.status}, isActive: ${isActive}`);
+        return isActive;
+      });
+      console.log('Filtered active jobs:', filtered.length);
     }
     
-    return sortJobs(filtered, sortBy, sortOrder);
+    const sortedJobs = sortJobs(filtered, sortBy, sortOrder);
+    console.log('Final filtered jobs count:', sortedJobs.length);
+    return sortedJobs;
   }, [jobs, debouncedSearchTerm, filters, sortBy, sortOrder, needsAttentionFilter, activeJobsFilter]);
 
   const activeFiltersCount = useMemo(() => {

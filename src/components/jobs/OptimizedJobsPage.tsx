@@ -14,10 +14,10 @@ import { JobsPageContent } from "./JobsPageContent";
 export const OptimizedJobsPage = memo(() => {
   const { user, profile } = useOptimizedAuth();
 
-  // Use optimized jobs hook for better performance
+  // Use optimized jobs hook for data fetching
   const { data: jobs = [], isLoading: jobsLoading, refetch } = useOptimizedJobs(user?.id);
 
-  // Consolidated data hook (keeping existing logic but with optimized data)
+  // Pass jobs to useJobsData instead of letting it fetch its own
   const {
     filteredJobs,
     stats,
@@ -33,7 +33,7 @@ export const OptimizedJobsPage = memo(() => {
     activeJobsFilter,
     setActiveJobsFilter,
     activeFiltersCount
-  } = useJobsData();
+  } = useJobsData({ jobs, isLoading: jobsLoading, refetch });
 
   // Job selection (keeping existing logic)
   const {
@@ -63,7 +63,7 @@ export const OptimizedJobsPage = memo(() => {
     setSortBy
   });
 
-  // Use jobsLoading from optimized hook instead of consolidated loading
+  // Use jobsLoading from optimized hook
   if (jobsLoading) {
     return <JobsPageLoading />;
   }
