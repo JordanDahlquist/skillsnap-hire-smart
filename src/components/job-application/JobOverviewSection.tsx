@@ -25,6 +25,8 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
     return [city, country].filter(Boolean).join(', ') || 'Not specified';
   };
 
+  const isJobActive = job.status === 'active';
+
   return (
     <div className="space-y-8">
       {/* Job Header */}
@@ -127,10 +129,15 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
 
       <div className="flex justify-center">
         <button
-          onClick={onContinue}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+          onClick={isJobActive ? onContinue : undefined}
+          disabled={!isJobActive}
+          className={`px-8 py-3 rounded-lg font-medium transition-colors ${
+            isJobActive
+              ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+              : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+          }`}
         >
-          Start Application
+          {isJobActive ? 'Start Application' : 'Applications Closed'}
         </button>
       </div>
     </div>

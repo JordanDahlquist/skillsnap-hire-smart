@@ -111,10 +111,17 @@ export const SkillsAssessmentStep = ({
         <p className="text-gray-600">This job doesn't have a skills assessment.</p>
         {onNext && (
           <div className="flex justify-between mt-8">
-            <Button variant="outline" onClick={onBack}>
+            <Button 
+              variant="outline" 
+              onClick={onBack}
+              className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
               Back
             </Button>
-            <Button onClick={onNext}>
+            <Button 
+              onClick={onNext}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
               Continue
             </Button>
           </div>
@@ -232,10 +239,19 @@ export const SkillsAssessmentStep = ({
       {/* Navigation buttons */}
       {(onNext || onBack) && (
         <div className="flex justify-between">
-          <Button variant="outline" onClick={onBack} disabled={!onBack}>
+          <Button 
+            variant="outline" 
+            onClick={onBack} 
+            disabled={!onBack}
+            className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
             Back
           </Button>
-          <Button onClick={onNext} disabled={!onNext || !isValid}>
+          <Button 
+            onClick={onNext} 
+            disabled={!onNext || !isValid}
+            className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
+          >
             Continue
           </Button>
         </div>
