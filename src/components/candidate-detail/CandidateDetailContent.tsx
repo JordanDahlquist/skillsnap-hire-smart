@@ -27,22 +27,59 @@ export const CandidateDetailContent = ({
     ? application.skills_test_responses 
     : [];
 
-  // Parse interview video responses
-  const interviewResponses = Array.isArray(application.interview_video_responses) 
-    ? application.interview_video_responses 
-    : [];
-
-  // Check for video content in both skills and interview responses
+  // Check for video content in skills responses
   const skillsVideoResponses = skillsResponses.filter((response: any) => 
     response.answerType === 'video' && response.videoUrl
   );
-  
-  const interviewVideoResponses = interviewResponses.filter((response: any) => 
-    response.answerType === 'video' && response.videoUrl
-  );
+
+  // Check for video content in interview responses (both new and legacy fields)
+  let hasInterviewVideos = false;
+
+  // Check new interview_video_responses field
+  if (application.interview_video_responses) {
+    try {
+      let interviewResponses = [];
+      if (Array.isArray(application.interview_video_responses)) {
+        interviewResponses = application.interview_video_responses;
+      } else if (typeof application.interview_video_responses === 'string') {
+        interviewResponses = JSON.parse(application.interview_video_responses);
+      }
+      
+      const interviewVideoResponses = interviewResponses.filter((response: any) => 
+        response.answerType === 'video' && response.videoUrl
+      );
+      
+      if (interviewVideoResponses.length > 0) {
+        hasInterviewVideos = true;
+      }
+    } catch (error) {
+      // Continue to check legacy field
+    }
+  }
+
+  // Check legacy interview_video_url field if no videos found in new field
+  if (!hasInterviewVideos && application.interview_video_url) {
+    try {
+      // Try to parse as JSON array first
+      const parsed = JSON.parse(application.interview_video_url);
+      if (Array.isArray(parsed)) {
+        const videoResponses = parsed.filter((response: any) => 
+          response.answerType === 'video' && response.videoUrl
+        );
+        hasInterviewVideos = videoResponses.length > 0;
+      }
+    } catch (error) {
+      // If not valid JSON, treat as single video URL
+      if (application.interview_video_url.startsWith('http') || 
+          application.interview_video_url.startsWith('blob:') ||
+          application.interview_video_url.includes('supabase')) {
+        hasInterviewVideos = true;
+      }
+    }
+  }
 
   const hasSkillsAssessment = skillsResponses.length > 0;
-  const hasVideoContent = skillsVideoResponses.length > 0 || interviewVideoResponses.length > 0;
+  const hasVideoContent = skillsVideoResponses.length > 0 || hasInterviewVideos;
   const hasDocuments = !!(application.resume_file_path || application.cover_letter);
 
   return (

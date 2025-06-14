@@ -33,7 +33,7 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
       answer: response.answer || ''
     }));
 
-  // Parse interview video responses with improved handling
+  // Parse interview video responses with improved handling and backward compatibility
   let interviewResponses = [];
   
   // Try to parse interview_video_responses first (new format)
@@ -55,13 +55,38 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
   // Fallback to old interview_video_url format for backward compatibility
   if (interviewResponses.length === 0 && application.interview_video_url) {
     try {
+      // Check if it's a JSON string with multiple responses
       const parsed = JSON.parse(application.interview_video_url);
       if (Array.isArray(parsed)) {
         interviewResponses = parsed;
-        logger.debug('Using fallback interview_video_url:', interviewResponses);
+        logger.debug('Using fallback interview_video_url array:', interviewResponses);
+      } else {
+        // Handle single video URL as a legacy format
+        interviewResponses = [{
+          question: 'Video Interview Response',
+          questionIndex: 0,
+          answerType: 'video',
+          videoUrl: application.interview_video_url,
+          answer: 'Video response',
+          recordedAt: application.created_at
+        }];
+        logger.debug('Using single video URL as legacy format:', interviewResponses);
       }
     } catch (error) {
-      logger.warn('Could not parse interview_video_url as JSON:', error);
+      // If not valid JSON, treat as single video URL
+      if (application.interview_video_url.startsWith('http') || application.interview_video_url.startsWith('blob:')) {
+        interviewResponses = [{
+          question: 'Video Interview Response',
+          questionIndex: 0,
+          answerType: 'video',
+          videoUrl: application.interview_video_url,
+          answer: 'Video response',
+          recordedAt: application.created_at
+        }];
+        logger.debug('Treating as single video URL:', interviewResponses);
+      } else {
+        logger.warn('Could not parse interview_video_url:', error);
+      }
     }
   }
 
