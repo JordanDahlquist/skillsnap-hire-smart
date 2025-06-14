@@ -11,10 +11,13 @@ export const useAdminRole = () => {
   useEffect(() => {
     const checkAdminRole = async () => {
       if (!user?.id) {
+        console.log('No user ID, setting admin to false');
         setIsSuperAdmin(false);
         setIsLoading(false);
         return;
       }
+
+      console.log('Checking admin role for user:', user.id);
 
       try {
         // Use the security definer function to check super admin role
@@ -25,6 +28,7 @@ export const useAdminRole = () => {
           console.error('Error checking admin role:', error);
           setIsSuperAdmin(false);
         } else {
+          console.log('Admin role check result:', data);
           setIsSuperAdmin(!!data);
         }
       } catch (error) {

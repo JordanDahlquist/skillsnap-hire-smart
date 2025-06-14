@@ -1,36 +1,30 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ThemeProvider } from "@/contexts/ThemeContext";
 
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { Toaster } from "@/components/ui/toaster";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import SignUp from "./pages/SignUp";
 import SimpleSignUp from "./pages/SimpleSignUp";
 import ResetPassword from "./pages/ResetPassword";
 import ConfirmEmail from "./pages/ConfirmEmail";
-import PublicJobs from "./pages/PublicJobs";
-import { JobApplicationPage } from "./pages/JobApplicationPage";
-import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
-import { DashboardPage } from "./components/dashboard/DashboardPage";
-import { CandidateDetailPage } from "./pages/CandidateDetailPage";
+import LinkedInCallback from "./pages/LinkedInCallback";
 import Scout from "./pages/Scout";
-import { Inbox } from "./pages/Inbox";
-import ProfileSettings from "./pages/ProfileSettings";
+import Inbox from "./pages/Inbox";
+import JobApplicationPage from "./pages/JobApplicationPage";
+import CandidateDetailPage from "./pages/CandidateDetailPage";
+import PublicJobs from "./pages/PublicJobs";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
-import { LinkedInCallback } from "./pages/LinkedInCallback";
+import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
-
-// Admin components
-import { AdminLayout } from "./components/admin/AdminLayout";
-import { AdminOverview } from "./components/admin/AdminOverview";
-import { UserManagement } from "./components/admin/UserManagement";
+import AdminPanel from "./pages/AdminPanel";
+import "./App.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,50 +37,40 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <TooltipProvider>
-            <Toaster />
-            <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <Router>
+            <div className="min-h-screen bg-background">
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/simple-signup" element={<SimpleSignUp />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/confirm-email" element={<ConfirmEmail />} />
-                <Route path="/public-jobs" element={<PublicJobs />} />
-                <Route path="/apply/:jobId" element={<JobApplicationPage />} />
-                <Route path="/jobs" element={<OptimizedJobsPage />} />
-                <Route path="/dashboard/:jobId" element={<DashboardPage />} />
-                <Route path="/dashboard/:jobId/candidate/:applicationId" element={<CandidateDetailPage />} />
+                <Route path="/confirm" element={<ConfirmEmail />} />
+                <Route path="/linkedin/callback" element={<LinkedInCallback />} />
+                <Route path="/jobs" element={<Index />} />
                 <Route path="/scout" element={<Scout />} />
                 <Route path="/inbox" element={<Inbox />} />
-                <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/apply/:jobId" element={<JobApplicationPage />} />
+                <Route path="/candidate/:applicationId" element={<CandidateDetailPage />} />
+                <Route path="/public-jobs" element={<PublicJobs />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/refund" element={<RefundPolicy />} />
-                <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
-                
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout><AdminOverview /></AdminLayout>} />
-                <Route path="/admin/users" element={<AdminLayout><UserManagement /></AdminLayout>} />
-                <Route path="/admin/content" element={<AdminLayout><div className="p-8"><h1 className="text-3xl font-bold">Content Management</h1><p className="text-muted-foreground">Coming soon...</p></div></AdminLayout>} />
-                <Route path="/admin/analytics" element={<AdminLayout><div className="p-8"><h1 className="text-3xl font-bold">Advanced Analytics</h1><p className="text-muted-foreground">Coming soon...</p></div></AdminLayout>} />
-                <Route path="/admin/activity" element={<AdminLayout><div className="p-8"><h1 className="text-3xl font-bold">Activity Logs</h1><p className="text-muted-foreground">Coming soon...</p></div></AdminLayout>} />
-                <Route path="/admin/system" element={<AdminLayout><div className="p-8"><h1 className="text-3xl font-bold">System Settings</h1><p className="text-muted-foreground">Coming soon...</p></div></AdminLayout>} />
-                
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
+                <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+            </div>
+          </Router>
+          <Toaster />
+        </ErrorBoundary>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

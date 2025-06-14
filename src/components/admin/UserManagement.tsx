@@ -9,7 +9,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Search, MoreHorizontal, Eye, Shield } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AdminUser, UserRole } from "@/types/admin";
+import { AdminUser } from "@/types/admin";
+
+interface UserRoleData {
+  user_id: string;
+  role: string;
+}
 
 export const UserManagement = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -19,6 +24,8 @@ export const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        console.log('Fetching users and roles...');
+        
         // Fetch all profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
@@ -32,20 +39,27 @@ export const UserManagement = () => {
           `)
           .order('created_at', { ascending: false });
 
-        if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+          throw profilesError;
+        }
 
-        // Fetch user roles using raw SQL to handle type issues
-        let userRoles: UserRole[] = [];
+        console.log('Profiles fetched:', profiles?.length);
+
+        // Fetch user roles using raw SQL query
+        let userRoles: UserRoleData[] = [];
         try {
           const { data: rolesData, error: rolesError } = await supabase
-            .from('user_roles' as any)
-            .select('user_id, role');
+            .rpc('get_all_user_roles') as { data: UserRoleData[] | null, error: any };
           
-          if (!rolesError && rolesData) {
+          if (rolesError) {
+            console.warn('Error fetching user roles (may not exist yet):', rolesError);
+          } else if (rolesData) {
             userRoles = rolesData;
+            console.log('User roles fetched:', userRoles.length);
           }
         } catch (error) {
-          console.warn('User roles table query failed, showing users without roles:', error);
+          console.warn('User roles functionality not available:', error);
         }
 
         const usersWithRoles: AdminUser[] = profiles?.map(profile => ({
@@ -53,9 +67,12 @@ export const UserManagement = () => {
           role: userRoles.find(r => r.user_id === profile.id)?.role || 'user'
         })) || [];
 
+        console.log('Users with roles processed:', usersWithRoles.length);
         setUsers(usersWithRoles);
       } catch (error) {
         console.error('Error fetching users:', error);
+        // Set empty array on error to prevent UI crash
+        setUsers([]);
       } finally {
         setIsLoading(false);
       }
@@ -187,7 +204,7 @@ export const UserManagement = () => {
           
           {filteredUsers.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              No users found matching your search.
+              {users.length === 0 ? 'No users found.' : 'No users found matching your search.'}
             </div>
           )}
         </CardContent>
