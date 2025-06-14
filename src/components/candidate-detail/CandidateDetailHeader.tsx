@@ -3,7 +3,6 @@ import { useState } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { 
   Breadcrumb, 
   BreadcrumbItem, 
@@ -81,21 +80,21 @@ export const CandidateDetailHeader = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Navigation Section */}
-        <div className="py-4 border-b border-border/10">
+        <div className="py-3 border-b border-border/10">
           <div className="flex items-center justify-between">
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink 
                     onClick={onBackToDashboard}
-                    className="cursor-pointer hover:text-primary"
+                    className="cursor-pointer hover:text-primary text-sm"
                   >
                     {job.title}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>
+                  <BreadcrumbPage className="text-sm">
                     {application.name}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
@@ -106,178 +105,137 @@ export const CandidateDetailHeader = ({
               variant="ghost"
               size="sm"
               onClick={onBackToDashboard}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 text-xs"
             >
-              <ChevronLeft className="w-4 h-4" />
-              Back to Dashboard
+              <ChevronLeft className="w-3 h-3" />
+              Back
             </Button>
           </div>
         </div>
 
-        {/* Main Information Section - Three Columns */}
-        <div className="py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Compact Main Information Row */}
+        <div className="py-4">
+          <div className="flex items-center justify-between gap-6 flex-wrap lg:flex-nowrap">
             
-            {/* Candidate Profile Column */}
-            <Card className="glass-card">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h1 className="text-2xl font-bold text-foreground mb-2">
-                      {application.name}
-                    </h1>
-                    <p className="text-muted-foreground text-sm">
-                      {application.email}
-                    </p>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className={getStatusColor(application.status, application.manual_rating)}>
-                      {displayStatus}
-                    </Badge>
-                    {application.pipeline_stage && (
-                      <Badge variant="outline">
-                        {application.pipeline_stage}
-                      </Badge>
-                    )}
-                  </div>
+            {/* Left: Candidate Info */}
+            <div className="flex items-center gap-4 min-w-0 flex-shrink-0">
+              <div className="min-w-0">
+                <h1 className="text-xl font-bold text-foreground truncate">
+                  {application.name}
+                </h1>
+                <p className="text-sm text-muted-foreground truncate">
+                  {application.email}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className={`${getStatusColor(application.status, application.manual_rating)} text-xs px-2 py-1`}>
+                  {displayStatus}
+                </Badge>
+                {application.pipeline_stage && (
+                  <Badge variant="outline" className="text-xs px-2 py-1">
+                    {application.pipeline_stage}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Center: Ratings */}
+            <div className="flex items-center gap-6 flex-shrink-0">
+              {/* AI Rating */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">AI:</span>
+                <div className="flex gap-1">
+                  {renderAIRating(application.ai_rating)}
                 </div>
-              </CardContent>
-            </Card>
+                <span className="text-xs text-purple-600 font-medium">
+                  {application.ai_rating ? `${Math.round(application.ai_rating)}/3` : '--'}
+                </span>
+              </div>
 
-            {/* Ratings Column */}
-            <Card className="glass-card">
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  {/* AI Rating Display */}
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground mb-2">
-                      AI Assessment
-                    </div>
-                    <div className="flex justify-center gap-1 mb-1">
-                      {renderAIRating(application.ai_rating)}
-                    </div>
-                    <div className="text-xs text-purple-600 font-medium">
-                      {application.ai_rating ? `${Math.round(application.ai_rating)}/3` : 'Not assessed'}
-                    </div>
-                  </div>
-
-                  {/* Manual Rating Controls */}
-                  <div className="text-center border-t border-border pt-4">
-                    <div className="text-sm font-medium text-muted-foreground mb-3">
-                      Your Rating
-                    </div>
-                    <div className="flex justify-center gap-2">
-                      {[1, 2, 3].map((rating) => (
-                        <button
-                          key={rating}
-                          onClick={() => handleRating(rating)}
-                          disabled={isUpdating}
-                          className="p-2 hover:bg-muted rounded-lg transition-colors disabled:opacity-50 group"
-                        >
-                          <Star 
-                            className={`w-6 h-6 transition-all duration-200 group-hover:scale-110 ${
-                              (application.manual_rating || 0) >= rating 
-                                ? "text-blue-500 fill-current" 
-                                : "text-gray-300 group-hover:text-blue-400"
-                            }`} 
-                          />
-                        </button>
-                      ))}
-                    </div>
-                    <div className="text-xs text-blue-600 font-medium mt-1">
-                      {application.manual_rating ? `${application.manual_rating}/3` : 'Click to rate'}
-                    </div>
-                  </div>
+              {/* Manual Rating */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">You:</span>
+                <div className="flex gap-1">
+                  {[1, 2, 3].map((rating) => (
+                    <button
+                      key={rating}
+                      onClick={() => handleRating(rating)}
+                      disabled={isUpdating}
+                      className="hover:scale-110 transition-transform disabled:opacity-50"
+                    >
+                      <Star 
+                        className={`w-4 h-4 ${
+                          (application.manual_rating || 0) >= rating 
+                            ? "text-blue-500 fill-current" 
+                            : "text-gray-300 hover:text-blue-400"
+                        }`} 
+                      />
+                    </button>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
+                <span className="text-xs text-blue-600 font-medium">
+                  {application.manual_rating ? `${application.manual_rating}/3` : '--'}
+                </span>
+              </div>
+            </div>
 
-            {/* Status & Stage Column */}
-            <Card className="glass-card">
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  {/* Pipeline Stage */}
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground mb-3">
-                      Pipeline Stage
-                    </div>
-                    <StageSelector
-                      jobId={job.id}
-                      currentStage={application.pipeline_stage || 'applied'}
-                      applicationId={application.id}
-                      size="sm"
-                    />
-                  </div>
+            {/* Right: Stage & Actions */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {/* Pipeline Stage */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground hidden sm:inline">Stage:</span>
+                <StageSelector
+                  jobId={job.id}
+                  currentStage={application.pipeline_stage || 'applied'}
+                  applicationId={application.id}
+                  size="sm"
+                />
+              </div>
 
-                  {/* Status Info */}
-                  <div className="border-t border-border pt-4">
-                    <div className="text-sm font-medium text-muted-foreground mb-2">
-                      Application Status
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(application.status, application.manual_rating)}>
-                        {displayStatus}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        Last updated: {new Date(application.updated_at || application.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Action Bar Section */}
-        <div className="pb-6">
-          <Card className="glass-card">
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-center">
-                {/* Primary Action - Email */}
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
                 <Button 
                   onClick={handleEmail}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 flex-1 sm:flex-none"
+                  size="sm"
+                  className="px-3 py-1 text-xs"
                   disabled={isUpdating}
                 >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Email Candidate
+                  <Mail className="w-3 h-3 mr-1" />
+                  Email
                 </Button>
                 
-                {/* Secondary Actions */}
-                <div className="flex gap-3 flex-1 sm:flex-none">
-                  {application.status === 'rejected' ? (
-                    <Button 
-                      variant="outline"
-                      onClick={handleUnreject}
-                      disabled={isUpdating}
-                      className="border-green-200 text-green-600 hover:bg-green-50 flex-1 sm:flex-none"
-                    >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Unreject
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="outline"
-                      onClick={handleReject}
-                      disabled={isUpdating}
-                      className="border-red-200 text-red-600 hover:bg-red-50 flex-1 sm:flex-none"
-                    >
-                      <ThumbsDown className="w-4 h-4 mr-2" />
-                      Reject
-                    </Button>
-                  )}
-                </div>
+                {application.status === 'rejected' ? (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUnreject}
+                    disabled={isUpdating}
+                    className="border-green-200 text-green-600 hover:bg-green-50 px-3 py-1 text-xs"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    Unreject
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReject}
+                    disabled={isUpdating}
+                    className="border-red-200 text-red-600 hover:bg-red-50 px-3 py-1 text-xs"
+                  >
+                    <ThumbsDown className="w-3 h-3 mr-1" />
+                    Reject
+                  </Button>
+                )}
               </div>
-              
-              {isUpdating && (
-                <div className="text-center mt-3">
-                  <span className="text-xs text-muted-foreground">Updating...</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          {isUpdating && (
+            <div className="text-center mt-2">
+              <span className="text-xs text-muted-foreground">Updating...</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
