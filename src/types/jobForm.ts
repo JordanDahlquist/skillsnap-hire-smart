@@ -1,3 +1,4 @@
+
 import { SkillsTestData } from "./skillsAssessment";
 
 export interface PersonalInfo {
@@ -32,7 +33,7 @@ export interface UnifiedJobFormData {
 
   // Location
   location: string;
-  locationType: string;
+  locationType: string; // Required: "remote" | "on-site" | "hybrid"
   country: string;
   state: string;
   city: string;

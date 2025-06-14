@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { UnifiedJobFormData, UnifiedJobCreatorState } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
@@ -14,7 +15,7 @@ const initialFormData: UnifiedJobFormData = {
   salary: "",
   benefits: "",
   location: "",
-  locationType: "remote",
+  locationType: "remote", // Default to remote
   country: "",
   state: "",
   city: ""

@@ -47,8 +47,12 @@ export const UnifiedJobCreatorPanel = ({
     if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
   };
 
-  // Updated validation - require both company name and job title for step 2
-  const canProceedToStep2 = Boolean(state.formData.title && state.formData.companyName);
+  // Updated validation - require company name, job title, and work arrangement for step 2
+  const canProceedToStep2 = Boolean(
+    state.formData.title && 
+    state.formData.companyName && 
+    state.formData.locationType
+  );
   const canProceedToStep3 = Boolean(state.generatedJobPost);
   const canProceedToStep4 = Boolean(state.generatedJobPost);
   const canProceedToStep5 = Boolean(state.generatedJobPost);

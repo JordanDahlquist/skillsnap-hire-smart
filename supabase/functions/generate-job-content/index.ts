@@ -24,6 +24,12 @@ serve(async (req) => {
 
     if (type === 'job-post') {
       responseKey = 'jobPost';
+      
+      // Format work arrangement display
+      const workArrangementDisplay = jobData.locationType === 'on-site' ? 'On-site' : 
+                                   jobData.locationType === 'remote' ? 'Remote' : 
+                                   jobData.locationType === 'hybrid' ? 'Hybrid' : jobData.locationType;
+      
       prompt = `Create a compelling job posting for a ${jobData.title} position at ${jobData.companyName}. 
 
 Company and Role details:
@@ -31,21 +37,24 @@ Company and Role details:
 - Title: ${jobData.title}
 - Employment Type: ${jobData.employmentType} (IMPORTANT: This must be reflected accurately in the job posting)
 - Experience Level: ${jobData.experienceLevel}
+- Work Arrangement: ${workArrangementDisplay} (IMPORTANT: This must be prominently featured in the job posting)
+- Location: ${jobData.location || 'Not specified'}
 - Duration: ${jobData.duration || 'Not specified'}
 - Budget: ${jobData.budget || 'Not specified'}
-- Location: ${jobData.location}
 - Required skills: ${jobData.skills || 'Not specified'}
 - Description: ${jobData.description}
 
 CRITICAL INSTRUCTIONS:
 1. The employment type is ${jobData.employmentType} - make sure this is clearly stated and reflected throughout the job posting
-2. If employment type is "full-time", this is a permanent full-time employee position, NOT freelance or contract work
-3. If employment type is "part-time", this is a part-time employee position
-4. If employment type is "contract", this is contract/freelance work
-5. If employment type is "project", this is project-based work
-6. Prominently feature ${jobData.companyName} as the hiring company throughout the posting
+2. The work arrangement is ${workArrangementDisplay} - this must be prominently featured and clearly communicated
+3. If employment type is "full-time", this is a permanent full-time employee position, NOT freelance or contract work
+4. If employment type is "part-time", this is a part-time employee position
+5. If employment type is "contract", this is contract/freelance work
+6. If employment type is "project", this is project-based work
+7. Prominently feature ${jobData.companyName} as the hiring company throughout the posting
+8. Make the work arrangement (${workArrangementDisplay}) clear in the job summary and requirements sections
 
-Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates for a ${jobData.employmentType} position at ${jobData.companyName}.`;
+Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates for a ${workArrangementDisplay} ${jobData.employmentType} position at ${jobData.companyName}.`;
 
     } else if (type === 'skills-test') {
       responseKey = 'questions';
@@ -78,6 +87,7 @@ Job details:
 - Company: ${jobData.companyName}
 - Title: ${jobData.title}
 - Employment Type: ${jobData.employmentType}
+- Work Arrangement: ${jobData.locationType}
 - Experience Level: ${jobData.experienceLevel}
 - Required Skills: ${jobData.skills}
 
@@ -87,6 +97,7 @@ Create questions that:
 3. Assess experience with relevant challenges
 4. Reveal personality and work style fit
 5. Are specific to the ${jobData.title} position at ${jobData.companyName}
+6. Consider the ${jobData.locationType} work arrangement requirements
 
 Format each question clearly with context and what you're looking for in the response. These will be answered via video submission, so make them engaging and thought-provoking.
 

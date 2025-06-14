@@ -86,6 +86,32 @@ export const Step1BasicInfo = ({
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="locationType" className="text-sm">Work Arrangement *</Label>
+            <Select value={formData.locationType} onValueChange={(value) => actions.updateFormData('locationType', value)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select work arrangement" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="remote">Remote</SelectItem>
+                <SelectItem value="on-site">On-site</SelectItem>
+                <SelectItem value="hybrid">Hybrid</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="location" className="text-sm">Location</Label>
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) => actions.updateFormData('location', e.target.value)}
+              placeholder="e.g. New York, NY or Worldwide"
+              className="mt-1"
+            />
+          </div>
+        </div>
+
         <div className={`grid ${isProjectBased ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
           {isProjectBased ? (
             <>
@@ -138,28 +164,15 @@ export const Step1BasicInfo = ({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="skills" className="text-sm">Required Skills</Label>
-            <Input
-              id="skills"
-              value={formData.skills}
-              onChange={(e) => actions.updateFormData('skills', e.target.value)}
-              placeholder="React, TypeScript, Node.js..."
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="location" className="text-sm">Location</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => actions.updateFormData('location', e.target.value)}
-              placeholder="Remote, New York, etc."
-              className="mt-1"
-            />
-          </div>
+        <div>
+          <Label htmlFor="skills" className="text-sm">Required Skills</Label>
+          <Input
+            id="skills"
+            value={formData.skills}
+            onChange={(e) => actions.updateFormData('skills', e.target.value)}
+            placeholder="React, TypeScript, Node.js..."
+            className="mt-1"
+          />
         </div>
       </CardContent>
     </Card>

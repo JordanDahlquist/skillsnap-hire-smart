@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,11 @@ export const Step5ReviewPublish = ({
     actions.setCurrentStep(3);
   };
 
+  // Format work arrangement for display
+  const workArrangementDisplay = formData.locationType === 'on-site' ? 'On-site' : 
+                               formData.locationType === 'remote' ? 'Remote' : 
+                               formData.locationType === 'hybrid' ? 'Hybrid' : formData.locationType;
+
   return (
     <div className="h-full overflow-auto">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -89,7 +95,10 @@ export const Step5ReviewPublish = ({
                   <strong>Experience Level:</strong> {formData.experienceLevel}
                 </div>
                 <div>
-                  <strong>Location:</strong> {formData.location}
+                  <strong>Work Arrangement:</strong> {workArrangementDisplay}
+                </div>
+                <div>
+                  <strong>Location:</strong> {formData.location || 'Not specified'}
                 </div>
                 {formData.budget && (
                   <div>
