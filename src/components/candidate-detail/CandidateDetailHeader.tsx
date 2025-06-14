@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -212,7 +211,6 @@ export const CandidateDetailHeader = ({
                     onClick={handleEmail}
                     size="sm"
                     variant="default"
-                    className="px-3 py-1 text-xs"
                     disabled={isUpdating}
                   >
                     <Mail className="w-3 h-3 mr-1" />
