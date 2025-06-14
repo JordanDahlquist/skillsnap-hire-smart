@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, SkipForward, Settings } from "lucide-react";
 import { SkillsTestData, SkillsTestTemplate } from "@/types/skillsAssessment";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
-import { SkillsTestModeSelector } from "./skills/SkillsTestModeSelector";
 import { SkillsTestTemplateSelector } from "./skills/SkillsTestTemplateSelector";
 import { EnhancedSkillsQuestionEditor } from "./skills/EnhancedSkillsQuestionEditor";
 import { SkillsTestPreview } from "./skills/SkillsTestPreview";
@@ -20,7 +19,7 @@ interface Step3SkillsTestGeneratorProps {
   onSkillsTestDataChange: (data: SkillsTestData) => void;
 }
 
-type ViewState = 'initial' | 'mode_selector' | 'template_selector' | 'editor' | 'preview';
+type ViewState = 'initial' | 'template_selector' | 'editor' | 'preview';
 
 export const Step3SkillsTestGenerator = ({
   generatedJobPost,
@@ -39,30 +38,17 @@ export const Step3SkillsTestGenerator = ({
     setViewState('editor');
   }
 
-  const handleModeSelect = async (mode: 'ai_generated' | 'custom_builder' | 'preview') => {
-    if (mode === 'ai_generated') {
-      // Update mode and generate questions
-      const updatedData = { ...skillsTestData, mode };
-      onSkillsTestDataChange(updatedData);
-      await onGenerateQuestions();
-      setViewState('editor');
-    } else if (mode === 'custom_builder') {
-      setViewState('template_selector');
-    } else if (mode === 'preview') {
-      setViewState('preview');
-    }
+  const handleGenerateWithAI = async () => {
+    // Update mode and generate questions directly
+    const updatedData = { ...skillsTestData, mode: 'ai_generated' as const };
+    onSkillsTestDataChange(updatedData);
+    await onGenerateQuestions();
+    setViewState('editor');
   };
 
-  const handleDirectCustomBuilder = () => {
-    // Start with empty custom template and go directly to editor
-    const updatedData: SkillsTestData = {
-      ...skillsTestData,
-      mode: 'custom_builder',
-      questions: [],
-      estimatedCompletionTime: 0
-    };
-    onSkillsTestDataChange(updatedData);
-    setViewState('editor');
+  const handleBuildCustomAssessment = () => {
+    // Go directly to template selector for custom building
+    setViewState('template_selector');
   };
 
   const handleTemplateSelect = (template: SkillsTestTemplate | null) => {
@@ -103,10 +89,6 @@ export const Step3SkillsTestGenerator = ({
     setViewState('editor');
   };
 
-  const handleBackToModeSelector = () => {
-    setViewState('mode_selector');
-  };
-
   const handleBackToTemplateSelector = () => {
     setViewState('template_selector');
   };
@@ -117,20 +99,11 @@ export const Step3SkillsTestGenerator = ({
 
   // Render based on current view state
   switch (viewState) {
-    case 'mode_selector':
-      return (
-        <SkillsTestModeSelector
-          onSelectMode={handleModeSelect}
-          onBack={handleBackToInitial}
-          isGenerating={isGenerating}
-        />
-      );
-
     case 'template_selector':
       return (
         <SkillsTestTemplateSelector
           onSelectTemplate={handleTemplateSelect}
-          onBack={handleBackToModeSelector}
+          onBack={handleBackToInitial}
         />
       );
 
@@ -173,10 +146,10 @@ export const Step3SkillsTestGenerator = ({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={handleBackToModeSelector}
+                  onClick={handleBackToInitial}
                   className="text-xs h-8 px-3"
                 >
-                  Change Mode
+                  Start Over
                 </Button>
               </div>
             </div>
@@ -214,25 +187,26 @@ export const Step3SkillsTestGenerator = ({
                 Create Skills Assessment
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Generate targeted assessment questions or build your own custom skills test. This step is optional - you can skip it and proceed directly to publishing your job.
+                Choose how you'd like to create your skills assessment. You can generate questions with AI or build a custom assessment from templates.
               </p>
               <div className="flex flex-col gap-3">
                 <Button 
-                  onClick={() => setViewState('mode_selector')}
+                  onClick={handleGenerateWithAI}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                   size="default"
+                  disabled={isGenerating}
                 >
-                  Create Skills Assessment
-                  <Sparkles className="w-4 h-4 ml-2" />
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isGenerating ? 'Generating...' : 'Generate with AI'}
                 </Button>
                 <Button 
-                  onClick={handleDirectCustomBuilder}
+                  onClick={handleBuildCustomAssessment}
                   variant="outline"
                   className="border-blue-200 text-blue-700 hover:bg-blue-50"
                   size="default"
                 >
                   <Settings className="w-4 h-4 mr-2" />
-                  Generate Custom Skills Test
+                  Build Custom Assessment
                 </Button>
                 <Button 
                   variant="outline"
