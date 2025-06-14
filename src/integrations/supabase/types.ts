@@ -754,6 +754,13 @@ export type Database = {
         Args: { user_id: string; full_name: string; email: string }
         Returns: string
       }
+      get_all_user_roles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       get_user_plan_limits: {
         Args: { user_id: string }
         Returns: Json

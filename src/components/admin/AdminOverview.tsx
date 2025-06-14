@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePlatformAnalytics } from "@/hooks/usePlatformAnalytics";
-import { Users, Briefcase, FileText, CreditCard, TrendingUp, Calendar } from "lucide-react";
+import { Users, FileText, TrendingUp, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const AdminOverview = () => {
@@ -11,19 +11,19 @@ export const AdminOverview = () => {
     return (
       <div className="p-8 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Platform Overview</h1>
-          <p className="text-muted-foreground">Master admin dashboard for Atract platform</p>
+          <h1 className="text-3xl font-bold">Admin Overview</h1>
+          <p className="text-muted-foreground">Platform insights and key metrics</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
-              <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-20" />
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-8 w-16" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-32" />
               </CardContent>
             </Card>
           ))}
@@ -32,166 +32,122 @@ export const AdminOverview = () => {
     );
   }
 
-  if (error || !analytics) {
+  if (error) {
     return (
       <div className="p-8">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600">Error Loading Analytics</h2>
-          <p className="text-muted-foreground mt-2">{error || 'Failed to load platform data'}</p>
+        <div className="text-center py-8 text-muted-foreground">
+          <p>Error loading analytics: {error}</p>
         </div>
       </div>
     );
   }
 
-  const metrics = [
-    {
-      title: "Total Users",
-      value: analytics.totalUsers,
-      description: "Registered platform users",
-      icon: Users,
-      color: "text-blue-600"
-    },
-    {
-      title: "New Users (30d)",
-      value: analytics.usersLast30Days,
-      description: "Users joined last 30 days",
-      icon: TrendingUp,
-      color: "text-green-600"
-    },
-    {
-      title: "New Users (7d)",
-      value: analytics.usersLast7Days,
-      description: "Users joined last 7 days",
-      icon: Calendar,
-      color: "text-purple-600"
-    },
-    {
-      title: "Total Jobs",
-      value: analytics.totalJobs,
-      description: "Jobs posted on platform",
-      icon: Briefcase,
-      color: "text-orange-600"
-    },
-    {
-      title: "New Jobs (30d)",
-      value: analytics.jobsLast30Days,
-      description: "Jobs created last 30 days",
-      icon: Briefcase,
-      color: "text-orange-500"
-    },
-    {
-      title: "Total Applications",
-      value: analytics.totalApplications,
-      description: "Applications submitted",
-      icon: FileText,
-      color: "text-indigo-600"
-    },
-    {
-      title: "New Applications (30d)",
-      value: analytics.applicationsLast30Days,
-      description: "Applications last 30 days",
-      icon: FileText,
-      color: "text-indigo-500"
-    },
-    {
-      title: "Active Subscriptions",
-      value: analytics.activeSubscriptions,
-      description: "Paying customers",
-      icon: CreditCard,
-      color: "text-green-600"
-    }
-  ];
-
   return (
     <div className="p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Platform Overview</h1>
-        <p className="text-muted-foreground">Master admin dashboard for Atract platform</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metrics.map((metric) => (
-          <Card key={metric.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {metric.title}
-              </CardTitle>
-              <metric.icon className={`h-4 w-4 ${metric.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metric.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {metric.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <h1 className="text-3xl font-bold">Admin Overview</h1>
+        <p className="text-muted-foreground">Platform insights and key metrics</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-500" />
+              Total Users
+            </CardTitle>
+            <div className="text-2xl font-bold">{analytics?.totalUsers || 0}</div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              +{analytics?.usersLast30Days || 0} this month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <FileText className="w-4 h-4 text-green-500" />
+              Total Jobs
+            </CardTitle>
+            <div className="text-2xl font-bold">{analytics?.totalJobs || 0}</div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              +{analytics?.jobsLast30Days || 0} this month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-purple-500" />
+              Applications
+            </CardTitle>
+            <div className="text-2xl font-bold">{analytics?.totalApplications || 0}</div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">
+              +{analytics?.applicationsLast30Days || 0} this month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Clock className="w-4 h-4 text-orange-500" />
+              Active Users
+            </CardTitle>
+            <div className="text-2xl font-bold">{analytics?.usersLast7Days || 0}</div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">Last 7 days</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Platform Health</CardTitle>
-            <CardDescription>Key platform indicators</CardDescription>
+            <CardTitle>Subscription Overview</CardTitle>
+            <CardDescription>Current subscription status</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span>Active Trial Users</span>
-              <span className="font-bold text-amber-600">{analytics.trialSubscriptions}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Conversion Rate</span>
-              <span className="font-bold text-green-600">
-                {analytics.totalUsers > 0 
-                  ? `${((analytics.activeSubscriptions / analytics.totalUsers) * 100).toFixed(1)}%`
-                  : '0%'
-                }
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Applications per Job</span>
-              <span className="font-bold text-blue-600">
-                {analytics.totalJobs > 0 
-                  ? (analytics.totalApplications / analytics.totalJobs).toFixed(1)
-                  : '0'
-                }
-              </span>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Active Subscriptions</span>
+                <span className="text-2xl font-bold text-green-600">
+                  {analytics?.activeSubscriptions || 0}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Trial Users</span>
+                <span className="text-2xl font-bold text-blue-600">
+                  {analytics?.trialSubscriptions || 0}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Growth Metrics</CardTitle>
-            <CardDescription>Platform growth indicators</CardDescription>
+            <CardTitle>Platform Health</CardTitle>
+            <CardDescription>System status and performance</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span>User Growth (7d vs 30d)</span>
-              <span className="font-bold text-green-600">
-                {analytics.usersLast30Days > 0 
-                  ? `${((analytics.usersLast7Days / analytics.usersLast30Days) * 100).toFixed(1)}%`
-                  : '0%'
-                }
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Job Growth (30d)</span>
-              <span className="font-bold text-orange-600">
-                {analytics.totalJobs > 0 
-                  ? `${((analytics.jobsLast30Days / analytics.totalJobs) * 100).toFixed(1)}%`
-                  : '0%'
-                }
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Application Growth (30d)</span>
-              <span className="font-bold text-indigo-600">
-                {analytics.totalApplications > 0 
-                  ? `${((analytics.applicationsLast30Days / analytics.totalApplications) * 100).toFixed(1)}%`
-                  : '0%'
-                }
-              </span>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">System Status</span>
+                <span className="text-sm font-medium text-green-600">Operational</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Database</span>
+                <span className="text-sm font-medium text-green-600">Healthy</span>
+              </div>
             </div>
           </CardContent>
         </Card>

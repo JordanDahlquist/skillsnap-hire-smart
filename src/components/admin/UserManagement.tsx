@@ -46,14 +46,14 @@ export const UserManagement = () => {
 
         console.log('Profiles fetched:', profiles?.length);
 
-        // Fetch user roles using raw SQL query
+        // Fetch user roles using the RPC function we created
         let userRoles: UserRoleData[] = [];
         try {
           const { data: rolesData, error: rolesError } = await supabase
-            .rpc('get_all_user_roles') as { data: UserRoleData[] | null, error: any };
+            .rpc('get_all_user_roles');
           
           if (rolesError) {
-            console.warn('Error fetching user roles (may not exist yet):', rolesError);
+            console.warn('Error fetching user roles:', rolesError);
           } else if (rolesData) {
             userRoles = rolesData;
             console.log('User roles fetched:', userRoles.length);
@@ -71,7 +71,6 @@ export const UserManagement = () => {
         setUsers(usersWithRoles);
       } catch (error) {
         console.error('Error fetching users:', error);
-        // Set empty array on error to prevent UI crash
         setUsers([]);
       } finally {
         setIsLoading(false);
