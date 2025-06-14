@@ -1,5 +1,6 @@
 
-import { ChevronLeft } from "lucide-react";
+import { useState } from "react";
+import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -10,20 +11,54 @@ import {
   BreadcrumbPage, 
   BreadcrumbSeparator 
 } from "@/components/ui/breadcrumb";
-import { renderManualRating, renderAIRating } from "@/components/dashboard/utils/ratingUtils";
+import { StageSelector } from "@/components/dashboard/StageSelector";
+import { useApplicationActions } from "@/hooks/useApplicationActions";
 import { Application, Job } from "@/types";
 
 interface CandidateDetailHeaderProps {
   job: Job;
   application: Application;
   onBackToDashboard: () => void;
+  onApplicationUpdate: () => void;
 }
 
 export const CandidateDetailHeader = ({ 
   job, 
   application, 
-  onBackToDashboard 
+  onBackToDashboard,
+  onApplicationUpdate
 }: CandidateDetailHeaderProps) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  const { 
+    updateApplicationRating, 
+    rejectApplication, 
+    unrejectApplication 
+  } = useApplicationActions(onApplicationUpdate);
+
+  const handleRating = async (rating: number) => {
+    setIsUpdating(true);
+    await updateApplicationRating(application.id, rating);
+    setIsUpdating(false);
+  };
+
+  const handleReject = async () => {
+    setIsUpdating(true);
+    await rejectApplication(application.id, "Rejected from candidate detail page");
+    setIsUpdating(false);
+  };
+
+  const handleUnreject = async () => {
+    setIsUpdating(true);
+    await unrejectApplication(application.id);
+    setIsUpdating(false);
+  };
+
+  const handleEmail = () => {
+    // Open email composer - could be implemented as a modal
+    console.log("Open email composer for", application.email);
+  };
+
   const getStatusColor = (status: string, manualRating?: number | null) => {
     if (status === "reviewed" && !manualRating) {
       return "bg-yellow-100 text-yellow-800";
@@ -65,6 +100,7 @@ export const CandidateDetailHeader = ({
 
         {/* Main Header Content */}
         <div className="flex items-start justify-between">
+          {/* Left Side - Candidate Info */}
           <div className="flex items-start gap-4">
             <Button
               variant="ghost"
@@ -94,22 +130,98 @@ export const CandidateDetailHeader = ({
               <p className="text-muted-foreground mb-3">
                 {application.email}
               </p>
-              
-              {/* Ratings */}
-              <div className="flex items-center gap-6">
+            </div>
+          </div>
+
+          {/* Right Side - Interactive Controls */}
+          <div className="glass-card p-4 border border-border/50 rounded-lg bg-background/80 backdrop-blur-sm">
+            <div className="space-y-4">
+              {/* Rating Section */}
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">Your Rating:</span>
-                  <div className="flex gap-0.5">
-                    {renderManualRating(application.manual_rating)}
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map((rating) => (
+                      <button
+                        key={rating}
+                        onClick={() => handleRating(rating)}
+                        disabled={isUpdating}
+                        className="p-1 hover:bg-muted rounded transition-colors disabled:opacity-50"
+                      >
+                        <Star 
+                          className={`w-5 h-5 ${
+                            (application.manual_rating || 0) >= rating 
+                              ? "text-blue-500 fill-current" 
+                              : "text-gray-300"
+                          }`} 
+                        />
+                      </button>
+                    ))}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-muted-foreground">AI Rating:</span>
-                  <div className="flex gap-0.5">
-                    {renderAIRating(application.ai_rating)}
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map((rating) => {
+                      const isActive = rating <= Math.round(application.ai_rating || 0);
+                      return (
+                        <Star
+                          key={rating}
+                          className={`w-5 h-5 ${
+                            isActive ? 'text-purple-500 fill-current' : 'text-gray-300'
+                          }`}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
+              </div>
+
+              {/* Stage Selector */}
+              <div className="min-w-0">
+                <StageSelector
+                  jobId={job.id}
+                  currentStage={application.pipeline_stage || 'applied'}
+                  applicationId={application.id}
+                  size="sm"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                {application.status === 'rejected' ? (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleUnreject}
+                    disabled={isUpdating}
+                    className="border-green-200 text-green-600 hover:bg-green-50 flex-1"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    Unreject
+                  </Button>
+                ) : (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleReject}
+                    disabled={isUpdating}
+                    className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
+                  >
+                    <ThumbsDown className="w-4 h-4 mr-1" />
+                    Reject
+                  </Button>
+                )}
+                
+                <Button 
+                  size="sm" 
+                  onClick={handleEmail}
+                  className="bg-blue-600 hover:bg-blue-700 flex-1"
+                >
+                  <Mail className="w-4 h-4 mr-1" />
+                  Email
+                </Button>
               </div>
             </div>
           </div>
