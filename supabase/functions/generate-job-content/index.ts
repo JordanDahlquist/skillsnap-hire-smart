@@ -24,9 +24,10 @@ serve(async (req) => {
 
     if (type === 'job-post') {
       responseKey = 'jobPost';
-      prompt = `Create a compelling job posting for a ${jobData.title} position. 
+      prompt = `Create a compelling job posting for a ${jobData.title} position at ${jobData.companyName}. 
 
-Role details:
+Company and Role details:
+- Company: ${jobData.companyName}
 - Title: ${jobData.title}
 - Employment Type: ${jobData.employmentType} (IMPORTANT: This must be reflected accurately in the job posting)
 - Experience Level: ${jobData.experienceLevel}
@@ -42,8 +43,9 @@ CRITICAL INSTRUCTIONS:
 3. If employment type is "part-time", this is a part-time employee position
 4. If employment type is "contract", this is contract/freelance work
 5. If employment type is "project", this is project-based work
+6. Prominently feature ${jobData.companyName} as the hiring company throughout the posting
 
-Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates for a ${jobData.employmentType} position.`;
+Format as a professional job posting with sections for responsibilities, requirements, and project details. Make it engaging and specific to attract quality candidates for a ${jobData.employmentType} position at ${jobData.companyName}.`;
 
     } else if (type === 'skills-test') {
       responseKey = 'questions';
@@ -73,6 +75,7 @@ ${existingJobPost}
 ${existingSkillsTest ? `Additional context from skills test:\n${existingSkillsTest}\n` : ''}
 
 Job details:
+- Company: ${jobData.companyName}
 - Title: ${jobData.title}
 - Employment Type: ${jobData.employmentType}
 - Experience Level: ${jobData.experienceLevel}
@@ -83,7 +86,7 @@ Create questions that:
 2. Evaluate problem-solving and critical thinking
 3. Assess experience with relevant challenges
 4. Reveal personality and work style fit
-5. Are specific to the ${jobData.title} position
+5. Are specific to the ${jobData.title} position at ${jobData.companyName}
 
 Format each question clearly with context and what you're looking for in the response. These will be answered via video submission, so make them engaging and thought-provoking.
 

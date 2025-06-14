@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { UnifiedJobFormData, UnifiedJobCreatorState } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
 
 const initialFormData: UnifiedJobFormData = {
+  companyName: "",
   title: "",
   description: "",
   employmentType: "project",
@@ -17,8 +17,7 @@ const initialFormData: UnifiedJobFormData = {
   locationType: "remote",
   country: "",
   state: "",
-  city: "",
-  companyName: ""
+  city: ""
 };
 
 const initialSkillsTestData: SkillsTestData = {

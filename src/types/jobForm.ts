@@ -1,4 +1,3 @@
-
 import { SkillsTestData } from "./skillsAssessment";
 
 export interface PersonalInfo {
@@ -15,7 +14,8 @@ export interface PersonalInfo {
 }
 
 export interface UnifiedJobFormData {
-  // Basic info
+  // Company and basic info
+  companyName: string;
   title: string;
   description: string;
   employmentType: string;
@@ -36,9 +36,6 @@ export interface UnifiedJobFormData {
   country: string;
   state: string;
   city: string;
-  
-  // Company info (for editing)
-  companyName?: string;
 }
 
 export interface UnifiedJobCreatorState {

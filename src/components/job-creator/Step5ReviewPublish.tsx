@@ -77,6 +77,9 @@ export const Step5ReviewPublish = ({
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
+                  <strong>Company:</strong> {formData.companyName}
+                </div>
+                <div>
                   <strong>Title:</strong> {formData.title}
                 </div>
                 <div>

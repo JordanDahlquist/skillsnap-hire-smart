@@ -33,6 +33,17 @@ export const Step1BasicInfo = ({
       <CardContent className="space-y-4 pt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
+            <Label htmlFor="companyName" className="text-sm">Company Name *</Label>
+            <Input
+              id="companyName"
+              value={formData.companyName}
+              onChange={(e) => actions.updateFormData('companyName', e.target.value)}
+              placeholder="e.g. TechCorp Inc."
+              className="mt-1"
+              required
+            />
+          </div>
+          <div>
             <Label htmlFor="title" className="text-sm">Job Title *</Label>
             <Input
               id="title"
@@ -43,6 +54,9 @@ export const Step1BasicInfo = ({
               required
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="employmentType" className="text-sm">Employment Type</Label>
             <Select value={formData.employmentType} onValueChange={(value) => actions.updateFormData('employmentType', value)}>
@@ -57,9 +71,6 @@ export const Step1BasicInfo = ({
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        <div className={`grid ${isProjectBased ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
           <div>
             <Label htmlFor="experienceLevel" className="text-sm">Experience Level</Label>
             <Select value={formData.experienceLevel} onValueChange={(value) => actions.updateFormData('experienceLevel', value)}>
@@ -73,7 +84,9 @@ export const Step1BasicInfo = ({
               </SelectContent>
             </Select>
           </div>
+        </div>
 
+        <div className={`grid ${isProjectBased ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
           {isProjectBased ? (
             <>
               <div>
