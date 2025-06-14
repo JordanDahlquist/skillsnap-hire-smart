@@ -227,7 +227,7 @@ export const CandidateOverviewTab = ({
               )}
             </div>
           </CardContent>
-        )}
+        </Card>
       )}
 
       {/* Application Details */}
