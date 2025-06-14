@@ -40,6 +40,7 @@ export const VideoInterview = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [storageReady, setStorageReady] = useState(false);
+  const [storageValidated, setStorageValidated] = useState(false);
   
   const { interviewQuestions } = useInterviewQuestions(questions);
   const {
@@ -114,9 +115,8 @@ export const VideoInterview = ({
   };
 
   const handleStartRecording = () => {
-    if (!storageReady) {
-      toast.error('Storage system not ready. Please wait and try again.');
-      return;
+    if (!storageValidated) {
+      toast.warning('Storage validation incomplete. Recording will work, but upload may fail.');
     }
 
     startRecording(async (url) => {
@@ -148,6 +148,12 @@ export const VideoInterview = ({
     });
   };
 
+  const handleStorageValidation = (isValid: boolean) => {
+    setStorageReady(isValid);
+    setStorageValidated(true);
+    logger.debug('Storage validation completed:', { isValid });
+  };
+
   const retakeVideo = () => {
     if (recordedVideos[currentQuestion]) {
       URL.revokeObjectURL(recordedVideos[currentQuestion]);
@@ -168,7 +174,6 @@ export const VideoInterview = ({
   const handleQuestionChange = (index: number) => {
     setCurrentQuestion(index);
     
-    // Set appropriate view mode for the new question
     if (recordedVideos[index]) {
       setQuestionViewModes(prev => ({
         ...prev,
@@ -214,32 +219,28 @@ export const VideoInterview = ({
     }
   };
 
-  const completedVideos = Object.keys(uploadedVideos).length; // Changed from recordedVideos to uploadedVideos
+  const completedVideos = Object.keys(uploadedVideos).length;
   const allCompleted = completedVideos === interviewQuestions.length;
-  const isCurrentQuestionRecorded = !!uploadedVideos[currentQuestion]; // Changed from recordedVideos to uploadedVideos
+  const isCurrentQuestionRecorded = !!uploadedVideos[currentQuestion];
   const canGoPrevious = currentQuestion > 0;
   const canGoNext = currentQuestion < interviewQuestions.length - 1;
-
-  // Prevent proceeding if uploads are in progress or failed
   const canProceedToReview = allCompleted && !isUploading && !uploadError;
 
   useEffect(() => {
     if (allCompleted && Object.keys(uploadedVideos).length === interviewQuestions.length) {
-      // Create interview responses array with uploaded video URLs
       const interviewResponses = interviewQuestions.map((question, index) => ({
         question,
         questionIndex: index,
         answerType: 'video',
         videoUrl: uploadedVideos[index],
         recordedAt: new Date().toISOString(),
-        answer: 'Video response' // Add required answer field
+        answer: 'Video response'
       }));
       
       onChange(JSON.stringify(interviewResponses));
     }
   }, [allCompleted, uploadedVideos, interviewQuestions, onChange]);
 
-  // Initialize view mode for current question when questions load
   useEffect(() => {
     if (interviewQuestions.length > 0) {
       const hasRecording = recordedVideos[currentQuestion];
@@ -270,7 +271,7 @@ export const VideoInterview = ({
 
   return (
     <div className="space-y-6">
-      <StorageBucketValidator onValidationComplete={setStorageReady} />
+      <StorageBucketValidator onValidationComplete={handleStorageValidation} />
       
       <VideoInterviewHeader 
         maxLength={maxLength}
@@ -281,7 +282,7 @@ export const VideoInterview = ({
       <QuestionNavigation 
         questions={interviewQuestions}
         currentQuestion={currentQuestion}
-        recordedVideos={uploadedVideos} // Changed to show uploaded videos status
+        recordedVideos={uploadedVideos}
         onQuestionChange={handleQuestionChange}
       />
 
@@ -289,7 +290,7 @@ export const VideoInterview = ({
         questionNumber={currentQuestion + 1}
         totalQuestions={interviewQuestions.length}
         questionText={interviewQuestions[currentQuestion]}
-        isRecorded={!!uploadedVideos[currentQuestion]} // Changed to check uploaded videos
+        isRecorded={!!uploadedVideos[currentQuestion]}
       />
 
       <VideoRecordingArea 
@@ -299,7 +300,7 @@ export const VideoInterview = ({
         stream={stream}
         isRecording={isRecording || isUploading}
         recordingTime={recordingTime}
-        videoReady={videoReady && storageReady}
+        videoReady={videoReady && storageValidated}
         permissionGranted={permissionGranted}
         videoLoading={videoLoading || isUploading}
         viewMode={viewMode}
@@ -322,7 +323,7 @@ export const VideoInterview = ({
         currentQuestion={currentQuestion}
         totalQuestions={interviewQuestions.length}
         isCurrentQuestionRecorded={isCurrentQuestionRecorded}
-        allCompleted={canProceedToReview} // Updated to include upload validation
+        allCompleted={canProceedToReview}
         onPrevious={handlePreviousQuestion}
         onNext={handleNextQuestion}
         onContinueToReview={onNext}

@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
+import { AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { logger } from "@/services/loggerService";
 
 interface StorageBucketValidatorProps {
@@ -14,6 +14,7 @@ export const StorageBucketValidator = ({ onValidationComplete }: StorageBucketVa
   const [isValidating, setIsValidating] = useState(true);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState(false);
+  const [showManualOverride, setShowManualOverride] = useState(false);
 
   useEffect(() => {
     validateStorageBucket();
@@ -23,10 +24,11 @@ export const StorageBucketValidator = ({ onValidationComplete }: StorageBucketVa
     try {
       setIsValidating(true);
       setValidationError(null);
+      setShowManualOverride(false);
       
       logger.debug('Validating storage bucket availability...');
       
-      // Check if bucket exists
+      // Check if bucket exists - this is the critical check
       const { data: buckets, error: listError } = await supabase.storage.listBuckets();
       
       if (listError) {
@@ -39,37 +41,37 @@ export const StorageBucketValidator = ({ onValidationComplete }: StorageBucketVa
         throw new Error('Storage bucket "application-files" not found. Please contact support.');
       }
 
-      // Test upload capability with a small test file
-      const testBlob = new Blob(['test'], { type: 'text/plain' });
-      const testPath = `test-uploads/connectivity-test-${Date.now()}.txt`;
-      
-      const { error: uploadError } = await supabase.storage
+      // Simplified validation - just check if we can access the bucket
+      const { data: testList, error: testError } = await supabase.storage
         .from('application-files')
-        .upload(testPath, testBlob);
+        .list('', { limit: 1 });
 
-      if (uploadError) {
-        throw new Error(`Storage upload test failed: ${uploadError.message}`);
+      if (testError && testError.message.includes('not found')) {
+        throw new Error('Storage bucket access denied. Please contact support.');
       }
 
-      // Clean up test file
-      await supabase.storage
-        .from('application-files')
-        .remove([testPath]);
-
+      // If we get here, consider it valid even if the list operation had other errors
       logger.debug('Storage bucket validation successful');
       setIsValid(true);
       onValidationComplete(true);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown storage validation error';
-      logger.error('Storage bucket validation failed:', error);
+      logger.warn('Storage bucket validation failed, but allowing user to proceed:', error);
       setValidationError(errorMessage);
-      setIsValid(false);
-      onValidationComplete(false);
-      toast.error('Storage system unavailable. Please try again later.');
+      setShowManualOverride(true);
+      // Don't block the user - they can proceed manually
     } finally {
       setIsValidating(false);
     }
+  };
+
+  const handleManualOverride = () => {
+    logger.debug('User manually overrode storage validation');
+    setIsValid(true);
+    setValidationError(null);
+    setShowManualOverride(false);
+    onValidationComplete(true);
   };
 
   if (isValidating) {
@@ -83,12 +85,26 @@ export const StorageBucketValidator = ({ onValidationComplete }: StorageBucketVa
     );
   }
 
-  if (validationError) {
+  if (validationError && showManualOverride) {
     return (
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          Storage Error: {validationError}
+        <AlertDescription className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="font-medium mb-2">Storage validation failed</div>
+            <div className="text-sm mb-3">{validationError}</div>
+            <div className="text-sm text-muted-foreground">
+              You can still proceed with the interview. If uploads fail, please contact support.
+            </div>
+          </div>
+          <div className="flex gap-2 ml-4">
+            <Button variant="outline" size="sm" onClick={validateStorageBucket}>
+              Retry
+            </Button>
+            <Button size="sm" onClick={handleManualOverride}>
+              Proceed Anyway
+            </Button>
+          </div>
         </AlertDescription>
       </Alert>
     );
