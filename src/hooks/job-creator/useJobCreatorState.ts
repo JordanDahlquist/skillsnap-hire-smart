@@ -23,7 +23,10 @@ const initialFormData: UnifiedJobFormData = {
 
 const initialSkillsTestData: SkillsTestData = {
   questions: [],
-  maxQuestions: 10
+  maxQuestions: 10,
+  mode: 'ai_generated',
+  estimatedCompletionTime: 0,
+  instructions: ""
 };
 
 const initialState: UnifiedJobCreatorState = {
