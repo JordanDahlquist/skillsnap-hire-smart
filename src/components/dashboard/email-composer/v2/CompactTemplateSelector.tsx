@@ -1,7 +1,6 @@
 
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, Loader2 } from 'lucide-react';
 import type { EmailTemplate } from '@/types/emailComposer';
 
@@ -27,6 +26,15 @@ export const CompactTemplateSelector = ({
     );
   }
 
+  const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+
+  const handleTemplateSelect = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      onSelectTemplate(template);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
@@ -46,19 +54,27 @@ export const CompactTemplateSelector = ({
           <p className="text-xs text-muted-foreground">You can still compose your email manually</p>
         </div>
       ) : (
-        <ScrollArea className="h-32 w-full">
-          <div className="space-y-2">
+        <Select value={selectedTemplateId} onValueChange={handleTemplateSelect}>
+          <SelectTrigger className="glass-card-no-hover border-0 bg-background/50 h-auto min-h-[44px]">
+            <SelectValue placeholder="Select a template...">
+              {selectedTemplate && (
+                <div className="flex flex-col items-start gap-1 text-left">
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="font-medium text-sm">{selectedTemplate.name}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {selectedTemplate.category}
+                    </Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground truncate w-full">
+                    {selectedTemplate.subject}
+                  </span>
+                </div>
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent className="glass-card border-0 bg-background/95 backdrop-blur-sm">
             {templates.map((template) => (
-              <Button
-                key={template.id}
-                variant={selectedTemplateId === template.id ? "default" : "ghost"}
-                className={`w-full justify-start text-left h-auto p-3 ${
-                  selectedTemplateId === template.id 
-                    ? 'glass-button bg-purple-500 text-white' 
-                    : 'glass-card hover:bg-background/50'
-                }`}
-                onClick={() => onSelectTemplate(template)}
-              >
+              <SelectItem key={template.id} value={template.id} className="p-3">
                 <div className="flex flex-col items-start gap-1 w-full">
                   <div className="flex items-center gap-2 w-full">
                     <span className="font-medium text-sm">{template.name}</span>
@@ -66,14 +82,14 @@ export const CompactTemplateSelector = ({
                       {template.category}
                     </Badge>
                   </div>
-                  <span className="text-xs opacity-80 truncate w-full">
+                  <span className="text-xs text-muted-foreground truncate w-full">
                     {template.subject}
                   </span>
                 </div>
-              </Button>
+              </SelectItem>
             ))}
-          </div>
-        </ScrollArea>
+          </SelectContent>
+        </Select>
       )}
     </div>
   );

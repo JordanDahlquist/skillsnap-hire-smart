@@ -20,7 +20,7 @@ export const EmailConfigSection = ({
   selectTemplate
 }: EmailConfigSectionProps) => {
   return (
-    <div className="flex-shrink-0 border-b border-border/50">
+    <div className="flex-shrink-0">
       <div className="p-4 space-y-4">
         {/* Section Header */}
         <div className="flex items-center gap-3 mb-4">

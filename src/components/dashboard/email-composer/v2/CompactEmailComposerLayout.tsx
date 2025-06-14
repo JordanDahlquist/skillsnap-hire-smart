@@ -1,4 +1,5 @@
 
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { EmailConfigSection } from './EmailConfigSection';
 import { EmailFormSection } from './EmailFormSection';
 import { CompactEmailActions } from './CompactEmailActions';
@@ -39,20 +40,26 @@ export const CompactEmailComposerLayout = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      <EmailConfigSection
-        applications={selectedApplications}
-        templates={templates}
-        templatesLoading={templatesLoading}
-        formData={formData}
-        selectTemplate={selectTemplate}
-      />
+    <div className="flex-1 flex flex-col min-h-0">
+      <ScrollArea className="flex-1">
+        <div className="flex flex-col">
+          <EmailConfigSection
+            applications={selectedApplications}
+            templates={templates}
+            templatesLoading={templatesLoading}
+            formData={formData}
+            selectTemplate={selectTemplate}
+          />
 
-      <EmailFormSection
-        formData={formData}
-        fromEmail={fromEmail}
-        updateField={updateField}
-      />
+          <div className="min-h-[400px]">
+            <EmailFormSection
+              formData={formData}
+              fromEmail={fromEmail}
+              updateField={updateField}
+            />
+          </div>
+        </div>
+      </ScrollArea>
 
       <div className="flex-shrink-0 border-t bg-white">
         <CompactEmailActions
