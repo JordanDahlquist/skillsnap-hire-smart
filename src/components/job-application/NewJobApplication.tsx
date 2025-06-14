@@ -105,9 +105,16 @@ export const NewJobApplication = () => {
   }
 
   const stepLabels = steps;
+  
+  // Fix the completion logic: mark all steps before current step as completed
   const completedSteps = Array(steps.length).fill(false);
   
-  // Mark completed steps based on validation states
+  // Mark all steps before the current step as completed
+  for (let i = 0; i < currentStep; i++) {
+    completedSteps[i] = true;
+  }
+  
+  // Also mark any specifically validated steps as completed
   Object.keys(stepValidations).forEach(stepIndex => {
     if (stepValidations[parseInt(stepIndex)]) {
       completedSteps[parseInt(stepIndex)] = true;
