@@ -9,6 +9,49 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Post-processing function to remove any application instructions
+const cleanJobPost = (content: string): string => {
+  let cleaned = content;
+  
+  // Remove "How to Apply" sections and everything after them
+  cleaned = cleaned.replace(/\*\*How to Apply\*\*[\s\S]*$/i, '');
+  cleaned = cleaned.replace(/\*\*Application Process\*\*[\s\S]*$/i, '');
+  cleaned = cleaned.replace(/\*\*Apply Now\*\*[\s\S]*$/i, '');
+  
+  // Remove specific forbidden phrases
+  const forbiddenPatterns = [
+    /send your resume to[\s\S]*$/i,
+    /email your application to[\s\S]*$/i,
+    /submit your application to[\s\S]*$/i,
+    /apply by emailing[\s\S]*$/i,
+    /contact us at[\s\S]*$/i,
+    /please send[\s\S]*resume[\s\S]*$/i,
+    /apply via email[\s\S]*$/i,
+    /send your cv[\s\S]*$/i,
+    /apply through our website[\s\S]*$/i,
+    /visit our careers page[\s\S]*$/i
+  ];
+  
+  forbiddenPatterns.forEach(pattern => {
+    cleaned = cleaned.replace(pattern, '');
+  });
+  
+  // Ensure it ends with the correct call-to-action
+  cleaned = cleaned.trim();
+  if (!cleaned.endsWith('Ready to make an impact? Click the apply button below!')) {
+    // Remove any existing call-to-action that might be wrong
+    cleaned = cleaned.replace(/ready to[\s\S]*$/i, '');
+    cleaned = cleaned.replace(/interested\?[\s\S]*$/i, '');
+    cleaned = cleaned.replace(/apply now[\s\S]*$/i, '');
+    cleaned = cleaned.trim();
+    
+    // Add the correct ending
+    cleaned += '\n\nReady to make an impact? Click the apply button below!';
+  }
+  
+  return cleaned;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -41,7 +84,9 @@ serve(async (req) => {
       // Determine if this is project-based or employee position
       const isProjectBased = jobData.employmentType === 'project';
       
-      prompt = `Create a compelling and comprehensive job posting for a ${jobData.title} position at ${jobData.companyName}. 
+      prompt = `CRITICAL WARNING: You MUST NOT include any application instructions, email addresses, or "How to Apply" sections. The job posting MUST end with the exact phrase specified below and NOTHING ELSE.
+
+Create a compelling and comprehensive job posting for a ${jobData.title} position at ${jobData.companyName}. 
 
 **COMPANY AND ROLE DETAILS:**
 - Company: ${jobData.companyName}
@@ -174,7 +219,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
         messages: [
           {
             role: 'system',
-            content: 'You are an expert HR professional and recruiter who creates compelling job postings, comprehensive skills assessments, and insightful interview questions. Always include ALL provided information in your responses. CRITICAL: For job postings, NEVER include application instructions, email addresses, or "How to Apply" sections. Job postings should end with the mandatory call-to-action only. Candidates apply directly through the platform.'
+            content: 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email.'
           },
           {
             role: 'user',
@@ -191,7 +236,12 @@ Make the questions challenging but fair, and ensure they can be answered well wi
     }
 
     const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
+    let generatedContent = data.choices[0].message.content;
+
+    // Apply post-processing for job posts to remove any application instructions
+    if (type === 'job-post') {
+      generatedContent = cleanJobPost(generatedContent);
+    }
 
     console.log(`Generated ${type} preview:`, generatedContent.substring(0, 200) + '...');
 
