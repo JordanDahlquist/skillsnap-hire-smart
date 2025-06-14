@@ -86,7 +86,13 @@ ${jobData.description ? `User-provided description: "${jobData.description}"` : 
 - **Key Responsibilities** 
 - **Requirements** (include experience level and required skills)
 - **What We Offer** (compensation and benefits)
-- **How to Apply** (brief application instructions)
+
+**CRITICAL APPLICATION INSTRUCTIONS:**
+- NEVER ask candidates to email their applications or resumes
+- NEVER include email addresses for applications
+- NEVER say "send your resume to" or similar email-based instructions
+- End with a simple, motivational call-to-action like "Ready to join our team? Apply now!"
+- Remember: candidates will apply directly through our platform, not via email
 
 Make this posting comprehensive, professional, and attractive to qualified ${jobData.experienceLevel} candidates for a ${workArrangementDisplay} ${jobData.employmentType} position.`;
 
@@ -159,7 +165,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
         messages: [
           {
             role: 'system',
-            content: 'You are an expert HR professional and recruiter who creates compelling job postings, comprehensive skills assessments, and insightful interview questions. Always include ALL provided information in your responses.'
+            content: 'You are an expert HR professional and recruiter who creates compelling job postings, comprehensive skills assessments, and insightful interview questions. Always include ALL provided information in your responses. NEVER ask candidates to email applications - they will apply through the platform directly.'
           },
           {
             role: 'user',
