@@ -17,14 +17,14 @@ export const Footer = () => {
             </Link>
             <span className="mx-2">•</span>
             <Link 
-              to="/terms-and-conditions" 
+              to="/terms" 
               className="text-muted-foreground hover:text-foreground underline"
             >
               Terms of Service
             </Link>
             <span className="mx-2">•</span>
             <Link 
-              to="/refund-policy" 
+              to="/refund" 
               className="text-muted-foreground hover:text-foreground underline"
             >
               Refund Policy
