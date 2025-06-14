@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UnifiedJobFormData, UnifiedJobCreatorActions } from "@/types/jobForm";
+import { Info } from "lucide-react";
 
 interface Step1BasicInfoProps {
   formData: UnifiedJobFormData;
@@ -18,7 +19,14 @@ export const Step1BasicInfo = ({
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Job Details</CardTitle>
+        <CardTitle className="text-lg">Basic Job Information</CardTitle>
+        <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-blue-700">
+            <p className="font-medium mb-1">How it works:</p>
+            <p>Step 1: Enter basic details • Step 2: AI generates professional job posting • Step 3: Create skills test • Step 4: Add interview questions • Step 5: Review & publish</p>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-2 h-full overflow-y-auto">
         <div className="grid grid-cols-2 gap-2">
@@ -50,18 +58,17 @@ export const Step1BasicInfo = ({
         </div>
 
         <div>
-          <Label htmlFor="description" className="text-sm">Job Description *</Label>
+          <Label htmlFor="description" className="text-sm">AI Generation Prompt</Label>
           <p className="text-xs text-gray-500 mb-1">
-            Describe the role, responsibilities, and requirements. The AI will use this to generate a professional job posting.
+            Enter any unique requirements, special skills, or key details that will help our AI create a tailored job description. This is optional - basic details work great too!
           </p>
           <Textarea
             id="description"
             value={formData.description}
             onChange={(e) => actions.updateFormData('description', e.target.value)}
-            placeholder="Describe the role, responsibilities, and requirements..."
-            rows={10}
+            placeholder="e.g. Must have experience with GraphQL, remote-first culture, startup environment, experience with microservices..."
+            rows={4}
             className="mt-1"
-            required
           />
         </div>
 

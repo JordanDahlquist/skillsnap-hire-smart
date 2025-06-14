@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UnifiedJobCreatorPanelProps } from "@/types/jobForm";
@@ -39,7 +40,8 @@ export const UnifiedJobCreatorPanel = ({
     if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
   };
 
-  const canProceedToStep2 = Boolean(state.formData.title && state.formData.description);
+  // Updated validation - only job title is required for step 2
+  const canProceedToStep2 = Boolean(state.formData.title);
   const canProceedToStep3 = Boolean(state.generatedJobPost);
   const canProceedToStep4 = Boolean(state.generatedJobPost);
   const canProceedToStep5 = Boolean(state.generatedJobPost);

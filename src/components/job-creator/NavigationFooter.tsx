@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Sparkles, Save } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, Zap } from "lucide-react";
 
 interface NavigationFooterProps {
   currentStep: number;
@@ -29,7 +29,7 @@ export const NavigationFooter = ({
   onNextStep,
   onSaveJob
 }: NavigationFooterProps) => {
-  const canProceedToNext = () => {
+  const getCanProceed = () => {
     switch (currentStep) {
       case 1: return canProceedToStep2;
       case 2: return canProceedToStep3;
@@ -39,50 +39,66 @@ export const NavigationFooter = ({
     }
   };
 
-  return (
-    <div className="flex justify-between items-center p-3 border-t bg-gray-50 flex-shrink-0">
-      <Button 
-        variant="outline" 
-        onClick={onPrevStep}
-        disabled={currentStep === 1}
-        size="sm"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Previous
-      </Button>
+  const getNextButtonText = () => {
+    switch (currentStep) {
+      case 1: return "Generate Job Post";
+      case 2: return "Create Skills Test";
+      case 3: return "Add Interview Questions";
+      case 4: return "Review & Publish";
+      default: return "Next";
+    }
+  };
 
-      <div className="flex gap-2">
-        {currentStep === totalSteps ? (
-          <>
-            <Button 
-              variant="outline"
-              onClick={() => onSaveJob('draft')}
-              disabled={isSaving}
+  return (
+    <div className="border-t p-3 flex-shrink-0 bg-gray-50">
+      <div className="flex justify-between items-center">
+        <Button
+          variant="outline"
+          onClick={onPrevStep}
+          disabled={currentStep === 1 || isSaving}
+          size="sm"
+        >
+          <ChevronLeft className="w-4 h-4 mr-1" />
+          Back
+        </Button>
+
+        <div className="text-sm text-gray-500">
+          Step {currentStep} of {totalSteps}
+        </div>
+
+        <div className="flex gap-2">
+          {currentStep === totalSteps ? (
+            <>
+              <Button
+                onClick={() => onSaveJob('draft')}
+                disabled={isSaving}
+                variant="outline"
+                size="sm"
+              >
+                <Save className="w-4 h-4 mr-1" />
+                Save Draft
+              </Button>
+              <Button
+                onClick={() => onSaveJob('active')}
+                disabled={!canActivate || isSaving}
+                size="sm"
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Zap className="w-4 h-4 mr-1" />
+                Activate Job
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={onNextStep}
+              disabled={!getCanProceed() || isSaving}
               size="sm"
             >
-              <Save className="w-4 h-4 mr-2" />
-              Save Draft
+              {getNextButtonText()}
+              <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
-            <Button 
-              onClick={() => onSaveJob('active')}
-              disabled={isSaving || !canActivate}
-              className="bg-green-600 hover:bg-green-700"
-              size="sm"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Publish Job
-            </Button>
-          </>
-        ) : (
-          <Button 
-            onClick={onNextStep}
-            disabled={!canProceedToNext() || currentStep === totalSteps}
-            size="sm"
-          >
-            Next
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
