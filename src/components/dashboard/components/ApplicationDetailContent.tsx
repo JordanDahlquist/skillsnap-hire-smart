@@ -56,7 +56,12 @@ export const ApplicationDetailContent = ({
       <div className="border-b border-border pb-4">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">{application.name}</h2>
+            <h2 
+              className="text-2xl font-bold text-foreground hover:text-primary cursor-pointer transition-colors"
+              onClick={handleViewFullProfile}
+            >
+              {application.name}
+            </h2>
             <p className="text-muted-foreground">{application.email}</p>
           </div>
           <div className="text-right flex flex-col items-end gap-2">
