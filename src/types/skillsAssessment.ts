@@ -33,7 +33,7 @@ export interface SkillsTestTemplate {
   id: string;
   name: string;
   description: string;
-  category: 'developer' | 'designer' | 'marketing' | 'sales' | 'general' | 'custom';
+  category: 'developer' | 'designer' | 'marketing' | 'sales' | 'general' | 'custom' | 'creative' | 'administrative' | 'content' | 'management' | 'support' | 'analytical' | 'hr' | 'finance';
   questions: Omit<SkillsQuestion, 'id'>[];
   estimatedTime: number;
   icon?: string;
