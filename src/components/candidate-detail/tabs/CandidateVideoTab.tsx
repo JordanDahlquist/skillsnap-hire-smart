@@ -185,6 +185,7 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
                   <VideoResponsePlayer
                     response={response}
                     questionIndex={response.questionIndex || index}
+                    transcript={transcript}
                   />
                   {/* Show transcript if available */}
                   {transcript && (

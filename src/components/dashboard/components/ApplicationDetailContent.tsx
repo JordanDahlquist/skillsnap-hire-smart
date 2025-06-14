@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -201,6 +200,7 @@ export const ApplicationDetailContent = ({
                 <VideoResponsePlayer
                   response={response}
                   questionIndex={index}
+                  transcript={skillsTranscripts.length > index ? skillsTranscripts[index] : undefined}
                 />
                 {/* Show transcript preview if available */}
                 {skillsTranscripts.length > index && skillsTranscripts[index]?.transcript && (
