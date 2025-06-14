@@ -32,7 +32,6 @@ export const EmailComposerModalV2 = ({
     resetForm
   } = useEmailComposerState();
   const { sendBulkEmail, isSending, getCompanyName, getUserUniqueEmail } = useEmailSending();
-  const { availableHeight } = useViewportHeight();
 
   const { isValid } = validateEmailForm(formData.subject, formData.content);
   const canSend = isValid && selectedApplications.length > 0 && !isSending;
@@ -67,16 +66,10 @@ export const EmailComposerModalV2 = ({
 
   const fromEmail = getUserUniqueEmail();
   const companyName = getCompanyName(job);
-  
-  // Make modal more compact
-  const modalHeight = Math.min(availableHeight * 0.8, 600);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent 
-        className="max-w-2xl p-0 glass-card border-0 shadow-3xl [&>button]:hidden overflow-hidden"
-        style={{ height: `${modalHeight}px` }}
-      >
+      <DialogContent className="max-w-2xl h-[60vh] max-h-[600px] min-h-[500px] p-0 glass-card border-0 shadow-3xl [&>button]:hidden overflow-hidden">
         <div className="flex flex-col h-full overflow-hidden bg-background/95 backdrop-blur-xl rounded-3xl">
           <EmailComposerHeader
             currentStep={currentStep}
