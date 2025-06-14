@@ -76,7 +76,7 @@ export const ApplicationDetailContent = ({
   };
 
   return (
-    <div className="glass-card p-6 space-y-6">
+    <div className="glass-card-no-hover p-6 space-y-6">
       {/* Header Section */}
       <div className="border-b border-border pb-4">
         <div className="flex items-start justify-between mb-4">
