@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
 import { CandidateSkillsTab } from "./tabs/CandidateSkillsTab";
 import { CandidateVideoTab } from "./tabs/CandidateVideoTab";
-import { CandidateDocumentsTab } from "./tabs/CandidateDocumentsTab";
+import { CandidateResumeTab } from "./tabs/CandidateResumeTab";
 import { CandidateActivityTab } from "./tabs/CandidateActivityTab";
 import { CandidateFloatingActions } from "./CandidateFloatingActions";
 import { Application, Job } from "@/types";
@@ -80,7 +80,7 @@ export const CandidateDetailContent = ({
 
   const hasSkillsAssessment = skillsResponses.length > 0;
   const hasVideoContent = skillsVideoResponses.length > 0 || hasInterviewVideos;
-  const hasDocuments = !!(application.resume_file_path || application.cover_letter);
+  const hasResume = !!(application.resume_file_path);
 
   return (
     <div className="relative">
@@ -93,8 +93,8 @@ export const CandidateDetailContent = ({
           <TabsTrigger value="video" disabled={!hasVideoContent}>
             Video {!hasVideoContent && "(None)"}
           </TabsTrigger>
-          <TabsTrigger value="documents" disabled={!hasDocuments}>
-            Documents {!hasDocuments && "(None)"}
+          <TabsTrigger value="resume" disabled={!hasResume}>
+            Resume {!hasResume && "(None)"}
           </TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
@@ -120,8 +120,8 @@ export const CandidateDetailContent = ({
           />
         </TabsContent>
 
-        <TabsContent value="documents" className="space-y-6">
-          <CandidateDocumentsTab 
+        <TabsContent value="resume" className="space-y-6">
+          <CandidateResumeTab 
             application={application}
           />
         </TabsContent>
