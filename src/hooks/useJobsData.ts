@@ -1,7 +1,5 @@
 
 import { useMemo, useCallback, useState } from "react";
-import { useRecentApplications } from "./useApplications";
-import { useJobStats } from "./useJobStats";
 import { JobFilters, defaultFilters } from "./job-filtering/types";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
 import { applyJobFiltersOptimized, sortJobs } from "./job-filtering/optimizedFilterUtils";
@@ -19,21 +17,14 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
   const [filters, setFilters] = useState<JobFilters>(defaultFilters);
   const [sortBy, setSortBy] = useState("updated_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [needsAttentionFilter, setNeedsAttentionFilter] = useState(false);
-  const [activeJobsFilter, setActiveJobsFilter] = useState(false);
 
   // Debounce search to prevent excessive filtering
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
-  // Data fetching with the provided jobs
-  const { data: recentApplications = [] } = useRecentApplications(jobs.map(job => job.id));
 
   // Memoized calculations
   const availableOptions = useMemo(() => {
     return extractAvailableOptions(jobs);
   }, [jobs]);
-
-  const stats = useJobStats(jobs, recentApplications);
 
   // Custom sort handler that sets appropriate default sort orders
   const handleSortChange = useCallback((newSortBy: string) => {
@@ -54,8 +45,6 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     console.log('Filtering jobs:', { 
       totalJobs: jobs.length, 
       statusFilter: filters.status,
-      activeJobsFilter, 
-      needsAttentionFilter,
       searchTerm: debouncedSearchTerm,
       sortBy,
       sortOrder
@@ -74,28 +63,10 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
       console.log('After status filter:', filtered.length);
     }
     
-    if (needsAttentionFilter) {
-      filtered = filtered.filter(job => {
-        const pendingCount = job.applicationStatusCounts?.pending || 0;
-        return pendingCount >= 10;
-      });
-    }
-    
-    if (activeJobsFilter) {
-      console.log('Applying active jobs filter. Job statuses:', jobs.map(job => ({ id: job.id, status: job.status })));
-      filtered = filtered.filter(job => {
-        // Check for various possible active status values
-        const isActive = job.status === 'active' || job.status === 'published' || job.status === 'open';
-        console.log(`Job ${job.id} status: ${job.status}, isActive: ${isActive}`);
-        return isActive;
-      });
-      console.log('Filtered active jobs:', filtered.length);
-    }
-    
     const sortedJobs = sortJobs(filtered, sortBy, sortOrder);
     console.log('Final filtered jobs count:', sortedJobs.length);
     return sortedJobs;
-  }, [jobs, debouncedSearchTerm, filters, sortBy, sortOrder, needsAttentionFilter, activeJobsFilter]);
+  }, [jobs, debouncedSearchTerm, filters, sortBy, sortOrder]);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -107,10 +78,8 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     if (filters.duration !== "all") count++;
     if (filters.status !== "all") count++;
     if (filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000) count++;
-    if (needsAttentionFilter) count++;
-    if (activeJobsFilter) count++;
     return count;
-  }, [filters, needsAttentionFilter, activeJobsFilter]);
+  }, [filters]);
 
   const updateFilter = useCallback((key: keyof JobFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -119,8 +88,6 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
   const clearAllFilters = useCallback(() => {
     setSearchTerm("");
     setFilters(defaultFilters);
-    setNeedsAttentionFilter(false);
-    setActiveJobsFilter(false);
   }, []);
 
   return {
@@ -129,7 +96,6 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     filteredJobs,
     isLoading,
     refetch,
-    stats,
     availableOptions,
     
     // Search and filters
@@ -142,10 +108,6 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     setSortBy: handleSortChange,
     sortOrder,
     setSortOrder,
-    needsAttentionFilter,
-    setNeedsAttentionFilter,
-    activeJobsFilter,
-    setActiveJobsFilter,
     activeFiltersCount,
     clearAllFilters,
   };

@@ -14,16 +14,9 @@ interface JobsPageContentProps {
   // Jobs data
   jobs: Job[];
   filteredJobs: Job[];
-  stats: any;
   
   // User data
   userDisplayName: string;
-  
-  // Filter states
-  needsAttentionFilter: boolean;
-  activeJobsFilter: boolean;
-  onNeedsAttentionClick: () => void;
-  onActiveJobsClick: () => void;
   
   // Search and filters
   searchTerm: string;
@@ -56,12 +49,7 @@ export const JobsPageContent = memo(({
   onCreateJob,
   jobs,
   filteredJobs,
-  stats,
   userDisplayName,
-  needsAttentionFilter,
-  activeJobsFilter,
-  onNeedsAttentionClick,
-  onActiveJobsClick,
   searchTerm,
   onSearchChange,
   filters,
@@ -96,11 +84,6 @@ export const JobsPageContent = memo(({
       <JobsHeaderSection
         userDisplayName={userDisplayName}
         onCreateJob={onCreateJob}
-        stats={stats}
-        onNeedsAttentionClick={onNeedsAttentionClick}
-        needsAttentionActive={needsAttentionFilter}
-        onActiveJobsClick={onActiveJobsClick}
-        activeJobsFilterActive={activeJobsFilter}
       />
 
       <JobsToolbar
@@ -118,7 +101,7 @@ export const JobsPageContent = memo(({
         selectedJobs={selectedJobs}
         onBulkAction={onBulkAction}
         onRefresh={onRefresh}
-        needsAttentionFilter={needsAttentionFilter}
+        needsAttentionFilter={false}
         activeFiltersCount={activeFiltersCount}
       />
 
@@ -131,8 +114,8 @@ export const JobsPageContent = memo(({
         onCreateJob={onCreateJob}
         onRefetch={refetch}
         clearFilters={clearAllFilters}
-        needsAttentionFilter={needsAttentionFilter}
-        activeJobsFilter={activeJobsFilter}
+        needsAttentionFilter={false}
+        activeJobsFilter={false}
         onBulkAction={onBulkAction}
       />
 

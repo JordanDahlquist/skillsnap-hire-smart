@@ -1,11 +1,9 @@
-
 import { memo } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useJobSelection } from "@/hooks/useJobSelection";
 import { useJobsData } from "@/hooks/useJobsData";
 import { useOptimizedJobs } from "@/hooks/useOptimizedJobs";
 import { useJobsPageActions } from "@/hooks/jobs/useJobsPageActions";
-import { useJobsPageFilters } from "@/hooks/jobs/useJobsPageFilters";
 import { useJobsPageState } from "@/hooks/jobs/useJobsPageState";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { JobsPageBackground } from "./JobsPageBackground";
@@ -21,7 +19,6 @@ export const OptimizedJobsPage = memo(() => {
   // Pass jobs to useJobsData instead of letting it fetch its own
   const {
     filteredJobs,
-    stats,
     searchTerm,
     setSearchTerm,
     filters,
@@ -31,10 +28,6 @@ export const OptimizedJobsPage = memo(() => {
     sortOrder,
     setSortOrder,
     clearAllFilters,
-    needsAttentionFilter,
-    setNeedsAttentionFilter,
-    activeJobsFilter,
-    setActiveJobsFilter,
     activeFiltersCount
   } = useJobsData({ jobs, isLoading: jobsLoading, refetch });
 
@@ -57,15 +50,6 @@ export const OptimizedJobsPage = memo(() => {
   // Extract actions
   const { handleRefresh } = useJobsPageActions(refetch);
 
-  // Extract filter actions
-  const { handleNeedsAttentionClick, handleActiveJobsClick } = useJobsPageFilters({
-    needsAttentionFilter,
-    setNeedsAttentionFilter,
-    activeJobsFilter,
-    setActiveJobsFilter,
-    setSortBy
-  });
-
   // Use jobsLoading from optimized hook
   if (jobsLoading) {
     return <JobsPageLoading />;
@@ -78,12 +62,7 @@ export const OptimizedJobsPage = memo(() => {
           onCreateJob={handleCreateJob}
           jobs={jobs}
           filteredJobs={filteredJobs}
-          stats={stats}
           userDisplayName={getUserDisplayName()}
-          needsAttentionFilter={needsAttentionFilter}
-          activeJobsFilter={activeJobsFilter}
-          onNeedsAttentionClick={handleNeedsAttentionClick}
-          onActiveJobsClick={handleActiveJobsClick}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           filters={filters}

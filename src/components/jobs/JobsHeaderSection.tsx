@@ -1,26 +1,14 @@
 
 import { AIDailyBriefing } from "./AIDailyBriefing";
-import { JobsStats } from "./JobsStats";
-import { JobStats } from "@/hooks/useJobStats";
 
 interface JobsHeaderSectionProps {
   userDisplayName: string;
   onCreateJob: () => void;
-  stats: JobStats;
-  onNeedsAttentionClick?: () => void;
-  needsAttentionActive?: boolean;
-  onActiveJobsClick?: () => void;
-  activeJobsFilterActive?: boolean;
 }
 
 export const JobsHeaderSection = ({
   userDisplayName,
-  onCreateJob,
-  stats,
-  onNeedsAttentionClick,
-  needsAttentionActive,
-  onActiveJobsClick,
-  activeJobsFilterActive
+  onCreateJob
 }: JobsHeaderSectionProps) => {
   return (
     <div className="relative overflow-hidden">
@@ -32,13 +20,6 @@ export const JobsHeaderSection = ({
         <AIDailyBriefing 
           userDisplayName={userDisplayName}
           onCreateJob={onCreateJob}
-        />
-        <JobsStats 
-          stats={stats} 
-          onNeedsAttentionClick={onNeedsAttentionClick}
-          needsAttentionActive={needsAttentionActive}
-          onActiveJobsClick={onActiveJobsClick}
-          activeJobsFilterActive={activeJobsFilterActive}
         />
       </div>
     </div>
