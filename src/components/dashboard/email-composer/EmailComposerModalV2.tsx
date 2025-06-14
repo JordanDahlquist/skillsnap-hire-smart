@@ -68,15 +68,16 @@ export const EmailComposerModalV2 = ({
   const fromEmail = getUserUniqueEmail();
   const companyName = getCompanyName(job);
   
-  const modalHeight = Math.min(availableHeight * 0.9, 800);
+  // Make modal more compact
+  const modalHeight = Math.min(availableHeight * 0.8, 600);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent 
-        className="max-w-4xl p-0 bg-white border shadow-2xl [&>button]:hidden overflow-hidden"
+        className="max-w-2xl p-0 glass-card border-0 shadow-3xl [&>button]:hidden overflow-hidden"
         style={{ height: `${modalHeight}px` }}
       >
-        <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col h-full overflow-hidden bg-background/95 backdrop-blur-xl rounded-3xl">
           <EmailComposerHeader
             currentStep={currentStep}
             recipientCount={selectedApplications.length}

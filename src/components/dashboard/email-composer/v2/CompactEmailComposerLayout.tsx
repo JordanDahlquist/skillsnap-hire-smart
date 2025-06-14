@@ -1,9 +1,6 @@
 
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { EmailConfigSection } from './EmailConfigSection';
-import { EmailFormSection } from './EmailFormSection';
-import { CompactEmailActions } from './CompactEmailActions';
 import { EmailSendingState } from './EmailSendingState';
+import { CompactEmailForm } from './CompactEmailForm';
 import type { EmailTemplate, EmailFormData, Application, Job } from '@/types/emailComposer';
 
 interface CompactEmailComposerLayoutProps {
@@ -40,37 +37,19 @@ export const CompactEmailComposerLayout = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      {/* Config Section with its own scroll area */}
-      <div className="flex-shrink-0">
-        <ScrollArea className="max-h-60">
-          <EmailConfigSection
-            applications={selectedApplications}
-            templates={templates}
-            templatesLoading={templatesLoading}
-            formData={formData}
-            selectTemplate={selectTemplate}
-          />
-        </ScrollArea>
-      </div>
-
-      {/* Email Form Section - takes remaining space */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <EmailFormSection
-          formData={formData}
-          fromEmail={fromEmail}
-          updateField={updateField}
-        />
-      </div>
-
-      {/* Actions Section - always visible at bottom */}
-      <div className="flex-shrink-0 border-t bg-white">
-        <CompactEmailActions
-          onSend={onSend}
-          isSending={isSending}
-          canSend={canSend}
-        />
-      </div>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <CompactEmailForm
+        applications={selectedApplications}
+        templates={templates}
+        templatesLoading={templatesLoading}
+        formData={formData}
+        fromEmail={fromEmail}
+        updateField={updateField}
+        selectTemplate={selectTemplate}
+        onSend={onSend}
+        isSending={isSending}
+        canSend={canSend}
+      />
     </div>
   );
 };

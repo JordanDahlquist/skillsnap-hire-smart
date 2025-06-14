@@ -1,7 +1,6 @@
 
-import { X, Users, Mail, Loader2 } from 'lucide-react';
+import { X, Mail, Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 interface EmailComposerHeaderProps {
   currentStep: 'compose' | 'preview' | 'sending';
@@ -16,50 +15,47 @@ export const EmailComposerHeader = ({
   onClose,
   isLoading
 }: EmailComposerHeaderProps) => {
-  const stepConfig = {
-    compose: { label: 'Compose Email', icon: Mail },
-    preview: { label: 'Preview & Send', icon: Users },
-    sending: { label: 'Sending...', icon: Loader2 }
+  const getHeaderInfo = () => {
+    switch (currentStep) {
+      case 'sending':
+        return {
+          title: 'Sending Emails...',
+          subtitle: `Sending to ${recipientCount} recipient${recipientCount > 1 ? 's' : ''}`,
+          icon: Loader2,
+          animate: true
+        };
+      default:
+        return {
+          title: 'Compose Email',
+          subtitle: `${recipientCount} recipient${recipientCount > 1 ? 's' : ''} selected`,
+          icon: Mail,
+          animate: false
+        };
+    }
   };
 
-  const currentConfig = stepConfig[currentStep];
-  const IconComponent = currentConfig.icon;
+  const { title, subtitle, icon: Icon, animate } = getHeaderInfo();
 
   return (
-    <div className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-      <div className="flex items-center justify-between p-4">
-        {/* Left - Title and step */}
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-white/20 rounded-lg">
-            <IconComponent className={`w-5 h-5 ${currentStep === 'sending' ? 'animate-spin' : ''}`} />
-          </div>
+    <div className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon className={`w-4 h-4 ${animate ? 'animate-spin' : ''}`} />
           <div>
-            <h2 className="text-lg font-semibold">{currentConfig.label}</h2>
-            <p className="text-white/80 text-sm">
-              {currentStep === 'sending' 
-                ? `Sending to ${recipientCount} recipient${recipientCount > 1 ? 's' : ''}...`
-                : `Email campaign for ${recipientCount} recipient${recipientCount > 1 ? 's' : ''}`
-              }
-            </p>
+            <h2 className="text-sm font-semibold">{title}</h2>
+            <p className="text-xs text-white/80">{subtitle}</p>
           </div>
         </div>
 
-        {/* Right - Recipients count and close */}
-        <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="bg-white/20 text-white border-0">
-            {recipientCount}
-          </Badge>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            disabled={isLoading}
-            className="text-white hover:bg-white/10 h-8 w-8 p-0"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          disabled={isLoading}
+          className="text-white hover:bg-white/10 h-6 w-6 p-0"
+        >
+          <X className="w-3 h-3" />
+        </Button>
       </div>
     </div>
   );
