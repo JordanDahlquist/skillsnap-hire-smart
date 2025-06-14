@@ -32,8 +32,8 @@ export const SortControls = ({
 
   const currentSortLabel = sortOptions.find(option => option.value === sortBy)?.label || 'Sort by';
   
-  const textColor = currentTheme === 'dark' ? 'text-white' : 'text-black';
-  const iconColor = currentTheme === 'dark' ? 'text-white' : 'text-black';
+  const textColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-white' : 'text-black';
+  const iconColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-white' : 'text-black';
 
   const handleSortOrderToggle = () => {
     if (onSortOrderChange) {
@@ -54,9 +54,21 @@ export const SortControls = ({
             {currentSortLabel}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
+        <SelectContent className={`bg-white/95 backdrop-blur-sm border-white/40 shadow-lg ${
+          currentTheme === 'dark' || currentTheme === 'black' 
+            ? 'bg-black/95 border-gray-800' 
+            : 'bg-white/95'
+        }`}>
           {sortOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value} className="text-gray-900 hover:bg-gray-100">
+            <SelectItem 
+              key={option.value} 
+              value={option.value} 
+              className={
+                currentTheme === 'dark' || currentTheme === 'black' 
+                  ? 'text-white hover:bg-gray-800' 
+                  : 'text-gray-900 hover:bg-gray-100'
+              }
+            >
               {option.label}
             </SelectItem>
           ))}
