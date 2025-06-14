@@ -7,6 +7,7 @@ import { DashboardSkeleton } from "./dashboard/DashboardSkeleton";
 import { ApplicationsManager } from "./dashboard/ApplicationsManager";
 import { EnhancedDashboardHeader } from "./dashboard/EnhancedDashboardHeader";
 import { getTimeAgo } from "@/utils/dateUtils";
+import { useThemeContext } from "@/contexts/ThemeContext";
 import { Application } from "@/types";
 
 export const Dashboard = () => {
@@ -16,9 +17,14 @@ export const Dashboard = () => {
   const { data: jobs, isLoading: jobsLoading } = useJobs();
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const { currentTheme } = useThemeContext();
 
   const job = jobs?.find(j => j.id === jobId);
   const isLoading = applicationsLoading || jobsLoading;
+
+  // Theme-aware colors
+  const titleColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-white' : 'text-gray-900';
+  const subtitleColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-gray-200' : 'text-gray-600';
 
   // Handle selectedApplicationId from navigation state (from Scout) or session storage (from new tab)
   useEffect(() => {
@@ -61,8 +67,8 @@ export const Dashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Job not found</h2>
-          <p className="text-gray-600">The job you're looking for doesn't exist or you don't have permission to view it.</p>
+          <h2 className={`text-2xl font-bold mb-2 ${titleColor}`}>Job not found</h2>
+          <p className={subtitleColor}>The job you're looking for doesn't exist or you don't have permission to view it.</p>
         </div>
       </div>
     );
