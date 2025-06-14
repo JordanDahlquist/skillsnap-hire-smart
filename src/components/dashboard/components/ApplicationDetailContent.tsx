@@ -1,6 +1,8 @@
 
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 import { StageSelector } from "../StageSelector";
 import { ApplicationRatingSection } from "./ApplicationRatingSection";
 import { ApplicationActionButtons } from "./ApplicationActionButtons";
@@ -35,6 +37,7 @@ export const ApplicationDetailContent = ({
   jobId,
   onStageChange
 }: ApplicationDetailContentProps) => {
+  const navigate = useNavigate();
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
   const pipelineStage = application.pipeline_stage || 'applied';
 
@@ -42,6 +45,10 @@ export const ApplicationDetailContent = ({
   const skillsResponses = Array.isArray(application.skills_test_responses) 
     ? application.skills_test_responses 
     : [];
+
+  const handleViewFullProfile = () => {
+    navigate(`/dashboard/${jobId}/candidate/${application.id}`);
+  };
 
   return (
     <div className="glass-card p-6 space-y-6">
@@ -52,13 +59,22 @@ export const ApplicationDetailContent = ({
             <h2 className="text-2xl font-bold text-foreground">{application.name}</h2>
             <p className="text-muted-foreground">{application.email}</p>
           </div>
-          <div className="text-right">
+          <div className="text-right flex flex-col items-end gap-2">
             <Badge className={getStatusColor(displayStatus)}>
               {displayStatus}
             </Badge>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground">
               Applied {getTimeAgo(application.created_at)}
             </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleViewFullProfile}
+              className="flex items-center gap-1"
+            >
+              <ExternalLink className="w-3 h-3" />
+              View Full Profile
+            </Button>
           </div>
         </div>
 
@@ -144,28 +160,38 @@ export const ApplicationDetailContent = ({
         </div>
       </div>
 
-      {/* Skills Assessment Responses */}
+      {/* Skills Assessment Responses - Truncated */}
       {skillsResponses.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-foreground">Skills Assessment Responses</h3>
+          <h3 className="text-lg font-semibold text-foreground">Skills Assessment (Preview)</h3>
           <div className="space-y-4">
-            {skillsResponses.map((response: any, index: number) => (
+            {skillsResponses.slice(0, 1).map((response: any, index: number) => (
               <VideoResponsePlayer
                 key={index}
                 response={response}
                 questionIndex={index}
               />
             ))}
+            {skillsResponses.length > 1 && (
+              <p className="text-sm text-muted-foreground">
+                +{skillsResponses.length - 1} more responses. View full profile to see all.
+              </p>
+            )}
           </div>
         </div>
       )}
 
-      {/* Cover Letter */}
+      {/* Cover Letter - Truncated */}
       {application.cover_letter && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-foreground">Cover Letter</h3>
+          <h3 className="text-lg font-semibold text-foreground">Cover Letter (Preview)</h3>
           <div className="p-4 bg-muted/30 rounded-lg border border-border">
-            <p className="text-foreground whitespace-pre-wrap">{application.cover_letter}</p>
+            <p className="text-foreground line-clamp-3">{application.cover_letter}</p>
+            {application.cover_letter.length > 200 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                View full profile to read complete cover letter.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -201,20 +227,23 @@ export const ApplicationDetailContent = ({
         </div>
       )}
 
-      {/* Video Interview */}
+      {/* Video Interview - Show if exists */}
       {application.interview_video_url && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-foreground">Video Interview</h3>
+          <h3 className="text-lg font-semibold text-foreground">Video Interview (Preview)</h3>
           <div className="bg-black rounded-lg overflow-hidden">
             <video
               src={application.interview_video_url}
               controls
-              className="w-full max-h-80 object-contain"
+              className="w-full max-h-60 object-contain"
               preload="metadata"
             >
               Your browser does not support the video tag.
             </video>
           </div>
+          <p className="text-sm text-muted-foreground">
+            View full profile for better video player experience.
+          </p>
         </div>
       )}
 

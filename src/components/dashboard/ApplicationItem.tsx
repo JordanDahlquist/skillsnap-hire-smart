@@ -1,7 +1,10 @@
 
 import React, { memo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 import { StageSelector } from './StageSelector';
 import { logger } from '@/services/loggerService';
 import { renderManualRating, renderAIRating } from './utils/ratingUtils';
@@ -28,6 +31,8 @@ export const ApplicationItem = memo(({
   onSelectApplications,
   jobId
 }: ApplicationItemProps) => {
+  const navigate = useNavigate();
+
   const handleSelectApplication = useCallback((applicationId: string, checked: boolean) => {
     if (onSelectApplications) {
       if (checked) {
@@ -44,6 +49,17 @@ export const ApplicationItem = memo(({
     onSelectApplication(application);
     logger.debug('Application clicked for detail view', { applicationId: application.id });
   }, [onSelectApplication, application]);
+
+  const handleViewFullProfile = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (jobId) {
+      navigate(`/dashboard/${jobId}/candidate/${application.id}`);
+      logger.debug('Navigating to candidate detail page', { 
+        jobId, 
+        applicationId: application.id 
+      });
+    }
+  }, [navigate, jobId, application.id]);
 
   // Get the display status - if status is "reviewed" but no manual rating, show as "pending"
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
@@ -125,6 +141,19 @@ export const ApplicationItem = memo(({
                     </div>
                   </div>
                 </div>
+
+                {/* View Full Profile Button */}
+                {jobId && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleViewFullProfile}
+                    className="ml-2 flex items-center gap-1 text-xs"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    View Full
+                  </Button>
+                )}
               </div>
               
               {application.ai_summary && (

@@ -16,6 +16,7 @@ import PublicJobs from "./pages/PublicJobs";
 import { JobApplicationPage } from "./pages/JobApplicationPage";
 import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
+import { CandidateDetailPage } from "./pages/CandidateDetailPage";
 import Scout from "./pages/Scout";
 import { Inbox } from "./pages/Inbox";
 import ProfileSettings from "./pages/ProfileSettings";
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/apply/:jobId" element={<JobApplicationPage />} />
                 <Route path="/jobs" element={<OptimizedJobsPage />} />
                 <Route path="/dashboard/:jobId" element={<DashboardPage />} />
+                <Route path="/dashboard/:jobId/candidate/:applicationId" element={<CandidateDetailPage />} />
                 <Route path="/scout" element={<Scout />} />
                 <Route path="/inbox" element={<Inbox />} />
                 <Route path="/profile" element={<ProfileSettings />} />
