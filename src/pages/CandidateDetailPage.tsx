@@ -158,7 +158,6 @@ export const CandidateDetailPage = () => {
           job={job}
           application={selectedApplication}
           onBackToDashboard={handleBackToDashboard}
-          onApplicationUpdate={handleApplicationUpdate}
         />
 
         <CandidateNavigation 
