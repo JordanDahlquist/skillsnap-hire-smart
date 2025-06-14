@@ -29,13 +29,13 @@ const initialSkillsTestData: SkillsTestData = {
   instructions: ""
 };
 
-const initialState: UnifiedJobCreatorState = {
+const getInitialState = (): UnifiedJobCreatorState => ({
   currentStep: 1,
   isGenerating: false,
   isSaving: false,
-  formData: initialFormData,
+  formData: { ...initialFormData },
   generatedJobPost: "",
-  skillsTestData: initialSkillsTestData,
+  skillsTestData: { ...initialSkillsTestData },
   skillsTestViewState: 'initial',
   generatedInterviewQuestions: "",
   interviewVideoMaxLength: 5,
@@ -43,17 +43,20 @@ const initialState: UnifiedJobCreatorState = {
   isEditingInterviewQuestions: false,
   isEditMode: false,
   editingJobId: undefined
-};
+});
 
 export const useJobCreatorState = () => {
-  const [state, setState] = useState<UnifiedJobCreatorState>(initialState);
+  const [state, setState] = useState<UnifiedJobCreatorState>(getInitialState());
 
-  const resetState = () => setState(initialState);
+  const resetState = () => {
+    console.log('Resetting job creator state');
+    setState(getInitialState());
+  };
 
   return {
     state,
     setState,
     resetState,
-    initialState
+    initialState: getInitialState()
   };
 };

@@ -24,13 +24,22 @@ export const UnifiedJobCreatorPanel = ({
 
   // Populate form when editing a job
   useEffect(() => {
-    if (editingJob && open) {
+    console.log('UnifiedJobCreatorPanel useEffect triggered:', { editingJob: !!editingJob, open, isEditMode: state.isEditMode });
+    
+    if (editingJob && open && !state.isEditMode) {
+      console.log('Populating form with editing job:', editingJob);
       actions.populateFormFromJob(editingJob);
-    } else if (!editingJob && open) {
-      // Reset to creation mode
+    } else if (!editingJob && open && state.isEditMode) {
+      // Reset to creation mode when no job is being edited
+      console.log('Resetting to creation mode');
       actions.setEditMode(false);
     }
-  }, [editingJob, open, actions]);
+  }, [editingJob, open, actions, state.isEditMode]);
+
+  // Debug effect to log state changes
+  useEffect(() => {
+    console.log('Form data updated:', state.formData);
+  }, [state.formData]);
 
   const handleNextStep = () => {
     if (state.currentStep === 1) {

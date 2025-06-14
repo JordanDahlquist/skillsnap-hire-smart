@@ -21,6 +21,13 @@ export const createJobCreatorActions = (
   setIsEditingInterviewQuestions: (editing) => setState((prev: any) => ({ ...prev, isEditingInterviewQuestions: editing })),
   setEditMode: (isEdit, jobId) => setState((prev: any) => ({ ...prev, isEditMode: isEdit, editingJobId: jobId })),
   populateFormFromJob: (job) => {
+    console.log('populateFormFromJob called with job:', job);
+    
+    if (!job) {
+      console.error('No job provided to populateFormFromJob');
+      return;
+    }
+
     const budgetParts = parseBudgetRange(job.budget || "");
     
     // Parse existing skills test data
@@ -39,6 +46,7 @@ export const createJobCreatorActions = (
           estimatedCompletionTime: parsed.estimatedCompletionTime,
           instructions: parsed.instructions
         };
+        console.log('Parsed skills test data:', parsedSkillsTestData);
       } catch (error) {
         console.error('Error parsing skills test data:', error);
         parsedSkillsTestData = {
@@ -60,11 +68,12 @@ export const createJobCreatorActions = (
       jobPost = jobPost.replace(benefitsMarker, "").trim();
     }
     
+    console.log('Updating state with job data...');
     setState((prev: any) => {
       const employmentType = job.employment_type || job.role_type || "project";
       const isProjectBased = employmentType === 'project';
       
-      return {
+      const newState = {
         ...prev,
         isEditMode: true,
         editingJobId: job.id,
@@ -90,7 +99,13 @@ export const createJobCreatorActions = (
         skillsTestViewState: parsedSkillsTestData.questions.length > 0 ? 'editor' : 'initial',
         generatedInterviewQuestions: job.generated_interview_questions || "",
         interviewVideoMaxLength: job.interview_video_max_length || 5
-      }
+      };
+      
+      console.log('New state formData:', newState.formData);
+      console.log('New state generatedJobPost:', newState.generatedJobPost ? 'Has content' : 'Empty');
+      console.log('New state skillsTestData:', newState.skillsTestData);
+      
+      return newState;
     });
   }
 });
