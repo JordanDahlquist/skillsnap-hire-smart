@@ -1,3 +1,4 @@
+
 import { Step1BasicInfo } from "./Step1BasicInfo";
 import { Step2JobPostGenerator } from "./Step2JobPostGenerator";
 import { Step3SkillsTestGenerator } from "./Step3SkillsTestGenerator";
@@ -45,6 +46,7 @@ export const StepRenderer = ({
         <Step3SkillsTestGenerator
           generatedJobPost={state.generatedJobPost}
           skillsTestData={state.skillsTestData}
+          skillsTestViewState={state.skillsTestViewState}
           isGenerating={state.isGenerating}
           actions={actions}
           onGenerateQuestions={onGenerateSkillsQuestions}

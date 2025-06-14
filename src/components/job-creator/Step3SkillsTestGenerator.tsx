@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,23 +13,28 @@ import { SkillsTestPreview } from "./skills/SkillsTestPreview";
 interface Step3SkillsTestGeneratorProps {
   generatedJobPost: string;
   skillsTestData: SkillsTestData;
+  skillsTestViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
   isGenerating: boolean;
   actions: UnifiedJobCreatorActions;
   onGenerateQuestions: () => Promise<void>;
   onSkillsTestDataChange: (data: SkillsTestData) => void;
 }
 
-type ViewState = 'initial' | 'template_selector' | 'editor' | 'preview';
-
 export const Step3SkillsTestGenerator = ({
   generatedJobPost,
   skillsTestData,
+  skillsTestViewState,
   isGenerating,
   actions,
   onGenerateQuestions,
   onSkillsTestDataChange
 }: Step3SkillsTestGeneratorProps) => {
-  const [viewState, setViewState] = useState<ViewState>('initial');
+  // Smart initial view determination - if we have questions, show editor
+  useEffect(() => {
+    if (skillsTestViewState === 'initial' && skillsTestData.questions.length > 0) {
+      actions.setSkillsTestViewState('editor');
+    }
+  }, [skillsTestData.questions.length, skillsTestViewState, actions]);
   
   const hasQuestions = skillsTestData.questions.length > 0;
 
@@ -38,12 +43,12 @@ export const Step3SkillsTestGenerator = ({
     const updatedData = { ...skillsTestData, mode: 'ai_generated' as const };
     onSkillsTestDataChange(updatedData);
     await onGenerateQuestions();
-    setViewState('editor');
+    actions.setSkillsTestViewState('editor');
   };
 
   const handleBuildCustomAssessment = () => {
     // Go directly to template selector for custom building
-    setViewState('template_selector');
+    actions.setSkillsTestViewState('template_selector');
   };
 
   const handleTemplateSelect = (template: SkillsTestTemplate | null) => {
@@ -73,19 +78,19 @@ export const Step3SkillsTestGenerator = ({
       onSkillsTestDataChange(updatedData);
     }
     
-    setViewState('editor');
+    actions.setSkillsTestViewState('editor');
   };
 
   const handlePreview = () => {
-    setViewState('preview');
+    actions.setSkillsTestViewState('preview');
   };
 
   const handleBackToEditor = () => {
-    setViewState('editor');
+    actions.setSkillsTestViewState('editor');
   };
 
   const handleBackToTemplateSelector = () => {
-    setViewState('template_selector');
+    actions.setSkillsTestViewState('template_selector');
   };
 
   const handleBackToInitial = () => {
@@ -97,11 +102,11 @@ export const Step3SkillsTestGenerator = ({
       mode: 'ai_generated'
     };
     onSkillsTestDataChange(clearedData);
-    setViewState('initial');
+    actions.setSkillsTestViewState('initial');
   };
 
   // Render based on current view state
-  switch (viewState) {
+  switch (skillsTestViewState) {
     case 'template_selector':
       return (
         <SkillsTestTemplateSelector

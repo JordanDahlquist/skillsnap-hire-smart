@@ -48,6 +48,7 @@ export interface UnifiedJobCreatorState {
   formData: UnifiedJobFormData;
   generatedJobPost: string;
   skillsTestData: SkillsTestData;
+  skillsTestViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
   generatedInterviewQuestions: string;
   interviewVideoMaxLength: number;
   isEditingJobPost: boolean;
@@ -64,6 +65,7 @@ export interface UnifiedJobCreatorActions {
   updateFormData: (field: keyof UnifiedJobFormData, value: string) => void;
   setGeneratedJobPost: (content: string) => void;
   setSkillsTestData: (data: SkillsTestData) => void;
+  setSkillsTestViewState: (viewState: 'initial' | 'template_selector' | 'editor' | 'preview') => void;
   setGeneratedInterviewQuestions: (content: string) => void;
   setInterviewVideoMaxLength: (length: number) => void;
   setIsEditingJobPost: (editing: boolean) => void;

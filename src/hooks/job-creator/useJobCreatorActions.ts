@@ -1,3 +1,4 @@
+
 import { UnifiedJobCreatorActions, UnifiedJobFormData } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
 
@@ -13,6 +14,7 @@ export const createJobCreatorActions = (
   })),
   setGeneratedJobPost: (content) => setState((prev: any) => ({ ...prev, generatedJobPost: content })),
   setSkillsTestData: (data) => setState((prev: any) => ({ ...prev, skillsTestData: data })),
+  setSkillsTestViewState: (viewState) => setState((prev: any) => ({ ...prev, skillsTestViewState: viewState })),
   setGeneratedInterviewQuestions: (content) => setState((prev: any) => ({ ...prev, generatedInterviewQuestions: content })),
   setInterviewVideoMaxLength: (length) => setState((prev: any) => ({ ...prev, interviewVideoMaxLength: length })),
   setIsEditingJobPost: (editing) => setState((prev: any) => ({ ...prev, isEditingJobPost: editing })),
@@ -85,6 +87,7 @@ export const createJobCreatorActions = (
         },
         generatedJobPost: jobPost,
         skillsTestData: parsedSkillsTestData,
+        skillsTestViewState: parsedSkillsTestData.questions.length > 0 ? 'editor' : 'initial',
         generatedInterviewQuestions: job.generated_interview_questions || "",
         interviewVideoMaxLength: job.interview_video_max_length || 5
       }

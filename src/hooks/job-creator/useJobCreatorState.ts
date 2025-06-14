@@ -36,6 +36,7 @@ const initialState: UnifiedJobCreatorState = {
   formData: initialFormData,
   generatedJobPost: "",
   skillsTestData: initialSkillsTestData,
+  skillsTestViewState: 'initial',
   generatedInterviewQuestions: "",
   interviewVideoMaxLength: 5,
   isEditingJobPost: false,

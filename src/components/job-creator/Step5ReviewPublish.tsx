@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +40,11 @@ export const Step5ReviewPublish = ({
   }
 
   const skillsTestMarkdown = skillsTestData ? renderSkillsTestAsMarkdown(skillsTestData) : "";
+
+  const handleEditSkillsTest = () => {
+    actions.setSkillsTestViewState('editor');
+    actions.setCurrentStep(3);
+  };
 
   return (
     <div className="h-full overflow-auto">
@@ -152,7 +156,7 @@ export const Step5ReviewPublish = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => actions.setCurrentStep(3)}
+                    onClick={handleEditSkillsTest}
                     className="flex items-center gap-1"
                   >
                     <Edit className="w-3 h-3" />
