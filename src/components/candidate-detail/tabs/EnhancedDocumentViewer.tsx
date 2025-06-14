@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Document, Page, pdfjs } from 'react-pdf';
 import mammoth from 'mammoth';
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,13 @@ export const EnhancedDocumentViewer = ({
       setIsLoading(false);
     }
   }, [documentUrl, documentType]);
+
+  // Load Word document on mount if applicable - FIXED: using useEffect instead of useState
+  useEffect(() => {
+    if (documentType === 'docx' || documentType === 'doc') {
+      loadWordDocument();
+    }
+  }, [documentType, loadWordDocument]);
 
   const handleZoomIn = () => setScale(prev => Math.min(prev + 0.2, 3.0));
   const handleZoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
@@ -253,13 +260,6 @@ export const EnhancedDocumentViewer = ({
       </div>
     );
   };
-
-  // Load Word document on mount if applicable
-  useState(() => {
-    if (documentType === 'docx' || documentType === 'doc') {
-      loadWordDocument();
-    }
-  });
 
   return (
     <div className="space-y-4">
