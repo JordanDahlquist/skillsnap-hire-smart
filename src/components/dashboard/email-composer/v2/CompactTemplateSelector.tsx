@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Template, Loader2, FileText } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import type { EmailTemplate } from '@/types/emailComposer';
 
 interface CompactTemplateSelectorProps {
@@ -30,7 +30,7 @@ export const CompactTemplateSelector = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <Template className="w-4 h-4 text-purple-500" />
+        <FileText className="w-4 h-4 text-purple-500" />
         <h4 className="font-medium text-foreground">Email Templates</h4>
         {selectedTemplateId && (
           <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs">
@@ -40,7 +40,7 @@ export const CompactTemplateSelector = ({
       </div>
 
       {templates.length === 0 ? (
-        <div className="text-center p-4 bg-muted/30 rounded-lg">
+        <div className="text-center p-4 glass-card rounded-lg">
           <FileText className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">No templates available</p>
           <p className="text-xs text-muted-foreground">You can still compose your email manually</p>
@@ -55,7 +55,7 @@ export const CompactTemplateSelector = ({
                 className={`w-full justify-start text-left h-auto p-3 ${
                   selectedTemplateId === template.id 
                     ? 'glass-button bg-purple-500 text-white' 
-                    : 'glass-card-no-hover hover:bg-background/50'
+                    : 'glass-card hover:bg-background/50'
                 }`}
                 onClick={() => onSelectTemplate(template)}
               >
