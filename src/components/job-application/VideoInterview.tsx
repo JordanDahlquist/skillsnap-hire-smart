@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,8 @@ export const VideoInterview = ({
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -44,31 +47,107 @@ export const VideoInterview = ({
     setInterviewQuestions(parsedQuestions);
   }, [questions]);
 
+  const waitForVideoElement = async (video: HTMLVideoElement): Promise<void> => {
+    return new Promise((resolve) => {
+      if (video.readyState >= 1) {
+        resolve();
+        return;
+      }
+      
+      const onLoadedMetadata = () => {
+        video.removeEventListener('loadedmetadata', onLoadedMetadata);
+        resolve();
+      };
+      
+      video.addEventListener('loadedmetadata', onLoadedMetadata);
+    });
+  };
+
+  const assignStreamToVideo = async (mediaStream: MediaStream) => {
+    if (!videoRef.current) return;
+    
+    const video = videoRef.current;
+    setVideoLoading(true);
+    
+    try {
+      // Clear any existing source
+      video.srcObject = null;
+      
+      // Assign the new stream
+      video.srcObject = mediaStream;
+      
+      // Wait for the video element to be ready
+      await waitForVideoElement(video);
+      
+      // Force play with proper error handling
+      try {
+        await video.play();
+        setVideoReady(true);
+        console.log('Video stream successfully assigned and playing');
+      } catch (playError) {
+        console.warn('Initial play failed, retrying...', playError);
+        // Retry after a short delay
+        setTimeout(async () => {
+          try {
+            await video.play();
+            setVideoReady(true);
+            console.log('Video stream playing after retry');
+          } catch (retryError) {
+            console.error('Video play failed after retry:', retryError);
+            toast.error('Failed to start video preview. Please try refreshing.');
+          }
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Error assigning stream to video:', error);
+      toast.error('Failed to display camera feed. Please try again.');
+    } finally {
+      setVideoLoading(false);
+    }
+  };
+
   const requestPermissions = async () => {
     try {
+      setVideoLoading(true);
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: true, 
+        video: { 
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        }, 
         audio: true 
       });
+      
       setStream(mediaStream);
       setPermissionGranted(true);
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        console.log('Camera stream assigned to video element');
-        // Force the video to play after stream assignment
-        videoRef.current.play().catch((error) => {
-          console.error('Error playing video:', error);
-        });
-      }
+      // Assign stream to video element
+      await assignStreamToVideo(mediaStream);
+      
     } catch (error) {
       console.error('Error accessing camera/microphone:', error);
-      toast.error('Unable to access camera and microphone. Please grant permissions.');
+      setVideoLoading(false);
+      
+      if (error instanceof DOMException) {
+        if (error.name === 'NotAllowedError') {
+          toast.error('Camera access denied. Please grant permissions and try again.');
+        } else if (error.name === 'NotFoundError') {
+          toast.error('No camera found. Please connect a camera and try again.');
+        } else {
+          toast.error('Unable to access camera. Please check your device settings.');
+        }
+      } else {
+        toast.error('Unable to access camera and microphone. Please grant permissions.');
+      }
     }
   };
 
   const startRecording = () => {
-    if (!stream) return;
+    if (!stream || !videoReady) {
+      toast.error('Video not ready. Please wait for camera to load.');
+      return;
+    }
 
     const recorder = new MediaRecorder(stream);
     setMediaRecorder(recorder);
@@ -134,6 +213,18 @@ export const VideoInterview = ({
       onChange('recorded'); // Placeholder - in production, upload to storage
     }
   }, [allCompleted, onChange]);
+
+  // Cleanup streams on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    };
+  }, [stream]);
 
   if (interviewQuestions.length === 0) {
     return (
@@ -214,20 +305,39 @@ export const VideoInterview = ({
               </div>
             ) : (
               <>
+                {videoLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+                    <div className="text-center text-white space-y-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+                      <p className="text-sm">Connecting camera...</p>
+                    </div>
+                  </div>
+                )}
+                
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
-                  muted
                   className="w-full h-full object-cover"
+                  onLoadStart={() => {
+                    console.log('Video load started');
+                  }}
                   onLoadedMetadata={() => {
-                    console.log('Video metadata loaded, stream should be visible');
+                    console.log('Video metadata loaded');
+                  }}
+                  onLoadedData={() => {
+                    console.log('Video data loaded');
                   }}
                   onCanPlay={() => {
-                    console.log('Video can start playing');
+                    console.log('Video can play');
+                  }}
+                  onPlaying={() => {
+                    console.log('Video is playing');
+                    setVideoReady(true);
                   }}
                   onError={(e) => {
                     console.error('Video element error:', e);
+                    toast.error('Video display error. Please try refreshing.');
                   }}
                 />
                 
@@ -235,6 +345,12 @@ export const VideoInterview = ({
                   <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-full">
                     <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
                     <span className="text-sm font-medium">REC {formatTime(recordingTime)}</span>
+                  </div>
+                )}
+                
+                {!videoReady && permissionGranted && !videoLoading && (
+                  <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                    Initializing camera...
                   </div>
                 )}
               </>
@@ -262,9 +378,13 @@ export const VideoInterview = ({
               {!recordedVideos[currentQuestion] ? (
                 <>
                   {!isRecording ? (
-                    <Button onClick={startRecording} className="bg-red-600 hover:bg-red-700 text-white">
+                    <Button 
+                      onClick={startRecording} 
+                      disabled={!videoReady}
+                      className="bg-red-600 hover:bg-red-700 text-white disabled:bg-gray-400"
+                    >
                       <Camera className="w-4 h-4 mr-2" />
-                      Start Recording
+                      {videoReady ? 'Start Recording' : 'Camera Loading...'}
                     </Button>
                   ) : (
                     <Button 
