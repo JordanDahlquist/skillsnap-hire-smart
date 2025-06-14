@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, Loader2 } from "lucide-react";
 import { Application } from "@/types";
+import { constructResumeUrl } from "@/utils/resumeUploadUtils";
 
 interface CandidateResumeTabProps {
   application: Application;
@@ -15,17 +16,6 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
 
   const hasResume = !!(application.resume_file_path);
   const hasCoverLetter = !!(application.cover_letter);
-
-  // Construct the proper resume URL
-  const getResumeUrl = (filePath: string) => {
-    // If it's already a complete URL, return as is
-    if (filePath.startsWith('http')) {
-      return filePath;
-    }
-    
-    // If it's just a filename, construct the Supabase Storage URL
-    return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
-  };
 
   if (!hasResume && !hasCoverLetter) {
     return (
@@ -51,7 +41,7 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
     setHasError(true);
   };
 
-  const resumeUrl = hasResume ? getResumeUrl(application.resume_file_path) : '';
+  const resumeUrl = hasResume ? constructResumeUrl(application.resume_file_path) : '';
 
   return (
     <div className="space-y-6">

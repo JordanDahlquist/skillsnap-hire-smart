@@ -1,34 +1,10 @@
+
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText, Upload, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-
-interface ParsedResumeData {
-  personalInfo: {
-    name: string;
-    email: string;
-    phone: string;
-    location: string;
-  };
-  workExperience: Array<{
-    company: string;
-    position: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-  }>;
-  education: Array<{
-    institution: string;
-    degree: string;
-    graduationDate: string;
-    gpa?: string;
-  }>;
-  skills: string[];
-  summary: string;
-  totalExperience: string;
-}
+import { uploadResumeFile, ParsedResumeData } from "@/utils/resumeUploadUtils";
 
 interface ResumeUploadProps {
   onResumeData: (data: ParsedResumeData, filePath: string) => void;
@@ -83,82 +59,36 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
   const processResumeFile = async (file: File) => {
     setIsProcessing(true);
     try {
-      // Upload file to Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('application-files')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      // Construct the complete URL for the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from('application-files')
-        .getPublicUrl(fileName);
-
-      // Extract text from file (simplified for demo - in production, use proper PDF/DOC parsing)
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          // For demo purposes, we'll simulate text extraction
-          // In production, you'd use libraries like pdf-parse or mammoth for proper extraction
-          const simulatedText = `
-            John Doe
-            Software Engineer
-            john.doe@email.com
-            (555) 123-4567
-            San Francisco, CA
-            
-            EXPERIENCE
-            Senior Software Engineer at TechCorp (2020-Present)
-            - Led development of web applications using React and Node.js
-            - Managed a team of 5 developers
-            
-            Software Engineer at StartupXYZ (2018-2020)
-            - Built scalable APIs and microservices
-            - Worked with AWS and Docker
-            
-            EDUCATION
-            Bachelor of Science in Computer Science
-            University of California, Berkeley (2018)
-            
-            SKILLS
-            JavaScript, React, Node.js, Python, AWS, Docker, Git
-          `;
-
-          // Parse resume using AI
-          const { data: parseResult } = await supabase.functions.invoke('parse-resume', {
-            body: { resumeText: simulatedText }
-          });
-
-          if (parseResult?.parsedData) {
-            // Pass the complete URL instead of just the filename
-            onResumeData(parseResult.parsedData, publicUrl);
-            toast({
-              title: "Resume uploaded successfully",
-              description: "Your information has been extracted and filled in the form.",
-            });
-          } else {
-            throw new Error('Failed to parse resume');
-          }
-        } catch (error) {
-          console.error('Error parsing resume:', error);
-          toast({
-            title: "Error parsing resume",
-            description: "We couldn't extract information from your resume. Please fill the form manually.",
-            variant: "destructive"
-          });
-        }
-      };
+      const result = await uploadResumeFile(file);
       
-      reader.readAsText(file);
+      if (result.parsedData) {
+        onResumeData(result.parsedData, result.url);
+        toast({
+          title: "Resume uploaded successfully",
+          description: "Your information has been extracted and filled in the form.",
+        });
+      } else {
+        // Still pass the URL even if parsing failed
+        onResumeData({
+          personalInfo: { name: '', email: '', phone: '', location: '' },
+          workExperience: [],
+          education: [],
+          skills: [],
+          summary: '',
+          totalExperience: ''
+        }, result.url);
+        
+        toast({
+          title: "Resume uploaded",
+          description: "Resume uploaded successfully, but parsing failed. Please fill the form manually.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error uploading resume:', error);
       toast({
         title: "Error uploading resume",
-        description: "Please try again or fill the form manually.",
+        description: error instanceof Error ? error.message : "Please try again or fill the form manually.",
         variant: "destructive"
       });
     } finally {
