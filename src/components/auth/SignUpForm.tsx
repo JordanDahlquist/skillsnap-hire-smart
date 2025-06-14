@@ -7,8 +7,6 @@ import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { GoogleAuthButton } from "./GoogleAuthButton";
-import { AuthDivider } from "./AuthDivider";
 
 export const SignUpForm = () => {
   const [loading, setLoading] = useState(false);
@@ -109,9 +107,6 @@ export const SignUpForm = () => {
 
   return (
     <div className="space-y-4">
-      <GoogleAuthButton mode="signup" disabled={loading} />
-      <AuthDivider />
-      
       <form onSubmit={handleSignUp} className="space-y-4">
         <div>
           <Label htmlFor="signup-fullname">Full Name</Label>
