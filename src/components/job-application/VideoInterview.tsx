@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 import { VideoInterviewHeader } from "./video-interview/VideoInterviewHeader";
 import { QuestionNavigation } from "./video-interview/QuestionNavigation";
 import { CurrentQuestion } from "./video-interview/CurrentQuestion";
 import { VideoRecordingArea } from "./video-interview/VideoRecordingArea";
 import { CompletionCard } from "./video-interview/CompletionCard";
+import { VideoInterviewNavigation } from "./video-interview/VideoInterviewNavigation";
 import { useVideoRecording, ViewMode } from "./video-interview/useVideoRecording";
 import { useInterviewQuestions } from "./video-interview/useInterviewQuestions";
 
@@ -92,6 +92,18 @@ export const VideoInterview = ({
     }
   };
 
+  const handlePreviousQuestion = () => {
+    if (currentQuestion > 0) {
+      handleQuestionChange(currentQuestion - 1);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestion < interviewQuestions.length - 1) {
+      handleQuestionChange(currentQuestion + 1);
+    }
+  };
+
   const handleSwitchToLive = () => {
     switchToLiveMode();
     setQuestionViewModes(prev => ({
@@ -112,6 +124,9 @@ export const VideoInterview = ({
 
   const completedVideos = Object.keys(recordedVideos).length;
   const allCompleted = completedVideos === interviewQuestions.length;
+  const isCurrentQuestionRecorded = !!recordedVideos[currentQuestion];
+  const canGoPrevious = currentQuestion > 0;
+  const canGoNext = currentQuestion < interviewQuestions.length - 1;
 
   useEffect(() => {
     if (allCompleted) {
@@ -190,23 +205,17 @@ export const VideoInterview = ({
         onSwitchToPlayback={handleSwitchToPlayback}
       />
 
-      {/* Navigation */}
-      <div className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={onBack}
-          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-        >
-          Back
-        </Button>
-        <Button 
-          onClick={onNext} 
-          disabled={!allCompleted}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Continue
-        </Button>
-      </div>
+      <VideoInterviewNavigation
+        currentQuestion={currentQuestion}
+        totalQuestions={interviewQuestions.length}
+        isCurrentQuestionRecorded={isCurrentQuestionRecorded}
+        allCompleted={allCompleted}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
+        onContinueToReview={onNext}
+        canGoPrevious={canGoPrevious}
+        canGoNext={canGoNext}
+      />
 
       <CompletionCard isAllCompleted={allCompleted} />
     </div>
