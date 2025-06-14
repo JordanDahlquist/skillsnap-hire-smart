@@ -284,38 +284,40 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
         </ScrollArea>
       </div>
 
-      {/* Link Dialog */}
+      {/* Redesigned Link Dialog */}
       <Dialog open={showLinkDialog} onOpenChange={handleDialogClose}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Link</DialogTitle>
+            <DialogTitle className="text-lg font-medium">Add Link</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <Label htmlFor="linkText">Link Text</Label>
+              <Label htmlFor="linkText" className="text-sm font-medium">Link Text</Label>
               <Input
                 id="linkText"
                 value={linkText}
                 onChange={(e) => setLinkText(e.target.value)}
                 placeholder="Enter link text"
+                className="mt-1"
               />
             </div>
             <div>
-              <Label htmlFor="linkUrl">URL</Label>
+              <Label htmlFor="linkUrl" className="text-sm font-medium">URL</Label>
               <Input
                 id="linkUrl"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder="https://example.com"
+                className="mt-1"
                 autoFocus
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleDialogClose}>
+          <DialogFooter className="flex gap-2 pt-2">
+            <Button variant="outline" onClick={handleDialogClose} className="flex-1">
               Cancel
             </Button>
-            <Button onClick={insertLink} disabled={!linkUrl}>
+            <Button onClick={insertLink} disabled={!linkUrl} className="flex-1">
               Add Link
             </Button>
           </DialogFooter>
