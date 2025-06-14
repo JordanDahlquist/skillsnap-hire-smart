@@ -1,7 +1,8 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Lightbulb, 
   AlertTriangle, 
@@ -20,8 +21,12 @@ interface ActionableInsightsProps {
 }
 
 export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsightsProps) => {
+  const [dismissedInsights, setDismissedInsights] = useState<string[]>([]);
+  const [slidingOut, setSlidingOut] = useState<string[]>([]);
+
   const insights = [
     {
+      id: "pending-review",
       type: "urgent" as const,
       icon: AlertTriangle,
       title: "Review Pending Applications",
@@ -32,6 +37,7 @@ export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsights
       impact: "Faster responses improve candidate experience by 40%"
     },
     {
+      id: "optimize-job-descriptions",
       type: "opportunity" as const,
       icon: TrendingUp,
       title: "Optimize Job Descriptions",
@@ -42,6 +48,7 @@ export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsights
       impact: "Better job descriptions increase quality applications by 60%"
     },
     {
+      id: "high-quality-apps",
       type: "success" as const,
       icon: CheckCircle,
       title: "High-Quality Applications",
@@ -52,6 +59,7 @@ export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsights
       impact: "Keep using current sourcing channels"
     },
     {
+      id: "increase-volume",
       type: "growth" as const,
       icon: Target,
       title: "Increase Application Volume",
@@ -62,6 +70,7 @@ export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsights
       impact: "More promotion increases applications by 200%"
     },
     {
+      id: "speed-up-response",
       type: "efficiency" as const,
       icon: Clock,
       title: "Speed Up Response Time",
@@ -73,7 +82,23 @@ export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsights
     }
   ];
 
-  const visibleInsights = insights.filter(insight => insight.visible);
+  const visibleInsights = insights.filter(insight => 
+    insight.visible && 
+    !dismissedInsights.includes(insight.id) && 
+    !slidingOut.includes(insight.id)
+  );
+
+  const handleInsightComplete = (insightId: string, checked: boolean) => {
+    if (checked) {
+      setSlidingOut(prev => [...prev, insightId]);
+      
+      // Remove from sliding out and add to dismissed after animation
+      setTimeout(() => {
+        setSlidingOut(prev => prev.filter(id => id !== insightId));
+        setDismissedInsights(prev => [...prev, insightId]);
+      }, 300);
+    }
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -108,10 +133,17 @@ export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsights
           <div className="space-y-4">
             {visibleInsights.map((insight, index) => {
               const IconComponent = insight.icon;
+              const isSliding = slidingOut.includes(insight.id);
+              
               return (
-                <div key={index} className="p-4 bg-gray-50 rounded-lg border">
+                <div 
+                  key={insight.id} 
+                  className={`p-4 bg-gray-50 rounded-lg border transition-all duration-300 ease-out ${
+                    isSliding ? 'opacity-0 transform translate-x-full scale-95' : 'opacity-100 transform translate-x-0 scale-100'
+                  }`}
+                >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 flex-1">
                       <IconComponent className={`w-5 h-5 mt-0.5 ${getTypeColor(insight.type)}`} />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -124,9 +156,21 @@ export const ActionableInsights = ({ metrics, pipelineData }: ActionableInsights
                         <p className="text-xs text-blue-600 font-medium">💡 {insight.impact}</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="ml-3">
-                      {insight.action}
-                    </Button>
+                    <div className="flex items-center gap-3 ml-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`insight-${insight.id}`}
+                          onCheckedChange={(checked) => handleInsightComplete(insight.id, checked as boolean)}
+                          className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                        />
+                        <label 
+                          htmlFor={`insight-${insight.id}`}
+                          className="text-sm font-medium text-gray-700 cursor-pointer hover:text-gray-900 transition-colors"
+                        >
+                          {insight.action}
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
