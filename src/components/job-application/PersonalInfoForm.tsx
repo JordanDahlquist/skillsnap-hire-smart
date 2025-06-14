@@ -241,7 +241,7 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                   variant="ghost"
                   size="sm"
                   onClick={handleRemoveFile}
-                  className="text-black hover:text-red-700 hover:bg-red-50 border border-gray-400 bg-white shadow-sm"
+                  className="text-gray-900 hover:text-red-700 hover:bg-red-50 border-2 border-gray-500 bg-white shadow-md h-8 w-8 p-0"
                   disabled={isUploading}
                 >
                   <X className="w-4 h-4" />
