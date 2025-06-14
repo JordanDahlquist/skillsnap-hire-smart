@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -76,6 +77,7 @@ export const Step4InterviewGenerator = ({
                     <SelectValue placeholder="Select video length" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="1">1 minute</SelectItem>
                     <SelectItem value="3">3 minutes</SelectItem>
                     <SelectItem value="5">5 minutes</SelectItem>
                     <SelectItem value="10">10 minutes</SelectItem>
@@ -171,6 +173,7 @@ export const Step4InterviewGenerator = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="1">1 minute</SelectItem>
                             <SelectItem value="3">3 minutes</SelectItem>
                             <SelectItem value="5">5 minutes</SelectItem>
                             <SelectItem value="10">10 minutes</SelectItem>
