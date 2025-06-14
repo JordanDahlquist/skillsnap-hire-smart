@@ -100,9 +100,9 @@ export const CandidateDetailHeader = ({
         </Breadcrumb>
 
         {/* Main Header Content */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-8">
           {/* Left Side - Candidate Info */}
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4 flex-1">
             <Button
               variant="ghost"
               size="sm"
@@ -113,7 +113,7 @@ export const CandidateDetailHeader = ({
               Back
             </Button>
             
-            <div>
+            <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl font-bold text-foreground">
                   {application.name}
@@ -142,35 +142,35 @@ export const CandidateDetailHeader = ({
             </div>
           </div>
 
-          {/* Right Side - Interactive Controls */}
-          <div className="glass-card p-4 bg-background/50 backdrop-blur-md border border-border/50 rounded-lg shadow-lg">
-            <div className="space-y-4 min-w-[280px]">
-              {/* Your Rating Section */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Your Rating:</span>
-                <div className="flex gap-1">
-                  {[1, 2, 3].map((rating) => (
-                    <button
-                      key={rating}
-                      onClick={() => handleRating(rating)}
-                      disabled={isUpdating}
-                      className="p-1 hover:bg-muted rounded transition-colors disabled:opacity-50"
-                    >
-                      <Star 
-                        className={`w-5 h-5 ${
-                          (application.manual_rating || 0) >= rating 
-                            ? "text-blue-500 fill-current" 
-                            : "text-gray-300"
-                        }`} 
-                      />
-                    </button>
-                  ))}
-                </div>
+          {/* Right Side - Integrated Controls */}
+          <div className="flex flex-col gap-4 min-w-[320px]">
+            {/* Rating Section */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Your Rating:</span>
+              <div className="flex gap-1">
+                {[1, 2, 3].map((rating) => (
+                  <button
+                    key={rating}
+                    onClick={() => handleRating(rating)}
+                    disabled={isUpdating}
+                    className="p-1 hover:bg-muted rounded transition-colors disabled:opacity-50"
+                  >
+                    <Star 
+                      className={`w-5 h-5 ${
+                        (application.manual_rating || 0) >= rating 
+                          ? "text-blue-500 fill-current" 
+                          : "text-gray-300"
+                      }`} 
+                    />
+                  </button>
+                ))}
               </div>
+            </div>
 
-              {/* Stage Selector */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Stage:</span>
+            {/* Stage Selector */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Stage:</span>
+              <div className="flex-1 max-w-[180px]">
                 <StageSelector
                   jobId={job.id}
                   currentStage={application.pipeline_stage || 'applied'}
@@ -178,42 +178,42 @@ export const CandidateDetailHeader = ({
                   size="sm"
                 />
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-2">
-                {application.status === 'rejected' ? (
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={handleUnreject}
-                    disabled={isUpdating}
-                    className="border-green-200 text-green-600 hover:bg-green-50 flex-1"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-1.5" />
-                    Unreject
-                  </Button>
-                ) : (
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={handleReject}
-                    disabled={isUpdating}
-                    className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
-                  >
-                    <ThumbsDown className="w-4 h-4 mr-1.5" />
-                    Reject
-                  </Button>
-                )}
-                
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              {application.status === 'rejected' ? (
                 <Button 
                   size="sm" 
-                  onClick={handleEmail}
-                  className="bg-blue-600 hover:bg-blue-700 flex-1"
+                  variant="outline"
+                  onClick={handleUnreject}
+                  disabled={isUpdating}
+                  className="border-green-200 text-green-600 hover:bg-green-50 flex-1"
                 >
-                  <Mail className="w-4 h-4 mr-1.5" />
-                  Email
+                  <RotateCcw className="w-4 h-4 mr-1.5" />
+                  Unreject
                 </Button>
-              </div>
+              ) : (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={handleReject}
+                  disabled={isUpdating}
+                  className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
+                >
+                  <ThumbsDown className="w-4 h-4 mr-1.5" />
+                  Reject
+                </Button>
+              )}
+              
+              <Button 
+                size="sm" 
+                onClick={handleEmail}
+                className="bg-blue-600 hover:bg-blue-700 flex-1"
+              >
+                <Mail className="w-4 h-4 mr-1.5" />
+                Email
+              </Button>
             </div>
           </div>
         </div>

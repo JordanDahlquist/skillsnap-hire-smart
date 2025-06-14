@@ -6,7 +6,6 @@ import { CandidateSkillsTab } from "./tabs/CandidateSkillsTab";
 import { CandidateVideoTab } from "./tabs/CandidateVideoTab";
 import { CandidateResumeTab } from "./tabs/CandidateResumeTab";
 import { CandidateActivityTab } from "./tabs/CandidateActivityTab";
-import { CandidateFloatingActions } from "./CandidateFloatingActions";
 import { Application, Job } from "@/types";
 
 interface CandidateDetailContentProps {
@@ -132,12 +131,6 @@ export const CandidateDetailContent = ({
           />
         </TabsContent>
       </Tabs>
-
-      <CandidateFloatingActions 
-        application={application}
-        job={job}
-        onApplicationUpdate={onApplicationUpdate}
-      />
     </div>
   );
 };
