@@ -169,9 +169,9 @@ export const SkillsTestPreview = ({ skillsTestData, onBack }: SkillsTestPreviewP
                             {question.type === 'code_submission' && (
                               <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm">
                                 <div className="text-gray-500">// Your code here...</div>
-                                <div className="text-gray-600">function solution() {</div>
+                                <div className="text-gray-600">function solution() {'{'}  </div>
                                 <div className="text-gray-600 ml-4">// Implementation</div>
-                                <div className="text-gray-600">}</div>
+                                <div className="text-gray-600">{'}'}</div>
                               </div>
                             )}
                           </div>
