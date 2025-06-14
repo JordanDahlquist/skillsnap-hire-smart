@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface CurrentQuestionProps {
   questionNumber: number;
@@ -15,6 +16,8 @@ export const CurrentQuestion = ({
   questionText,
   isRecorded
 }: CurrentQuestionProps) => {
+  const formattedQuestion = parseMarkdown(questionText);
+
   return (
     <Card className="bg-white shadow-sm border border-gray-200">
       <CardHeader>
@@ -27,9 +30,10 @@ export const CurrentQuestion = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <p className="text-gray-900 leading-relaxed font-medium">
-            {questionText}
-          </p>
+          <div 
+            className="text-gray-900 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: formattedQuestion }}
+          />
         </div>
       </CardContent>
     </Card>
