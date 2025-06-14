@@ -55,13 +55,23 @@ export const ApplicationDetailContent = ({
       {/* Header Section */}
       <div className="border-b border-border pb-4">
         <div className="flex items-start justify-between mb-4">
-          <div>
-            <h2 
-              className="text-2xl font-bold text-foreground hover:text-primary cursor-pointer transition-colors"
-              onClick={handleViewFullProfile}
-            >
-              {application.name}
-            </h2>
+          <div className="flex-1">
+            {/* Name and Stage Selector in one line */}
+            <div className="flex items-center gap-4 mb-2">
+              <h2 
+                className="text-2xl font-bold text-foreground hover:text-primary cursor-pointer transition-colors"
+                onClick={handleViewFullProfile}
+              >
+                {application.name}
+              </h2>
+              <StageSelector
+                jobId={jobId}
+                currentStage={pipelineStage}
+                applicationId={application.id}
+                onStageChange={onStageChange}
+                size="sm"
+              />
+            </div>
             <p className="text-muted-foreground">{application.email}</p>
           </div>
           <div className="text-right flex flex-col items-end gap-2">
@@ -81,17 +91,6 @@ export const ApplicationDetailContent = ({
               View Full Profile
             </Button>
           </div>
-        </div>
-
-        {/* Stage Selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">Stage:</span>
-          <StageSelector
-            jobId={jobId}
-            currentStage={pipelineStage}
-            applicationId={application.id}
-            onStageChange={onStageChange}
-          />
         </div>
       </div>
 
