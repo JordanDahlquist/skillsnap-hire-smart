@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Document, Page, pdfjs } from 'react-pdf';
 import mammoth from 'mammoth';
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,34 @@ import {
   AlertCircle
 } from "lucide-react";
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// Configure PDF.js worker with multiple fallbacks
+const configureWorker = () => {
+  const workerUrls = [
+    `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`,
+    `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`,
+    `//mozilla.github.io/pdf.js/build/pdf.worker.js`
+  ];
+  
+  let workerConfigured = false;
+  
+  for (const url of workerUrls) {
+    try {
+      pdfjs.GlobalWorkerOptions.workerSrc = url;
+      console.log('PDF.js worker configured with:', url);
+      workerConfigured = true;
+      break;
+    } catch (error) {
+      console.warn('Failed to configure PDF.js worker with:', url, error);
+    }
+  }
+  
+  if (!workerConfigured) {
+    console.error('Failed to configure PDF.js worker with any URL');
+  }
+};
+
+// Initialize worker
+configureWorker();
 
 interface EnhancedDocumentViewerProps {
   documentUrl: string;
@@ -36,6 +62,12 @@ export const EnhancedDocumentViewer = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [wordContent, setWordContent] = useState<string | null>(null);
+  const [loadingAttempts, setLoadingAttempts] = useState(0);
+  const [isValidating, setIsValidating] = useState(false);
+  
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const maxAttempts = 3;
+  const loadTimeout = 10000; // 10 seconds
 
   // Determine file type from URL or provided type
   const getFileType = useCallback(() => {
@@ -46,41 +78,133 @@ export const EnhancedDocumentViewer = ({
 
   const documentType = getFileType();
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+  // Pre-validate document URL
+  const validateDocument = useCallback(async (): Promise<boolean> => {
+    setIsValidating(true);
+    console.log('Validating document URL:', documentUrl);
+    
+    try {
+      const response = await fetch(documentUrl, { 
+        method: 'HEAD',
+        mode: 'cors'
+      });
+      
+      if (!response.ok) {
+        console.error('Document validation failed:', response.status, response.statusText);
+        return false;
+      }
+      
+      const contentType = response.headers.get('content-type');
+      console.log('Document content type:', contentType);
+      
+      return true;
+    } catch (error) {
+      console.error('Document validation error:', error);
+      return false;
+    } finally {
+      setIsValidating(false);
+    }
+  }, [documentUrl]);
+
+  // Enhanced PDF load success handler
+  const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
+    console.log('PDF loaded successfully with', numPages, 'pages');
     setNumPages(numPages);
     setIsLoading(false);
     setError(null);
-  };
+    setLoadingAttempts(0);
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
 
-  const onDocumentLoadError = (error: any) => {
-    console.error('PDF load error:', error);
-    setError('Failed to load PDF document');
-    setIsLoading(false);
-  };
+  // Enhanced PDF load error handler with retry logic
+  const onDocumentLoadError = useCallback((error: any) => {
+    console.error('PDF load error (attempt', loadingAttempts + 1, '):', error);
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    
+    if (loadingAttempts < maxAttempts - 1) {
+      console.log('Retrying PDF load...');
+      setLoadingAttempts(prev => prev + 1);
+      // Retry after a short delay
+      setTimeout(() => {
+        setError(null);
+        setIsLoading(true);
+      }, 1000);
+    } else {
+      setError('Failed to load PDF document after multiple attempts');
+      setIsLoading(false);
+      setLoadingAttempts(0);
+    }
+  }, [loadingAttempts, maxAttempts]);
 
+  // Enhanced Word document loader
   const loadWordDocument = useCallback(async () => {
     if (documentType !== 'docx' && documentType !== 'doc') return;
     
+    console.log('Loading Word document:', documentUrl);
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      setIsLoading(true);
+      // Pre-validate the document
+      const isValid = await validateDocument();
+      if (!isValid) {
+        throw new Error('Document is not accessible');
+      }
+      
       const response = await fetch(documentUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const arrayBuffer = await response.arrayBuffer();
+      console.log('Word document downloaded, size:', arrayBuffer.byteLength);
+      
       const result = await mammoth.convertToHtml({ arrayBuffer });
+      console.log('Word document converted to HTML successfully');
+      
       setWordContent(result.value);
       setIsLoading(false);
     } catch (error) {
       console.error('Word document load error:', error);
-      setError('Failed to load Word document');
+      setError(error instanceof Error ? error.message : 'Failed to load Word document');
       setIsLoading(false);
     }
-  }, [documentUrl, documentType]);
+  }, [documentUrl, documentType, validateDocument]);
 
-  // Load Word document on mount if applicable - FIXED: using useEffect instead of useState
+  // Load document based on type
   useEffect(() => {
+    console.log('Document type detected:', documentType);
+    console.log('Document URL:', documentUrl);
+    
     if (documentType === 'docx' || documentType === 'doc') {
       loadWordDocument();
+    } else if (documentType === 'pdf') {
+      // Set timeout for PDF loading
+      setIsLoading(true);
+      setError(null);
+      
+      timeoutRef.current = setTimeout(() => {
+        console.error('PDF loading timeout exceeded');
+        setError('Document loading timeout - the file may be too large or corrupted');
+        setIsLoading(false);
+      }, loadTimeout);
     }
-  }, [documentType, loadWordDocument]);
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [documentType, loadWordDocument, documentUrl]);
 
   const handleZoomIn = () => setScale(prev => Math.min(prev + 0.2, 3.0));
   const handleZoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
@@ -165,12 +289,13 @@ export const EnhancedDocumentViewer = ({
   };
 
   const renderDocumentContent = () => {
-    if (isLoading) {
+    if (isLoading || isValidating) {
       return (
         <div className="flex items-center justify-center h-96 bg-muted/50">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="w-5 h-5 animate-spin" />
-            Loading document...
+            {isValidating ? 'Validating document...' : 'Loading document...'}
+            {loadingAttempts > 0 && ` (attempt ${loadingAttempts + 1}/${maxAttempts})`}
           </div>
         </div>
       );
@@ -208,9 +333,17 @@ export const EnhancedDocumentViewer = ({
             onLoadError={onDocumentLoadError}
             loading={
               <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Loading PDF...
+                </div>
               </div>
             }
+            options={{
+              cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+              cMapPacked: true,
+              standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+            }}
           >
             <div className="flex justify-center p-4">
               <Page 
@@ -218,6 +351,11 @@ export const EnhancedDocumentViewer = ({
                 scale={scale}
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
+                loading={
+                  <div className="flex items-center justify-center h-96">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  </div>
+                }
               />
             </div>
           </Document>
