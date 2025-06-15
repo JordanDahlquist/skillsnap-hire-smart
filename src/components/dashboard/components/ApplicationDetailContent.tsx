@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { StageSelector } from "../StageSelector";
 import { ApplicationRatingSection } from "./ApplicationRatingSection";
-import { ApplicationActionButtons } from "./ApplicationActionButtons";
 import { VideoResponsePlayer } from "./VideoResponsePlayer";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Application } from "@/types";
@@ -328,19 +327,6 @@ export const ApplicationDetailContent = ({
           </div>
         </div>
       )}
-
-      {/* Action Buttons */}
-      <ApplicationActionButtons
-        status={application.status}
-        isUpdating={isUpdating}
-        onReject={onReject}
-        onUnreject={onUnreject}
-        onEmail={onEmail}
-        jobId={jobId}
-        applicationId={application.id}
-        currentStage={pipelineStage}
-        onStageChange={onStageChange}
-      />
     </div>
   );
 };

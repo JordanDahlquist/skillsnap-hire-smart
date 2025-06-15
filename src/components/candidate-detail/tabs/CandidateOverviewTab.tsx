@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Phone, MapPin, Globe, Linkedin, Github, Calendar, Star } from "lucide-react";
+import { Phone, MapPin, Globe, Linkedin, Github, Calendar, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { renderManualRating, renderAIRating } from "@/components/dashboard/utils/ratingUtils";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Application, Job } from "@/types";
@@ -11,12 +11,20 @@ interface CandidateOverviewTabProps {
   application: Application;
   job: Job;
   onApplicationUpdate: () => void;
+  onReject?: () => void;
+  onUnreject?: () => void;
+  onEmail?: () => void;
+  isUpdating?: boolean;
 }
 
 export const CandidateOverviewTab = ({ 
   application, 
   job, 
-  onApplicationUpdate 
+  onApplicationUpdate,
+  onReject,
+  onUnreject,
+  onEmail,
+  isUpdating = false
 }: CandidateOverviewTabProps) => {
   // Local state to reflect immediate updates
   const [localApplication, setLocalApplication] = useState(application);
@@ -118,10 +126,46 @@ export const CandidateOverviewTab = ({
         </CardContent>
       </Card>
 
-      {/* Application Summary */}
+      {/* Application Summary with Compact Actions */}
       <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-left">Application Summary</CardTitle>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-left">Application Summary</CardTitle>
+            <div className="flex items-center gap-2">
+              {localApplication.status === 'rejected' ? (
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={onUnreject}
+                  disabled={isUpdating}
+                  className="border-green-200 text-green-600 hover:bg-green-50 h-8 px-3"
+                >
+                  <RotateCcw className="w-3 h-3 mr-1" />
+                  Unreject
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={onReject}
+                  disabled={isUpdating}
+                  className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                >
+                  <ThumbsDown className="w-3 h-3 mr-1" />
+                  Reject
+                </Button>
+              )}
+              <Button 
+                size="sm"
+                onClick={onEmail}
+                disabled={isUpdating}
+                className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-3"
+              >
+                <Mail className="w-3 h-3 mr-1" />
+                Email
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -151,6 +195,13 @@ export const CandidateOverviewTab = ({
               <div className="mt-2 p-3 bg-muted/30 rounded-lg border border-border">
                 <p className="text-foreground text-sm text-left">{localApplication.ai_summary}</p>
               </div>
+            </div>
+          )}
+
+          {isUpdating && (
+            <div className="flex items-center gap-2 pt-2">
+              <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-xs text-muted-foreground">Updating...</span>
             </div>
           )}
         </CardContent>
