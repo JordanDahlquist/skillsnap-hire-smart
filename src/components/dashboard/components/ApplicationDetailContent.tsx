@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -231,7 +232,7 @@ export const ApplicationDetailContent = ({
           )}
           {application.portfolio_url && (
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Portfolio</label>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">Portfolio</label>
               <a 
                 href={application.portfolio_url} 
                 target="_blank" 
@@ -244,7 +245,7 @@ export const ApplicationDetailContent = ({
           )}
           {application.linkedin_url && (
             <div>
-              <label className="text-sm font-medium text-muted-foreground">LinkedIn</label>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">LinkedIn</label>
               <a 
                 href={application.linkedin_url} 
                 target="_blank" 
@@ -257,7 +258,7 @@ export const ApplicationDetailContent = ({
           )}
           {application.github_url && (
             <div>
-              <label className="text-sm font-medium text-muted-foreground">GitHub</label>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">GitHub</label>
               <a 
                 href={application.github_url} 
                 target="_blank" 
