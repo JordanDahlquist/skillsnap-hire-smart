@@ -20,6 +20,16 @@ export const CustomSpinningLogo = ({
 
   const animationDuration = speedMap[animationSpeed];
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.error('Logo image failed to load, showing fallback animation');
+    // Hide the image and let the background glow be the animation
+    e.currentTarget.style.display = 'none';
+  };
+
+  const handleImageLoad = () => {
+    console.log('Logo image loaded successfully');
+  };
+
   return (
     <>
       <style>{`
@@ -69,21 +79,15 @@ export const CustomSpinningLogo = ({
           }}
         />
         
-        {/* Main logo with oscillating rotation */}
+        {/* Main logo with oscillating rotation - using the working logo path */}
         <img
-          src="/lovable-uploads/63006c72-b38b-4a0c-9fdd-38e79513a90e.png"
+          src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png"
           alt="Loading..."
           className="relative z-10 w-full h-full object-contain drop-shadow-lg custom-spinning-logo"
           loading="eager"
           decoding="async"
-          onError={(e) => {
-            console.error('Logo image failed to load:', e);
-            // Fallback: hide the image if it fails to load
-            e.currentTarget.style.display = 'none';
-          }}
-          onLoad={() => {
-            console.log('Logo image loaded successfully');
-          }}
+          onError={handleImageError}
+          onLoad={handleImageLoad}
         />
       </div>
     </>
