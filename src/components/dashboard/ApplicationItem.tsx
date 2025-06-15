@@ -1,4 +1,3 @@
-
 import React, { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -115,7 +114,7 @@ export const ApplicationItem = memo(({
               </div>
             </div>
             
-            {/* Ratings in compact row */}
+            {/* Ratings and Date/Time in same row */}
             <div className="flex items-center gap-3 mt-1">
               <div className="flex items-center gap-1">
                 <span className="text-xs text-muted-foreground">You:</span>
@@ -130,11 +129,9 @@ export const ApplicationItem = memo(({
                   {renderAIRating(application.ai_rating)}
                 </div>
               </div>
-            </div>
 
-            {/* Application submission date/time in bottom right */}
-            <div className="flex justify-end mt-1">
-              <div className="text-xs text-muted-foreground">
+              {/* Application submission date/time - right aligned */}
+              <div className="ml-auto text-xs text-muted-foreground">
                 {formatSubmissionDateTime(application.created_at)}
               </div>
             </div>
