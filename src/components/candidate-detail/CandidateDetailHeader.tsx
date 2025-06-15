@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -229,10 +228,9 @@ export const CandidateDetailHeader = ({
               
               <Button 
                 onClick={handleEmail}
-                size="default"
-                variant="default"
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4"
                 disabled={isUpdating}
-                className="px-4"
               >
                 <Mail className="w-4 h-4 mr-2" />
                 Email
@@ -241,7 +239,7 @@ export const CandidateDetailHeader = ({
               {localApplication.status === 'rejected' ? (
                 <Button 
                   variant="outline"
-                  size="default"
+                  size="sm"
                   onClick={handleUnreject}
                   disabled={isUpdating}
                   className="border-green-200 text-green-600 hover:bg-green-50 px-4"
@@ -252,7 +250,7 @@ export const CandidateDetailHeader = ({
               ) : (
                 <Button 
                   variant="outline"
-                  size="default"
+                  size="sm"
                   onClick={handleReject}
                   disabled={isUpdating}
                   className="border-red-200 text-red-600 hover:bg-red-50 px-4"

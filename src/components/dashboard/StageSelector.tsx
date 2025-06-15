@@ -63,7 +63,7 @@ export const StageSelector = ({
     >
       <SelectTrigger 
         className={`
-          ${size === "sm" ? "h-9" : "h-10"} 
+          ${size === "sm" ? "h-9" : "h-11"} 
           w-auto min-w-[120px] 
           border border-border 
           bg-background/80 backdrop-blur-sm
