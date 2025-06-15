@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { VideoUploadField } from "../VideoUploadField";
-import { Brain, FileText, Video } from "lucide-react";
+import { Brain } from "lucide-react";
 import { SkillsTestData, SkillsQuestion } from "@/types/skillsAssessment";
 
 interface SkillsAssessmentStepProps {
@@ -44,13 +45,13 @@ export const SkillsAssessmentStep = ({
         const skillsTestData: SkillsTestData = JSON.parse(job.generated_test);
         setQuestions(skillsTestData.questions || []);
         
-        // Initialize responses if not already set
+        // Initialize responses based on question types
         if (responses.length === 0) {
           const initialResponses = skillsTestData.questions.map(q => ({
             questionId: q.id,
             question: q.question,
             answer: '',
-            answerType: 'text' as const
+            answerType: (q.type === 'video_upload' ? 'video' : 'text') as const
           }));
           setResponses(initialResponses);
         }
@@ -84,21 +85,6 @@ export const SkillsAssessmentStep = ({
   const updateResponse = (questionId: string, updates: Partial<SkillsResponse>) => {
     setResponses(prev => prev.map(r => 
       r.questionId === questionId ? { ...r, ...updates } : r
-    ));
-  };
-
-  const toggleAnswerType = (questionId: string) => {
-    setResponses(prev => prev.map(r => 
-      r.questionId === questionId 
-        ? { 
-            ...r, 
-            answerType: r.answerType === 'text' ? 'video' : 'text',
-            answer: '',
-            videoUrl: undefined,
-            videoFileName: undefined,
-            videoFileSize: undefined
-          }
-        : r
     ));
   };
 
@@ -157,6 +143,8 @@ export const SkillsAssessmentStep = ({
           const response = responses.find(r => r.questionId === question.id);
           if (!response) return null;
 
+          const isVideoQuestion = question.type === 'video_upload';
+
           return (
             <Card key={question.id} className="bg-white shadow-sm border border-gray-200">
               <CardHeader className="pb-4">
@@ -174,40 +162,16 @@ export const SkillsAssessmentStep = ({
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    <Button
-                      type="button"
-                      variant={response.answerType === 'text' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => response.answerType !== 'text' && toggleAnswerType(question.id)}
-                      className="flex items-center gap-1"
-                    >
-                      <FileText className="w-4 h-4" />
-                      Text
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={response.answerType === 'video' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => response.answerType !== 'video' && toggleAnswerType(question.id)}
-                      className="flex items-center gap-1"
-                    >
-                      <Video className="w-4 h-4" />
-                      Video
-                    </Button>
-                  </div>
+                  <Badge 
+                    variant="outline" 
+                    className={`ml-4 ${isVideoQuestion ? 'text-purple-600 border-purple-200 bg-purple-50' : 'text-green-600 border-green-200 bg-green-50'}`}
+                  >
+                    {isVideoQuestion ? 'Video Response' : 'Text Response'}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                {response.answerType === 'text' ? (
-                  <Textarea
-                    placeholder="Type your response here..."
-                    value={response.answer}
-                    onChange={(e) => updateResponse(question.id, { answer: e.target.value })}
-                    className="min-h-[120px] resize-none"
-                    rows={5}
-                  />
-                ) : (
+                {isVideoQuestion ? (
                   <VideoUploadField
                     questionId={question.id}
                     onVideoUploaded={(videoUrl, fileName, fileSize) => {
@@ -221,18 +185,19 @@ export const SkillsAssessmentStep = ({
                     existingVideoUrl={response.videoUrl}
                     existingFileName={response.videoFileName}
                   />
+                ) : (
+                  <Textarea
+                    placeholder="Type your response here..."
+                    value={response.answer}
+                    onChange={(e) => updateResponse(question.id, { answer: e.target.value })}
+                    className="min-h-[120px] resize-none"
+                    rows={5}
+                  />
                 )}
               </CardContent>
             </Card>
           );
         })}
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
-          <strong>Tip:</strong> You can answer questions with either text or video responses. 
-          Video responses allow you to demonstrate your skills more effectively and provide a personal touch to your application.
-        </p>
       </div>
 
       {/* Navigation buttons */}
