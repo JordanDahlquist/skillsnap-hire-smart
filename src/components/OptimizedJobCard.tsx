@@ -96,7 +96,7 @@ export const OptimizedJobCard = memo(({
 
   return (
     <>
-      <Card className="group glass-card-no-hover">
+      <Card className="group backdrop-blur-sm bg-white/60 border-2 border-white/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-white/70 hover:border-white/60">
         <CardHeader>
           <JobCardHeader 
             job={job} 
@@ -118,7 +118,7 @@ export const OptimizedJobCard = memo(({
           
           <div className="mb-3">
             {isGeneratingDescription ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="flex items-center gap-2 text-foreground">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Generating AI description...</span>
               </div>

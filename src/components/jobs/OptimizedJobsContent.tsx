@@ -108,7 +108,7 @@ export const OptimizedJobsContent = memo(({
   if (filteredJobs.length === 0 && jobs.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-8 py-8">
-        <Card className="glass-card-no-hover">
+        <Card className="backdrop-blur-sm bg-white/60 border-2 border-white/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-white/70 hover:border-white/60">
           <CardContent className={`p-12 text-center ${textColor}`}>
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Plus className="w-10 h-10 text-gray-400" />
@@ -134,7 +134,7 @@ export const OptimizedJobsContent = memo(({
   if (filteredJobs.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-8 py-8">
-        <Card className="glass-card-no-hover">
+        <Card className="backdrop-blur-sm bg-white/60 border-2 border-white/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-white/70 hover:border-white/60">
           <CardContent className={`p-12 text-center ${textColor}`}>
             <h3 className={`text-xl font-semibold mb-3 ${titleColor}`}>No jobs match your filters</h3>
             <p className={`mb-6 ${textColor}`}>Try adjusting your search or filter criteria</p>
@@ -156,7 +156,7 @@ export const OptimizedJobsContent = memo(({
     <div className="max-w-7xl mx-auto px-8 py-4">
       <div className="space-y-3">
         {filteredJobs.length > 0 && (
-          <Card className="glass-card-no-hover">
+          <Card className="backdrop-blur-sm bg-white/60 border-2 border-white/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-white/70 hover:border-white/60">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
