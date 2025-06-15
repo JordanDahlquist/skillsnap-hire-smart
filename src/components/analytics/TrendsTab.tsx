@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -101,7 +100,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
       {/* Weekly Trends Overview */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-left">
             <Calendar className="w-5 h-5 text-blue-600" />
             Weekly Trends (Last 7 vs Previous 7 Days)
           </CardTitle>
@@ -138,7 +137,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
                      metric.format === 'percentage' ? `${metric.current.toFixed(1)}%` : 
                      Math.round(metric.current)}
                   </div>
-                  <div className="text-sm text-gray-600">{metric.title}</div>
+                  <div className="text-sm text-gray-600 text-left">{metric.title}</div>
                 </div>
               );
             })}
@@ -151,7 +150,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
         {/* Applications Trend */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-lg">Applications Over Time</CardTitle>
+            <CardTitle className="text-lg text-left">Applications Over Time</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
@@ -175,7 +174,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
         {/* Quality & Hired Rate Trend */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="text-lg">Quality & Hired Rate</CardTitle>
+            <CardTitle className="text-lg text-left">Quality & Hired Rate</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
@@ -209,7 +208,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
       {/* Top Performing Jobs */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-left">
             <BarChart3 className="w-5 h-5 text-indigo-600" />
             Top Performing Jobs by Hired Rate
           </CardTitle>
@@ -224,8 +223,8 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
                       {index + 1}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">{job.jobTitle}</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-semibold text-gray-900 text-left">{job.jobTitle}</h4>
+                      <p className="text-sm text-gray-600 text-left">
                         {job.applications} applications • {job.avgRating.toFixed(1)} avg rating
                       </p>
                     </div>
@@ -241,11 +240,11 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
               
               {/* Performance Insights */}
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Performance Insights</h4>
+                <h4 className="font-semibold text-blue-900 mb-2 text-left">Performance Insights</h4>
                 <div className="space-y-2 text-sm text-blue-800">
-                  <p>• Your best performing job has a {topJobs[0]?.hiredRate.toFixed(1)}% hired rate</p>
-                  <p>• Average hired rate across top jobs: {(topJobs.reduce((sum, job) => sum + job.hiredRate, 0) / topJobs.length).toFixed(1)}%</p>
-                  <p>• Consider replicating successful job posting patterns from your top performers</p>
+                  <p className="text-left">• Your best performing job has a {topJobs[0]?.hiredRate.toFixed(1)}% hired rate</p>
+                  <p className="text-left">• Average hired rate across top jobs: {(topJobs.reduce((sum, job) => sum + job.hiredRate, 0) / topJobs.length).toFixed(1)}%</p>
+                  <p className="text-left">• Consider replicating successful job posting patterns from your top performers</p>
                 </div>
               </div>
             </div>
@@ -262,7 +261,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
       {/* Monthly Summary */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-left">
             <BarChart3 className="w-5 h-5 text-green-600" />
             Monthly Overview
           </CardTitle>
@@ -272,7 +271,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600">{metrics.applicationsThisMonth}</div>
               <div className="text-sm text-gray-600">Applications This Month</div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1 text-left">
                 {metrics.applicationsThisMonth > 50 ? 'Strong pipeline' : 'Building momentum'}
               </div>
             </div>
@@ -282,7 +281,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
                 {metrics.hiredRate.toFixed(1)}%
               </div>
               <div className="text-sm text-gray-600">Overall Hired Rate</div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1 text-left">
                 {metrics.hiredRate >= 2 ? 'Above industry average' : 'Room for improvement'}
               </div>
             </div>
@@ -292,7 +291,7 @@ export const TrendsTab = ({ analytics }: TrendsTabProps) => {
                 {metrics.avgRating.toFixed(1)}
               </div>
               <div className="text-sm text-gray-600">Average Quality Score</div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1 text-left">
                 {metrics.avgRating >= 2.0 ? 'High quality candidates' : 'Consider refining requirements'}
               </div>
             </div>

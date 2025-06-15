@@ -84,7 +84,7 @@ export const CandidateDetailPage = () => {
             <h1 className="text-2xl font-bold text-foreground mb-2">
               {!selectedApplication ? 'Candidate Not Found' : 'Job Not Found'}
             </h1>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 text-left">
               {!selectedApplication 
                 ? "The candidate you're looking for doesn't exist or has been removed."
                 : "The job associated with this candidate doesn't exist or you don't have access to it."
@@ -209,7 +209,7 @@ export const CandidateDetailPage = () => {
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {!selectedApplication ? 'Candidate Not Found' : 'Job Not Found'}
           </h1>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-4 text-left">
             {!selectedApplication 
               ? "The candidate you're looking for doesn't exist or has been removed."
               : "The job associated with this candidate doesn't exist or you don't have access to it."

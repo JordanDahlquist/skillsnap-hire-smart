@@ -92,7 +92,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
       {/* AI Insights Section */}
       <Card className="border-0 shadow-lg bg-gradient-to-r from-indigo-50 to-purple-50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-left">
             <Lightbulb className="w-5 h-5 text-purple-600" />
             AI-Powered Insights
           </CardTitle>
@@ -109,8 +109,8 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
                   <div className="flex items-start gap-3">
                     <IconComponent className={`w-5 h-5 mt-1 ${getInsightIconColor(insight.type)}`} />
                     <div className="flex-1">
-                      <h4 className="font-semibold text-sm text-gray-900">{insight.title}</h4>
-                      <p className="text-xs text-gray-600 mt-1">{insight.description}</p>
+                      <h4 className="font-semibold text-sm text-gray-900 text-left">{insight.title}</h4>
+                      <p className="text-xs text-gray-600 mt-1 text-left">{insight.description}</p>
                       {insight.actionable && (
                         <Badge variant="outline" className="mt-2 text-xs">
                           Action Required
@@ -128,7 +128,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
       {/* Top Performing Jobs */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-left">
             <Award className="w-5 h-5 text-yellow-600" />
             Top Performing Jobs
           </CardTitle>
@@ -142,8 +142,8 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
                     {index + 1}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">{job.jobTitle}</h4>
-                    <p className="text-sm text-gray-600">{job.applications} applications</p>
+                    <h4 className="font-semibold text-gray-900 text-left">{job.jobTitle}</h4>
+                    <p className="text-sm text-gray-600 text-left">{job.applications} applications</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -164,7 +164,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-left">
               <Target className="w-5 h-5 text-blue-600" />
               Performance Goals
             </CardTitle>
@@ -172,7 +172,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
           <CardContent className="space-y-4">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Hired Rate Target</span>
+                <span className="text-sm font-medium text-left">Hired Rate Target</span>
                 <span className="text-sm text-gray-600">{metrics.hiredRate.toFixed(1)}% / 5%</span>
               </div>
               <Progress value={Math.min((metrics.hiredRate / 5) * 100, 100)} className="h-2" />
@@ -180,7 +180,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
             
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Quality Score Target</span>
+                <span className="text-sm font-medium text-left">Quality Score Target</span>
                 <span className="text-sm text-gray-600">{metrics.avgRating.toFixed(1)} / 2.5</span>
               </div>
               <Progress value={Math.min((metrics.avgRating / 2.5) * 100, 100)} className="h-2" />
@@ -188,7 +188,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
             
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Weekly Applications</span>
+                <span className="text-sm font-medium text-left">Weekly Applications</span>
                 <span className="text-sm text-gray-600">{metrics.applicationsThisWeek} / 20</span>
               </div>
               <Progress value={Math.min((metrics.applicationsThisWeek / 20) * 100, 100)} className="h-2" />
@@ -199,7 +199,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
         {/* Jobs Needing Attention */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-left">
               <AlertTriangle className="w-5 h-5 text-orange-600" />
               Jobs Needing Attention
             </CardTitle>
@@ -210,8 +210,8 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
                 {needsAttentionJobs.map((job) => (
                   <div key={job.jobId} className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
                     <div>
-                      <h4 className="font-semibold text-gray-900 text-sm">{job.jobTitle}</h4>
-                      <p className="text-xs text-gray-600">{job.applications} applications</p>
+                      <h4 className="font-semibold text-gray-900 text-sm text-left">{job.jobTitle}</h4>
+                      <p className="text-xs text-gray-600 text-left">{job.applications} applications</p>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-bold text-orange-600">
@@ -222,7 +222,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
                   </div>
                 ))}
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs text-blue-800">
+                  <p className="text-xs text-blue-800 text-left">
                     💡 Consider reviewing job descriptions or requirements for these positions
                   </p>
                 </div>
@@ -242,7 +242,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
       {/* Advanced Analytics Section */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-left">
             <BarChart3 className="w-5 h-5 text-indigo-600" />
             Advanced Analytics Summary
           </CardTitle>
@@ -252,7 +252,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600">{metrics.totalJobs}</div>
               <div className="text-sm text-gray-600">Active Job Postings</div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1 text-left">
                 {metrics.totalJobs > 5 ? 'Strong pipeline' : 'Consider expanding'}
               </div>
             </div>
@@ -262,7 +262,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
                 {metrics.avgRating.toFixed(1)}
               </div>
               <div className="text-sm text-gray-600">Average Candidate Quality</div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1 text-left">
                 {metrics.avgRating >= 2.5 ? 'Excellent quality' : 'Room for improvement'}
               </div>
             </div>
@@ -272,7 +272,7 @@ export const InsightsTab = ({ analytics }: InsightsTabProps) => {
                 {metrics.avgTimeToResponse.toFixed(1)}d
               </div>
               <div className="text-sm text-gray-600">Avg Response Time</div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1 text-left">
                 {metrics.avgTimeToResponse <= 2 ? 'Quick response' : 'Could be faster'}
               </div>
             </div>

@@ -116,7 +116,7 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="border-0 shadow-md">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-left">
               <Target className="w-5 h-5 text-blue-600" />
               Pipeline Status
             </CardTitle>
@@ -125,7 +125,7 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
             <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm font-medium">Pending Review</span>
+                <span className="text-sm font-medium text-left">Pending Review</span>
               </div>
               <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                 {pipelineData.pending}
@@ -134,7 +134,7 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
             <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium">Approved</span>
+                <span className="text-sm font-medium text-left">Approved</span>
               </div>
               <Badge variant="secondary" className="bg-green-100 text-green-800">
                 {pipelineData.approved}
@@ -143,7 +143,7 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
             <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
               <div className="flex items-center gap-2">
                 <ThumbsUp className="w-4 h-4 text-red-600 rotate-180" />
-                <span className="text-sm font-medium">Rejected</span>
+                <span className="text-sm font-medium text-left">Rejected</span>
               </div>
               <Badge variant="secondary" className="bg-red-100 text-red-800">
                 {pipelineData.rejected}

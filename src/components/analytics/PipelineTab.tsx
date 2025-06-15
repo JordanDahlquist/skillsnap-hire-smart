@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -142,10 +141,10 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
                 <div className="text-2xl font-bold text-gray-900 mb-1">
                   {stage.count}
                 </div>
-                <div className="text-sm font-medium text-gray-700 mb-1">
+                <div className="text-sm font-medium text-gray-700 mb-1 text-left">
                   {stage.name}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 text-left">
                   {stage.description}
                 </div>
               </CardContent>
@@ -159,7 +158,7 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
         {/* Pipeline Distribution Chart */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-left">
               <BarChart3 className="w-5 h-5 text-blue-600" />
               Pipeline Distribution
             </CardTitle>
@@ -197,7 +196,7 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
         {/* Pipeline Efficiency Metrics */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-left">
               <Target className="w-5 h-5 text-green-600" />
               Pipeline Health
             </CardTitle>
@@ -210,27 +209,27 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <IconComponent className="w-5 h-5" />
-                      <span className="font-semibold text-sm">{insight.title}</span>
+                      <span className="font-semibold text-sm text-left">{insight.title}</span>
                     </div>
                     <div className="text-lg font-bold">{insight.value}</div>
                   </div>
-                  <p className="text-xs">{insight.description}</p>
+                  <p className="text-xs text-left">{insight.description}</p>
                 </div>
               );
             })}
             
             {/* Action Items */}
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-semibold text-blue-900 mb-2">Recommended Actions</h4>
+              <h4 className="font-semibold text-blue-900 mb-2 text-left">Recommended Actions</h4>
               <div className="space-y-1 text-sm text-blue-800">
                 {pendingBacklog > 10 && (
-                  <p>• Review {pendingBacklog} pending applications to reduce backlog</p>
+                  <p className="text-left">• Review {pendingBacklog} pending applications to reduce backlog</p>
                 )}
                 {metrics.hiredRate < 2 && (
-                  <p>• Consider adjusting hiring criteria to improve hired rate</p>
+                  <p className="text-left">• Consider adjusting hiring criteria to improve hired rate</p>
                 )}
                 {processingRate < 60 && (
-                  <p>• Implement faster review processes to improve efficiency</p>
+                  <p className="text-left">• Implement faster review processes to improve efficiency</p>
                 )}
               </div>
             </div>
@@ -241,7 +240,7 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
       {/* Job-Specific Pipeline Performance */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-left">
             <Calendar className="w-5 h-5 text-purple-600" />
             Job Performance Breakdown
           </CardTitle>
@@ -269,7 +268,7 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {jobPipelineData.slice(0, 6).map((job, index) => (
                   <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-semibold text-sm text-gray-900 mb-1">
+                    <h4 className="font-semibold text-sm text-gray-900 mb-1 text-left">
                       {job.jobTitle}
                     </h4>
                     <div className="flex justify-between text-xs text-gray-600">
@@ -299,7 +298,7 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
       {/* Pipeline Flow Visualization */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-left">
             <ArrowRight className="w-5 h-5 text-indigo-600" />
             Application Flow
           </CardTitle>
@@ -348,7 +347,7 @@ export const PipelineTab = ({ analytics }: PipelineTabProps) => {
           </div>
           
           <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
-            <h4 className="font-semibold text-indigo-900 mb-2">Pipeline Efficiency Summary</h4>
+            <h4 className="font-semibold text-indigo-900 mb-2 text-left">Pipeline Efficiency Summary</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
                 <span className="text-indigo-700 font-medium">Processing Rate:</span>
