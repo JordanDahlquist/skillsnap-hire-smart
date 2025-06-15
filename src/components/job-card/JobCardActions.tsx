@@ -35,7 +35,7 @@ export const JobCardActions = ({
       
       <div className="flex gap-2">
         <Button variant="outline" size="sm" asChild>
-          <a href={`/apply/${jobId}`} target="_blank" rel="noopener noreferrer">
+          <a href={`/job/${jobId}/apply`} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="w-4 h-4 mr-2" />
             View Public
           </a>
