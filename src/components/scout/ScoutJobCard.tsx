@@ -24,7 +24,7 @@ export const ScoutJobCard = ({ job }: ScoutJobCardProps) => {
   const applicationCount = job.applications?.[0]?.count || 0;
   
   const handleClick = () => {
-    navigate(`/dashboard/${job.id}`);
+    navigate(`/jobs/${job.id}`);
   };
 
   const getStatusLabel = (status: string) => {

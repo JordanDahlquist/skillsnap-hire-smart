@@ -1,4 +1,3 @@
-
 import React, { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -69,25 +68,19 @@ export const ApplicationItem = memo(({
 
   const handleViewFullProfile = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    if (jobId) {
-      navigate(`/dashboard/${jobId}/candidate/${application.id}`);
-      logger.debug('Navigating to candidate detail page', { 
-        jobId, 
-        applicationId: application.id 
-      });
-    }
-  }, [navigate, jobId, application.id]);
+    navigate(`/candidate/${application.id}`);
+    logger.debug('Navigating to candidate detail page', { 
+      applicationId: application.id 
+    });
+  }, [navigate, application.id]);
 
   const handleVideoIndicatorClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    if (jobId) {
-      navigate(`/dashboard/${jobId}/candidate/${application.id}`);
-      logger.debug('Navigating to candidate detail page via video indicator', { 
-        jobId, 
-        applicationId: application.id 
-      });
-    }
-  }, [navigate, jobId, application.id]);
+    navigate(`/candidate/${application.id}`);
+    logger.debug('Navigating to candidate detail page via video indicator', { 
+      applicationId: application.id 
+    });
+  }, [navigate, application.id]);
 
   // Get the display status - if status is "reviewed" but no manual rating, show as "pending"
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
@@ -182,17 +175,15 @@ export const ApplicationItem = memo(({
                 </div>
 
                 {/* View Full Profile Button */}
-                {jobId && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleViewFullProfile}
-                    className="ml-2 flex items-center gap-1 text-xs"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    View Full
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleViewFullProfile}
+                  className="ml-2 flex items-center gap-1 text-xs"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  View Full
+                </Button>
               </div>
               
               {application.ai_summary && (

@@ -49,7 +49,7 @@ export const ApplicationDetailContent = ({
   const interviewTranscripts = safeParseVideoTranscripts(application.interview_video_transcripts || []);
 
   const handleViewFullProfile = () => {
-    navigate(`/dashboard/${jobId}/candidate/${application.id}`);
+    navigate(`/candidate/${application.id}`);
   };
 
   // Get transcript processing status display

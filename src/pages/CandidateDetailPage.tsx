@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
@@ -16,19 +15,15 @@ import { logger } from "@/services/loggerService";
 import { Application } from "@/types";
 
 export const CandidateDetailPage = () => {
-  const { jobId, applicationId } = useParams<{ jobId: string; applicationId: string }>();
+  const { applicationId } = useParams<{ applicationId: string }>();
   const navigate = useNavigate();
   const { user } = useOptimizedAuth();
   const { currentImage, nextImage, isTransitioning, showSecondary } = useRotatingBackground();
   const { currentTheme } = useThemeContext();
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
 
-  const {
-    data: job,
-    isLoading: jobLoading,
-    error: jobError
-  } = useOptimizedJob(jobId);
-  
+  // First, get the application to find its job_id
   const {
     data: applications = [],
     isLoading: applicationsLoading,
@@ -36,33 +31,58 @@ export const CandidateDetailPage = () => {
     refetch: refetchApplications
   } = useOptimizedApplications(jobId);
 
-  const isLoading = jobLoading || applicationsLoading;
+  // Find the application first to get the job_id
+  useEffect(() => {
+    const findApplication = async () => {
+      if (applicationId && !jobId) {
+        // We need to find the application across all jobs to get the job_id
+        // For now, we'll rely on the applications hook with null jobId to get all applications
+        // or we could make a direct query to find the specific application
+        logger.debug('Looking for application', { applicationId });
+      }
+    };
+    
+    findApplication();
+  }, [applicationId, jobId]);
 
-  // Find the current application and set it
+  // Once we have applications, find the specific one and set job context
   useEffect(() => {
     if (applications.length > 0 && applicationId) {
       const application = applications.find(app => app.id === applicationId);
       if (application) {
         setSelectedApplication(application);
+        if (application.job_id && application.job_id !== jobId) {
+          setJobId(application.job_id);
+        }
         logger.debug('Found application for candidate detail page', { applicationId });
       } else {
         logger.warn('Application not found', { applicationId, availableIds: applications.map(app => app.id) });
-        // Redirect back to dashboard if application not found
-        navigate(`/dashboard/${jobId}`);
       }
     }
-  }, [applications, applicationId, navigate, jobId]);
+  }, [applications, applicationId, jobId]);
+
+  const {
+    data: job,
+    isLoading: jobLoading,
+    error: jobError
+  } = useOptimizedJob(jobId);
+
+  const isLoading = jobLoading || applicationsLoading;
 
   const handleApplicationUpdate = () => {
     refetchApplications();
   };
 
   const handleNavigateToCandidate = (newApplicationId: string) => {
-    navigate(`/dashboard/${jobId}/candidate/${newApplicationId}`);
+    navigate(`/candidate/${newApplicationId}`);
   };
 
   const handleBackToDashboard = () => {
-    navigate(`/dashboard/${jobId}`);
+    if (jobId) {
+      navigate(`/jobs/${jobId}`);
+    } else {
+      navigate('/jobs');
+    }
   };
 
   // Check if this is a solid color theme
@@ -222,68 +242,68 @@ export const CandidateDetailPage = () => {
             onClick={handleBackToDashboard}
             className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
           >
-            Back to Dashboard
-          </button>
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`${backgroundClass} flex flex-col min-h-screen`}
+        style={{
+          '--bg-primary': `url(${currentImage})`,
+          '--bg-secondary': `url(${nextImage})`
+        } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
+      >
+        <style>
+          {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
+          {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
+        </style>
+
+        {/* Ambient Background Effects - Only show in light mode */}
+        {currentTheme === 'light' && (
+          <div className="absolute inset-0 z-0">
+            <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
+          </div>
+        )}
+
+        {/* Dark mode overlay - Only show in dark mode */}
+        {currentTheme === 'dark' && (
+          <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20"></div>
+          </div>
+        )}
+
+        <div className="relative z-10 flex flex-col flex-1">
+          <UnifiedHeader showCreateButton={false} />
+          
+          <CandidateDetailHeader 
+            job={job}
+            application={selectedApplication}
+            onBackToDashboard={handleBackToDashboard}
+            onApplicationUpdate={handleApplicationUpdate}
+          />
+
+          <CandidateNavigation 
+            applications={applications}
+            currentApplication={selectedApplication}
+            onNavigateToCandidate={handleNavigateToCandidate}
+          />
+
+          <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+            <CandidateDetailContent 
+              application={selectedApplication}
+              job={job}
+              onApplicationUpdate={handleApplicationUpdate}
+            />
+          </div>
+
+          <Footer />
         </div>
       </div>
     );
-  }
-
-  return (
-    <div
-      className={`${backgroundClass} flex flex-col min-h-screen`}
-      style={{
-        '--bg-primary': `url(${currentImage})`,
-        '--bg-secondary': `url(${nextImage})`
-      } as React.CSSProperties & { '--bg-primary': string; '--bg-secondary': string }}
-    >
-      <style>
-        {`.dashboard-crossfade-background::before { background-image: var(--bg-primary); }`}
-        {`.dashboard-crossfade-background::after { background-image: var(--bg-secondary); }`}
-      </style>
-
-      {/* Ambient Background Effects - Only show in light mode */}
-      {currentTheme === 'light' && (
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-r from-pink-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-300/5 to-pink-300/5 rounded-full blur-3xl"></div>
-        </div>
-      )}
-
-      {/* Dark mode overlay - Only show in dark mode */}
-      {currentTheme === 'dark' && (
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20"></div>
-        </div>
-      )}
-
-      <div className="relative z-10 flex flex-col flex-1">
-        <UnifiedHeader showCreateButton={false} />
-        
-        <CandidateDetailHeader 
-          job={job}
-          application={selectedApplication}
-          onBackToDashboard={handleBackToDashboard}
-          onApplicationUpdate={handleApplicationUpdate}
-        />
-
-        <CandidateNavigation 
-          applications={applications}
-          currentApplication={selectedApplication}
-          onNavigateToCandidate={handleNavigateToCandidate}
-        />
-
-        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
-          <CandidateDetailContent 
-            application={selectedApplication}
-            job={job}
-            onApplicationUpdate={handleApplicationUpdate}
-          />
-        </div>
-
-        <Footer />
-      </div>
-    </div>
-  );
-};
+  };
