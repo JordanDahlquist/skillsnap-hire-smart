@@ -1,5 +1,3 @@
-
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -128,7 +126,7 @@ export const ApplicationDetailContent = ({
         </div>
       </div>
 
-      {/* Redesigned Compact Header */}
+      {/* Redesigned Sleek Header */}
       <div className="bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 rounded-xl p-4 -mx-2">
         <div className="flex items-center justify-between gap-6">
           
@@ -137,9 +135,7 @@ export const ApplicationDetailContent = ({
             <h2 className="text-xl font-bold text-foreground truncate mb-1">
               {application.name}
             </h2>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="truncate">{application.email}</span>
-              <span>•</span>
+            <div className="text-sm text-muted-foreground">
               <span className="whitespace-nowrap">Applied {getTimeAgo(application.created_at)}</span>
             </div>
           </div>
@@ -375,4 +371,3 @@ export const ApplicationDetailContent = ({
     </div>
   );
 };
-
