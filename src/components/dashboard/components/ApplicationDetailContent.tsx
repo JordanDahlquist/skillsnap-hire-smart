@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -190,6 +189,26 @@ export const ApplicationDetailContent = ({
         isUpdating={isUpdating}
       />
 
+      {/* AI Summary with Enhanced Context */}
+      {application.ai_summary && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-foreground">AI Analysis</h3>
+            {(skillsTranscripts.length > 0 || interviewTranscripts.length > 0) && (
+              <Badge variant="outline" className="text-green-600">Enhanced with Video Analysis</Badge>
+            )}
+          </div>
+          <div className="p-4 bg-muted/30 rounded-lg border border-border">
+            <p className="text-foreground">{application.ai_summary}</p>
+            {application.transcript_last_processed_at && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Analysis includes video transcripts processed {getTimeAgo(application.transcript_last_processed_at)}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Contact Information */}
       <div className="space-y-3">
         <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
@@ -303,26 +322,6 @@ export const ApplicationDetailContent = ({
               >
                 View full profile to read complete cover letter.
               </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* AI Summary with Enhanced Context */}
-      {application.ai_summary && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-foreground">AI Analysis</h3>
-            {(skillsTranscripts.length > 0 || interviewTranscripts.length > 0) && (
-              <Badge variant="outline" className="text-green-600">Enhanced with Video Analysis</Badge>
-            )}
-          </div>
-          <div className="p-4 bg-muted/30 rounded-lg border border-border">
-            <p className="text-foreground">{application.ai_summary}</p>
-            {application.transcript_last_processed_at && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Analysis includes video transcripts processed {getTimeAgo(application.transcript_last_processed_at)}
-              </p>
             )}
           </div>
         </div>
