@@ -1,4 +1,3 @@
-
 export interface CandidateProfile {
   id: string;
   name: string;
@@ -30,6 +29,9 @@ export interface CandidateProfile {
   available_start_date?: string;
   cover_letter_excerpt?: string;
 }
+
+// Maximum number of candidate cards to show in any single response
+const MAX_CANDIDATE_CARDS = 3;
 
 export const createCandidateProfiles = (applications: any[]): CandidateProfile[] => {
   return applications.map(app => {
@@ -72,48 +74,114 @@ export const createCandidateProfiles = (applications: any[]): CandidateProfile[]
 };
 
 export const detectMentionedCandidates = (aiMessage: string, applications: any[]): string[] => {
-  const applicationIds: string[] = [];
+  const candidateMatches: Array<{ id: string; score: number; position: number }> = [];
+  const responseText = aiMessage.toLowerCase();
   
-  // Enhanced candidate detection by name
+  // Recommendation context patterns (words that indicate positive recommendation)
+  const recommendationPatterns = [
+    /\b(recommend|suggest|best|top|ideal|perfect|excellent|outstanding|strong|good choice)\b/gi,
+    /\b(would be|is a|seems like|appears to be)\s+\w*\s*(good|great|excellent|ideal|perfect|strong)\b/gi,
+    /\b(top\s*\d*\s*candidate|best\s*candidate|first\s*choice|primary\s*recommendation)\b/gi
+  ];
+
   applications.forEach(app => {
     const candidateName = app.name.toLowerCase();
-    const responseText = aiMessage.toLowerCase();
-    
-    // Look for full name or first/last name mentions
     const nameParts = candidateName.split(' ');
     const firstName = nameParts[0];
     const lastName = nameParts[nameParts.length - 1];
     
-    // Check for full name, first name, or last name in context
+    // Look for full name or first/last name mentions
     const namePatterns = [
       candidateName,
       firstName.length > 2 ? firstName : null,
       lastName.length > 2 ? lastName : null
     ].filter(Boolean);
     
-    const isNameMentioned = namePatterns.some(name => {
-      // Look for name with word boundaries and context keywords
-      const nameRegex = new RegExp(`\\b${name}\\b`, 'i');
-      return nameRegex.test(responseText);
+    namePatterns.forEach(name => {
+      const nameRegex = new RegExp(`\\b${name}\\b`, 'gi');
+      const matches = [...responseText.matchAll(nameRegex)];
+      
+      matches.forEach(match => {
+        const position = match.index || 0;
+        let score = 0;
+        
+        // Get context around the name mention (100 characters before and after)
+        const contextStart = Math.max(0, position - 100);
+        const contextEnd = Math.min(responseText.length, position + 100);
+        const context = responseText.substring(contextStart, contextEnd);
+        
+        // Score based on recommendation patterns in context
+        recommendationPatterns.forEach(pattern => {
+          if (pattern.test(context)) {
+            score += 10;
+          }
+        });
+        
+        // Higher score for earlier mentions (first mentions are usually recommendations)
+        score += Math.max(0, 100 - position / 10);
+        
+        // Bonus for being in the first paragraph
+        if (position < 200) {
+          score += 5;
+        }
+        
+        // Check for negative context patterns
+        const negativePatterns = [
+          /\b(however|but|unfortunately|lacks|missing|weak|poor|not suitable|doesn't have)\b/gi,
+          /\b(compared to|unlike|whereas|while)\b/gi
+        ];
+        
+        let hasNegativeContext = false;
+        negativePatterns.forEach(pattern => {
+          if (pattern.test(context)) {
+            hasNegativeContext = true;
+            score -= 5; // Reduce score for negative context
+          }
+        });
+        
+        // Only include if there's some positive indication or high position score
+        if (score > 5 || (!hasNegativeContext && position < 100)) {
+          candidateMatches.push({ id: app.id, score, position });
+        }
+      });
     });
-    
-    if (isNameMentioned) {
-      applicationIds.push(app.id);
-    }
   });
 
   // Also check for UUID mentions (legacy support)
-  const appMatches = aiMessage.match(/(?:candidate|application|ID)[:\s]+([a-f0-9-]{36})/gi);
-  if (appMatches) {
-    appMatches.forEach((match: string) => {
+  const uuidMatches = aiMessage.match(/(?:candidate|application|ID)[:\s]+([a-f0-9-]{36})/gi);
+  if (uuidMatches) {
+    uuidMatches.forEach((match: string, index: number) => {
       const id = match.match(/([a-f0-9-]{36})/)?.[1];
       if (id && applications.some(app => app.id === id)) {
-        applicationIds.push(id);
+        candidateMatches.push({ id, score: 20, position: index * 10 });
       }
     });
   }
 
-  return [...new Set(applicationIds)];
+  // Sort by score (descending) then by position (ascending - earlier is better)
+  candidateMatches.sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    return a.position - b.position;
+  });
+
+  // Remove duplicates and limit to MAX_CANDIDATE_CARDS
+  const uniqueIds = [...new Set(candidateMatches.map(match => match.id))];
+  const limitedIds = uniqueIds.slice(0, MAX_CANDIDATE_CARDS);
+  
+  // Log for debugging
+  if (candidateMatches.length > 0) {
+    console.log(`Candidate detection: Found ${candidateMatches.length} total matches, showing top ${limitedIds.length}:`, 
+      candidateMatches.slice(0, MAX_CANDIDATE_CARDS).map(m => ({ id: m.id.substring(0, 8), score: m.score, position: m.position }))
+    );
+    
+    if (uniqueIds.length > MAX_CANDIDATE_CARDS) {
+      console.log(`Filtered out ${uniqueIds.length - MAX_CANDIDATE_CARDS} additional candidates to prevent UI overflow`);
+    }
+  }
+
+  return limitedIds;
 };
 
 export const detectJobIds = (aiMessage: string, jobs: any[]): string[] => {
