@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -140,7 +139,7 @@ export const AccountSettings = () => {
                 id="current_email"
                 value={user?.email || ''}
                 disabled
-                className="bg-gray-50"
+                className="bg-muted text-muted-foreground"
               />
             </div>
 
@@ -199,14 +198,14 @@ export const AccountSettings = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>User ID</Label>
-              <Input value={user?.id || ''} disabled className="bg-gray-50 font-mono text-sm" />
+              <Input value={user?.id || ''} disabled className="bg-muted text-muted-foreground font-mono text-sm" />
             </div>
             <div>
               <Label>Account Created</Label>
               <Input 
                 value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : ''} 
                 disabled 
-                className="bg-gray-50" 
+                className="bg-muted text-muted-foreground" 
               />
             </div>
           </div>
