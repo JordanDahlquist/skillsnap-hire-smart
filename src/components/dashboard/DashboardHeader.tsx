@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Share2, ExternalLink, MoreHorizontal, Users, Calendar, MapPin, DollarSign } from "lucide-react";
+import { Share2, ExternalLink, Users, Calendar, MapPin, DollarSign } from "lucide-react";
 import { Job, Application } from "@/types";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { useDashboardHeaderActions } from "@/hooks/useDashboardHeaderActions";
@@ -78,8 +78,7 @@ export const DashboardHeader = memo(({ job, applications, onJobUpdate }: Dashboa
               </h1>
               
               <div className="text-sm text-muted-foreground">
-                {job.department && `${job.department} • `}
-                {getTimeAgo(job.created_at)}
+                Created {getTimeAgo(job.created_at)}
               </div>
             </div>
 
@@ -110,7 +109,6 @@ export const DashboardHeader = memo(({ job, applications, onJobUpdate }: Dashboa
                       <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       <span className="text-muted-foreground capitalize">
                         {job.location_type.replace('_', ' ')}
-                        {job.location && ` • ${job.location}`}
                       </span>
                     </div>
                   )}
@@ -122,10 +120,10 @@ export const DashboardHeader = memo(({ job, applications, onJobUpdate }: Dashboa
                       </span>
                     </div>
                   )}
-                  {job.salary_range && (
+                  {job.budget && (
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-muted-foreground">{job.salary_range}</span>
+                      <span className="text-muted-foreground">{job.budget}</span>
                     </div>
                   )}
                 </div>
@@ -149,7 +147,7 @@ export const DashboardHeader = memo(({ job, applications, onJobUpdate }: Dashboa
             </div>
           </div>
 
-          {/* Desktop Layout - Keep existing */}
+          {/* Desktop Layout */}
           <div className="hidden lg:block">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
