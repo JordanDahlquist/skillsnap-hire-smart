@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Sparkles, Brain, Wand2, Zap, Target, PenTool } from "lucide-react";
+import { CustomSpinningLogo } from "./CustomSpinningLogo";
 
 interface AiGenerationLoaderProps {
   onComplete?: () => void;
@@ -60,21 +61,11 @@ export const AiGenerationLoader = ({ onComplete }: AiGenerationLoaderProps) => {
 
       {/* Main content */}
       <div className="relative z-10 text-center space-y-8">
-        {/* Elegant central animation */}
+        {/* Custom logo animation replacing the generic gradient rings */}
         <div className="relative">
-          {/* Rotating gradient ring */}
-          <div className="relative w-24 h-24 mx-auto">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 animate-spin" style={{ animationDuration: '3s' }}>
-              <div className="absolute inset-1 bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 rounded-full"></div>
-            </div>
-            
-            {/* Central morphing gradient circle */}
-            <div className="absolute inset-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center animate-pulse" style={{ animationDuration: '2s' }}>
-              <Wand2 className="w-8 h-8 text-white" />
-            </div>
-          </div>
+          <CustomSpinningLogo size={96} className="mx-auto" animationSpeed="normal" />
           
-          {/* Orbiting elements */}
+          {/* Orbiting elements around the logo */}
           <div className="absolute inset-0 animate-spin" style={{ animationDuration: '8s' }}>
             <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full shadow-lg"></div>
           </div>

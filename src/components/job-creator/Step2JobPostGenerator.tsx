@@ -2,11 +2,12 @@
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Edit3, Loader2 } from "lucide-react";
+import { Sparkles, Edit3 } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
+import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
 
 interface Step2JobPostGeneratorProps {
   generatedJobPost: string;
@@ -42,7 +43,7 @@ export const Step2JobPostGenerator = ({
       <Card className="h-full flex flex-col items-center justify-center">
         <CardContent className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <CustomSpinningLogo size={48} animationSpeed="fast" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Generating Your Job Post...

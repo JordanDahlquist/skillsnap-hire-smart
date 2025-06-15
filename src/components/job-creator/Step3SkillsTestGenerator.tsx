@@ -9,6 +9,7 @@ import { UnifiedJobCreatorActions } from "@/types/jobForm";
 import { SkillsTestTemplateSelector } from "./skills/SkillsTestTemplateSelector";
 import { EnhancedSkillsQuestionEditor } from "./skills/EnhancedSkillsQuestionEditor";
 import { SkillsTestPreview } from "./skills/SkillsTestPreview";
+import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
 
 interface Step3SkillsTestGeneratorProps {
   generatedJobPost: string;
@@ -149,7 +150,14 @@ export const Step3SkillsTestGenerator = ({
                   disabled={isGenerating}
                   className="text-xs h-8 px-3"
                 >
-                  {isGenerating ? 'Regenerating...' : 'Regenerate with AI'}
+                  {isGenerating ? (
+                    <div className="flex items-center gap-2">
+                      <CustomSpinningLogo size={16} animationSpeed="fast" />
+                      Regenerating...
+                    </div>
+                  ) : (
+                    'Regenerate with AI'
+                  )}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -189,7 +197,11 @@ export const Step3SkillsTestGenerator = ({
           <CardContent className="flex-1 flex items-center justify-center">
             <div className="text-center max-w-md">
               <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-blue-600" />
+                {isGenerating ? (
+                  <CustomSpinningLogo size={48} animationSpeed="fast" />
+                ) : (
+                  <Sparkles className="w-8 h-8 text-blue-600" />
+                )}
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Create Skills Assessment
@@ -204,8 +216,17 @@ export const Step3SkillsTestGenerator = ({
                   size="default"
                   disabled={isGenerating}
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {isGenerating ? 'Generating...' : 'Generate with AI'}
+                  {isGenerating ? (
+                    <div className="flex items-center gap-2">
+                      <CustomSpinningLogo size={16} animationSpeed="fast" />
+                      Generating...
+                    </div>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Generate with AI
+                    </>
+                  )}
                 </Button>
                 <Button 
                   onClick={handleBuildCustomAssessment}
