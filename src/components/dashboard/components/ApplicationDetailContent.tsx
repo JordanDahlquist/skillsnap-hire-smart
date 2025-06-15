@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,56 +77,6 @@ export const ApplicationDetailContent = ({
 
   return (
     <div className="glass-card-no-hover p-6 space-y-6">
-      {/* Prominent Action Bar at Very Top */}
-      <div className="bg-muted/20 border border-border rounded-lg p-4 -m-2 mb-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
-            <StageSelector
-              jobId={jobId}
-              currentStage={pipelineStage}
-              applicationId={application.id}
-              onStageChange={onStageChange}
-              size="sm"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            {application.status === 'rejected' ? (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={onUnreject}
-                disabled={isUpdating}
-                className="border-green-200 text-green-600 hover:bg-green-50 h-9 px-4"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Unreject
-              </Button>
-            ) : (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={onReject}
-                disabled={isUpdating}
-                className="border-red-200 text-red-600 hover:bg-red-50 h-9 px-4"
-              >
-                <ThumbsDown className="w-4 h-4 mr-2" />
-                Reject
-              </Button>
-            )}
-            <Button 
-              size="sm"
-              onClick={onEmail}
-              disabled={isUpdating}
-              className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              Email
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Redesigned Sleek Header */}
       <div className="bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 rounded-xl p-4 -mx-2">
         <div className="flex items-center justify-between gap-6">
@@ -177,6 +128,56 @@ export const ApplicationDetailContent = ({
                 </a>
               </Button>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Prominent Action Bar */}
+      <div className="bg-muted/20 border border-border rounded-lg p-4 -m-2 mb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
+            <StageSelector
+              jobId={jobId}
+              currentStage={pipelineStage}
+              applicationId={application.id}
+              onStageChange={onStageChange}
+              size="sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            {application.status === 'rejected' ? (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={onUnreject}
+                disabled={isUpdating}
+                className="border-green-200 text-green-600 hover:bg-green-50 h-9 px-4"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Unreject
+              </Button>
+            ) : (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={onReject}
+                disabled={isUpdating}
+                className="border-red-200 text-red-600 hover:bg-red-50 h-9 px-4"
+              >
+                <ThumbsDown className="w-4 h-4 mr-2" />
+                Reject
+              </Button>
+            )}
+            <Button 
+              size="sm"
+              onClick={onEmail}
+              disabled={isUpdating}
+              className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Email
+            </Button>
           </div>
         </div>
       </div>
