@@ -1,4 +1,3 @@
-
 import React, { memo, useCallback, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -269,7 +268,10 @@ export const ApplicationsListHeader = memo(({
                 <TooltipContent 
                   side="top" 
                   align="center"
-                  className="z-[100] bg-popover text-popover-foreground border shadow-lg whitespace-nowrap"
+                  sideOffset={8}
+                  avoidCollisions={false}
+                  collisionPadding={10}
+                  className="z-[9999] bg-popover text-popover-foreground border shadow-lg whitespace-nowrap"
                 >
                   <p className="text-xs">Sort: {getCurrentSortLabel()}</p>
                 </TooltipContent>
