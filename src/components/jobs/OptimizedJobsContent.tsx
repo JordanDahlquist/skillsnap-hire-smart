@@ -47,7 +47,7 @@ const JobItem = memo(({
   );
 
   return (
-    <div className="mb-6">
+    <div className="mb-4 lg:mb-6">
       <OptimizedJobCard
         job={job}
         onJobUpdate={onRefetch}
@@ -107,22 +107,22 @@ export const OptimizedJobsContent = memo(({
 
   if (filteredJobs.length === 0 && jobs.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
         <Card className="backdrop-blur-sm bg-card/80 border-2 border-border/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-card/90 hover:border-border/60">
-          <CardContent className={`p-12 text-center ${textColor}`}>
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Plus className="w-10 h-10 text-gray-400" />
+          <CardContent className={`p-6 lg:p-12 text-center ${textColor}`}>
+            <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 lg:mb-6">
+              <Plus className="w-8 h-8 lg:w-10 lg:h-10 text-gray-400" />
             </div>
-            <h3 className={`text-xl font-semibold mb-3 ${titleColor}`}>No jobs yet</h3>
-            <p className={`mb-6 max-w-md mx-auto ${textColor}`}>
+            <h3 className={`text-lg lg:text-xl font-semibold mb-3 ${titleColor}`}>No jobs yet</h3>
+            <p className={`mb-4 lg:mb-6 max-w-md mx-auto ${textColor}`}>
               Create your first job posting to start receiving applications and building your talent pipeline
             </p>
             <Button 
               onClick={onCreateJob}
-              className="bg-[#007af6] hover:bg-[#0056b3] px-8 py-3 text-lg font-semibold"
+              className="bg-[#007af6] hover:bg-[#0056b3] px-6 lg:px-8 py-2 lg:py-3 text-base lg:text-lg font-semibold"
               size="lg"
             >
-              <Plus className="w-5 h-5 mr-2" />
+              <Plus className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
               Create Your First Job
             </Button>
           </CardContent>
@@ -133,11 +133,11 @@ export const OptimizedJobsContent = memo(({
 
   if (filteredJobs.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
         <Card className="backdrop-blur-sm bg-card/80 border-2 border-border/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-card/90 hover:border-border/60">
-          <CardContent className={`p-12 text-center ${textColor}`}>
-            <h3 className={`text-xl font-semibold mb-3 ${titleColor}`}>No jobs match your filters</h3>
-            <p className={`mb-6 ${textColor}`}>Try adjusting your search or filter criteria</p>
+          <CardContent className={`p-6 lg:p-12 text-center ${textColor}`}>
+            <h3 className={`text-lg lg:text-xl font-semibold mb-3 ${titleColor}`}>No jobs match your filters</h3>
+            <p className={`mb-4 lg:mb-6 ${textColor}`}>Try adjusting your search or filter criteria</p>
             <div className="space-y-4">
               <p className={`text-sm ${textColor}`}>
                 Showing {filteredJobs.length} of {jobs.length} total jobs
@@ -153,13 +153,13 @@ export const OptimizedJobsContent = memo(({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-4">
+    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
       <div className="space-y-3">
         {filteredJobs.length > 0 && (
           <Card className="backdrop-blur-sm bg-card/80 border-2 border-border/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-card/90 hover:border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <CardContent className="p-3 lg:p-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4">
+                <div className="flex items-center gap-3 lg:gap-4">
                   <Checkbox
                     checked={allSelected}
                     onCheckedChange={handleSelectAll}
@@ -172,15 +172,15 @@ export const OptimizedJobsContent = memo(({
                     onBulkAction={onBulkAction}
                   />
                 </div>
-                <div className={`text-sm ${labelTextColor}`}>
+                <div className={`text-sm ${labelTextColor} lg:text-right`}>
                   Showing <span className="font-semibold">{filteredJobs.length}</span> of <span className="font-semibold">{jobs.length}</span> total jobs
                   {needsAttentionFilter && (
-                    <span className="ml-2 text-orange-600 font-medium">
+                    <span className="block lg:inline lg:ml-2 text-orange-600 font-medium">
                       (filtered for jobs needing attention)
                     </span>
                   )}
                   {activeJobsFilter && (
-                    <span className="ml-2 text-blue-600 font-medium">
+                    <span className="block lg:inline lg:ml-2 text-blue-600 font-medium">
                       (filtered for active jobs)
                     </span>
                   )}
@@ -190,7 +190,7 @@ export const OptimizedJobsContent = memo(({
           </Card>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {useVirtualScrolling ? (
             <VirtualList
               items={filteredJobs}

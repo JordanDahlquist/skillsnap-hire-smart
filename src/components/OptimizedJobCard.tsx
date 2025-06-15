@@ -1,4 +1,3 @@
-
 import { useState, memo, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -8,6 +7,7 @@ import { useViewTracking } from "@/hooks/useViewTracking";
 import { JobCardHeader } from "./job-card/JobCardHeader";
 import { JobCardDetails } from "./job-card/JobCardDetails";
 import { JobCardActions } from "./job-card/JobCardActions";
+import { MobileJobCard } from "./job-card/MobileJobCard";
 import { UnifiedJobCreatorPanel } from "./UnifiedJobCreatorPanel";
 import { Job } from "@/types";
 
@@ -39,6 +39,22 @@ const getApplicationCount = (job: Job): number => {
   return 0;
 };
 
+// Hook to detect mobile screen size
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useState(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  });
+
+  return isMobile;
+};
+
 export const OptimizedJobCard = memo(({ 
   job, 
   onJobUpdate, 
@@ -47,6 +63,7 @@ export const OptimizedJobCard = memo(({
   onJobSelection
 }: OptimizedJobCardProps) => {
   const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   // Track views when card is rendered
   useViewTracking(job.id, true);
@@ -94,6 +111,36 @@ export const OptimizedJobCard = memo(({
     setIsEditPanelOpen(false);
   }, [onJobUpdate]);
 
+  // Render mobile version for screens < 768px
+  if (isMobile) {
+    return (
+      <>
+        <MobileJobCard
+          job={job}
+          onJobUpdate={onJobUpdate}
+          getTimeAgo={getTimeAgo}
+          isSelected={isSelected}
+          onJobSelection={onJobSelection}
+          applicationsCount={applicationsCount}
+          needsAttention={needsAttention}
+          onStatusChange={handleStatusChange}
+          onEdit={handleEditPanelOpen}
+          onDuplicate={handleDuplicateJob}
+          onArchive={handleArchiveJob}
+          isUpdating={isUpdating}
+        />
+
+        <UnifiedJobCreatorPanel
+          open={isEditPanelOpen}
+          onOpenChange={handleEditPanelClose}
+          onJobCreated={handleJobUpdated}
+          editingJob={job}
+        />
+      </>
+    );
+  }
+
+  // Desktop version (unchanged)
   return (
     <>
       <Card className="group backdrop-blur-sm bg-card/80 border-2 border-border/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-card/90 hover:border-border/60">
