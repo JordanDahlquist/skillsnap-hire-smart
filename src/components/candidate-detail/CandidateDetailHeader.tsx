@@ -172,16 +172,6 @@ export const CandidateDetailHeader = ({
                     <p className="text-sm text-muted-foreground text-left truncate">
                       {localApplication.email}
                     </p>
-                    <div className="flex items-center gap-2">
-                      <Badge className={`${getStatusColor(localApplication.status)} text-xs px-2 py-1`}>
-                        {localApplication.status}
-                      </Badge>
-                      {localApplication.pipeline_stage && (
-                        <Badge variant="outline" className="text-xs px-2 py-1">
-                          {localApplication.pipeline_stage}
-                        </Badge>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>

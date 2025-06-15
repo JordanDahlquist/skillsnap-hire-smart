@@ -129,15 +129,6 @@ export const CandidateOverviewTab = ({
             <p className="text-foreground text-left">{getTimeAgo(localApplication.created_at)}</p>
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-muted-foreground text-left block">Current Stage</label>
-            <div className="mt-1">
-              <Badge variant="outline">
-                {localApplication.pipeline_stage || 'Applied'}
-              </Badge>
-            </div>
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground text-left block">Your Rating</label>
