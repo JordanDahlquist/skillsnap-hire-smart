@@ -42,7 +42,7 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
       {hasResume && (
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-left">
               <FileText className="w-5 h-5" />
               Resume
             </CardTitle>
@@ -61,11 +61,11 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
       {hasCoverLetter && (
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle>Cover Letter</CardTitle>
+            <CardTitle className="text-left">Cover Letter</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="p-4 bg-muted/30 rounded-lg border border-border max-h-96 overflow-y-auto">
-              <p className="text-foreground whitespace-pre-wrap">{application.cover_letter}</p>
+              <p className="text-foreground whitespace-pre-wrap text-left">{application.cover_letter}</p>
             </div>
           </CardContent>
         </Card>

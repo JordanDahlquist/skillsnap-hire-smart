@@ -15,7 +15,7 @@ export const parseMarkdown = (text: string): string => {
     if (!line) {
       // Close any open list
       if (inList) {
-        result += `<ul class="list-disc pl-6 mb-4">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
+        result += `<ul class="list-disc pl-6 mb-4 text-left">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
         listItems = [];
         inList = false;
       }
@@ -27,7 +27,7 @@ export const parseMarkdown = (text: string): string => {
     if (line.match(/^-{3,}$/)) {
       // Close any open list
       if (inList) {
-        result += `<ul class="list-disc pl-6 mb-4">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
+        result += `<ul class="list-disc pl-6 mb-4 text-left">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
         listItems = [];
         inList = false;
       }
@@ -54,7 +54,7 @@ export const parseMarkdown = (text: string): string => {
       
       if (inList && listItems.length > 0) {
         // Close previous unordered list
-        result += `<ul class="list-disc pl-6 mb-4">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
+        result += `<ul class="list-disc pl-6 mb-4 text-left">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
         listItems = [];
       }
       
@@ -68,7 +68,7 @@ export const parseMarkdown = (text: string): string => {
     // Close any open list before regular text
     if (inList) {
       const listType = listItems.length > 0 && lines[i - listItems.length - 1]?.match(/^\d+\./) ? 'ol' : 'ul';
-      const listClass = listType === 'ol' ? 'list-decimal pl-6 mb-4' : 'list-disc pl-6 mb-4';
+      const listClass = listType === 'ol' ? 'list-decimal pl-6 mb-4 text-left' : 'list-disc pl-6 mb-4 text-left';
       result += `<${listType} class="${listClass}">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</${listType}>`;
       listItems = [];
       inList = false;
@@ -80,26 +80,26 @@ export const parseMarkdown = (text: string): string => {
       const content = line.replace(/^#+\s+/, '');
       const formattedContent = formatInlineContent(content);
       
-      // Define header classes for all 6 levels
-      const headerClass = level === 1 ? 'text-xl font-bold mb-3 mt-4' : 
-                         level === 2 ? 'text-lg font-semibold mb-2 mt-3' : 
-                         level === 3 ? 'text-base font-medium mb-2 mt-2' :
-                         level === 4 ? 'text-sm font-medium mb-2 mt-2' :
-                         level === 5 ? 'text-sm font-normal mb-1 mt-1' :
-                         'text-xs font-normal mb-1 mt-1';
+      // Define header classes for all 6 levels - left aligned
+      const headerClass = level === 1 ? 'text-xl font-bold mb-3 mt-4 text-left' : 
+                         level === 2 ? 'text-lg font-semibold mb-2 mt-3 text-left' : 
+                         level === 3 ? 'text-base font-medium mb-2 mt-2 text-left' :
+                         level === 4 ? 'text-sm font-medium mb-2 mt-2 text-left' :
+                         level === 5 ? 'text-sm font-normal mb-1 mt-1 text-left' :
+                         'text-xs font-normal mb-1 mt-1 text-left';
       
       result += `<h${Math.min(level, 6)} class="${headerClass}">${formattedContent}</h${Math.min(level, 6)}>`;
       continue;
     }
     
-    // Regular paragraph
+    // Regular paragraph - ensure left alignment
     const formattedLine = formatInlineContent(line);
-    result += `<p class="mb-3 leading-relaxed">${formattedLine}</p>`;
+    result += `<p class="mb-3 leading-relaxed text-left">${formattedLine}</p>`;
   }
   
   // Close any remaining open list
   if (inList && listItems.length > 0) {
-    result += `<ul class="list-disc pl-6 mb-4">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
+    result += `<ul class="list-disc pl-6 mb-4 text-left">${listItems.map(item => `<li class="mb-1">${item}</li>`).join('')}</ul>`;
   }
   
   return result;

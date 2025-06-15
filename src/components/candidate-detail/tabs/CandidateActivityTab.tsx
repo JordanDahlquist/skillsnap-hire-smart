@@ -42,8 +42,8 @@ export const CandidateActivityTab = ({ application }: CandidateActivityTabProps)
     <div className="space-y-6">
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle>Application Timeline</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <CardTitle className="text-left">Application Timeline</CardTitle>
+          <p className="text-sm text-muted-foreground text-left">
             Activity history for this candidate
           </p>
         </CardHeader>
@@ -63,7 +63,7 @@ export const CandidateActivityTab = ({ application }: CandidateActivityTabProps)
                   
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-medium text-foreground">
+                      <h4 className="text-sm font-medium text-foreground text-left">
                         {event.title}
                       </h4>
                       <span className="text-xs text-muted-foreground">
@@ -71,7 +71,7 @@ export const CandidateActivityTab = ({ application }: CandidateActivityTabProps)
                       </span>
                     </div>
                     
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground text-left">
                       {event.description}
                     </p>
                     

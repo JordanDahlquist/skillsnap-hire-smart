@@ -31,8 +31,8 @@ export const CandidateSkillsTab = ({
     <div className="space-y-6">
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle>Skills Assessment Responses</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <CardTitle className="text-left">Skills Assessment Responses</CardTitle>
+          <p className="text-sm text-muted-foreground text-left">
             {skillsResponses.length} response{skillsResponses.length !== 1 ? 's' : ''} submitted
           </p>
         </CardHeader>

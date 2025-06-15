@@ -52,7 +52,7 @@ export const ScoutJobCard = ({ job }: ScoutJobCardProps) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <Briefcase className="w-4 h-4 text-gray-600 flex-shrink-0" />
-              <h3 className="font-medium text-gray-900 truncate">{job.title}</h3>
+              <h3 className="font-medium text-gray-900 truncate text-left">{job.title}</h3>
             </div>
             
             <div className="flex items-center gap-2 mb-2">
