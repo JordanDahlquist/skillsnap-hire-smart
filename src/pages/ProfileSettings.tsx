@@ -3,7 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { AccountSettings } from "@/components/profile/AccountSettings";
-import { HiringPreferences } from "@/components/profile/HiringPreferences";
 import { EmailTemplates } from "@/components/profile/EmailTemplates";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
@@ -39,10 +38,9 @@ const ProfileSettings = () => {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="preferences">Preferences</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
           </TabsList>
 
@@ -52,10 +50,6 @@ const ProfileSettings = () => {
 
           <TabsContent value="account" className="space-y-6">
             <AccountSettings />
-          </TabsContent>
-
-          <TabsContent value="preferences" className="space-y-6">
-            <HiringPreferences />
           </TabsContent>
 
           <TabsContent value="templates" className="space-y-6">
