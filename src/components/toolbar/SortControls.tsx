@@ -43,17 +43,17 @@ export const SortControls = ({
   return (
     <div className="flex gap-2 items-center">
       <Select value={sortBy || 'updated_at'} onValueChange={handleSortChange}>
-        <SelectTrigger className="w-40 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-foreground">
+        <SelectTrigger className="w-40 bg-white/30 border-2 border-white/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl backdrop-blur-sm hover:bg-white/40 hover:border-white/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]">
           <SelectValue>
             {currentSortLabel}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="bg-background backdrop-blur-sm border-border shadow-lg">
+        <SelectContent className="bg-background/95 backdrop-blur-sm border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl">
           {sortOptions.map((option) => (
             <SelectItem 
               key={option.value} 
               value={option.value} 
-              className="text-foreground hover:bg-muted"
+              className="text-foreground hover:bg-muted/80 focus:bg-muted/80 rounded-lg mx-1"
             >
               {option.label}
             </SelectItem>
@@ -66,7 +66,7 @@ export const SortControls = ({
           variant="outline" 
           size="sm" 
           onClick={handleSortOrderToggle}
-          className="rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300 text-foreground hover:text-foreground"
+          className="rounded-2xl backdrop-blur-sm bg-white/30 border-2 border-white/50 hover:bg-white/40 hover:border-white/60 transition-all duration-300 text-foreground hover:text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]"
           title={`Sort ${sortOrder === 'asc' ? 'ascending' : 'descending'} - Click to ${sortOrder === 'asc' ? 'sort descending' : 'sort ascending'}`}
         >
           <ArrowUpDown className={`w-4 h-4 text-foreground ${sortOrder === 'desc' ? 'rotate-180' : ''} transition-transform`} />
@@ -77,7 +77,7 @@ export const SortControls = ({
         variant="outline" 
         size="sm" 
         onClick={onRefresh}
-        className="rounded-2xl backdrop-blur-sm bg-white/20 border-white/30 hover:bg-white/30 transition-all duration-300 text-foreground hover:text-foreground"
+        className="rounded-2xl backdrop-blur-sm bg-white/30 border-2 border-white/50 hover:bg-white/40 hover:border-white/60 transition-all duration-300 text-foreground hover:text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]"
       >
         <RefreshCw className="w-4 h-4 text-foreground" />
       </Button>
