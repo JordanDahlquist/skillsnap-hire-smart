@@ -21,33 +21,8 @@ export const CustomSpinningLogo = ({
   const animationDuration = speedMap[animationSpeed];
 
   return (
-    <div 
-      className={`relative ${className}`}
-      style={{ width: size, height: size }}
-    >
-      {/* Subtle glow effect behind logo */}
-      <div 
-        className="absolute inset-0 bg-blue-400/20 rounded-full blur-lg animate-pulse"
-        style={{ 
-          width: size * 1.2, 
-          height: size * 1.2,
-          left: -size * 0.1,
-          top: -size * 0.1
-        }}
-      />
-      
-      {/* Main logo with oscillating rotation */}
-      <img
-        src="/lovable-uploads/63006c72-b38b-4a0c-9fdd-38e79513a90e.png"
-        alt="Loading..."
-        className="relative z-10 w-full h-full object-contain drop-shadow-lg"
-        style={{
-          animation: `oscillate ${animationDuration} ease-in-out infinite, subtle-scale ${animationDuration} ease-in-out infinite`
-        }}
-      />
-      
-      {/* CSS-in-JS for the animations */}
-      <style jsx>{`
+    <>
+      <style>{`
         @keyframes oscillate {
           0%, 100% {
             transform: rotate(-25deg);
@@ -65,7 +40,34 @@ export const CustomSpinningLogo = ({
             transform: scale(1.05) rotate(25deg);
           }
         }
+        
+        .custom-spinning-logo {
+          animation: oscillate ${animationDuration} ease-in-out infinite, subtle-scale ${animationDuration} ease-in-out infinite;
+        }
       `}</style>
-    </div>
+      
+      <div 
+        className={`relative ${className}`}
+        style={{ width: size, height: size }}
+      >
+        {/* Subtle glow effect behind logo */}
+        <div 
+          className="absolute inset-0 bg-blue-400/20 rounded-full blur-lg animate-pulse"
+          style={{ 
+            width: size * 1.2, 
+            height: size * 1.2,
+            left: -size * 0.1,
+            top: -size * 0.1
+          }}
+        />
+        
+        {/* Main logo with oscillating rotation */}
+        <img
+          src="/lovable-uploads/63006c72-b38b-4a0c-9fdd-38e79513a90e.png"
+          alt="Loading..."
+          className="relative z-10 w-full h-full object-contain drop-shadow-lg custom-spinning-logo"
+        />
+      </div>
+    </>
   );
 };
