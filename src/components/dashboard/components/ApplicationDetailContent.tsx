@@ -1,8 +1,9 @@
 
+
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ThumbsDown, RotateCcw, Mail } from "lucide-react";
+import { ExternalLink, ThumbsDown, RotateCcw, Mail, FileText, User } from "lucide-react";
 import { StageSelector } from "../StageSelector";
 import { ApplicationRatingSection } from "./ApplicationRatingSection";
 import { VideoResponsePlayer } from "./VideoResponsePlayer";
@@ -63,15 +64,15 @@ export const ApplicationDetailContent = ({
 
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-yellow-600">Transcripts Pending</Badge>;
+        return <Badge variant="outline" className="text-yellow-600 text-xs">Transcripts Pending</Badge>;
       case 'processing':
-        return <Badge variant="outline" className="text-blue-600">Processing Transcripts...</Badge>;
+        return <Badge variant="outline" className="text-blue-600 text-xs">Processing...</Badge>;
       case 'completed':
-        return <Badge variant="outline" className="text-green-600">Transcripts Ready</Badge>;
+        return <Badge variant="outline" className="text-green-600 text-xs">Transcripts Ready</Badge>;
       case 'failed':
-        return <Badge variant="outline" className="text-red-600">Transcript Failed</Badge>;
+        return <Badge variant="outline" className="text-red-600 text-xs">Transcript Failed</Badge>;
       default:
-        return <Badge variant="outline" className="text-gray-600">Unknown Status</Badge>;
+        return null;
     }
   };
 
@@ -127,35 +128,59 @@ export const ApplicationDetailContent = ({
         </div>
       </div>
 
-      {/* Header Section - Now Compact */}
-      <div className="border-b border-border pb-4">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h2 
-              className="text-2xl font-bold text-foreground hover:text-primary cursor-pointer transition-colors mb-2"
-              onClick={handleViewFullProfile}
-            >
+      {/* Redesigned Compact Header */}
+      <div className="bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 rounded-xl p-4 -mx-2">
+        <div className="flex items-center justify-between gap-6">
+          
+          {/* Left: Candidate Info */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold text-foreground truncate mb-1">
               {application.name}
             </h2>
-            <p className="text-muted-foreground">{application.email}</p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="truncate">{application.email}</span>
+              <span>•</span>
+              <span className="whitespace-nowrap">Applied {getTimeAgo(application.created_at)}</span>
+            </div>
           </div>
-          <div className="text-right flex flex-col items-end gap-2">
+
+          {/* Center: Status Badges */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Badge className={getStatusColor(displayStatus)}>
               {displayStatus}
             </Badge>
             {getTranscriptStatusDisplay()}
-            <p className="text-xs text-muted-foreground">
-              Applied {getTimeAgo(application.created_at)}
-            </p>
+          </div>
+
+          {/* Right: Action Buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Button
               size="sm"
               variant="outline"
               onClick={handleViewFullProfile}
-              className="flex items-center gap-1"
+              className="h-9 px-3 border-border/50 hover:border-border"
             >
-              <ExternalLink className="w-3 h-3" />
-              View Full Profile
+              <User className="w-4 h-4 mr-2" />
+              View Profile
             </Button>
+            
+            {application.resume_file_path && (
+              <Button 
+                size="sm"
+                variant="outline"
+                asChild 
+                className="h-9 px-3 border-border/50 hover:border-border"
+              >
+                <a 
+                  href={application.resume_file_path} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Resume
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -306,27 +331,6 @@ export const ApplicationDetailContent = ({
         </div>
       )}
 
-      {/* Resume Link */}
-      {application.resume_file_path && (
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-foreground">Resume</h3>
-          <Button 
-            variant="outline" 
-            asChild 
-            className="w-full"
-          >
-            <a 
-              href={application.resume_file_path} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="block text-center"
-            >
-              View Resume
-            </a>
-          </Button>
-        </div>
-      )}
-
       {/* Video Interview - Show if exists with Transcript Preview */}
       {application.interview_video_url && (
         <div className="space-y-3">
@@ -371,3 +375,4 @@ export const ApplicationDetailContent = ({
     </div>
   );
 };
+
