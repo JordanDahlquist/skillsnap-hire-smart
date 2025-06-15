@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SearchBar } from '@/components/toolbar/SearchBar';
 import { BulkStageSelector } from './bulk-actions/BulkStageSelector';
-import { Mail, X, ChevronDown, Star, ArrowUpDown } from 'lucide-react';
+import { Mail, X, ChevronDown, Star, StarOff, ArrowDownAZ, ArrowDownZA, ArrowUpDown } from 'lucide-react';
 import { logger } from '@/services/loggerService';
 
 interface ApplicationsListHeaderProps {
@@ -101,6 +101,21 @@ export const ApplicationsListHeader = memo(({
 
   const getCurrentSortLabel = useCallback(() => {
     return SORT_OPTIONS[currentSortIndex]?.label || 'Sort';
+  }, [currentSortIndex]);
+
+  const getCurrentSortIcon = useCallback(() => {
+    const currentOption = SORT_OPTIONS[currentSortIndex];
+    if (!currentOption) return ArrowUpDown;
+
+    switch (currentOption.sortBy) {
+      case 'name':
+        return currentOption.sortOrder === 'asc' ? ArrowDownAZ : ArrowDownZA;
+      case 'rating':
+        return currentOption.sortOrder === 'desc' ? Star : StarOff;
+      case 'created_at':
+      default:
+        return ArrowUpDown;
+    }
   }, [currentSortIndex]);
 
   const isAllSelected = applicationsCount > 0 && selectedApplications.length === applicationsCount;
@@ -227,7 +242,7 @@ export const ApplicationsListHeader = memo(({
             </div>
           )}
 
-          {/* Compact Sort Button */}
+          {/* Compact Sort Button with contextual icon */}
           {onSortChange && (
             <Button
               variant="ghost"
@@ -236,7 +251,11 @@ export const ApplicationsListHeader = memo(({
               className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 flex-shrink-0"
               title={`Current: ${getCurrentSortLabel()} - Click to cycle sort options`}
             >
-              <ArrowUpDown className={`w-3 h-3 transition-transform ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+              {React.createElement(getCurrentSortIcon(), { 
+                className: `w-3 h-3 transition-transform ${
+                  sortBy === 'created_at' && sortOrder === 'desc' ? 'rotate-180' : ''
+                }` 
+              })}
             </Button>
           )}
         </div>
