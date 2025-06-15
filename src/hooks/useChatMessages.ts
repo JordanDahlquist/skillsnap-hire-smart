@@ -182,6 +182,15 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
         }
       }
 
+      // Add user message immediately to UI
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        content,
+        isAi: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, userMessage]);
+
       const response = await supabase.functions.invoke('scout-ai-chat', {
         body: {
           message: content,
@@ -193,14 +202,33 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
         throw new Error(response.error.message || 'Failed to send message');
       }
 
-      // Show success feedback
-      toast({
-        title: "Message sent",
-        description: "Your message has been sent successfully.",
-      });
+      // Process the AI response immediately
+      const aiResponseData = response.data;
+      if (aiResponseData && aiResponseData.message) {
+        const aiMessage: Message = {
+          id: crypto.randomUUID(),
+          content: aiResponseData.message,
+          isAi: true,
+          timestamp: new Date(),
+          jobCards: aiResponseData.jobCards || undefined,
+          candidateCards: aiResponseData.candidateCards || undefined
+        };
+        
+        // Add AI response immediately to UI
+        setMessages(prev => [...prev, aiMessage]);
+        
+        toast({
+          title: "Message sent",
+          description: "Your message has been sent successfully.",
+        });
+      } else {
+        throw new Error('No response received from AI');
+      }
 
-      // Reload messages to get the new conversation
-      await loadMessages();
+      // Refresh messages from database as fallback to ensure consistency
+      setTimeout(() => {
+        loadMessages();
+      }, 1000);
       
       // Trigger conversation list update
       onConversationUpdate?.();
