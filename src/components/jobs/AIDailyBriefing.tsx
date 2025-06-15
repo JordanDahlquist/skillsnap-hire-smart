@@ -76,7 +76,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       return (
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-          <span className="text-sm text-muted-foreground">Generating your daily briefing...</span>
+          <span className="text-sm text-foreground">Generating your daily briefing...</span>
         </div>
       );
     }
@@ -88,7 +88,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
         <div className="space-y-2">
           <h2 className="text-lg font-semibold text-foreground">{formatted.greeting}</h2>
           {formatted.content && (
-            <div className="text-sm text-muted-foreground leading-relaxed">
+            <div className="text-sm text-foreground leading-relaxed">
               {formatted.content}
             </div>
           )}
@@ -101,7 +101,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       <div className="space-y-2">
         <h2 className="text-lg font-semibold text-foreground">{formatted.greeting}</h2>
         {formatted.content && (
-          <div className="text-sm text-muted-foreground leading-relaxed">
+          <div className="text-sm text-foreground leading-relaxed">
             {formatted.content}
           </div>
         )}
@@ -213,7 +213,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 return (
                   <div key={index} className="flex items-center gap-1.5">
                     <IconComponent className={`w-3 h-3 ${metric.color}`} />
-                    <span className="text-muted-foreground text-xs">{metric.label}</span>
+                    <span className="text-foreground text-xs">{metric.label}</span>
                   </div>
                 );
               })}
