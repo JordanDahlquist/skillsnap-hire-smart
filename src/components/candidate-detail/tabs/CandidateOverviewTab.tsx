@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -126,84 +127,89 @@ export const CandidateOverviewTab = ({
         </CardContent>
       </Card>
 
-      {/* Application Summary with Compact Actions */}
+      {/* Application Summary with Actions at Very Top */}
       <Card className="glass-card">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-left">Application Summary</CardTitle>
-            <div className="flex items-center gap-2">
-              {localApplication.status === 'rejected' ? (
+        <CardContent className="p-0">
+          {/* Actions Bar - Prominent at the very top */}
+          <div className="bg-muted/20 border-b border-border p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground">Application Summary</h3>
+              <div className="flex items-center gap-2">
+                {localApplication.status === 'rejected' ? (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={onUnreject}
+                    disabled={isUpdating}
+                    className="border-green-200 text-green-600 hover:bg-green-50 h-9 px-4"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Unreject
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={onReject}
+                    disabled={isUpdating}
+                    className="border-red-200 text-red-600 hover:bg-red-50 h-9 px-4"
+                  >
+                    <ThumbsDown className="w-4 h-4 mr-2" />
+                    Reject
+                  </Button>
+                )}
                 <Button 
-                  variant="outline"
                   size="sm"
-                  onClick={onUnreject}
+                  onClick={onEmail}
                   disabled={isUpdating}
-                  className="border-green-200 text-green-600 hover:bg-green-50 h-8 px-3"
+                  className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
                 >
-                  <RotateCcw className="w-3 h-3 mr-1" />
-                  Unreject
+                  <Mail className="w-4 h-4 mr-2" />
+                  Email
                 </Button>
-              ) : (
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={onReject}
-                  disabled={isUpdating}
-                  className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
-                >
-                  <ThumbsDown className="w-3 h-3 mr-1" />
-                  Reject
-                </Button>
-              )}
-              <Button 
-                size="sm"
-                onClick={onEmail}
-                disabled={isUpdating}
-                className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-3"
-              >
-                <Mail className="w-3 h-3 mr-1" />
-                Email
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-muted-foreground text-left block">Applied</label>
-            <p className="text-foreground text-left">{getTimeAgo(localApplication.created_at)}</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground text-left block">Your Rating</label>
-              <div className="flex gap-0.5 mt-1">
-                {renderManualRating(localApplication.manual_rating)}
-              </div>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium text-muted-foreground text-left block">AI Rating</label>
-              <div className="flex gap-0.5 mt-1">
-                {renderAIRating(localApplication.ai_rating)}
               </div>
             </div>
           </div>
 
-          {localApplication.ai_summary && (
+          {/* Content */}
+          <div className="p-4 space-y-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground text-left block">AI Summary</label>
-              <div className="mt-2 p-3 bg-muted/30 rounded-lg border border-border">
-                <p className="text-foreground text-sm text-left">{localApplication.ai_summary}</p>
+              <label className="text-sm font-medium text-muted-foreground text-left block">Applied</label>
+              <p className="text-foreground text-left">{getTimeAgo(localApplication.created_at)}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground text-left block">Your Rating</label>
+                <div className="flex gap-0.5 mt-1">
+                  {renderManualRating(localApplication.manual_rating)}
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-muted-foreground text-left block">AI Rating</label>
+                <div className="flex gap-0.5 mt-1">
+                  {renderAIRating(localApplication.ai_rating)}
+                </div>
               </div>
             </div>
-          )}
 
-          {isUpdating && (
-            <div className="flex items-center gap-2 pt-2">
-              <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-xs text-muted-foreground">Updating...</span>
-            </div>
-          )}
+            {localApplication.ai_summary && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground text-left block">AI Summary</label>
+                <div className="mt-2 p-3 bg-muted/30 rounded-lg border border-border">
+                  <p className="text-foreground text-sm text-left">{localApplication.ai_summary}</p>
+                </div>
+              </div>
+            )}
+
+            {isUpdating && (
+              <div className="flex items-center gap-2 pt-2">
+                <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs text-muted-foreground">Updating...</span>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

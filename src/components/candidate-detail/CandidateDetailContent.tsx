@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
@@ -12,12 +11,20 @@ interface CandidateDetailContentProps {
   application: Application;
   job: Job;
   onApplicationUpdate: () => void;
+  onReject?: () => void;
+  onUnreject?: () => void;
+  onEmail?: () => void;
+  isUpdating?: boolean;
 }
 
 export const CandidateDetailContent = ({ 
   application, 
   job, 
-  onApplicationUpdate 
+  onApplicationUpdate,
+  onReject,
+  onUnreject,
+  onEmail,
+  isUpdating = false
 }: CandidateDetailContentProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -103,6 +110,10 @@ export const CandidateDetailContent = ({
             application={application}
             job={job}
             onApplicationUpdate={onApplicationUpdate}
+            onReject={onReject}
+            onUnreject={onUnreject}
+            onEmail={onEmail}
+            isUpdating={isUpdating}
           />
         </TabsContent>
 
