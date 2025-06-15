@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon, Circle, Monitor, Shield } from "lucide-react";
+import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon, Circle, Monitor, Shield, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -142,6 +142,12 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
           <Link to="/profile" className="flex items-center w-full">
             <Settings className="w-4 h-4 mr-2" />
             Profile Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/help" className="flex items-center w-full">
+            <HelpCircle className="w-4 h-4 mr-2" />
+            Help Center
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
