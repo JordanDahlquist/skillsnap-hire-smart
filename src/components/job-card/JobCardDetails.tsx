@@ -2,7 +2,6 @@
 import { MapPin, Eye, TrendingUp, Calendar, Building2 } from "lucide-react";
 import { Job } from "@/types";
 import { useJobMetrics } from "@/hooks/useJobMetrics";
-import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface JobCardDetailsProps {
   job: Job;
@@ -18,11 +17,6 @@ export const JobCardDetails = ({
   applicationsCount 
 }: JobCardDetailsProps) => {
   const { data: metrics } = useJobMetrics(job.id);
-  const { currentTheme } = useThemeContext();
-  
-  // Theme-aware text colors
-  const primaryTextColor = currentTheme === 'dark' ? 'text-white' : 'text-gray-600';
-  const subtleTextColor = currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-500';
   
   const displayEmploymentType = job.employment_type || job.role_type;
   
@@ -35,7 +29,7 @@ export const JobCardDetails = ({
 
   return (
     <>
-      <div className={`flex items-center gap-4 text-sm ${primaryTextColor} mb-2`}>
+      <div className="flex items-center gap-4 text-sm text-foreground mb-2">
         {job.company_name && (
           <div className="flex items-center gap-1">
             <Building2 className="w-4 h-4" />
@@ -66,12 +60,12 @@ export const JobCardDetails = ({
         <div className="flex items-center gap-1 text-blue-600">
           <span className="font-medium">{applicationsCount} applications</span>
           {weeklyApplications > 0 && (
-            <span className={subtleTextColor}>
+            <span className="text-muted-foreground">
               (+{weeklyApplications} this week)
             </span>
           )}
         </div>
-        <div className={`flex items-center gap-1 ${subtleTextColor}`}>
+        <div className="flex items-center gap-1 text-muted-foreground">
           <Calendar className="w-4 h-4" />
           <span>Created {getTimeAgo(job.created_at)}</span>
         </div>

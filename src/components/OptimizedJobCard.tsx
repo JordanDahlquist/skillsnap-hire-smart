@@ -5,7 +5,6 @@ import { Loader2 } from "lucide-react";
 import { useJobDescription } from "@/hooks/useJobDescription";
 import { useJobActions } from "@/hooks/useJobActions";
 import { useViewTracking } from "@/hooks/useViewTracking";
-import { useThemeContext } from "@/contexts/ThemeContext";
 import { JobCardHeader } from "./job-card/JobCardHeader";
 import { JobCardDetails } from "./job-card/JobCardDetails";
 import { JobCardActions } from "./job-card/JobCardActions";
@@ -48,7 +47,6 @@ export const OptimizedJobCard = memo(({
   onJobSelection
 }: OptimizedJobCardProps) => {
   const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
-  const { currentTheme } = useThemeContext();
   
   // Track views when card is rendered
   useViewTracking(job.id, true);
@@ -96,10 +94,6 @@ export const OptimizedJobCard = memo(({
     setIsEditPanelOpen(false);
   }, [onJobUpdate]);
 
-  // Theme-aware text colors
-  const textColor = currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-700';
-  const subtleTextColor = currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500';
-
   return (
     <>
       <Card className="group glass-card-no-hover">
@@ -124,12 +118,12 @@ export const OptimizedJobCard = memo(({
           
           <div className="mb-3">
             {isGeneratingDescription ? (
-              <div className={`flex items-center gap-2 ${subtleTextColor}`}>
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Generating AI description...</span>
               </div>
             ) : (
-              <p className={`line-clamp-2 ${textColor}`}>{getDisplayDescription()}</p>
+              <p className="line-clamp-2 text-foreground">{getDisplayDescription()}</p>
             )}
           </div>
         </CardHeader>
