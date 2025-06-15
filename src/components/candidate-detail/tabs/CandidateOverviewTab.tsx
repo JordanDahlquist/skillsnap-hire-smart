@@ -29,7 +29,7 @@ export const CandidateOverviewTab = ({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground text-left">Email</label>
+              <label className="text-sm font-medium text-muted-foreground text-left block">Email</label>
               <p className="text-foreground text-left">{application.email}</p>
             </div>
             
@@ -37,7 +37,7 @@ export const CandidateOverviewTab = ({
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-muted-foreground" />
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground text-left">Phone</label>
+                  <label className="text-sm font-medium text-muted-foreground text-left block">Phone</label>
                   <p className="text-foreground text-left">{application.phone}</p>
                 </div>
               </div>
@@ -47,7 +47,7 @@ export const CandidateOverviewTab = ({
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-muted-foreground" />
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground text-left">Location</label>
+                  <label className="text-sm font-medium text-muted-foreground text-left block">Location</label>
                   <p className="text-foreground text-left">{application.location}</p>
                 </div>
               </div>
@@ -57,7 +57,7 @@ export const CandidateOverviewTab = ({
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground text-left">Available Start Date</label>
+                  <label className="text-sm font-medium text-muted-foreground text-left block">Available Start Date</label>
                   <p className="text-foreground text-left">
                     {new Date(application.available_start_date).toLocaleDateString()}
                   </p>
@@ -117,12 +117,12 @@ export const CandidateOverviewTab = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-muted-foreground text-left">Applied</label>
+            <label className="text-sm font-medium text-muted-foreground text-left block">Applied</label>
             <p className="text-foreground text-left">{getTimeAgo(application.created_at)}</p>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-muted-foreground text-left">Current Stage</label>
+            <label className="text-sm font-medium text-muted-foreground text-left block">Current Stage</label>
             <div className="mt-1">
               <Badge variant="outline">
                 {application.pipeline_stage || 'Applied'}
@@ -132,14 +132,14 @@ export const CandidateOverviewTab = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground text-left">Your Rating</label>
+              <label className="text-sm font-medium text-muted-foreground text-left block">Your Rating</label>
               <div className="flex gap-0.5 mt-1">
                 {renderManualRating(application.manual_rating)}
               </div>
             </div>
             
             <div>
-              <label className="text-sm font-medium text-muted-foreground text-left">AI Rating</label>
+              <label className="text-sm font-medium text-muted-foreground text-left block">AI Rating</label>
               <div className="flex gap-0.5 mt-1">
                 {renderAIRating(application.ai_rating)}
               </div>
@@ -148,7 +148,7 @@ export const CandidateOverviewTab = ({
 
           {application.ai_summary && (
             <div>
-              <label className="text-sm font-medium text-muted-foreground text-left">AI Summary</label>
+              <label className="text-sm font-medium text-muted-foreground text-left block">AI Summary</label>
               <div className="mt-2 p-3 bg-muted/30 rounded-lg border border-border">
                 <p className="text-foreground text-sm text-left">{application.ai_summary}</p>
               </div>
