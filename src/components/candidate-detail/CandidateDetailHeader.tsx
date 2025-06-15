@@ -181,9 +181,9 @@ export const CandidateDetailHeader = ({
             {/* Center: Ratings Section */}
             <div className="flex items-center gap-8 flex-shrink-0">
               
-              {/* Manual Rating */}
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-muted-foreground">Your Rating</span>
+              {/* Manual Rating - Enhanced Prominence */}
+              <div className="flex items-center gap-3 bg-muted/20 px-4 py-3 rounded-lg border border-border/30">
+                <span className="text-base font-semibold text-foreground">Your Rating</span>
                 <div className="flex gap-1">
                   {[1, 2, 3].map((rating) => (
                     <button
@@ -193,7 +193,7 @@ export const CandidateDetailHeader = ({
                       className="hover:scale-110 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Star 
-                        className={`w-5 h-5 ${
+                        className={`w-6 h-6 ${
                           (localApplication.manual_rating || 0) >= rating 
                             ? "text-blue-500 fill-blue-500" 
                             : "text-gray-300 hover:text-blue-400"
@@ -202,12 +202,12 @@ export const CandidateDetailHeader = ({
                     </button>
                   ))}
                 </div>
-                <span className="text-sm text-blue-600 font-medium min-w-[2rem]">
+                <span className="text-base text-blue-600 font-semibold min-w-[2.5rem]">
                   {localApplication.manual_rating ? `${localApplication.manual_rating}/3` : '--'}
                 </span>
               </div>
 
-              {/* AI Rating */}
+              {/* AI Rating - Standard Styling */}
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium text-muted-foreground">AI Rating</span>
                 <div className="flex gap-1">
@@ -231,7 +231,7 @@ export const CandidateDetailHeader = ({
               <Button 
                 onClick={handleEmail}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 h-11"
                 disabled={isUpdating}
               >
                 <Mail className="w-4 h-4 mr-2" />
@@ -244,7 +244,7 @@ export const CandidateDetailHeader = ({
                   size="sm"
                   onClick={handleUnreject}
                   disabled={isUpdating}
-                  className="border-green-200 text-green-600 hover:bg-green-50 px-4"
+                  className="border-green-200 text-green-600 hover:bg-green-50 px-4 h-11"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Unreject
@@ -255,7 +255,7 @@ export const CandidateDetailHeader = ({
                   size="sm"
                   onClick={handleReject}
                   disabled={isUpdating}
-                  className="border-red-200 text-red-600 hover:bg-red-50 px-4"
+                  className="border-red-200 text-red-600 hover:bg-red-50 px-4 h-11"
                 >
                   <ThumbsDown className="w-4 h-4 mr-2" />
                   Reject
