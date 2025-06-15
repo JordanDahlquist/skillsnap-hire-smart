@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -57,9 +58,9 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
   const getThemeLabel = (themeOption: string) => {
     switch (themeOption) {
       case 'light':
-        return 'Light';
+        return 'Day Nature';
       case 'dark':
-        return 'Dark';
+        return 'Night Nature';
       case 'white':
         return 'White';
       case 'black':
@@ -67,11 +68,11 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
       case 'system':
         return 'System';
       default:
-        return 'Light';
+        return 'Day Nature';
     }
   };
 
-  const themeOptions = ['light', 'dark', 'white', 'black', 'system'];
+  const themeOptions = ['white', 'black', 'light', 'dark', 'system'];
 
   return (
     <DropdownMenu>
