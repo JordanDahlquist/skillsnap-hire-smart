@@ -90,15 +90,15 @@ export const ApplicationItem = memo(({
           )}
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              {/* Name and Email in one line */}
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-foreground truncate">
+            <div className="flex items-start justify-between gap-2">
+              {/* Name and Email stacked vertically */}
+              <div className="flex-1 min-w-0 space-y-0.5">
+                <div className="text-sm font-medium text-foreground truncate">
                   {application.name}
-                </span>
-                <span className="text-xs text-muted-foreground ml-2">
-                  • {application.email}
-                </span>
+                </div>
+                <div className="text-xs text-muted-foreground truncate">
+                  {application.email}
+                </div>
               </div>
               
               {/* Status and Video badges */}
