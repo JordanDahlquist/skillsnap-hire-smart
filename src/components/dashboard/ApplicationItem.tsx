@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Video } from 'lucide-react';
 import { logger } from '@/services/loggerService';
 import { renderManualRating, renderAIRating } from './utils/ratingUtils';
+import { formatSubmissionDateTime } from '@/utils/dateUtils';
 import { Application } from '@/types';
 
 interface ApplicationItemProps {
@@ -128,6 +129,13 @@ export const ApplicationItem = memo(({
                 <div className="flex gap-0.5">
                   {renderAIRating(application.ai_rating)}
                 </div>
+              </div>
+            </div>
+
+            {/* Application submission date/time in bottom right */}
+            <div className="flex justify-end mt-1">
+              <div className="text-xs text-muted-foreground">
+                {formatSubmissionDateTime(application.created_at)}
               </div>
             </div>
           </div>

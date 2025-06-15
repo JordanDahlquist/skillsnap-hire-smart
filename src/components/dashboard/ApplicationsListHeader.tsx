@@ -266,9 +266,9 @@ export const ApplicationsListHeader = memo(({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent 
-                  side="top" 
+                  side="left" 
                   align="center"
-                  sideOffset={8}
+                  sideOffset={4}
                   avoidCollisions={false}
                   collisionPadding={10}
                   className="z-[9999] bg-popover text-popover-foreground border shadow-lg whitespace-nowrap"
