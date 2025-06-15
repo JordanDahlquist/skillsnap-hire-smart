@@ -1,3 +1,4 @@
+
 import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -161,18 +162,11 @@ export const DashboardHeader = memo(({ job, applications, onJobUpdate }: Dashboa
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground mb-6">
-                  {job.department && (
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      <span>{job.department}</span>
-                    </div>
-                  )}
                   {job.location_type && (
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
                       <span className="capitalize">
                         {job.location_type.replace('_', ' ')}
-                        {job.location && ` • ${job.location}`}
                       </span>
                     </div>
                   )}
@@ -182,10 +176,10 @@ export const DashboardHeader = memo(({ job, applications, onJobUpdate }: Dashboa
                       <span className="capitalize">{job.employment_type.replace('_', ' ')}</span>
                     </div>
                   )}
-                  {job.salary_range && (
+                  {job.budget && (
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-4 h-4" />
-                      <span>{job.salary_range}</span>
+                      <span>{job.budget}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
