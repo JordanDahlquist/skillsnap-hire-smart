@@ -1,3 +1,4 @@
+
 import React, { memo, useMemo } from 'react';
 import { ApplicationsListHeader } from './ApplicationsListHeader';
 import { ApplicationItem } from './ApplicationItem';
@@ -108,19 +109,18 @@ export const ApplicationsList = memo(({
         />
       </div>
 
-      {/* Mobile optimized scrollable area */}
       <div 
         className="overflow-y-auto relative"
         style={{ 
-          height: window.innerWidth < 1024 ? 'calc(100vh - 280px)' : '750px',
+          height: '750px',
           maskImage: 'linear-gradient(to bottom, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%)'
         }}
       >
-        <div className="py-2 px-1 lg:px-3">
+        <div className="py-2 px-3">
           {processedApplications.length === 0 ? (
-            <div className="p-4 lg:p-8 text-center">
-              <div className="text-base lg:text-lg font-medium mb-2 text-foreground">
+            <div className="p-8 text-center">
+              <div className="text-lg font-medium mb-2 text-foreground">
                 {searchTerm ? 'No candidates found' : 'No applications yet'}
               </div>
               <div className="text-sm text-muted-foreground">
