@@ -89,7 +89,7 @@ export const ApplicationsList = memo(({
 
   return (
     <div>
-      <div className="glass-card mb-4">
+      <div className="glass-card mb-2">
         <ApplicationsListHeader
           applicationsCount={processedApplications.length}
           selectedApplications={selectedApplications}
@@ -117,7 +117,7 @@ export const ApplicationsList = memo(({
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%)'
         }}
       >
-        <div className="py-5 px-3">
+        <div className="py-2 px-3">
           {processedApplications.length === 0 ? (
             <div className="p-8 text-center">
               <div className="text-lg font-medium mb-2 text-foreground">
