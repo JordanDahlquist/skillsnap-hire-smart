@@ -19,7 +19,7 @@ export const EmailTemplatesSection = () => {
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Go to Profile Settings → Templates tab</li>
                   <li>• Create templates for common scenarios</li>
-                  <li>• Use variables like {{candidateName}} and {{jobTitle}}</li>
+                  <li>• Use variables like {"{{candidateName}}"} and {"{{jobTitle}}"}</li>
                   <li>• Save multiple templates for different situations</li>
                 </ul>
               </div>
@@ -56,15 +56,15 @@ export const EmailTemplatesSection = () => {
                 <h4 className="font-medium">Candidate Variables</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs">{{candidateName}}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs">{"{{candidateName}}"}</Badge>
                     <span className="text-sm text-gray-600">Candidate's full name</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs">{{candidateEmail}}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs">{"{{candidateEmail}}"}</Badge>
                     <span className="text-sm text-gray-600">Candidate's email</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs">{{candidateFirstName}}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs">{"{{candidateFirstName}}"}</Badge>
                     <span className="text-sm text-gray-600">First name only</span>
                   </div>
                 </div>
@@ -73,15 +73,15 @@ export const EmailTemplatesSection = () => {
                 <h4 className="font-medium">Job Variables</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs">{{jobTitle}}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs">{"{{jobTitle}}"}</Badge>
                     <span className="text-sm text-gray-600">Job position title</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs">{{companyName}}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs">{"{{companyName}}"}</Badge>
                     <span className="text-sm text-gray-600">Your company name</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs">{{jobUrl}}</Badge>
+                    <Badge variant="outline" className="font-mono text-xs">{"{{jobUrl}}"}</Badge>
                     <span className="text-sm text-gray-600">Link to job posting</span>
                   </div>
                 </div>
@@ -95,19 +95,19 @@ export const EmailTemplatesSection = () => {
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium mb-2">Application Acknowledgment</h4>
                 <div className="text-sm text-gray-700 font-mono bg-gray-50 p-3 rounded">
-                  Hi {{candidateFirstName}},<br/><br/>
-                  Thank you for applying to the {{jobTitle}} position at {{companyName}}. We've received your application and will review it carefully.<br/><br/>
+                  Hi {"{{candidateFirstName}}"},<br/><br/>
+                  Thank you for applying to the {"{{jobTitle}}"} position at {"{{companyName}}"}. We've received your application and will review it carefully.<br/><br/>
                   We'll be in touch within the next few days with next steps.<br/><br/>
                   Best regards,<br/>
-                  The {{companyName}} Team
+                  The {"{{companyName}}"} Team
                 </div>
               </div>
               
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium mb-2">Interview Invitation</h4>
                 <div className="text-sm text-gray-700 font-mono bg-gray-50 p-3 rounded">
-                  Hi {{candidateFirstName}},<br/><br/>
-                  We're impressed with your background and would like to invite you for an interview for the {{jobTitle}} position.<br/><br/>
+                  Hi {"{{candidateFirstName}}"},<br/><br/>
+                  We're impressed with your background and would like to invite you for an interview for the {"{{jobTitle}}"} position.<br/><br/>
                   Please reply with your availability for the coming week, and we'll schedule a time that works for both of us.<br/><br/>
                   Looking forward to speaking with you!<br/>
                   [Your name]
@@ -117,12 +117,12 @@ export const EmailTemplatesSection = () => {
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium mb-2">Rejection (Respectful)</h4>
                 <div className="text-sm text-gray-700 font-mono bg-gray-50 p-3 rounded">
-                  Hi {{candidateFirstName}},<br/><br/>
-                  Thank you for your interest in the {{jobTitle}} position at {{companyName}} and for the time you invested in the application process.<br/><br/>
+                  Hi {"{{candidateFirstName}}"},<br/><br/>
+                  Thank you for your interest in the {"{{jobTitle}}"} position at {"{{companyName}}"} and for the time you invested in the application process.<br/><br/>
                   After careful consideration, we've decided to move forward with other candidates whose experience more closely matches our current needs.<br/><br/>
                   We'll keep your information on file for future opportunities that might be a better fit.<br/><br/>
                   Best of luck in your job search!<br/>
-                  The {{companyName}} Team
+                  The {"{{companyName}}"} Team
                 </div>
               </div>
             </div>

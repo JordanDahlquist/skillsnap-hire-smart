@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import {
   BrowserRouter,
@@ -9,35 +10,35 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster"
 
 import { ThemeProvider } from "@/contexts/ThemeContext"
-import { Auth } from "./pages/Auth";
-import { Index } from "./pages/Index";
-import { SignUp } from "./pages/SignUp";
-import { SimpleSignUp } from "./pages/SimpleSignUp";
-import { ConfirmEmail } from "./pages/ConfirmEmail";
-import { ResetPassword } from "./pages/ResetPassword";
-import { OptimizedJobsPage } from "./pages/OptimizedJobsPage";
+import Auth from "./pages/Auth";
+import Index from "./pages/Index";
+import SignUp from "./pages/SignUp";
+import SimpleSignUp from "./pages/SimpleSignUp";
+import ConfirmEmail from "./pages/ConfirmEmail";
+import ResetPassword from "./pages/ResetPassword";
+import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
-import { CandidateDetailPage } from "./pages/CandidateDetailPage";
-import { JobApplicationPage } from "./pages/JobApplicationPage";
-import { PublicJobs } from "./pages/PublicJobs";
+import CandidateDetailPage from "./pages/CandidateDetailPage";
+import JobApplicationPage from "./pages/JobApplicationPage";
+import PublicJobs from "./pages/PublicJobs";
 import ProfileSettings from "./pages/ProfileSettings";
-import { Scout } from "./pages/Scout";
-import { Inbox } from "./pages/Inbox";
-import { Pricing } from "./pages/Pricing";
-import { Contact } from "./pages/Contact";
-import { TermsOfService } from "./pages/TermsOfService";
-import { PrivacyPolicy } from "./pages/PrivacyPolicy";
-import { RefundPolicy } from "./pages/RefundPolicy";
-import { NotFound } from "./pages/NotFound";
-import { LinkedInCallback } from "./pages/LinkedInCallback";
+import Scout from "./pages/Scout";
+import Inbox from "./pages/Inbox";
+import Pricing from "./pages/Pricing";
+import Contact from "./pages/Contact";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
+import NotFound from "./pages/NotFound";
+import LinkedInCallback from "./pages/LinkedInCallback";
 import { AuthGuard } from "./components/AuthGuard";
-import { AdminPanel } from "./pages/admin/AdminPanel";
-import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
-import { AdminAnalyticsPage } from "./pages/admin/AdminAnalyticsPage";
-import { AdminContentPage } from "./pages/admin/AdminContentPage";
-import { AdminSystemPage } from "./pages/admin/AdminSystemPage";
-import { AdminActivityPage } from "./pages/admin/AdminActivityPage";
-import { AdminRoute } from "./components/AdminRoute";
+import AdminPanel from "./pages/AdminPanel";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
+import AdminContentPage from "./pages/admin/AdminContentPage";
+import AdminSystemPage from "./pages/admin/AdminSystemPage";
+import AdminActivityPage from "./pages/admin/AdminActivityPage";
+import { AdminRoute } from "./components/admin/AdminRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Help from "./pages/Help";
 
