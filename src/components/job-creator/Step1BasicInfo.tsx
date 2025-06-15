@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { UnifiedJobFormData, UnifiedJobCreatorActions } from "@/types/jobForm";
-import { Info } from "lucide-react";
 
 interface Step1BasicInfoProps {
   formData: UnifiedJobFormData;
@@ -22,13 +21,6 @@ export const Step1BasicInfo = ({
     <Card className="w-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">Basic Job Information</CardTitle>
-        <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-blue-700">
-            <p className="font-medium mb-1">How it works:</p>
-            <p>Step 1: Enter basic details • Step 2: AI generates a professional job post • Step 3: Create a skills test • Step 4: Add interview questions • Step 5: Review & publish</p>
-          </div>
-        </div>
       </CardHeader>
       <CardContent className="space-y-4 pt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
