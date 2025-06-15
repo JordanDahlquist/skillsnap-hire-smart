@@ -21,6 +21,10 @@ interface ApplicationsListProps {
   onReject?: () => void;
   jobId?: string;
   isLoading?: boolean;
+  // New sorting props
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  onSortChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
 }
 
 export const ApplicationsList = memo(({
@@ -39,28 +43,58 @@ export const ApplicationsList = memo(({
   onReject,
   jobId,
   isLoading = false,
+  sortBy = 'created_at',
+  sortOrder = 'desc',
+  onSortChange,
 }: ApplicationsListProps) => {
-  // Filter applications based on search term
-  const filteredApplications = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return applications;
+  // Filter and sort applications based on search term and sort options
+  const processedApplications = useMemo(() => {
+    // First filter by search term
+    let filtered = applications;
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = applications.filter(application => 
+        application.name.toLowerCase().includes(searchLower) ||
+        application.email.toLowerCase().includes(searchLower)
+      );
     }
-    
-    const searchLower = searchTerm.toLowerCase();
-    return applications.filter(application => 
-      application.name.toLowerCase().includes(searchLower) ||
-      application.email.toLowerCase().includes(searchLower)
-    );
-  }, [applications, searchTerm]);
+
+    // Then sort the filtered results
+    if (onSortChange) {
+      filtered = [...filtered].sort((a, b) => {
+        let comparison = 0;
+        
+        switch (sortBy) {
+          case 'name':
+            comparison = a.name.localeCompare(b.name);
+            break;
+          case 'created_at':
+            comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            break;
+          case 'rating':
+            const ratingA = a.manual_rating || a.ai_rating || 0;
+            const ratingB = b.manual_rating || b.ai_rating || 0;
+            comparison = ratingA - ratingB;
+            break;
+          default:
+            comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        }
+        
+        return sortOrder === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    return filtered;
+  }, [applications, searchTerm, sortBy, sortOrder, onSortChange]);
 
   return (
     <div>
       <div className="glass-card mb-4">
         <ApplicationsListHeader
-          applicationsCount={filteredApplications.length}
+          applicationsCount={processedApplications.length}
           selectedApplications={selectedApplications}
           onSelectApplications={onSelectApplications}
-          applications={filteredApplications}
+          applications={processedApplications}
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
           onSendEmail={onSendEmail}
@@ -69,6 +103,9 @@ export const ApplicationsList = memo(({
           onReject={onReject}
           jobId={jobId}
           isLoading={isLoading}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={onSortChange}
         />
       </div>
 
@@ -81,7 +118,7 @@ export const ApplicationsList = memo(({
         }}
       >
         <div className="py-5">
-          {filteredApplications.length === 0 ? (
+          {processedApplications.length === 0 ? (
             <div className="p-8 text-center">
               <div className="text-lg font-medium mb-2 text-foreground">
                 {searchTerm ? 'No candidates found' : 'No applications yet'}
@@ -91,7 +128,7 @@ export const ApplicationsList = memo(({
               </div>
             </div>
           ) : (
-            filteredApplications.map((application) => (
+            processedApplications.map((application) => (
               <ApplicationItem
                 key={application.id}
                 application={application}

@@ -1,5 +1,5 @@
 
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SearchBar } from '@/components/toolbar/SearchBar';
 import { BulkStageSelector } from './bulk-actions/BulkStageSelector';
-import { Mail, X, ChevronDown, Star } from 'lucide-react';
+import { Mail, X, ChevronDown, Star, ArrowUpDown } from 'lucide-react';
 import { logger } from '@/services/loggerService';
 
 interface ApplicationsListHeaderProps {
@@ -29,7 +29,20 @@ interface ApplicationsListHeaderProps {
   onReject?: () => void;
   jobId?: string;
   isLoading?: boolean;
+  // New sorting props
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  onSortChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
 }
+
+const SORT_OPTIONS = [
+  { key: 'name-asc', sortBy: 'name', sortOrder: 'asc' as const, label: 'Name A-Z' },
+  { key: 'name-desc', sortBy: 'name', sortOrder: 'desc' as const, label: 'Name Z-A' },
+  { key: 'created-desc', sortBy: 'created_at', sortOrder: 'desc' as const, label: 'Newest First' },
+  { key: 'created-asc', sortBy: 'created_at', sortOrder: 'asc' as const, label: 'Oldest First' },
+  { key: 'rating-desc', sortBy: 'rating', sortOrder: 'desc' as const, label: 'Highest Rating' },
+  { key: 'rating-asc', sortBy: 'rating', sortOrder: 'asc' as const, label: 'Lowest Rating' },
+];
 
 export const ApplicationsListHeader = memo(({
   applicationsCount,
@@ -44,7 +57,16 @@ export const ApplicationsListHeader = memo(({
   onReject,
   jobId,
   isLoading = false,
+  sortBy = 'created_at',
+  sortOrder = 'desc',
+  onSortChange,
 }: ApplicationsListHeaderProps) => {
+  const [currentSortIndex, setCurrentSortIndex] = useState(() => {
+    const currentKey = `${sortBy}-${sortOrder}`;
+    const index = SORT_OPTIONS.findIndex(option => option.key === currentKey);
+    return index >= 0 ? index : 2; // Default to "Newest First"
+  });
+
   const handleSelectAll = useCallback((checked: boolean) => {
     if (onSelectApplications) {
       const newSelection = checked ? applications.map(app => app.id) : [];
@@ -60,6 +82,26 @@ export const ApplicationsListHeader = memo(({
       onSelectApplications([]);
     }
   }, [onSelectApplications]);
+
+  const handleSortCycle = useCallback(() => {
+    if (!onSortChange) return;
+    
+    const nextIndex = (currentSortIndex + 1) % SORT_OPTIONS.length;
+    const nextOption = SORT_OPTIONS[nextIndex];
+    
+    setCurrentSortIndex(nextIndex);
+    onSortChange(nextOption.sortBy, nextOption.sortOrder);
+    
+    logger.debug('Sort option changed', {
+      sortBy: nextOption.sortBy,
+      sortOrder: nextOption.sortOrder,
+      label: nextOption.label
+    });
+  }, [currentSortIndex, onSortChange]);
+
+  const getCurrentSortLabel = useCallback(() => {
+    return SORT_OPTIONS[currentSortIndex]?.label || 'Sort';
+  }, [currentSortIndex]);
 
   const isAllSelected = applicationsCount > 0 && selectedApplications.length === applicationsCount;
   const isSomeSelected = selectedApplications.length > 0 && selectedApplications.length < applicationsCount;
@@ -183,6 +225,19 @@ export const ApplicationsListHeader = memo(({
                 Clear
               </Button>
             </div>
+          )}
+
+          {/* Compact Sort Button */}
+          {onSortChange && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSortCycle}
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 flex-shrink-0"
+              title={`Current: ${getCurrentSortLabel()} - Click to cycle sort options`}
+            >
+              <ArrowUpDown className={`w-3 h-3 transition-transform ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+            </Button>
           )}
         </div>
       )}

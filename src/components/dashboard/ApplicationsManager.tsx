@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { applicationService } from '@/services/applicationService';
@@ -38,6 +37,10 @@ export const ApplicationsManager = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // New sorting state
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Create getRatingStars helper function
   const getRatingStars = useCallback((rating: number | null) => {
@@ -85,6 +88,11 @@ export const ApplicationsManager = ({
     }
     setIsEmailModalOpen(true);
   }, [selectedApplications.length, toast]);
+
+  const handleSortChange = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc') => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+  }, []);
 
   const handleBulkSetRating = useCallback(async (rating: number) => {
     if (selectedApplications.length === 0) return;
@@ -201,6 +209,9 @@ export const ApplicationsManager = ({
               onReject={handleBulkReject}
               jobId={job.id}
               isLoading={isUpdating}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSortChange={handleSortChange}
             />
 
             {selectedApplication && (
