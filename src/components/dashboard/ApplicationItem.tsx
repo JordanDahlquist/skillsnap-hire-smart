@@ -73,10 +73,10 @@ export const ApplicationItem = memo(({
   return (
     <div className="mb-2">
       <div
-        className={`consistent-card-shadow cursor-pointer p-2 transition-all duration-300 backdrop-blur-sm bg-card/80 border border-border/50 rounded-lg ${
+        className={`consistent-card-shadow cursor-pointer p-2 transition-all duration-300 backdrop-blur-sm bg-card/60 border border-border/50 rounded-lg ${
           isSelected 
             ? 'ring-2 ring-primary/50 shadow-lg scale-[1.01]' 
-            : 'hover:scale-[1.005] hover:bg-card/90'
+            : 'hover:scale-[1.005] hover:bg-card/70'
         }`}
         onClick={handleApplicationClick}
       >
