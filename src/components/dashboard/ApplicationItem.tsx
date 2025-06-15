@@ -1,10 +1,9 @@
+
 import React, { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ExternalLink, Video } from 'lucide-react';
-import { StageSelector } from './StageSelector';
+import { Video } from 'lucide-react';
 import { logger } from '@/services/loggerService';
 import { renderManualRating, renderAIRating } from './utils/ratingUtils';
 import { Application } from '@/types';
@@ -41,11 +40,9 @@ export const ApplicationItem = memo(({
   application, 
   selectedApplication, 
   onSelectApplication, 
-  getStatusColor, 
-  getTimeAgo,
+  getStatusColor,
   selectedApplications = [],
   onSelectApplications,
-  jobId
 }: ApplicationItemProps) => {
   const navigate = useNavigate();
 
@@ -66,131 +63,72 @@ export const ApplicationItem = memo(({
     logger.debug('Application clicked for detail view', { applicationId: application.id });
   }, [onSelectApplication, application]);
 
-  const handleViewFullProfile = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/candidate/${application.id}`);
-    logger.debug('Navigating to candidate detail page', { 
-      applicationId: application.id 
-    });
-  }, [navigate, application.id]);
-
-  const handleVideoIndicatorClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/candidate/${application.id}`);
-    logger.debug('Navigating to candidate detail page via video indicator', { 
-      applicationId: application.id 
-    });
-  }, [navigate, application.id]);
-
   // Get the display status - if status is "reviewed" but no manual rating, show as "pending"
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
-
-  // Ensure pipeline_stage defaults to "applied" if null or undefined
-  const pipelineStage = application.pipeline_stage || 'applied';
 
   const isSelected = selectedApplication?.id === application.id;
   const hasVideo = hasVideoContent(application);
 
   return (
-    <div className="mb-4">
+    <div className="mb-2">
       <div
-        className={`glass-card cursor-pointer p-4 transition-all duration-300 ${
+        className={`consistent-card-shadow cursor-pointer p-2 transition-all duration-300 backdrop-blur-sm bg-white/60 border border-white/50 rounded-lg ${
           isSelected 
-            ? 'ring-2 ring-primary/50 shadow-lg scale-[1.02]' 
-            : 'hover:scale-[1.01]'
+            ? 'ring-2 ring-primary/50 shadow-lg scale-[1.01]' 
+            : 'hover:scale-[1.005] hover:bg-white/70'
         }`}
         onClick={handleApplicationClick}
       >
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3 flex-1">
-            {onSelectApplications && (
-              <Checkbox
-                checked={selectedApplications.includes(application.id)}
-                onCheckedChange={(checked) => handleSelectApplication(application.id, checked as boolean)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-medium text-foreground truncate">
+        <div className="flex items-center gap-3">
+          {onSelectApplications && (
+            <Checkbox
+              checked={selectedApplications.includes(application.id)}
+              onCheckedChange={(checked) => handleSelectApplication(application.id, checked as boolean)}
+              onClick={(e) => e.stopPropagation()}
+              className="flex-shrink-0"
+            />
+          )}
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              {/* Name and Email in one line */}
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium text-foreground truncate">
                   {application.name}
-                </h3>
-                <span className="text-xs text-muted-foreground">
-                  {getTimeAgo(application.created_at)}
+                </span>
+                <span className="text-xs text-muted-foreground ml-2">
+                  • {application.email}
                 </span>
               </div>
               
-              <p className="text-sm text-muted-foreground truncate mb-2">
-                {application.email}
-              </p>
-              
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <Badge className={getStatusColor(application.status, application.manual_rating)}>
-                    {displayStatus}
-                  </Badge>
-                  {hasVideo && (
-                    <button
-                      onClick={handleVideoIndicatorClick}
-                      className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
-                      title="Has video interview"
-                    >
-                      <Video className="w-3 h-3" />
-                      Video
-                    </button>
-                  )}
-                </div>
-                
-                {/* Stage Selector */}
-                {jobId && (
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <StageSelector
-                      jobId={jobId}
-                      currentStage={pipelineStage}
-                      applicationId={application.id}
-                      size="sm"
-                    />
+              {/* Status and Video badges */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <Badge className={`${getStatusColor(application.status, application.manual_rating)} text-xs px-1.5 py-0.5`}>
+                  {displayStatus}
+                </Badge>
+                {hasVideo && (
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-full">
+                    <Video className="w-3 h-3" />
                   </div>
                 )}
               </div>
-
-              {/* Rating Section */}
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center gap-4">
-                  {/* Manual Rating */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">Your:</span>
-                    <div className="flex gap-0.5">
-                      {renderManualRating(application.manual_rating)}
-                    </div>
-                  </div>
-                  
-                  {/* AI Rating */}
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">AI:</span>
-                    <div className="flex gap-0.5">
-                      {renderAIRating(application.ai_rating)}
-                    </div>
-                  </div>
+            </div>
+            
+            {/* Ratings in compact row */}
+            <div className="flex items-center gap-3 mt-1">
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">You:</span>
+                <div className="flex gap-0.5">
+                  {renderManualRating(application.manual_rating)}
                 </div>
-
-                {/* View Full Profile Button */}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleViewFullProfile}
-                  className="ml-2 flex items-center gap-1 text-xs"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  View Full
-                </Button>
               </div>
               
-              {application.ai_summary && (
-                <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                  {application.ai_summary}
-                </p>
-              )}
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">AI:</span>
+                <div className="flex gap-0.5">
+                  {renderAIRating(application.ai_rating)}
+                </div>
+              </div>
             </div>
           </div>
         </div>
