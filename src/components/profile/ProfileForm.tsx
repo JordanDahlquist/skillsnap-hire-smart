@@ -117,8 +117,8 @@ export const ProfileForm = () => {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-muted rounded w-1/4 mb-4"></div>
+          <div className="h-32 bg-muted rounded"></div>
         </div>
       </div>
     );
@@ -135,11 +135,11 @@ export const ProfileForm = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border">
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg border">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
               Private
             </Badge>
-            <code className="flex-1 text-sm font-mono bg-white px-2 py-1 rounded border">
+            <code className="flex-1 text-sm font-mono bg-background px-2 py-1 rounded border">
               {profile?.unique_email || 'Loading...'}
             </code>
             <Button
@@ -155,7 +155,7 @@ export const ProfileForm = () => {
               )}
             </Button>
           </div>
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-muted-foreground mt-2">
             This is your private email address for communicating with candidates. 
             All replies will be routed to your inbox on this platform.
           </p>
