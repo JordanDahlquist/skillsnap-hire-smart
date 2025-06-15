@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Phone, MapPin, Globe, Linkedin, Github, Calendar, Star } from "lucide-react";
@@ -17,6 +18,13 @@ export const CandidateOverviewTab = ({
   job, 
   onApplicationUpdate 
 }: CandidateOverviewTabProps) => {
+  // Local state to reflect immediate updates
+  const [localApplication, setLocalApplication] = useState(application);
+  
+  useEffect(() => {
+    setLocalApplication(application);
+  }, [application]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Contact Information */}
@@ -30,36 +38,36 @@ export const CandidateOverviewTab = ({
           <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground text-left block">Email</label>
-              <p className="text-foreground text-left">{application.email}</p>
+              <p className="text-foreground text-left">{localApplication.email}</p>
             </div>
             
-            {application.phone && (
+            {localApplication.phone && (
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <label className="text-sm font-medium text-muted-foreground text-left block">Phone</label>
-                  <p className="text-foreground text-left">{application.phone}</p>
+                  <p className="text-foreground text-left">{localApplication.phone}</p>
                 </div>
               </div>
             )}
             
-            {application.location && (
+            {localApplication.location && (
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <label className="text-sm font-medium text-muted-foreground text-left block">Location</label>
-                  <p className="text-foreground text-left">{application.location}</p>
+                  <p className="text-foreground text-left">{localApplication.location}</p>
                 </div>
               </div>
             )}
 
-            {application.available_start_date && (
+            {localApplication.available_start_date && (
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <label className="text-sm font-medium text-muted-foreground text-left block">Available Start Date</label>
                   <p className="text-foreground text-left">
-                    {new Date(application.available_start_date).toLocaleDateString()}
+                    {new Date(localApplication.available_start_date).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -70,9 +78,9 @@ export const CandidateOverviewTab = ({
           <div className="pt-4 border-t border-border">
             <label className="text-sm font-medium text-muted-foreground mb-3 block text-left">Professional Links</label>
             <div className="space-y-2">
-              {application.portfolio_url && (
+              {localApplication.portfolio_url && (
                 <a 
-                  href={application.portfolio_url} 
+                  href={localApplication.portfolio_url} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-blue-600 hover:underline text-left"
@@ -82,9 +90,9 @@ export const CandidateOverviewTab = ({
                 </a>
               )}
               
-              {application.linkedin_url && (
+              {localApplication.linkedin_url && (
                 <a 
-                  href={application.linkedin_url} 
+                  href={localApplication.linkedin_url} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-blue-600 hover:underline text-left"
@@ -94,9 +102,9 @@ export const CandidateOverviewTab = ({
                 </a>
               )}
               
-              {application.github_url && (
+              {localApplication.github_url && (
                 <a 
-                  href={application.github_url} 
+                  href={localApplication.github_url} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-blue-600 hover:underline text-left"
@@ -118,14 +126,14 @@ export const CandidateOverviewTab = ({
         <CardContent className="space-y-4">
           <div>
             <label className="text-sm font-medium text-muted-foreground text-left block">Applied</label>
-            <p className="text-foreground text-left">{getTimeAgo(application.created_at)}</p>
+            <p className="text-foreground text-left">{getTimeAgo(localApplication.created_at)}</p>
           </div>
 
           <div>
             <label className="text-sm font-medium text-muted-foreground text-left block">Current Stage</label>
             <div className="mt-1">
               <Badge variant="outline">
-                {application.pipeline_stage || 'Applied'}
+                {localApplication.pipeline_stage || 'Applied'}
               </Badge>
             </div>
           </div>
@@ -134,23 +142,23 @@ export const CandidateOverviewTab = ({
             <div>
               <label className="text-sm font-medium text-muted-foreground text-left block">Your Rating</label>
               <div className="flex gap-0.5 mt-1">
-                {renderManualRating(application.manual_rating)}
+                {renderManualRating(localApplication.manual_rating)}
               </div>
             </div>
             
             <div>
               <label className="text-sm font-medium text-muted-foreground text-left block">AI Rating</label>
               <div className="flex gap-0.5 mt-1">
-                {renderAIRating(application.ai_rating)}
+                {renderAIRating(localApplication.ai_rating)}
               </div>
             </div>
           </div>
 
-          {application.ai_summary && (
+          {localApplication.ai_summary && (
             <div>
               <label className="text-sm font-medium text-muted-foreground text-left block">AI Summary</label>
               <div className="mt-2 p-3 bg-muted/30 rounded-lg border border-border">
-                <p className="text-foreground text-sm text-left">{application.ai_summary}</p>
+                <p className="text-foreground text-sm text-left">{localApplication.ai_summary}</p>
               </div>
             </div>
           )}
@@ -158,14 +166,14 @@ export const CandidateOverviewTab = ({
       </Card>
 
       {/* Cover Letter */}
-      {application.cover_letter && (
+      {localApplication.cover_letter && (
         <Card className="glass-card lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-left">Cover Letter</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="p-4 bg-muted/30 rounded-lg border border-border">
-              <p className="text-foreground whitespace-pre-wrap text-left">{application.cover_letter}</p>
+              <p className="text-foreground whitespace-pre-wrap text-left">{localApplication.cover_letter}</p>
             </div>
           </CardContent>
         </Card>

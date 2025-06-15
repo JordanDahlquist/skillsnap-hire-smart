@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,11 +33,21 @@ export const CandidateDetailHeader = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const [showEmailComposer, setShowEmailComposer] = useState(false);
   
+  // Local state for immediate UI updates
+  const [localApplication, setLocalApplication] = useState(application);
+  
+  // Update local state when application prop changes
+  useEffect(() => {
+    setLocalApplication(application);
+  }, [application]);
+  
   const { 
     updateApplicationRating, 
     rejectApplication, 
     unrejectApplication 
-  } = useApplicationActions(onApplicationUpdate);
+  } = useApplicationActions(() => {
+    onApplicationUpdate();
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -50,21 +60,61 @@ export const CandidateDetailHeader = ({
   };
 
   const handleRating = async (rating: number) => {
+    // Prevent multiple rapid clicks
+    if (isUpdating) return;
+    
+    // Immediate UI update
+    setLocalApplication(prev => ({
+      ...prev,
+      manual_rating: rating,
+      status: 'reviewed'
+    }));
+    
     setIsUpdating(true);
-    await updateApplicationRating(application.id, rating);
-    setIsUpdating(false);
+    try {
+      await updateApplicationRating(application.id, rating);
+    } catch (error) {
+      // Revert local state on error
+      setLocalApplication(application);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleReject = async () => {
+    if (isUpdating) return;
+    
+    setLocalApplication(prev => ({
+      ...prev,
+      status: 'rejected'
+    }));
+    
     setIsUpdating(true);
-    await rejectApplication(application.id, "Rejected from candidate detail page");
-    setIsUpdating(false);
+    try {
+      await rejectApplication(application.id, "Rejected from candidate detail page");
+    } catch (error) {
+      setLocalApplication(application);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleUnreject = async () => {
+    if (isUpdating) return;
+    
+    setLocalApplication(prev => ({
+      ...prev,
+      status: 'pending'
+    }));
+    
     setIsUpdating(true);
-    await unrejectApplication(application.id);
-    setIsUpdating(false);
+    try {
+      await unrejectApplication(application.id);
+    } catch (error) {
+      setLocalApplication(application);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleEmail = () => {
@@ -73,25 +123,25 @@ export const CandidateDetailHeader = ({
 
   return (
     <>
-      <div className="border-b border-border/20 bg-background/50 backdrop-blur-sm">
+      <div className="border-b border-border/20 bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Compact Navigation */}
+          {/* Breadcrumb Navigation */}
           <div className="py-2 flex items-center justify-between">
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink 
                     onClick={onBackToDashboard}
-                    className="cursor-pointer hover:text-primary text-xs text-left"
+                    className="cursor-pointer hover:text-primary text-sm text-left"
                   >
                     {job.title}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="text-xs text-left">
-                    {application.name}
+                  <BreadcrumbPage className="text-sm text-left">
+                    {localApplication.name}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
@@ -101,121 +151,123 @@ export const CandidateDetailHeader = ({
               variant="ghost"
               size="sm"
               onClick={onBackToDashboard}
-              className="flex items-center gap-1 text-xs h-7 px-2"
+              className="flex items-center gap-1 text-sm h-8 px-3"
             >
-              <ChevronLeft className="w-3 h-3" />
+              <ChevronLeft className="w-4 h-4" />
               Back
             </Button>
           </div>
 
-          {/* Main Compact Header Row */}
-          <div className="py-3 flex items-center justify-between gap-6">
+          {/* Main Header Content */}
+          <div className="py-4 flex items-center gap-8">
             
-            {/* Left: Candidate Info */}
+            {/* Left: Candidate Information */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-4">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg font-semibold text-foreground text-left truncate">
-                    {application.name}
+                  <h1 className="text-2xl font-bold text-foreground text-left truncate mb-1">
+                    {localApplication.name}
                   </h1>
-                  <p className="text-xs text-muted-foreground text-left truncate">
-                    {application.email}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <Badge className={`${getStatusColor(application.status)} text-xs px-2 py-0.5`}>
-                    {application.status}
-                  </Badge>
-                  {application.pipeline_stage && (
-                    <Badge variant="outline" className="text-xs px-2 py-0.5">
-                      {application.pipeline_stage}
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-3 mb-2">
+                    <p className="text-sm text-muted-foreground text-left truncate">
+                      {localApplication.email}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`${getStatusColor(localApplication.status)} text-xs px-2 py-1`}>
+                        {localApplication.status}
+                      </Badge>
+                      {localApplication.pipeline_stage && (
+                        <Badge variant="outline" className="text-xs px-2 py-1">
+                          {localApplication.pipeline_stage}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Center: Ratings */}
-            <div className="flex items-center gap-6 flex-shrink-0">
+            {/* Center: Ratings Section */}
+            <div className="flex items-center gap-8 flex-shrink-0">
               
-              {/* AI Rating */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">AI</span>
-                <div className="flex gap-0.5">
-                  {renderAIRating(application.ai_rating)}
-                </div>
-                <span className="text-xs text-purple-600 font-medium w-8">
-                  {application.ai_rating ? `${Math.round(application.ai_rating)}/3` : '--'}
-                </span>
-              </div>
-
               {/* Manual Rating */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Rating</span>
-                <div className="flex gap-0.5">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-muted-foreground">Your Rating</span>
+                <div className="flex gap-1">
                   {[1, 2, 3].map((rating) => (
                     <button
                       key={rating}
                       onClick={() => handleRating(rating)}
                       disabled={isUpdating}
-                      className="hover:scale-110 transition-transform disabled:opacity-50"
+                      className="hover:scale-110 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Star 
-                        className={`w-4 h-4 ${
-                          (application.manual_rating || 0) >= rating 
-                            ? "text-blue-500 fill-current" 
+                        className={`w-5 h-5 ${
+                          (localApplication.manual_rating || 0) >= rating 
+                            ? "text-blue-500 fill-blue-500" 
                             : "text-gray-300 hover:text-blue-400"
                         }`} 
                       />
                     </button>
                   ))}
                 </div>
-                <span className="text-xs text-blue-600 font-medium w-8">
-                  {application.manual_rating ? `${application.manual_rating}/3` : '--'}
+                <span className="text-sm text-blue-600 font-medium min-w-[2rem]">
+                  {localApplication.manual_rating ? `${localApplication.manual_rating}/3` : '--'}
+                </span>
+              </div>
+
+              {/* AI Rating */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-muted-foreground">AI Rating</span>
+                <div className="flex gap-1">
+                  {renderAIRating(localApplication.ai_rating)}
+                </div>
+                <span className="text-sm text-purple-600 font-medium min-w-[2rem]">
+                  {localApplication.ai_rating ? `${Math.round(localApplication.ai_rating)}/3` : '--'}
                 </span>
               </div>
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-3 flex-shrink-0">
               <StageSelector
                 jobId={job.id}
-                currentStage={application.pipeline_stage || 'applied'}
-                applicationId={application.id}
-                size="sm"
+                currentStage={localApplication.pipeline_stage || 'applied'}
+                applicationId={localApplication.id}
+                size="default"
               />
               
               <Button 
                 onClick={handleEmail}
-                size="sm"
+                size="default"
                 variant="default"
                 disabled={isUpdating}
-                className="h-8 px-3 text-xs"
+                className="px-4"
               >
-                <Mail className="w-3 h-3 mr-1" />
+                <Mail className="w-4 h-4 mr-2" />
                 Email
               </Button>
               
-              {application.status === 'rejected' ? (
+              {localApplication.status === 'rejected' ? (
                 <Button 
                   variant="outline"
-                  size="sm"
+                  size="default"
                   onClick={handleUnreject}
                   disabled={isUpdating}
-                  className="border-green-200 text-green-600 hover:bg-green-50 h-8 px-3 text-xs"
+                  className="border-green-200 text-green-600 hover:bg-green-50 px-4"
                 >
-                  <RotateCcw className="w-3 h-3 mr-1" />
+                  <RotateCcw className="w-4 h-4 mr-2" />
                   Unreject
                 </Button>
               ) : (
                 <Button 
                   variant="outline"
-                  size="sm"
+                  size="default"
                   onClick={handleReject}
                   disabled={isUpdating}
-                  className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3 text-xs"
+                  className="border-red-200 text-red-600 hover:bg-red-50 px-4"
                 >
-                  <ThumbsDown className="w-3 h-3 mr-1" />
+                  <ThumbsDown className="w-4 h-4 mr-2" />
                   Reject
                 </Button>
               )}
@@ -224,8 +276,11 @@ export const CandidateDetailHeader = ({
 
           {/* Loading State */}
           {isUpdating && (
-            <div className="pb-2">
-              <span className="text-xs text-muted-foreground">Updating...</span>
+            <div className="pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm text-muted-foreground">Updating...</span>
+              </div>
             </div>
           )}
         </div>
@@ -235,7 +290,7 @@ export const CandidateDetailHeader = ({
       <EmailComposerModal
         open={showEmailComposer}
         onOpenChange={setShowEmailComposer}
-        selectedApplications={[application]}
+        selectedApplications={[localApplication]}
         job={job}
       />
     </>

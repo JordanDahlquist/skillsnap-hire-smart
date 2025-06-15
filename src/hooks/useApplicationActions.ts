@@ -6,6 +6,8 @@ import { logger } from "@/services/loggerService";
 export const useApplicationActions = (onUpdate?: () => void) => {
   const updateApplicationRating = async (applicationId: string, rating: number) => {
     try {
+      logger.debug('Updating application rating', { applicationId, rating });
+      
       const { error } = await supabase
         .from('applications')
         .update({ 
@@ -15,20 +17,30 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         })
         .eq('id', applicationId);
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Failed to update application rating', error);
+        throw error;
+      }
 
       toast.success(`Rating updated to ${rating} star${rating !== 1 ? 's' : ''}`);
-      onUpdate?.();
       
-      logger.debug('Application rating updated', { applicationId, rating });
+      // Small delay before calling onUpdate to ensure database consistency
+      setTimeout(() => {
+        onUpdate?.();
+      }, 100);
+      
+      logger.debug('Application rating updated successfully', { applicationId, rating });
     } catch (error) {
       logger.error('Failed to update application rating', error);
       toast.error('Failed to update rating');
+      throw error; // Re-throw so the calling component can handle it
     }
   };
 
   const rejectApplication = async (applicationId: string, reason?: string) => {
     try {
+      logger.debug('Rejecting application', { applicationId, reason });
+      
       const { error } = await supabase
         .from('applications')
         .update({ 
@@ -38,20 +50,29 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         })
         .eq('id', applicationId);
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Failed to reject application', error);
+        throw error;
+      }
 
       toast.success('Application rejected');
-      onUpdate?.();
       
-      logger.debug('Application rejected', { applicationId, reason });
+      setTimeout(() => {
+        onUpdate?.();
+      }, 100);
+      
+      logger.debug('Application rejected successfully', { applicationId });
     } catch (error) {
       logger.error('Failed to reject application', error);
       toast.error('Failed to reject application');
+      throw error;
     }
   };
 
   const unrejectApplication = async (applicationId: string) => {
     try {
+      logger.debug('Unrejecting application', { applicationId });
+      
       const { error } = await supabase
         .from('applications')
         .update({ 
@@ -61,15 +82,22 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         })
         .eq('id', applicationId);
 
-      if (error) throw error;
+      if (error) {
+        logger.error('Failed to unreject application', error);
+        throw error;
+      }
 
       toast.success('Application unrejected');
-      onUpdate?.();
       
-      logger.debug('Application unrejected', { applicationId });
+      setTimeout(() => {
+        onUpdate?.();
+      }, 100);
+      
+      logger.debug('Application unrejected successfully', { applicationId });
     } catch (error) {
       logger.error('Failed to unreject application', error);
       toast.error('Failed to unreject application');
+      throw error;
     }
   };
 

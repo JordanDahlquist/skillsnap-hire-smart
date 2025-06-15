@@ -34,7 +34,10 @@ export const useApplication = (applicationId: string | undefined) => {
       return data as Application;
     },
     enabled: !!applicationId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 3,
+    staleTime: 1000 * 60 * 2, // 2 minutes - shorter stale time for more responsive updates
+    gcTime: 1000 * 60 * 10, // 10 minutes
+    retry: 2,
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
+    refetchOnMount: false, // Only fetch once when component mounts
   });
 };
