@@ -2,7 +2,6 @@
 import React, { memo, useMemo } from 'react';
 import { ApplicationsListHeader } from './ApplicationsListHeader';
 import { ApplicationItem } from './ApplicationItem';
-import { useThemeContext } from '@/contexts/ThemeContext';
 import { Application } from '@/types';
 
 interface ApplicationsListProps {
@@ -41,12 +40,6 @@ export const ApplicationsList = memo(({
   jobId,
   isLoading = false,
 }: ApplicationsListProps) => {
-  const { currentTheme } = useThemeContext();
-
-  // Theme-aware colors
-  const emptyStateTitleColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-white' : 'text-gray-500';
-  const emptyStateSubtitleColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-gray-300' : 'text-gray-500';
-
   // Filter applications based on search term
   const filteredApplications = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -90,10 +83,10 @@ export const ApplicationsList = memo(({
         <div className="py-5">
           {filteredApplications.length === 0 ? (
             <div className="p-8 text-center">
-              <div className={`text-lg font-medium mb-2 ${emptyStateTitleColor}`}>
+              <div className="text-lg font-medium mb-2 text-foreground">
                 {searchTerm ? 'No candidates found' : 'No applications yet'}
               </div>
-              <div className={`text-sm ${emptyStateSubtitleColor}`}>
+              <div className="text-sm text-muted-foreground">
                 {searchTerm ? 'Try adjusting your search terms.' : 'Applications will appear here once candidates apply.'}
               </div>
             </div>

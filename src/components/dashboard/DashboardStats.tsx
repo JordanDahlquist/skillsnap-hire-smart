@@ -25,8 +25,8 @@ export const DashboardStats = ({ applications }: DashboardStatsProps) => {
           <div className="flex items-center">
             <Users className="w-8 h-8 text-purple-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Applications</p>
-              <p className="text-2xl font-bold text-gray-900">{applications.length}</p>
+              <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
+              <p className="text-2xl font-bold text-foreground">{applications.length}</p>
             </div>
           </div>
         </CardContent>
@@ -37,8 +37,8 @@ export const DashboardStats = ({ applications }: DashboardStatsProps) => {
           <div className="flex items-center">
             <Clock className="w-8 h-8 text-blue-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending Review</p>
-              <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
+              <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
+              <p className="text-2xl font-bold text-foreground">{pendingCount}</p>
             </div>
           </div>
         </CardContent>
@@ -49,8 +49,8 @@ export const DashboardStats = ({ applications }: DashboardStatsProps) => {
           <div className="flex items-center">
             <ThumbsUp className="w-8 h-8 text-green-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Approved</p>
-              <p className="text-2xl font-bold text-gray-900">{approvedCount}</p>
+              <p className="text-sm font-medium text-muted-foreground">Approved</p>
+              <p className="text-2xl font-bold text-foreground">{approvedCount}</p>
             </div>
           </div>
         </CardContent>
@@ -61,8 +61,8 @@ export const DashboardStats = ({ applications }: DashboardStatsProps) => {
           <div className="flex items-center">
             <Star className="w-8 h-8 text-yellow-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg. Rating</p>
-              <p className="text-2xl font-bold text-gray-900">{avgRating.toFixed(1)}</p>
+              <p className="text-sm font-medium text-muted-foreground">Avg. Rating</p>
+              <p className="text-2xl font-bold text-foreground">{avgRating.toFixed(1)}</p>
             </div>
           </div>
         </CardContent>

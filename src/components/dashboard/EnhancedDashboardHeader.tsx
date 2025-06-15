@@ -24,7 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useThemeContext } from "@/contexts/ThemeContext";
 import { Job, Application } from "@/types";
 
 interface EnhancedDashboardHeaderProps {
@@ -50,13 +49,6 @@ export const EnhancedDashboardHeader = ({
     handleUnarchiveJob,
     handleRefreshAI
   } = useDashboardHeaderActions(job, applications, onJobUpdate);
-  const { currentTheme } = useThemeContext();
-
-  // Theme-aware colors
-  const titleColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-white' : 'text-gray-900';
-  const navColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-gray-300 hover:text-white' : 'text-gray-500 hover:text-gray-700';
-  const currentPageColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-white' : 'text-gray-900';
-  const metaColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-gray-300' : 'text-gray-600';
 
   const getPerformanceIndicator = () => {
     if (applications.length === 0) return { text: "New", color: "bg-gray-100 text-gray-800" };
@@ -96,24 +88,24 @@ export const EnhancedDashboardHeader = ({
                 Back to My Jobs
               </Link>
             </Button>
-            <nav className={`text-sm ${metaColor}`}>
-              <Link to="/" className={navColor}>Home</Link>
+            <nav className="text-sm text-muted-foreground">
+              <Link to="/" className="text-muted-foreground hover:text-foreground">Home</Link>
               <span className="mx-2">•</span>
-              <Link to="/jobs" className={navColor}>My Jobs</Link>
+              <Link to="/jobs" className="text-muted-foreground hover:text-foreground">My Jobs</Link>
               <span className="mx-2">•</span>
-              <span className={currentPageColor}>{job.title}</span>
+              <span className="text-foreground">{job.title}</span>
             </nav>
           </div>
           
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1 className={`text-2xl font-bold ${titleColor}`}>{job.title}</h1>
+                <h1 className="text-2xl font-bold text-foreground">{job.title}</h1>
                 <Badge className={performanceIndicator.color}>
                   {performanceIndicator.text}
                 </Badge>
               </div>
-              <div className={`flex items-center gap-6 text-sm ${metaColor}`}>
+              <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <span>Job posted {getTimeAgo(job.created_at)}</span>
                 <span>•</span>
                 <span>{applications.length} applications received</span>
