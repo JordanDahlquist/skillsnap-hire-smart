@@ -12,7 +12,6 @@ import { parseMarkdown } from "@/utils/markdownParser";
 import { AnalyticsModal } from "@/components/analytics/AnalyticsModal";
 import { generatePDFReport } from "@/utils/pdfReportGenerator";
 import { useToast } from "@/hooks/use-toast";
-import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface AIDailyBriefingProps {
   userDisplayName: string;
@@ -28,13 +27,6 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
-  const { currentTheme } = useThemeContext();
-
-  // Theme-aware text colors
-  const titleColor = currentTheme === 'dark' ? 'text-white' : 'text-gray-900';
-  const contentColor = currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-700';
-  const subtleTextColor = currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-600';
-  const borderColor = currentTheme === 'dark' ? 'border-gray-700' : 'border-gray-100';
 
   const getFallbackContent = () => {
     const now = new Date();
@@ -84,7 +76,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       return (
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-          <span className={`text-sm ${subtleTextColor}`}>Generating your daily briefing...</span>
+          <span className="text-sm text-muted-foreground">Generating your daily briefing...</span>
         </div>
       );
     }
@@ -94,9 +86,9 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       const formatted = formatBriefingContent(fallback);
       return (
         <div className="space-y-2">
-          <h2 className={`text-lg font-semibold ${titleColor}`}>{formatted.greeting}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{formatted.greeting}</h2>
           {formatted.content && (
-            <div className={`text-sm ${contentColor} leading-relaxed`}>
+            <div className="text-sm text-muted-foreground leading-relaxed">
               {formatted.content}
             </div>
           )}
@@ -107,9 +99,9 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     const formatted = formatBriefingContent(briefing.briefing_content);
     return (
       <div className="space-y-2">
-        <h2 className={`text-lg font-semibold ${titleColor}`}>{formatted.greeting}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{formatted.greeting}</h2>
         {formatted.content && (
-          <div className={`text-sm ${contentColor} leading-relaxed`}>
+          <div className="text-sm text-muted-foreground leading-relaxed">
             {formatted.content}
           </div>
         )}
@@ -215,13 +207,13 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
             </div>
             
             {/* Metrics */}
-            <div className={`flex flex-wrap items-center gap-4 text-sm mb-6 pb-4 border-b ${borderColor}`}>
+            <div className="flex flex-wrap items-center gap-4 text-sm mb-6 pb-4 border-b border-border">
               {metricsData.map((metric, index) => {
                 const IconComponent = metric.icon;
                 return (
                   <div key={index} className="flex items-center gap-1.5">
                     <IconComponent className={`w-3 h-3 ${metric.color}`} />
-                    <span className={`${subtleTextColor} text-xs`}>{metric.label}</span>
+                    <span className="text-muted-foreground text-xs">{metric.label}</span>
                   </div>
                 );
               })}
