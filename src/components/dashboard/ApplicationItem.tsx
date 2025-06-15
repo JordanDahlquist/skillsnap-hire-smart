@@ -1,3 +1,4 @@
+
 import React, { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -72,10 +73,10 @@ export const ApplicationItem = memo(({
   return (
     <div className="mb-2">
       <div
-        className={`consistent-card-shadow cursor-pointer p-2 transition-all duration-300 backdrop-blur-sm bg-white/60 border border-white/50 rounded-lg ${
+        className={`consistent-card-shadow cursor-pointer p-2 transition-all duration-300 backdrop-blur-sm bg-card/60 border border-border/50 rounded-lg ${
           isSelected 
             ? 'ring-2 ring-primary/50 shadow-lg scale-[1.01]' 
-            : 'hover:scale-[1.005] hover:bg-white/70'
+            : 'hover:scale-[1.005] hover:bg-card/70'
         }`}
         onClick={handleApplicationClick}
       >
@@ -107,7 +108,7 @@ export const ApplicationItem = memo(({
                   {displayStatus}
                 </Badge>
                 {hasVideo && (
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 text-xs bg-blue-50 text-blue-700 rounded-full">
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 text-xs bg-blue-500/10 text-blue-400 rounded-full">
                     <Video className="w-3 h-3" />
                   </div>
                 )}
