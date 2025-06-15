@@ -1,7 +1,6 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, MapPin } from "lucide-react";
-import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface FilterDropdownsProps {
   statusFilter: string;
@@ -16,8 +15,6 @@ export const FilterDropdowns = ({
   workTypeFilter,
   onWorkTypeFilterChange
 }: FilterDropdownsProps) => {
-  const { currentTheme } = useThemeContext();
-  
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'active', label: 'Active' },
@@ -33,29 +30,19 @@ export const FilterDropdowns = ({
     { value: 'hybrid', label: 'Hybrid' }
   ].filter(option => option.value && option.value.trim() !== '');
 
-  const textColor = currentTheme === 'dark' ? 'text-white' : 'text-black';
-  const iconColor = currentTheme === 'dark' ? 'text-white' : 'text-black';
-
   return (
     <>
       <Select value={statusFilter || 'all'} onValueChange={onStatusFilterChange}>
-        <SelectTrigger className={`w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 ${textColor}`}>
-          <Filter className={`w-4 h-4 mr-1 ${iconColor}`} />
+        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-foreground">
+          <Filter className="w-4 h-4 mr-1 text-foreground" />
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
-        <SelectContent className={`backdrop-blur-sm border-white/40 shadow-lg ${
-          currentTheme === 'dark' 
-            ? 'bg-black/90 border-gray-800' 
-            : 'bg-white/95'
-        }`}>
+        <SelectContent className="backdrop-blur-sm border-white/40 shadow-lg bg-background border-border">
           {statusOptions.map((status) => (
             <SelectItem 
               key={status.value} 
               value={status.value} 
-              className={currentTheme === 'dark' 
-                ? 'text-white hover:bg-gray-800' 
-                : 'text-gray-900 hover:bg-gray-100'
-              }
+              className="text-foreground hover:bg-muted"
             >
               {status.label}
             </SelectItem>
@@ -64,23 +51,16 @@ export const FilterDropdowns = ({
       </Select>
 
       <Select value={workTypeFilter || 'all'} onValueChange={onWorkTypeFilterChange}>
-        <SelectTrigger className={`w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 ${textColor}`}>
-          <MapPin className={`w-4 h-4 mr-1 ${iconColor}`} />
+        <SelectTrigger className="w-32 bg-transparent border-0 focus:ring-0 rounded-2xl backdrop-blur-sm bg-white/20 border border-white/30 hover:bg-white/30 transition-all duration-300 text-foreground">
+          <MapPin className="w-4 h-4 mr-1 text-foreground" />
           <SelectValue placeholder="All Types" />
         </SelectTrigger>
-        <SelectContent className={`backdrop-blur-sm border-white/40 shadow-lg ${
-          currentTheme === 'dark' 
-            ? 'bg-black/90 border-gray-800' 
-            : 'bg-white/95'
-        }`}>
+        <SelectContent className="backdrop-blur-sm border-white/40 shadow-lg bg-background border-border">
           {workTypeOptions.map((type) => (
             <SelectItem 
               key={type.value} 
               value={type.value} 
-              className={currentTheme === 'dark' 
-                ? 'text-white hover:bg-gray-800' 
-                : 'text-gray-900 hover:bg-gray-100'
-              }
+              className="text-foreground hover:bg-muted"
             >
               {type.label}
             </SelectItem>
