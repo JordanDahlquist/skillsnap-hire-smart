@@ -127,34 +127,36 @@ export const CandidateDetailHeader = ({
           
           {/* Breadcrumb Navigation */}
           <div className="py-2 flex items-center justify-between">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink 
-                    onClick={onBackToDashboard}
-                    className="cursor-pointer hover:text-primary text-sm text-left"
-                  >
-                    {job.title}
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="text-sm text-left">
-                    {localApplication.name}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBackToDashboard}
-              className="flex items-center gap-1 text-sm h-8 px-3"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Back
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onBackToDashboard}
+                className="flex items-center gap-1 text-sm h-8 px-3"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </Button>
+              
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink 
+                      onClick={onBackToDashboard}
+                      className="cursor-pointer hover:text-primary text-sm text-left"
+                    >
+                      {job.title}
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="text-sm text-left">
+                      {localApplication.name}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
           </div>
 
           {/* Main Header Content */}
