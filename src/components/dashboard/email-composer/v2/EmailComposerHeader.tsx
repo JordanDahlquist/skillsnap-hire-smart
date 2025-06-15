@@ -37,7 +37,7 @@ export const EmailComposerHeader = ({
   const { title, subtitle, icon: Icon, animate } = getHeaderInfo();
 
   return (
-    <div className="flex-shrink-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3">
+    <div className="flex-shrink-0 bg-blue-600 text-white p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon className={`w-4 h-4 ${animate ? 'animate-spin' : ''}`} />
