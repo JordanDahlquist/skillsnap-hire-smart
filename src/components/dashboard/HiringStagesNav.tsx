@@ -37,7 +37,7 @@ export const HiringStagesNav = ({
   }
 
   return (
-    <div className="glass-card border-b border-border/50">
+    <div className="backdrop-blur-sm bg-card/80 border-b border-border/50 shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
       <div className="p-6 py-[17px]">
         <div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-auto-fit gap-4" 

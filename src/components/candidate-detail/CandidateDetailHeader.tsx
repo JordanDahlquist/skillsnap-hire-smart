@@ -143,7 +143,7 @@ export const CandidateDetailHeader = ({
 
   return (
     <>
-      <div className="glass-card border-b border-border/20">
+      <div className="border-b border-border/20 backdrop-blur-sm bg-card/80 border-2 border-border/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Breadcrumb Navigation */}
@@ -203,7 +203,7 @@ export const CandidateDetailHeader = ({
             <div className="flex items-center gap-8 flex-shrink-0">
               
               {/* Manual Rating - Enhanced Prominence */}
-              <div className="flex items-center gap-3 glass-card px-4 py-3 rounded-lg">
+              <div className="flex items-center gap-3 backdrop-blur-sm bg-card/80 px-4 py-3 rounded-lg border-2 border-border/50 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)]">
                 <span className="text-base font-semibold text-foreground">Your Rating</span>
                 <div className="flex gap-1">
                   {[1, 2, 3].map((rating) => (
