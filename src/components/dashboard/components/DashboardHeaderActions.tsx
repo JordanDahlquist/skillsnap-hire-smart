@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { StatusDropdown } from "@/components/ui/status-dropdown";
 import { 
@@ -22,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DashboardHeaderDropdown } from "./DashboardHeaderDropdown";
+import { MobileDashboardHeaderActions } from "./MobileDashboardHeaderActions";
 import { Job } from "@/types";
 import { useThemeContext } from "@/contexts/ThemeContext";
 
@@ -53,13 +53,6 @@ export const DashboardHeaderActions = ({
   const isArchived = job.status === 'closed';
   const { currentTheme } = useThemeContext();
 
-  console.log('DashboardHeaderActions render:', { 
-    jobId: job.id, 
-    status: job.status, 
-    isUpdating,
-    isArchived 
-  });
-
   const handleStatusChange = (newStatus: string) => {
     console.log('Status change triggered from actions:', { from: job.status, to: newStatus });
     onStatusChange(newStatus);
@@ -73,64 +66,85 @@ export const DashboardHeaderActions = ({
     return "border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300 gap-2";
   };
 
+  // Mobile Layout
   return (
-    <TooltipProvider>
-      <div className="flex items-center gap-2">
-        <StatusDropdown
-          currentStatus={job.status}
-          onStatusChange={handleStatusChange}
-          disabled={isUpdating}
-        />
-
-        <Tooltip delayDuration={500}>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onRefreshAI}
-              disabled={isUpdating || isRefreshingAI}
-              className={getAIRankButtonClasses()}
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">AI Rank</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="z-[9999]">
-            <p>Refresh AI-powered application rankings for new applicants</p>
-          </TooltipContent>
-        </Tooltip>
-
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onShareJob} 
-          disabled={isUpdating}
-          title="Share job application link"
-        >
-          <Share2 className="w-4 h-4 text-muted-foreground" />
-        </Button>
-
-        <Button 
-          variant="outline" 
-          size="sm" 
-          asChild 
-          disabled={isUpdating}
-          title="View public job page"
-        >
-          <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="w-4 h-4 text-muted-foreground" />
-          </a>
-        </Button>
-
-        <DashboardHeaderDropdown
+    <>
+      {/* Mobile Actions */}
+      <div className="block lg:hidden">
+        <MobileDashboardHeaderActions
+          job={job}
           isUpdating={isUpdating}
-          isArchived={isArchived}
+          onStatusChange={handleStatusChange}
           onEditJob={onEditJob}
           onExportApplications={onExportApplications}
           onArchiveJob={onArchiveJob}
           onUnarchiveJob={onUnarchiveJob}
+          onRefreshAI={onRefreshAI}
+          isRefreshingAI={isRefreshingAI}
         />
       </div>
-    </TooltipProvider>
+
+      {/* Desktop Actions - Keep existing */}
+      <div className="hidden lg:block">
+        <TooltipProvider>
+          <div className="flex items-center gap-2">
+            <StatusDropdown
+              currentStatus={job.status}
+              onStatusChange={handleStatusChange}
+              disabled={isUpdating}
+            />
+
+            <Tooltip delayDuration={500}>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onRefreshAI}
+                  disabled={isUpdating || isRefreshingAI}
+                  className={getAIRankButtonClasses()}
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">AI Rank</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="z-[9999]">
+                <p>Refresh AI-powered application rankings for new applicants</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onShareJob} 
+              disabled={isUpdating}
+              title="Share job application link"
+            >
+              <Share2 className="w-4 h-4 text-muted-foreground" />
+            </Button>
+
+            <Button 
+              variant="outline" 
+              size="sm" 
+              asChild 
+              disabled={isUpdating}
+              title="View public job page"
+            >
+              <a href={`/apply/${job.id}`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+              </a>
+            </Button>
+
+            <DashboardHeaderDropdown
+              isUpdating={isUpdating}
+              isArchived={isArchived}
+              onEditJob={onEditJob}
+              onExportApplications={onExportApplications}
+              onArchiveJob={onArchiveJob}
+              onUnarchiveJob={onUnarchiveJob}
+            />
+          </div>
+        </TooltipProvider>
+      </div>
+    </>
   );
 };

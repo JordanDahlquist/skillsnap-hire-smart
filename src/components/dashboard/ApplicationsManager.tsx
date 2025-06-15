@@ -5,11 +5,13 @@ import { HiringStagesNav } from './HiringStagesNav';
 import { ApplicationsList } from './ApplicationsList';
 import { ApplicationDetail } from './ApplicationDetail';
 import { EmailComposerModal } from './EmailComposerModal';
+import { MobileApplicationDetail } from './MobileApplicationDetail';
 import { getApplicationStatusColor } from '@/utils/statusUtils';
 import { getTimeAgo } from '@/utils/dateUtils';
 import { exportApplicationsToCSV } from '@/utils/exportUtils';
 import { Application, Job } from '@/types';
-import { Star } from 'lucide-react';
+import { Star, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ApplicationsManagerProps {
   applications: Application[];
@@ -37,6 +39,7 @@ export const ApplicationsManager = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [mobileDetailView, setMobileDetailView] = useState(false);
   
   // New sorting state
   const [sortBy, setSortBy] = useState('created_at');
@@ -92,6 +95,15 @@ export const ApplicationsManager = ({
   const handleSortChange = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc') => {
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
+  }, []);
+
+  const handleMobileApplicationSelect = useCallback((application: Application) => {
+    onSelectApplication(application);
+    setMobileDetailView(true);
+  }, [onSelectApplication]);
+
+  const handleMobileBackToList = useCallback(() => {
+    setMobileDetailView(false);
   }, []);
 
   const handleBulkSetRating = useCallback(async (rating: number) => {
@@ -189,10 +201,64 @@ export const ApplicationsManager = ({
         onStageSelect={setSelectedStage}
       />
 
-      <div className="p-6">
+      <div className="p-3 lg:p-6">
         <div className="max-w-7xl mx-auto">
-          {/* Applications Grid - Optimized layout with narrower list and wider profile */}
-          <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-6">
+          {/* Mobile Layout */}
+          <div className="block lg:hidden">
+            {!mobileDetailView ? (
+              /* Mobile List View */
+              <ApplicationsList
+                applications={filteredApplications}
+                selectedApplication={selectedApplication}
+                onSelectApplication={handleMobileApplicationSelect}
+                getStatusColor={getApplicationStatusColor}
+                getTimeAgo={getTimeAgo}
+                selectedApplications={selectedApplications}
+                onSelectApplications={onSelectApplications}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onSendEmail={handleEmailComposer}
+                onSetRating={handleBulkSetRating}
+                onMoveToStage={handleBulkMoveToStage}
+                onReject={handleBulkReject}
+                jobId={job.id}
+                isLoading={isUpdating}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={handleSortChange}
+              />
+            ) : (
+              /* Mobile Detail View */
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleMobileBackToList}
+                    className="gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to List
+                  </Button>
+                </div>
+                
+                {selectedApplication && (
+                  <MobileApplicationDetail
+                    selectedApplication={selectedApplication}
+                    applications={applications}
+                    job={job}
+                    getStatusColor={getApplicationStatusColor}
+                    getRatingStars={getRatingStars}
+                    getTimeAgo={getTimeAgo}
+                    onApplicationUpdate={onApplicationUpdate}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Layout - Keep existing grid */}
+          <div className="hidden lg:grid lg:grid-cols-[2fr_3fr] lg:gap-6">
             <ApplicationsList
               applications={filteredApplications}
               selectedApplication={selectedApplication}
