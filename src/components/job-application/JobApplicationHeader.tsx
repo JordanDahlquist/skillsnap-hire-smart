@@ -37,7 +37,7 @@ export const JobApplicationHeader = ({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-4">
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="text-3xl font-bold text-foreground text-left">
               {job.title}
             </h1>
             <Badge className={getJobStatusColor(job.status)}>

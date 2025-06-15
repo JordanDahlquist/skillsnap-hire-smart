@@ -31,15 +31,15 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
     <div className="space-y-8">
       {/* Job Header */}
       <Card className="bg-white shadow-sm border border-gray-200">
-        <CardHeader className="text-center">
+        <CardHeader>
           <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
             {job.title}
           </CardTitle>
           {job.company_name && (
-            <p className="text-xl text-gray-700">{job.company_name}</p>
+            <p className="text-xl text-gray-700 mb-4">{job.company_name}</p>
           )}
           
-          <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm text-gray-700">
+          <div className="flex flex-wrap gap-4 text-sm text-gray-700">
             <div className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
               {getLocationDisplay()}
@@ -79,13 +79,13 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
           <div className="prose prose-gray max-w-none">
             {job.generated_job_post ? (
               <div 
-                className="text-gray-800"
+                className="text-gray-800 text-left"
                 dangerouslySetInnerHTML={{ 
                   __html: parseMarkdown(job.generated_job_post)
                 }} 
               />
             ) : (
-              <p className="text-gray-800 whitespace-pre-wrap">{job.description}</p>
+              <p className="text-gray-800 whitespace-pre-wrap text-left">{job.description}</p>
             )}
           </div>
         </CardContent>
@@ -117,7 +117,7 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-blue-800">
+          <div className="space-y-2 text-blue-800 text-left">
             <p>✓ Review job details and requirements</p>
             <p>✓ Provide your personal information and resume</p>
             {job.generated_test && <p>✓ Complete the skills assessment</p>}
