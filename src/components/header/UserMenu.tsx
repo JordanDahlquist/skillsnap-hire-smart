@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon, Circle, Monitor, Shield, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useThemeContext } from "@/contexts/ThemeContext";
@@ -79,6 +78,12 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2 px-2">
           <Avatar className="w-8 h-8">
+            {profile?.profile_picture_url && (
+              <AvatarImage 
+                src={profile.profile_picture_url} 
+                alt={profile?.full_name || user?.email || 'Profile'} 
+              />
+            )}
             <AvatarFallback className="bg-[#007af6] text-white text-xs">
               {getUserInitials()}
             </AvatarFallback>
