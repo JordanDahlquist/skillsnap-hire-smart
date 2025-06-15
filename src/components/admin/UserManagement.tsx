@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -202,7 +201,7 @@ export const UserManagement = () => {
           </Table>
           
           {filteredUsers.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-left py-8 text-muted-foreground">
               {users.length === 0 ? 'No users found.' : 'No users found matching your search.'}
             </div>
           )}

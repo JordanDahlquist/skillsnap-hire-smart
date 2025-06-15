@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePlatformAnalytics } from "@/hooks/usePlatformAnalytics";
 import { Users, FileText, TrendingUp, Clock } from "lucide-react";
@@ -35,7 +34,7 @@ export const AdminOverview = () => {
   if (error) {
     return (
       <div className="p-8">
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="text-left py-8 text-muted-foreground">
           <p>Error loading analytics: {error}</p>
         </div>
       </div>
