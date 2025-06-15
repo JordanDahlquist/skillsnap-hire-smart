@@ -266,7 +266,11 @@ export const ApplicationsListHeader = memo(({
                     })}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent 
+                  side="top" 
+                  align="center"
+                  className="z-[100] bg-popover text-popover-foreground border shadow-lg whitespace-nowrap"
+                >
                   <p className="text-xs">Sort: {getCurrentSortLabel()}</p>
                 </TooltipContent>
               </Tooltip>
