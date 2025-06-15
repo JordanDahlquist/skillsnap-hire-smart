@@ -9,12 +9,14 @@ interface NewChatLayoutProps {
   activeConversationId: string | null;
   onConversationSelect: (conversationId: string) => void;
   onNewConversation: () => void;
+  onConversationChange?: (conversationId: string) => void;
 }
 
 export const NewChatLayout = ({
   activeConversationId,
   onConversationSelect,
-  onNewConversation
+  onNewConversation,
+  onConversationChange
 }: NewChatLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { availableHeight } = useViewportHeight();
@@ -60,7 +62,10 @@ export const NewChatLayout = ({
           <div className="w-9" /> {/* Spacer for centering */}
         </div>
         
-        <MainChatArea conversationId={activeConversationId} />
+        <MainChatArea 
+          conversationId={activeConversationId} 
+          onConversationChange={onConversationChange}
+        />
       </div>
     </div>
   );

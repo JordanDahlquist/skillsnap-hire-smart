@@ -19,6 +19,11 @@ const Scout = () => {
     }
   };
 
+  const handleConversationChange = (conversationId: string) => {
+    setActiveConversation(conversationId);
+    loadConversations();
+  };
+
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <UnifiedHeader />
@@ -27,6 +32,7 @@ const Scout = () => {
           activeConversationId={activeConversationId}
           onConversationSelect={handleConversationSelect}
           onNewConversation={handleNewConversation}
+          onConversationChange={handleConversationChange}
         />
       </div>
     </div>

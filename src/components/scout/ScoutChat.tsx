@@ -3,19 +3,32 @@ import { useAuth } from '@/hooks/useAuth';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { useChatScroll } from '@/hooks/useChatScroll';
 import { ChatContainer } from './ChatContainer';
+import { useEffect } from 'react';
 
 interface ScoutChatProps {
   conversationId: string | null;
   onConversationUpdate?: () => void;
+  onConversationChange?: (conversationId: string) => void;
 }
 
-export const ScoutChat = ({ conversationId, onConversationUpdate }: ScoutChatProps) => {
+export const ScoutChat = ({ 
+  conversationId, 
+  onConversationUpdate,
+  onConversationChange 
+}: ScoutChatProps) => {
   const { user } = useAuth();
-  const { messages, isLoading, sendMessage } = useChatMessages({
+  const { messages, isLoading, sendMessage, conversationId: activeConversationId } = useChatMessages({
     conversationId,
     onConversationUpdate
   });
   const { scrollAreaRef, messagesContainerRef } = useChatScroll(messages);
+
+  // Notify parent when conversation ID changes (e.g., auto-created)
+  useEffect(() => {
+    if (activeConversationId && activeConversationId !== conversationId) {
+      onConversationChange?.(activeConversationId);
+    }
+  }, [activeConversationId, conversationId, onConversationChange]);
 
   if (!user) {
     return (
