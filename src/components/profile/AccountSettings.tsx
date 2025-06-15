@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,13 +111,15 @@ export const AccountSettings = () => {
             End your current session
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
             You can sign out of your account at any time. You'll need to sign in again to access your dashboard.
           </p>
-          <Button variant="outline" onClick={signOut}>
-            Sign Out
-          </Button>
+          <div className="flex justify-start">
+            <Button variant="outline" onClick={signOut}>
+              Sign Out
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -132,39 +135,41 @@ export const AccountSettings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div>
-              <Label htmlFor="current_email">Current Email</Label>
-              <Input
-                id="current_email"
-                value={user?.email || ''}
-                disabled
-                className="bg-muted text-muted-foreground"
-              />
-            </div>
+          <form onSubmit={handlePasswordChange} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="current_email">Current Email</Label>
+                <Input
+                  id="current_email"
+                  value={user?.email || ''}
+                  disabled
+                  className="bg-muted text-muted-foreground"
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="new_password">New Password</Label>
-              <Input
-                id="new_password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password"
-                minLength={6}
-              />
-            </div>
+              <div>
+                <Label htmlFor="new_password">New Password</Label>
+                <Input
+                  id="new_password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  minLength={6}
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="confirm_password">Confirm New Password</Label>
-              <Input
-                id="confirm_password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-                minLength={6}
-              />
+              <div>
+                <Label htmlFor="confirm_password">Confirm New Password</Label>
+                <Input
+                  id="confirm_password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  minLength={6}
+                />
+              </div>
             </div>
 
             <div className="flex justify-end">
@@ -194,11 +199,15 @@ export const AccountSettings = () => {
             Your account details and status
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>User ID</Label>
-              <Input value={user?.id || ''} disabled className="bg-muted text-muted-foreground font-mono text-sm" />
+              <Input 
+                value={user?.id || ''} 
+                disabled 
+                className="bg-muted text-muted-foreground font-mono text-sm" 
+              />
             </div>
             <div>
               <Label>Account Created</Label>
@@ -208,6 +217,15 @@ export const AccountSettings = () => {
                 className="bg-muted text-muted-foreground" 
               />
             </div>
+          </div>
+          
+          <div>
+            <Label>Email Address</Label>
+            <Input 
+              value={user?.email || ''} 
+              disabled 
+              className="bg-muted text-muted-foreground" 
+            />
           </div>
         </CardContent>
       </Card>
@@ -223,61 +241,63 @@ export const AccountSettings = () => {
             Permanently delete your account and all associated data
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Alert className="border-red-200 bg-red-50 mb-4">
+        <CardContent className="space-y-4">
+          <Alert className="border-red-200 bg-red-50">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
               <strong>Warning:</strong> This action is irreversible. Please contact support for account deletion.
             </AlertDescription>
           </Alert>
           
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                Request Account Deletion
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-red-600">
-                  Request Account Deletion?
-                </AlertDialogTitle>
-                <AlertDialogDescription className="space-y-3">
-                  <p>
-                    This will request the permanent deletion of your account and all associated data.
-                  </p>
-                  <p>
-                    To confirm, please type <strong>"DELETE MY ACCOUNT"</strong> in the field below:
-                  </p>
-                  <Input
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder="Type: DELETE MY ACCOUNT"
-                    className="mt-2"
-                  />
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setDeleteConfirmText('')}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleAccountDeletion}
-                  disabled={deleteLoading || deleteConfirmText !== 'DELETE MY ACCOUNT'}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  {deleteLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Requesting...
-                    </>
-                  ) : (
-                    'Request Deletion'
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="flex justify-start">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  Request Account Deletion
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-red-600">
+                    Request Account Deletion?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="space-y-3">
+                    <p>
+                      This will request the permanent deletion of your account and all associated data.
+                    </p>
+                    <p>
+                      To confirm, please type <strong>"DELETE MY ACCOUNT"</strong> in the field below:
+                    </p>
+                    <Input
+                      value={deleteConfirmText}
+                      onChange={(e) => setDeleteConfirmText(e.target.value)}
+                      placeholder="Type: DELETE MY ACCOUNT"
+                      className="mt-2"
+                    />
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setDeleteConfirmText('')}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleAccountDeletion}
+                    disabled={deleteLoading || deleteConfirmText !== 'DELETE MY ACCOUNT'}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {deleteLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Requesting...
+                      </>
+                    ) : (
+                      'Request Deletion'
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </CardContent>
       </Card>
     </div>
