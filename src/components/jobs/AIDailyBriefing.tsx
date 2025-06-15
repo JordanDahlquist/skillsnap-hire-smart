@@ -174,7 +174,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   return (
     <div className="py-4 px-8">
       <div className="max-w-7xl mx-auto">
-        <Card className="border-2 border-white/50 bg-white/60 backdrop-blur-sm transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-white/70 hover:border-white/60">
+        <Card className="border-2 border-border/50 bg-card/80 backdrop-blur-sm transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-card/90 hover:border-border/60">
           <CardContent className="p-6">
             {/* Header with AI badge and regenerate button */}
             <div className="flex items-center justify-between mb-4">
