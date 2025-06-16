@@ -10,16 +10,15 @@ import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
 import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
-import { InterviewQuestionTemplateSelector } from "./interview/InterviewQuestionTemplateSelector";
 import { InterviewQuestionEditor } from "./interview/InterviewQuestionEditor";
 import { InterviewQuestionPreview } from "./interview/InterviewQuestionPreview";
-import { InterviewQuestionsData, InterviewQuestionTemplate, DEFAULT_INTERVIEW_TEMPLATES } from "@/types/interviewQuestions";
+import { InterviewQuestionsData } from "@/types/interviewQuestions";
 
 interface Step4InterviewGeneratorProps {
   generatedJobPost: string;
   generatedInterviewQuestions: string;
   interviewQuestionsData: InterviewQuestionsData;
-  interviewQuestionsViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
+  interviewQuestionsViewState: 'initial' | 'editor' | 'preview';
   interviewVideoMaxLength: number;
   isGenerating: boolean;
   isEditingInterviewQuestions: boolean;
@@ -43,11 +42,9 @@ export const Step4InterviewGenerator = ({
     interviewQuestionsData.questions.length > 0
   );
 
-  const handleModeSelect = (mode: 'ai_generated' | 'template_based' | 'custom') => {
+  const handleModeSelect = (mode: 'ai_generated' | 'custom') => {
     if (mode === 'ai_generated') {
       onGenerateInterviewQuestions();
-    } else if (mode === 'template_based') {
-      actions.setInterviewQuestionsViewState('template_selector');
     } else if (mode === 'custom') {
       actions.setInterviewQuestionsData({
         ...interviewQuestionsData,
@@ -55,24 +52,6 @@ export const Step4InterviewGenerator = ({
       });
       actions.setInterviewQuestionsViewState('editor');
     }
-  };
-
-  const handleTemplateSelect = (template: InterviewQuestionTemplate) => {
-    const questionsWithIds = template.questions.map((q, index) => ({
-      ...q,
-      id: crypto.randomUUID(),
-      order: index + 1
-    }));
-
-    actions.setInterviewQuestionsData({
-      questions: questionsWithIds,
-      maxQuestions: template.questions.length + 5,
-      mode: 'template_based',
-      estimatedCompletionTime: template.estimatedTime,
-      instructions: `Answer the following questions about the ${template.name.toLowerCase()} position.`,
-      defaultVideoLength: 5
-    });
-    actions.setInterviewQuestionsViewState('editor');
   };
 
   const handleInterviewQuestionsSave = () => {
@@ -84,27 +63,6 @@ export const Step4InterviewGenerator = ({
   };
 
   // Render based on view state
-  if (interviewQuestionsViewState === 'template_selector') {
-    return (
-      <div className="h-full">
-        <Card className="h-full">
-          <CardHeader className="pb-3 flex-shrink-0">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Video className="w-5 h-5 text-purple-600" />
-              Choose Interview Template
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden">
-            <InterviewQuestionTemplateSelector
-              onSelectTemplate={handleTemplateSelect}
-              onBack={() => actions.setInterviewQuestionsViewState('initial')}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (interviewQuestionsViewState === 'editor') {
     return (
       <div className="h-full">
@@ -220,20 +178,11 @@ export const Step4InterviewGenerator = ({
                 
                 <Button 
                   variant="outline" 
-                  onClick={() => handleModeSelect('template_based')}
-                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  <Video className="w-4 h-4 mr-2" />
-                  Use Template
-                </Button>
-                
-                <Button 
-                  variant="outline" 
                   onClick={() => handleModeSelect('custom')}
                   className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
                   <Edit3 className="w-4 h-4 mr-2" />
-                  Build Custom
+                  Build Custom Questions
                 </Button>
                 
                 <div className="pt-3 border-t border-gray-200">
