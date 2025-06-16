@@ -20,7 +20,7 @@ export const ApplicationStepIndicator = ({
   completedSteps 
 }: ApplicationStepIndicatorProps) => {
   return (
-    <div className="w-full">
+    <div className="w-full py-6">
       <div className="flex items-center justify-between mb-8">
         {steps.map((step, index) => {
           const isCompleted = completedSteps[index];
@@ -33,7 +33,7 @@ export const ApplicationStepIndicator = ({
               <div className="flex flex-col items-center">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2",
+                    "w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2 mb-3",
                     {
                       "bg-green-500 text-white border-green-500": isCompleted,
                       "bg-blue-500 text-white border-blue-500": isCurrent && !isCompleted,
@@ -42,17 +42,17 @@ export const ApplicationStepIndicator = ({
                   )}
                 >
                   {isCompleted ? (
-                    <Check className="w-5 h-5" />
+                    <Check className="w-6 h-6" />
                   ) : (
                     <span>{index + 1}</span>
                   )}
                 </div>
                 
                 {/* Step Labels */}
-                <div className="mt-2 text-center min-w-0">
+                <div className="text-center min-w-0 max-w-32">
                   <div
                     className={cn(
-                      "text-sm font-medium",
+                      "text-sm font-medium mb-1",
                       {
                         "text-blue-600": isCurrent,
                         "text-green-600": isCompleted,
@@ -63,7 +63,7 @@ export const ApplicationStepIndicator = ({
                   >
                     {step.title}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1 hidden sm:block">
+                  <div className="text-xs text-muted-foreground hidden sm:block">
                     {step.description}
                   </div>
                 </div>
@@ -73,7 +73,7 @@ export const ApplicationStepIndicator = ({
               {index < steps.length - 1 && (
                 <div
                   className={cn(
-                    "flex-1 h-0.5 mx-4 transition-colors",
+                    "flex-1 h-0.5 mx-6 transition-colors mt-[-2rem]",
                     {
                       "bg-green-500": isCompleted,
                       "bg-blue-500": isCurrent,

@@ -16,7 +16,7 @@ export const ApplicationProgress = ({
   completedSteps 
 }: ApplicationProgressProps) => {
   return (
-    <div className="mb-8">
+    <div className="mb-8 py-4">
       <div className="flex items-center justify-between">
         {stepLabels.map((label, index) => {
           const isCompleted = completedSteps[index];
@@ -28,7 +28,7 @@ export const ApplicationProgress = ({
               <div className="flex flex-col items-center">
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium border-2 transition-colors",
+                    "w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium border-2 transition-colors mb-3",
                     {
                       "bg-green-500 text-white border-green-500": isCompleted,
                       "bg-blue-500 text-white border-blue-500": isCurrent && !isCompleted,
@@ -38,13 +38,13 @@ export const ApplicationProgress = ({
                   )}
                 >
                   {isCompleted ? (
-                    <Check className="w-5 h-5" />
+                    <Check className="w-6 h-6" />
                   ) : (
                     <span>{index + 1}</span>
                   )}
                 </div>
                 
-                <div className="mt-2 text-center">
+                <div className="text-center max-w-24">
                   <div
                     className={cn(
                       "text-sm font-medium",
@@ -64,7 +64,7 @@ export const ApplicationProgress = ({
               {index < totalSteps - 1 && (
                 <div
                   className={cn(
-                    "flex-1 h-0.5 mx-4 transition-colors",
+                    "flex-1 h-0.5 mx-4 transition-colors mt-[-2rem]",
                     {
                       "bg-green-500": isCompleted,
                       "bg-blue-500": isCurrent,
