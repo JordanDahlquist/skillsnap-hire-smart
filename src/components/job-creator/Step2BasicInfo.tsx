@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } from "@/types/jobForm";
 import { useEffect } from "react";
 import { Loader2, CheckCircle } from "lucide-react";
@@ -323,13 +322,12 @@ export const Step2BasicInfo = ({
         {!isProjectBased && (
           <div>
             <Label htmlFor="benefits" className="text-sm">Benefits</Label>
-            <Textarea
+            <Input
               id="benefits"
               value={formData.benefits}
               onChange={(e) => actions.updateFormData('benefits', e.target.value)}
               placeholder="e.g. Health insurance, 401(k), paid time off..."
               className="mt-1"
-              rows={3}
             />
           </div>
         )}

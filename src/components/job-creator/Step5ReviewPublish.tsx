@@ -111,16 +111,16 @@ export const Step5ReviewPublish = ({
                   </div>
                 )}
               </div>
-              {formData.description && (
-                <div className="mt-4">
-                  <strong>Description:</strong>
-                  <p className="mt-1 text-gray-700">{formData.description}</p>
-                </div>
-              )}
               {formData.skills && (
                 <div className="mt-4">
                   <strong>Required Skills:</strong>
                   <p className="mt-1 text-gray-700">{formData.skills}</p>
+                </div>
+              )}
+              {formData.benefits && (
+                <div className="mt-4">
+                  <strong>Benefits:</strong>
+                  <p className="mt-1 text-gray-700">{formData.benefits}</p>
                 </div>
               )}
             </CardContent>

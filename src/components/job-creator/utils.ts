@@ -1,3 +1,4 @@
+
 import { UnifiedJobFormData } from "@/types/jobForm";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -145,7 +146,8 @@ export const saveJob = async (
       generated_test: generatedSkillsTest,
       generated_interview_questions: generatedInterviewQuestions,
       interview_video_max_length: interviewVideoMaxLength,
-      status: status
+      status: status,
+      description: generatedJobPost // Use the generated job post as the description
     });
 
   if (error) throw error;
