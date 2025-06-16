@@ -1,3 +1,4 @@
+
 import { SkillsTestData } from "./skillsAssessment";
 import { InterviewQuestionsData } from "./interviewQuestions";
 
@@ -64,7 +65,7 @@ export interface UnifiedJobCreatorState {
   skillsTestViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
   generatedInterviewQuestions: string;
   interviewQuestionsData: InterviewQuestionsData;
-  interviewQuestionsViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
+  interviewQuestionsViewState: 'initial' | 'editor' | 'preview';
   interviewVideoMaxLength: number;
   isEditingJobPost: boolean;
   isEditingInterviewQuestions: boolean;
@@ -87,7 +88,7 @@ export interface UnifiedJobCreatorActions {
   setSkillsTestViewState: (viewState: 'initial' | 'template_selector' | 'editor' | 'preview') => void;
   setGeneratedInterviewQuestions: (content: string) => void;
   setInterviewQuestionsData: (data: InterviewQuestionsData) => void;
-  setInterviewQuestionsViewState: (viewState: 'initial' | 'template_selector' | 'editor' | 'preview') => void;
+  setInterviewQuestionsViewState: (viewState: 'initial' | 'editor' | 'preview') => void;
   setInterviewVideoMaxLength: (length: number) => void;
   setIsEditingJobPost: (editing: boolean) => void;
   setIsEditingInterviewQuestions: (editing: boolean) => void;
