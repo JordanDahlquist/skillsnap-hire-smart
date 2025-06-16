@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,14 +44,17 @@ export const SkillsAssessmentStep = ({
         const skillsTestData: SkillsTestData = JSON.parse(job.generated_test);
         setQuestions(skillsTestData.questions || []);
         
-        // Initialize responses based on question types
+        // Initialize responses based on question types (predefined by hiring manager)
         if (responses.length === 0) {
-          const initialResponses = skillsTestData.questions.map(q => ({
-            questionId: q.id,
-            question: q.question,
-            answer: '',
-            answerType: (q.type === 'video_upload' ? 'video' : 'text') as const
-          }));
+          const initialResponses = skillsTestData.questions.map(q => {
+            const answerType = q.type === 'video_upload' ? 'video' : 'text';
+            return {
+              questionId: q.id,
+              question: q.question,
+              answer: '',
+              answerType: answerType as 'text' | 'video'
+            };
+          });
           setResponses(initialResponses);
         }
       } catch (error) {
