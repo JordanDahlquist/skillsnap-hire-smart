@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { VideoResponsePlayer } from "@/components/dashboard/components/VideoResponsePlayer";
+import { SkillsResponseViewer } from "../viewers/SkillsResponseViewer";
 import { Application } from "@/types";
 
 interface CandidateSkillsTabProps {
@@ -37,15 +37,15 @@ export const CandidateSkillsTab = ({
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6">
+          <div className="space-y-6">
             {skillsResponses.map((response: any, index: number) => (
-              <div key={index} className="space-y-4">
-                <VideoResponsePlayer
+              <div key={index}>
+                <SkillsResponseViewer
                   response={response}
                   questionIndex={index}
                 />
                 {index < skillsResponses.length - 1 && (
-                  <div className="border-b border-border" />
+                  <div className="border-b border-border mt-6" />
                 )}
               </div>
             ))}
