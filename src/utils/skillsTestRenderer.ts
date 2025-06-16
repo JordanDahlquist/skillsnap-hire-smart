@@ -29,11 +29,17 @@ export const renderSkillsTestAsMarkdown = (skillsTestData: SkillsTestData): stri
 
   // Render each question/challenge
   skillsTestData.questions.forEach((question, index) => {
-    if (isIntegratedProject) {
-      markdown += `### Integrated Skills Project\n\n`;
+    // Use custom title if available, otherwise fall back to type-based or generic titles
+    let sectionTitle = '';
+    if (question.title) {
+      sectionTitle = question.title;
+    } else if (isIntegratedProject) {
+      sectionTitle = 'Integrated Skills Project';
     } else {
-      markdown += `### Challenge ${index + 1}: ${getQuestionTypeLabel(question.type)}\n\n`;
+      sectionTitle = `Challenge ${index + 1}: ${getQuestionTypeLabel(question.type)}`;
     }
+    
+    markdown += `### ${sectionTitle}\n\n`;
     
     markdown += `**${question.question}**\n\n`;
 

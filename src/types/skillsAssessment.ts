@@ -1,6 +1,7 @@
 
 export interface SkillsQuestion {
   id: string;
+  title?: string; // Optional custom title for the question/task
   question: string;
   type: 'text' | 'long_text' | 'multiple_choice' | 'file_upload' | 'video_upload' | 'video_link' | 'portfolio_link' | 'code_submission' | 'pdf_upload' | 'url_submission';
   candidateInstructions?: string;

@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -193,21 +194,32 @@ ${existingJobPost}
 3. **MULTI-SKILL DEMONSTRATION**: The single task should naturally require multiple skills from the job requirements
 4. **REALISTIC WORK SCENARIO**: Mirror actual work they'd do at ${companyName}
 5. **CLEAR SCOPE BOUNDARIES**: Prevent over-engineering with specific deliverable requirements
+6. **DETAILED INSTRUCTIONS**: Provide comprehensive, step-by-step guidance with specific deliverables
+7. **CUSTOM TITLE**: Create a descriptive title that reflects the actual task, not "Question 1"
 
-**INTEGRATED PROJECT EXAMPLES BY ROLE TYPE:**
-- **Developers**: "Build a small feature/component that demonstrates frontend skills, basic styling, and code organization - submit as GitHub repo with README"
-- **Designers**: "Create a design solution for a specific company challenge, including brief strategy and visual mockup - submit as PDF presentation"
-- **Marketing**: "Develop a mini-campaign concept with strategy, creative direction, and success metrics - submit as presentation or document"
-- **Video Editors**: "Edit a promotional video using provided concepts, showing technical skills and storytelling - submit final video file"
-- **Product Managers**: "Design a feature specification with user research insights and success metrics - submit as structured document"
-- **Content Writers**: "Write content for a specific company use case, demonstrating research, strategy, and execution - submit as document"
+**INSTRUCTION QUALITY REQUIREMENTS:**
+- Provide DETAILED, step-by-step instructions (minimum 100 words)
+- Specify EXACT deliverables (file types, page limits, feature requirements)
+- Include clear scope boundaries ("focus on X, don't worry about Y")
+- Reference specific company context and business challenges
+- Provide time management guidance ("spend 30 minutes on research, 45 minutes on execution")
+- Include examples of what good vs. poor submissions look like
 
 **COMPANY INTEGRATION:**
 ${websiteAnalysisData ? `
 - Create a task directly relevant to ${websiteAnalysisData.companyName}'s business: ${websiteAnalysisData.products}
 - Incorporate their industry context: ${websiteAnalysisData.industry}
 - Reference relevant tools from their tech stack: ${websiteAnalysisData.techStack}
-- Align with company culture: ${websiteAnalysisData.culture}` : ''}
+- Align with company culture: ${websiteAnalysisData.culture}` : `
+- Create a task that reflects real work at ${companyName}
+- Use specific business scenarios relevant to their industry
+- Reference the skills they actually need: ${skills}`}
+
+**TASK EXAMPLES BY ROLE (for guidance only):**
+- **Developers**: "Build a ${companyName} dashboard feature that displays [specific metrics]. Include React components, basic styling, and a README with your technical decisions. Focus on clean code structure and user experience."
+- **Designers**: "Design a user onboarding flow for ${companyName}'s [specific product]. Create wireframes, visual mockups, and a brief strategy document explaining your design decisions."
+- **Marketing**: "Develop a launch strategy for ${companyName}'s new [specific service]. Include market research, campaign concepts, and success metrics in a 5-slide presentation."
+- **Product Managers**: "Create a feature specification for improving ${companyName}'s [specific process]. Include user stories, success metrics, and implementation roadmap."
 
 **REQUIRED JSON RESPONSE FORMAT:**
 Return a JSON object with this exact structure:
@@ -216,33 +228,49 @@ Return a JSON object with this exact structure:
   "skillsTest": {
     "questions": [
       {
-        "question": "Comprehensive project description that integrates multiple skills",
+        "title": "Descriptive task title that explains what they're building/creating (e.g., 'Build a Customer Analytics Dashboard', 'Design User Onboarding Experience')",
+        "question": "Comprehensive project description that integrates multiple skills and provides context",
         "type": "choose appropriate type based on deliverable (portfolio_link, pdf_upload, file_upload, video_upload, etc.)",
-        "candidateInstructions": "Clear, detailed instructions including scope boundaries and time limits. Be specific about what TO include and what NOT to include to keep it focused.",
-        "evaluationGuidelines": "How to evaluate this integrated project across multiple skill dimensions",
-        "scoringCriteria": "What makes a good vs. great submission across the different skill areas demonstrated",
+        "candidateInstructions": "DETAILED step-by-step instructions (minimum 150 words) including: 1) Specific deliverables required, 2) Time allocation suggestions, 3) Scope boundaries (what to include/exclude), 4) File format requirements, 5) Evaluation focus areas, 6) Company-specific context to incorporate",
+        "evaluationGuidelines": "Detailed criteria for evaluating this integrated project across multiple skill dimensions with specific examples",
+        "scoringCriteria": "Clear explanation of what constitutes good vs. excellent submissions with specific examples",
         "required": true,
-        "timeLimit": 90, // maximum completion time in minutes
-        "characterLimit": null, // usually not applicable for project work
+        "timeLimit": 90,
+        "characterLimit": null,
         "allowedFileTypes": ["appropriate file types for deliverable"],
-        "maxFileSize": 25 // allow larger files for project submissions
+        "maxFileSize": 25
       }
     ],
     "maxQuestions": 1,
-    "estimatedCompletionTime": 75, // realistic 60-90 minute estimate
+    "estimatedCompletionTime": 75,
     "instructions": "Complete this integrated project to demonstrate your qualifications for the ${title} role at ${companyName}. Focus on quality over perfection - this should take no more than 90 minutes to complete."
   }
 }
 
-**SCOPE CONTROL GUIDELINES:**
-- Include specific deliverable requirements (e.g., "2-3 slides maximum", "basic styling only", "brief outline not full content")
-- Provide clear boundaries (e.g., "don't worry about responsive design", "focus on core functionality only")
-- Emphasize demonstration over perfection
-- Give realistic constraints that prevent over-engineering
+**EXAMPLE OF DETAILED INSTRUCTIONS:**
+"Build a customer analytics dashboard component for ${companyName} using React. Your deliverable should include:
 
-**EXAMPLE INTEGRATED PROJECT:**
-For a Frontend Developer at a SaaS company:
-"Create a simple user dashboard component that displays key metrics for our ${websiteAnalysisData?.products || 'software'} users. Build this as a React component with basic styling and include a brief README explaining your approach. Focus on clean code structure and user experience - don't worry about responsive design or advanced animations. Submit as a GitHub repository link. This should demonstrate your React skills, UI thinking, and code organization in one cohesive deliverable."
+1. **React Component** (45 minutes): Create a dashboard that displays 3-4 key metrics relevant to ${companyName}'s business. Use mock data and focus on clean component structure and basic responsiveness.
+
+2. **Styling** (20 minutes): Apply professional styling using CSS or a framework. Don't worry about complex animations - focus on clean, readable design.
+
+3. **Documentation** (15 minutes): Include a README explaining your technical decisions, how to run the project, and what you would improve with more time.
+
+4. **Deployment**: Host your solution on Vercel, Netlify, or GitHub Pages.
+
+**Scope Boundaries:**
+- Use mock/dummy data (don't build a real backend)
+- Focus on 3-4 core metrics, not comprehensive analytics
+- Basic responsive design only (mobile-first not required)
+- Simple state management (no Redux/complex patterns needed)
+
+**What We're Looking For:**
+- Clean, readable React code
+- Thoughtful component structure
+- Professional visual design
+- Clear technical communication
+
+**Submission Format:** Provide GitHub repository link and live demo URL."
 
 Create an integrated project that candidates will find engaging, realistic, and directly relevant to the actual work they'll do at ${companyName}.`;
 
@@ -297,7 +325,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
           {
             role: 'system',
             content: type === 'skills-test' 
-              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. Focus on quality demonstrations over extensive requirements. ALWAYS return valid JSON in the exact format specified.'
+              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. Focus on detailed, specific instructions that prevent ambiguity. ALWAYS return valid JSON in the exact format specified.'
               : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email.'
           },
           {

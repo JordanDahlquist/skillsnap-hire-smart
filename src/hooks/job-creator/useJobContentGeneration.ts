@@ -81,6 +81,7 @@ export const useJobContentGeneration = () => {
         skillsTestData = {
           questions: response.data.skillsTest.questions.map((q: any, index: number) => ({
             id: crypto.randomUUID(),
+            title: q.title || undefined, // Include the custom title if present
             question: q.question || q.challenge || '',
             type: q.type || 'text',
             candidateInstructions: q.candidateInstructions || q.instructions,

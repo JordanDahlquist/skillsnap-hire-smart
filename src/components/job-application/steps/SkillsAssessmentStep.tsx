@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -153,15 +154,17 @@ export const SkillsAssessmentStep = ({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-900 mb-2">
-                      Question {index + 1}
+                      {question.title || `Question ${index + 1}`}
                     </h3>
                     <p className="text-gray-800 leading-relaxed">
                       {question.question}
                     </p>
                     {question.candidateInstructions && (
-                      <p className="text-sm text-gray-600 mt-2 italic">
-                        {question.candidateInstructions}
-                      </p>
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-sm text-blue-800 whitespace-pre-line">
+                          {question.candidateInstructions}
+                        </p>
+                      </div>
                     )}
                   </div>
                   <Badge 
