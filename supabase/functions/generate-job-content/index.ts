@@ -58,9 +58,9 @@ serve(async (req) => {
   }
 
   try {
-    const { type, jobData, existingJobPost, existingSkillsTest } = await req.json();
+    const { type, jobData, formData, existingJobPost, existingSkillsTest, websiteAnalysisData } = await req.json();
     console.log('Received request type:', type);
-    console.log('Received job data:', jobData);
+    console.log('Received job data:', jobData || formData);
 
     let prompt = '';
     let responseKey = '';
@@ -151,23 +151,109 @@ Do NOT add any additional sections, application instructions, or contact informa
 Make this posting comprehensive, professional, and attractive to qualified ${jobData.experienceLevel} candidates for a ${workArrangementDisplay} ${jobData.employmentType} position.`;
 
     } else if (type === 'skills-test') {
-      responseKey = 'questions';
-      prompt = `Based on this job posting, create 5-7 specific skills assessment questions:
+      responseKey = 'skillsTest';
+      
+      // Extract all available context
+      const currentFormData = formData || {};
+      const title = currentFormData.title || 'Unknown Role';
+      const skills = currentFormData.skills || '';
+      const experienceLevel = currentFormData.experienceLevel || 'intermediate';
+      const employmentType = currentFormData.employmentType || 'full-time';
+      const companyName = currentFormData.companyName || 'the company';
+      
+      // Company context from website analysis
+      let companyContext = '';
+      if (websiteAnalysisData) {
+        companyContext = `
+**COMPANY CONTEXT (from website analysis):**
+- Company: ${websiteAnalysisData.companyName || companyName}
+- Industry: ${websiteAnalysisData.industry || 'Not specified'}
+- Company Size: ${websiteAnalysisData.companySize || 'Not specified'}
+- Tech Stack: ${websiteAnalysisData.techStack || 'Not specified'}
+- Culture: ${websiteAnalysisData.culture || 'Not specified'}
+- Products/Services: ${websiteAnalysisData.products || 'Not specified'}`;
+      }
 
+      prompt = `You are an expert skills assessment designer. Create 3-5 high-quality, creative skills challenges (NOT basic questions) for a ${title} position.
+
+**ROLE CONTEXT:**
+- Job Title: ${title}
+- Experience Level: ${experienceLevel}
+- Employment Type: ${employmentType}
+- Required Skills: ${skills}
+- Company: ${companyName}
+
+${companyContext}
+
+**JOB DESCRIPTION CONTEXT:**
 ${existingJobPost}
 
-Create practical questions that test:
-1. Technical skills relevant to the role
-2. Problem-solving abilities
-3. Industry knowledge
-4. Practical application of skills
+**ASSESSMENT DESIGN PRINCIPLES:**
+1. **QUALITY over QUANTITY**: 3-5 creative challenges, not 7+ basic questions
+2. **PRACTICAL DEMONSTRATION**: Focus on showing skills, not answering questions
+3. **ROLE-SPECIFIC TYPES**: Choose appropriate assessment types based on the role
+4. **COMPANY-AWARE**: Incorporate company culture, tech stack, and industry context
+5. **EXPERIENCE-APPROPRIATE**: Match challenge complexity to experience level
 
-Return ONLY a numbered list of questions, one per line, in this exact format:
-1. [First question here]
-2. [Second question here]
-3. [Third question here]
+**INTELLIGENT TYPE SELECTION:**
+Based on the role, automatically choose from these assessment types:
+- **text**: Brief written responses (max 500 words)
+- **long_text**: Detailed written analysis (up to 2000 words)
+- **video_upload**: Record demonstration/explanation (2-10 minutes)
+- **file_upload**: Submit work samples, documents, etc.
+- **portfolio_link**: Link to existing work (GitHub, Behance, etc.)
+- **code_submission**: Write/submit code solutions
+- **pdf_upload**: Upload formatted documents/presentations
 
-Make each question clear, specific, and directly relevant to the job requirements. Questions should be answerable in a text response format.`;
+**ROLE-SPECIFIC GUIDANCE:**
+- **Developers**: Code challenges, architecture problems, portfolio reviews
+- **Designers**: Design briefs, portfolio submissions, creative challenges
+- **Video Editors**: Sample work uploads, editing demonstrations, workflow videos
+- **Marketing**: Campaign examples, strategy presentations, A/B test designs
+- **Content Writers**: Writing samples, SEO tasks, brand voice challenges
+- **Sales**: Pitch videos, objection handling, case studies
+- **Product Managers**: Feature specs, user story creation, roadmap exercises
+- **Data Analysts**: Data interpretation, visualization tasks, SQL challenges
+
+**COMPANY INTEGRATION:**
+${websiteAnalysisData ? `
+- Incorporate ${websiteAnalysisData.companyName}'s industry context
+- Reference their tech stack: ${websiteAnalysisData.techStack}
+- Align with company culture: ${websiteAnalysisData.culture}
+- Consider their products/services: ${websiteAnalysisData.products}` : ''}
+
+**REQUIRED JSON RESPONSE FORMAT:**
+Return a JSON object with this exact structure:
+
+{
+  "skillsTest": {
+    "questions": [
+      {
+        "question": "Challenge description here",
+        "type": "video_upload|code_submission|portfolio_link|file_upload|text|long_text|pdf_upload",
+        "candidateInstructions": "Clear instructions for the candidate",
+        "evaluationGuidelines": "How to evaluate this response",
+        "scoringCriteria": "What makes a good vs. great response",
+        "required": true,
+        "timeLimit": 15, // minutes for video responses
+        "characterLimit": 2000, // for text responses
+        "allowedFileTypes": [".pdf", ".doc", ".zip"], // for file uploads
+        "maxFileSize": 10 // MB for file uploads
+      }
+    ],
+    "maxQuestions": 5,
+    "estimatedCompletionTime": 45,
+    "instructions": "Complete these challenges to demonstrate your qualifications for this specific role at ${companyName}."
+  }
+}
+
+**EXAMPLES OF CREATIVE CHALLENGES:**
+- Video Editor: "Record a 3-minute video explaining your editing workflow for a recent project"
+- Developer: "Submit a code sample that demonstrates clean architecture principles"
+- Designer: "Create a quick wireframe for a mobile app feature based on this user story"
+- Marketing: "Design a 30-second social media campaign strategy for our product launch"
+
+Create challenges that candidates will find engaging and directly relevant to the actual work they'll do at ${companyName}.`;
 
     } else if (type === 'interview-questions') {
       responseKey = 'questions';
@@ -219,15 +305,17 @@ Make the questions challenging but fair, and ensure they can be answered well wi
         messages: [
           {
             role: 'system',
-            content: 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email.'
+            content: type === 'skills-test' 
+              ? 'You are an expert skills assessment designer. Create creative, practical challenges that test real skills, not basic questions. ALWAYS return valid JSON in the exact format specified. Focus on quality over quantity - 3-5 high-impact challenges are better than 7+ basic questions.'
+              : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 1500
+        temperature: 0.8,
+        max_tokens: type === 'skills-test' ? 2500 : 1500
       }),
     });
 
@@ -245,20 +333,38 @@ Make the questions challenging but fair, and ensure they can be answered well wi
 
     console.log(`Generated ${type} preview:`, generatedContent.substring(0, 200) + '...');
 
-    // For skills-test, parse the numbered list into an array
+    // For enhanced skills-test, parse the JSON response
     if (type === 'skills-test') {
-      const lines = generatedContent.split('\n').filter(line => line.trim().length > 0);
-      const questions = lines
-        .filter(line => line.match(/^\d+\./))
-        .map(line => line.replace(/^\d+\.\s*/, '').trim())
-        .filter(q => q.length > 0);
-      
-      console.log('Parsed questions:', questions);
-      
-      return new Response(
-        JSON.stringify({ questions }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      try {
+        // Try to extract JSON from the response
+        const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const skillsTestData = JSON.parse(jsonMatch[0]);
+          console.log('Parsed enhanced skills test:', skillsTestData);
+          
+          return new Response(
+            JSON.stringify({ skillsTest: skillsTestData.skillsTest }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          throw new Error('No JSON found in skills test response');
+        }
+      } catch (parseError) {
+        console.error('Error parsing skills test JSON:', parseError);
+        // Fallback to simple question parsing
+        const lines = generatedContent.split('\n').filter(line => line.trim().length > 0);
+        const questions = lines
+          .filter(line => line.match(/^\d+\./))
+          .map(line => line.replace(/^\d+\.\s*/, '').trim())
+          .filter(q => q.length > 0);
+        
+        console.log('Fallback parsed questions:', questions);
+        
+        return new Response(
+          JSON.stringify({ questions }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     return new Response(

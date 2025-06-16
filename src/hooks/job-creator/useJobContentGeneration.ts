@@ -1,6 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { SkillsTestData } from "@/types/skillsAssessment";
+import { UnifiedJobFormData, CompanyAnalysisData } from "@/types/jobForm";
 
 export const useJobContentGeneration = () => {
   const { toast } = useToast();
@@ -41,18 +43,26 @@ export const useJobContentGeneration = () => {
   };
 
   const generateSkillsQuestions = async (
+    formData: UnifiedJobFormData,
     generatedJobPost: string, 
     setIsGenerating: (loading: boolean) => void, 
-    setSkillsTestData: (data: SkillsTestData) => void
+    setSkillsTestData: (data: SkillsTestData) => void,
+    websiteAnalysisData?: CompanyAnalysisData | null
   ) => {
     setIsGenerating(true);
     try {
-      console.log('Generating skills questions with job post:', generatedJobPost);
+      console.log('Generating skills questions with full context:', {
+        formData,
+        generatedJobPost: generatedJobPost.substring(0, 200) + '...',
+        websiteAnalysisData
+      });
       
       const response = await supabase.functions.invoke('generate-job-content', {
         body: {
           type: 'skills-test',
-          existingJobPost: generatedJobPost
+          formData: formData,
+          existingJobPost: generatedJobPost,
+          websiteAnalysisData: websiteAnalysisData
         }
       });
 
@@ -61,13 +71,36 @@ export const useJobContentGeneration = () => {
         throw response.error;
       }
       
-      console.log('Skills questions response:', response.data);
+      console.log('Enhanced skills assessment response:', response.data);
       
-      // Handle the response based on its structure
+      // Handle the enhanced response structure
       let skillsTestData: SkillsTestData;
       
-      if (response.data.questions && Array.isArray(response.data.questions)) {
-        // If we get a structured response with questions array
+      if (response.data.skillsTest && response.data.skillsTest.questions) {
+        // New structured response with question types and metadata
+        skillsTestData = {
+          questions: response.data.skillsTest.questions.map((q: any, index: number) => ({
+            id: crypto.randomUUID(),
+            question: q.question || q.challenge || '',
+            type: q.type || 'text',
+            candidateInstructions: q.candidateInstructions || q.instructions,
+            evaluationGuidelines: q.evaluationGuidelines,
+            scoringCriteria: q.scoringCriteria,
+            exampleResponse: q.exampleResponse,
+            required: q.required !== false,
+            order: index + 1,
+            characterLimit: q.characterLimit,
+            timeLimit: q.timeLimit,
+            allowedFileTypes: q.allowedFileTypes,
+            maxFileSize: q.maxFileSize
+          })),
+          maxQuestions: response.data.skillsTest.maxQuestions || 5,
+          mode: 'ai_generated',
+          estimatedCompletionTime: response.data.skillsTest.estimatedCompletionTime || 30,
+          instructions: response.data.skillsTest.instructions || 'Complete the following skills assessment challenges to demonstrate your qualifications for this role.'
+        };
+      } else if (response.data.questions && Array.isArray(response.data.questions)) {
+        // Fallback for simple questions array
         skillsTestData = {
           questions: response.data.questions.map((q: any, index: number) => ({
             id: crypto.randomUUID(),
@@ -79,40 +112,20 @@ export const useJobContentGeneration = () => {
           maxQuestions: 10,
           mode: 'ai_generated'
         };
-      } else if (response.data.test && typeof response.data.test === 'string') {
-        // If we get a raw test string, try to parse it
-        const testContent = response.data.test;
-        const lines = testContent.split('\n').filter(line => line.trim().length > 0);
-        const questions = lines
-          .filter(line => line.match(/^\d+\.|^Q\d+:|Question \d+/i))
-          .map((line, index) => line.replace(/^\d+\.\s*|^Q\d+:\s*|Question \d+:\s*/i, '').trim())
-          .filter(q => q.length > 0);
-        
-        skillsTestData = {
-          questions: questions.map((question, index) => ({
-            id: crypto.randomUUID(),
-            question,
-            type: 'text' as const,
-            required: true,
-            order: index + 1
-          })),
-          maxQuestions: 10,
-          mode: 'ai_generated'
-        };
       } else {
-        throw new Error('Invalid response format from skills test generation');
+        throw new Error('Invalid response format from enhanced skills test generation');
       }
       
       setSkillsTestData(skillsTestData);
       toast({
-        title: "Questions generated!",
-        description: `${skillsTestData.questions.length} skills assessment questions have been generated successfully.`,
+        title: "Skills assessment generated!",
+        description: `${skillsTestData.questions.length} creative skills challenges have been generated successfully.`,
       });
     } catch (error) {
       console.error('Error generating skills questions:', error);
       toast({
         title: "Generation failed",
-        description: "Failed to generate skills questions. Please try again.",
+        description: "Failed to generate skills assessment. Please try again.",
         variant: "destructive",
       });
     } finally {

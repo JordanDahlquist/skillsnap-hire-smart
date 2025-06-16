@@ -24,7 +24,13 @@ export const useUnifiedJobCreator = (
   };
 
   const handleGenerateSkillsQuestions = async () => {
-    await generateSkillsQuestions(state.generatedJobPost, actions.setIsGenerating, actions.setSkillsTestData);
+    await generateSkillsQuestions(
+      state.formData,
+      state.generatedJobPost, 
+      actions.setIsGenerating, 
+      actions.setSkillsTestData,
+      state.websiteAnalysisData
+    );
   };
 
   const handleGenerateInterviewQuestions = async () => {
