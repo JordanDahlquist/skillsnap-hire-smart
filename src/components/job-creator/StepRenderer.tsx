@@ -30,9 +30,6 @@ export const StepRenderer = ({
         <Step1JobOverview
           formData={state.formData}
           actions={actions}
-          isAnalyzingWebsite={state.isAnalyzingWebsite}
-          websiteAnalysisData={state.websiteAnalysisData}
-          websiteAnalysisError={state.websiteAnalysisError}
         />
       );
     case 2:
@@ -41,6 +38,7 @@ export const StepRenderer = ({
           formData={state.formData}
           actions={actions}
           websiteAnalysisData={state.websiteAnalysisData}
+          isAnalyzingWebsite={state.isAnalyzingWebsite}
         />
       );
     case 3:

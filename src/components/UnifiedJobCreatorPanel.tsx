@@ -41,8 +41,17 @@ export const UnifiedJobCreatorPanel = ({
     console.log('Form data updated:', state.formData);
   }, [state.formData]);
 
-  const handleNextStep = () => {
-    if (state.currentStep === 2) {
+  const handleNextStep = async () => {
+    // Handle Step 1 → Step 2 transition with automatic website analysis
+    if (state.currentStep === 1) {
+      // Move to step 2 first
+      actions.setCurrentStep(2);
+      
+      // Trigger website analysis if URL is provided and we haven't analyzed yet
+      if (state.formData.companyWebsite && !state.websiteAnalysisData && !state.isAnalyzingWebsite) {
+        await actions.analyzeWebsite(state.formData.companyWebsite);
+      }
+    } else if (state.currentStep === 2) {
       if (!state.generatedJobPost && state.formData.title && state.formData.companyName) {
         handleGenerateJobPost();
       }

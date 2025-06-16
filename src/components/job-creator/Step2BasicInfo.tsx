@@ -6,17 +6,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } from "@/types/jobForm";
 import { useEffect } from "react";
+import { Loader2, CheckCircle } from "lucide-react";
 
 interface Step2BasicInfoProps {
   formData: UnifiedJobFormData;
   actions: UnifiedJobCreatorActions;
   websiteAnalysisData?: CompanyAnalysisData | null;
+  isAnalyzingWebsite?: boolean;
 }
 
 export const Step2BasicInfo = ({
   formData,
   actions,
-  websiteAnalysisData
+  websiteAnalysisData,
+  isAnalyzingWebsite = false
 }: Step2BasicInfoProps) => {
   const isProjectBased = formData.employmentType === 'project';
 
@@ -29,19 +32,58 @@ export const Step2BasicInfo = ({
         actions.updateFormData('title', 'Senior React Developer');
       } else if (overview.includes('react')) {
         actions.updateFormData('title', 'React Developer');
+      } else if (overview.includes('developer')) {
+        actions.updateFormData('title', 'Software Developer');
+      } else if (overview.includes('designer')) {
+        actions.updateFormData('title', 'Designer');
+      } else if (overview.includes('manager')) {
+        actions.updateFormData('title', 'Manager');
+      }
+    }
+
+    // Extract company name from job overview if not already set
+    if (formData.jobOverview && !formData.companyName) {
+      const overview = formData.jobOverview;
+      const companyPatterns = [
+        /for\s+([\w\s]+(?:company|corp|inc|llc|agency|startup|firm))/i,
+        /at\s+([\w\s]+(?:company|corp|inc|llc|agency|startup|firm))/i,
+        /with\s+([\w\s]+(?:company|corp|inc|llc|agency|startup|firm))/i
+      ];
+      
+      for (const pattern of companyPatterns) {
+        const match = overview.match(pattern);
+        if (match) {
+          actions.updateFormData('companyName', match[1].trim());
+          break;
+        }
       }
     }
 
     if (websiteAnalysisData && !formData.description && websiteAnalysisData.description) {
       actions.updateFormData('description', websiteAnalysisData.description);
     }
-  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.description, actions]);
+  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.description, formData.companyName, actions]);
 
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">Job Details</CardTitle>
         <p className="text-sm text-gray-600">Review and edit the job information below</p>
+        
+        {/* Website Analysis Status */}
+        {isAnalyzingWebsite && (
+          <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded-md">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Analyzing website to help fill out details...
+          </div>
+        )}
+        
+        {websiteAnalysisData && !isAnalyzingWebsite && (
+          <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2 rounded-md">
+            <CheckCircle className="w-4 h-4" />
+            Website analyzed successfully - some fields have been pre-filled
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4 pt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
