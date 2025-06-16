@@ -159,6 +159,7 @@ export const createJobCreatorActions = (
           isEditMode: true,
           editingJobId: job.id,
           formData: {
+            jobOverview: job.job_overview || `${job.title} at ${job.company_name}`,
             title: job.title || "",
             description: job.description || "",
             employmentType: employmentType,

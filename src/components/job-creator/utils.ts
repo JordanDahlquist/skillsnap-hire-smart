@@ -1,5 +1,48 @@
-import { supabase } from "@/integrations/supabase/client";
 import { UnifiedJobFormData } from "@/types/jobForm";
+
+export const validateStep = (step: number, formData: UnifiedJobFormData): boolean => {
+  switch (step) {
+    case 1:
+      return Boolean(formData.jobOverview?.trim());
+    case 2:
+      return Boolean(formData.title && formData.companyName && formData.locationType);
+    default:
+      return true;
+  }
+};
+
+export const getStepTitle = (step: number): string => {
+  const titles = {
+    1: "Job Overview",
+    2: "Job Details", 
+    3: "Job Post",
+    4: "Skills Test",
+    5: "Interview Questions",
+    6: "Review & Publish"
+  };
+  return titles[step as keyof typeof titles] || "Unknown Step";
+};
+
+export const createJobFromFormData = (formData: UnifiedJobFormData, additionalData: any = {}) => {
+  return {
+    title: formData.title,
+    description: formData.description,
+    company_name: formData.companyName,
+    company_website: formData.companyWebsite,
+    employment_type: formData.employmentType,
+    experience_level: formData.experienceLevel,
+    required_skills: formData.skills,
+    budget: formData.employmentType === 'project' ? formData.budget : formData.salary,
+    duration: formData.duration,
+    benefits: formData.benefits,
+    location: formData.location,
+    location_type: formData.locationType,
+    country: formData.country,
+    state: formData.state,
+    city: formData.city,
+    ...additionalData
+  };
+};
 
 export const generateJobPost = async (
   formData: UnifiedJobFormData,

@@ -42,12 +42,12 @@ export const UnifiedJobCreatorPanel = ({
   }, [state.formData]);
 
   const handleNextStep = () => {
-    if (state.currentStep === 1) {
+    if (state.currentStep === 2) {
       if (!state.generatedJobPost && state.formData.title && state.formData.companyName) {
         handleGenerateJobPost();
       }
       actions.setCurrentStep(state.currentStep + 1);
-    } else if (state.currentStep < 5) {
+    } else if (state.currentStep < 6) {
       actions.setCurrentStep(state.currentStep + 1);
     }
   };
@@ -56,15 +56,16 @@ export const UnifiedJobCreatorPanel = ({
     if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
   };
 
-  // Updated validation - require company name, job title, and work arrangement for step 2
-  const canProceedToStep2 = Boolean(
+  // Updated validation for 6-step process
+  const canProceedToStep2 = Boolean(state.formData.jobOverview.trim());
+  const canProceedToStep3 = Boolean(
     state.formData.title && 
     state.formData.companyName && 
     state.formData.locationType
   );
-  const canProceedToStep3 = Boolean(state.generatedJobPost);
   const canProceedToStep4 = Boolean(state.generatedJobPost);
   const canProceedToStep5 = Boolean(state.generatedJobPost);
+  const canProceedToStep6 = Boolean(state.generatedJobPost);
   const canActivate = Boolean(state.generatedJobPost);
 
   if (!open) return null;
@@ -85,7 +86,7 @@ export const UnifiedJobCreatorPanel = ({
         </div>
 
         {/* Step Indicator */}
-        <StepIndicator currentStep={state.currentStep} totalSteps={5} />
+        <StepIndicator currentStep={state.currentStep} totalSteps={6} />
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4">
@@ -102,11 +103,12 @@ export const UnifiedJobCreatorPanel = ({
         {/* Navigation Footer */}
         <NavigationFooter
           currentStep={state.currentStep}
-          totalSteps={5}
+          totalSteps={6}
           canProceedToStep2={canProceedToStep2}
           canProceedToStep3={canProceedToStep3}
           canProceedToStep4={canProceedToStep4}
           canProceedToStep5={canProceedToStep5}
+          canProceedToStep6={canProceedToStep6}
           canActivate={canActivate}
           isSaving={state.isSaving}
           onPrevStep={prevStep}

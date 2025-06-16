@@ -5,6 +5,7 @@ import { SkillsTestData } from "@/types/skillsAssessment";
 import { InterviewQuestionsData } from "@/types/interviewQuestions";
 
 const initialFormData: UnifiedJobFormData = {
+  jobOverview: "",
   companyName: "",
   companyWebsite: "",
   title: "",

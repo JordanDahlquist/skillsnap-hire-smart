@@ -1,5 +1,6 @@
 
-import { Step1BasicInfo } from "./Step1BasicInfo";
+import { Step1JobOverview } from "./Step1JobOverview";
+import { Step2BasicInfo } from "./Step2BasicInfo";
 import { Step2JobPostGenerator } from "./Step2JobPostGenerator";
 import { Step3SkillsTestGenerator } from "./Step3SkillsTestGenerator";
 import { Step4InterviewGenerator } from "./Step4InterviewGenerator";
@@ -26,7 +27,7 @@ export const StepRenderer = ({
   switch (currentStep) {
     case 1:
       return (
-        <Step1BasicInfo
+        <Step1JobOverview
           formData={state.formData}
           actions={actions}
           isAnalyzingWebsite={state.isAnalyzingWebsite}
@@ -36,6 +37,14 @@ export const StepRenderer = ({
       );
     case 2:
       return (
+        <Step2BasicInfo
+          formData={state.formData}
+          actions={actions}
+          websiteAnalysisData={state.websiteAnalysisData}
+        />
+      );
+    case 3:
+      return (
         <Step2JobPostGenerator
           generatedJobPost={state.generatedJobPost}
           isGenerating={state.isGenerating}
@@ -44,7 +53,7 @@ export const StepRenderer = ({
           onGenerateJobPost={onGenerateJobPost}
         />
       );
-    case 3:
+    case 4:
       return (
         <Step3SkillsTestGenerator
           generatedJobPost={state.generatedJobPost}
@@ -56,7 +65,7 @@ export const StepRenderer = ({
           onSkillsTestDataChange={actions.setSkillsTestData}
         />
       );
-    case 4:
+    case 5:
       return (
         <Step4InterviewGenerator
           generatedJobPost={state.generatedJobPost}
@@ -70,7 +79,7 @@ export const StepRenderer = ({
           onGenerateInterviewQuestions={onGenerateInterviewQuestions}
         />
       );
-    case 5:
+    case 6:
       return (
         <Step5ReviewPublish
           formData={state.formData}

@@ -1,101 +1,102 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Save, Zap } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface NavigationFooterProps {
   currentStep: number;
   totalSteps: number;
-  canProceedToStep2: boolean;
-  canProceedToStep3: boolean;
-  canProceedToStep4: boolean;
-  canProceedToStep5: boolean;
-  canActivate: boolean;
-  isSaving: boolean;
+  canProceedToStep2?: boolean;
+  canProceedToStep3?: boolean;
+  canProceedToStep4?: boolean;
+  canProceedToStep5?: boolean;
+  canProceedToStep6?: boolean;
+  canActivate?: boolean;
+  isSaving?: boolean;
   onPrevStep: () => void;
   onNextStep: () => void;
-  onSaveJob: (status: 'draft' | 'active') => void;
+  onSaveJob: (status: 'draft' | 'active') => Promise<void>;
 }
 
 export const NavigationFooter = ({
   currentStep,
   totalSteps,
-  canProceedToStep2,
-  canProceedToStep3,
-  canProceedToStep4,
-  canProceedToStep5,
-  canActivate,
-  isSaving,
+  canProceedToStep2 = true,
+  canProceedToStep3 = true,
+  canProceedToStep4 = true,
+  canProceedToStep5 = true,
+  canProceedToStep6 = true,
+  canActivate = true,
+  isSaving = false,
   onPrevStep,
   onNextStep,
   onSaveJob
 }: NavigationFooterProps) => {
-  const getCanProceed = () => {
+  const canProceed = () => {
     switch (currentStep) {
       case 1: return canProceedToStep2;
       case 2: return canProceedToStep3;
       case 3: return canProceedToStep4;
       case 4: return canProceedToStep5;
-      default: return false;
+      case 5: return canProceedToStep6;
+      default: return true;
     }
   };
 
-  const getNextButtonText = () => {
+  const getValidationMessage = () => {
     switch (currentStep) {
-      case 1: return "Next";
-      case 2: return "Create Skills Test";
-      case 3: return "Add Interview Questions";
-      case 4: return "Review & Publish";
-      default: return "Next";
+      case 1: return !canProceedToStep2 ? "Please enter a job overview to continue" : "";
+      case 2: return !canProceedToStep3 ? "Please fill in the company name, job title, and work arrangement" : "";
+      case 3: return !canProceedToStep4 ? "Please generate a job post to continue" : "";
+      case 4: return !canProceedToStep5 ? "Please generate a job post first" : "";
+      case 5: return !canProceedToStep6 ? "Please generate a job post first" : "";
+      default: return "";
     }
   };
 
   return (
-    <div className="border-t p-3 flex-shrink-0 bg-gray-50">
-      <div className="flex justify-between items-center">
-        <Button
-          variant="outline"
-          onClick={onPrevStep}
-          disabled={currentStep === 1 || isSaving}
-          size="sm"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Back
-        </Button>
-
-        <div className="text-sm text-gray-500">
-          Step {currentStep} of {totalSteps}
+    <div className="border-t p-3 sm:p-4 flex-shrink-0">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {currentStep > 1 && (
+            <Button variant="outline" onClick={onPrevStep} disabled={isSaving}>
+              Previous
+            </Button>
+          )}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {/* Validation message */}
+          {!canProceed() && (
+            <span className="text-sm text-red-600 mr-2">
+              {getValidationMessage()}
+            </span>
+          )}
+
+          {/* Final step - save options */}
           {currentStep === totalSteps ? (
-            <>
+            <div className="flex gap-2">
               <Button
-                onClick={() => onSaveJob('draft')}
-                disabled={isSaving}
                 variant="outline"
-                size="sm"
+                onClick={() => onSaveJob('draft')}
+                disabled={isSaving || !canActivate}
               >
-                <Save className="w-4 h-4 mr-1" />
-                Save Draft
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Save as Draft
               </Button>
               <Button
                 onClick={() => onSaveJob('active')}
-                disabled={!canActivate || isSaving}
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
+                disabled={isSaving || !canActivate}
               >
-                <Zap className="w-4 h-4 mr-1" />
-                Activate Job
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Publish Job
               </Button>
-            </>
+            </div>
           ) : (
             <Button
               onClick={onNextStep}
-              disabled={!getCanProceed() || isSaving}
-              size="sm"
+              disabled={!canProceed() || isSaving}
             >
-              {getNextButtonText()}
-              <ChevronRight className="w-4 h-4 ml-1" />
+              Next
             </Button>
           )}
         </div>

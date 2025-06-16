@@ -1,3 +1,4 @@
+
 import { SkillsTestData } from "./skillsAssessment";
 import { InterviewQuestionsData } from "./interviewQuestions";
 
@@ -25,6 +26,9 @@ export interface CompanyAnalysisData {
 }
 
 export interface UnifiedJobFormData {
+  // New job overview field
+  jobOverview: string;
+  
   // Company and basic info
   companyName: string;
   companyWebsite: string;
