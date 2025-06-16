@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -52,15 +51,53 @@ const cleanJobPost = (content: string): string => {
   return cleaned;
 };
 
+// Function to build tone instructions based on slider values
+const buildToneInstructions = (writingTone: any) => {
+  if (!writingTone) return '';
+  
+  const { professional = 3, friendly = 3, excited = 3 } = writingTone;
+  
+  // Convert 1-5 scale to descriptive instructions
+  const getProfessionalTone = (level: number) => {
+    if (level <= 2) return "casual and conversational tone, avoiding overly formal corporate language";
+    if (level <= 3) return "balanced professional tone with clear, direct communication";
+    if (level <= 4) return "formal business tone with professional terminology";
+    return "highly formal and corporate tone with sophisticated language";
+  };
+  
+  const getFriendlyTone = (level: number) => {
+    if (level <= 2) return "neutral and direct communication style";
+    if (level <= 3) return "approachable and welcoming tone";
+    if (level <= 4) return "warm and personable language that builds connection";
+    return "exceptionally warm, inviting, and people-focused communication";
+  };
+  
+  const getExcitedTone = (level: number) => {
+    if (level <= 2) return "calm and measured language";
+    if (level <= 3) return "positive and optimistic tone";
+    if (level <= 4) return "energetic and enthusiastic language";
+    return "highly energetic, dynamic, and passionate communication";
+  };
+  
+  return `
+**WRITING TONE REQUIREMENTS:**
+- Professional Level (${professional}/5): Use ${getProfessionalTone(professional)}
+- Friendliness Level (${friendly}/5): Use ${getFriendlyTone(friendly)}
+- Excitement Level (${excited}/5): Use ${getExcitedTone(excited)}
+
+IMPORTANT: These tone requirements must be consistently applied throughout the entire job posting. Adjust your word choice, sentence structure, and overall communication style to match these specific tone levels.`;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { type, jobData, formData, existingJobPost, existingSkillsTest, websiteAnalysisData } = await req.json();
+    const { type, jobData, formData, existingJobPost, existingSkillsTest, websiteAnalysisData, writingTone } = await req.json();
     console.log('Received request type:', type);
     console.log('Received job data:', jobData || formData);
+    console.log('Received writing tone:', writingTone);
 
     let prompt = '';
     let responseKey = '';
@@ -84,9 +121,12 @@ serve(async (req) => {
       // Determine if this is project-based or employee position
       const isProjectBased = jobData.employmentType === 'project';
       
+      // Build tone instructions
+      const toneInstructions = buildToneInstructions(writingTone);
+      
       prompt = `CRITICAL WARNING: You MUST NOT include any application instructions, email addresses, or "How to Apply" sections. The job posting MUST end with the exact phrase specified below and NOTHING ELSE.
 
-Create a compelling and comprehensive job posting for a ${jobData.title} position at ${jobData.companyName}. 
+Create a compelling and comprehensive job posting for a ${jobData.title} position at ${jobData.companyName}.${toneInstructions}
 
 **COMPANY AND ROLE DETAILS:**
 - Company: ${jobData.companyName}
@@ -97,7 +137,7 @@ Create a compelling and comprehensive job posting for a ${jobData.title} positio
 - Location: ${fullLocation}
 
 **JOB DESCRIPTION:**
-${jobData.description ? `User-provided description: "${jobData.description}"` : 'No specific description provided - create a compelling one based on the role.'}
+${jobData.jobOverview ? `User-provided overview: "${jobData.jobOverview}"` : 'No specific description provided - create a compelling one based on the role.'}
 
 **REQUIREMENTS AND SKILLS:**
 - Required Skills: ${jobData.skills || 'To be determined based on role'}
@@ -326,7 +366,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
             role: 'system',
             content: type === 'skills-test' 
               ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. Focus on detailed, specific instructions that prevent ambiguity. ALWAYS return valid JSON in the exact format specified.'
-              : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email.'
+              : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
           },
           {
             role: 'user',
