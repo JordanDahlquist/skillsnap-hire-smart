@@ -1,4 +1,3 @@
-
 import { SkillsTestData } from "./skillsAssessment";
 import { InterviewQuestionsData } from "./interviewQuestions";
 
@@ -16,12 +15,14 @@ export interface PersonalInfo {
 }
 
 export interface CompanyAnalysisData {
+  companyName?: string;
   description?: string;
   industry?: string;
   companySize?: string;
   products?: string;
   culture?: string;
   techStack?: string;
+  location?: string;
   summary?: string;
 }
 
@@ -100,7 +101,6 @@ export interface UnifiedJobCreatorActions {
   analyzeWebsite: (url: string) => Promise<void>;
 }
 
-// ... keep existing code (UnifiedJobCreatorPanelProps interface)
 export interface UnifiedJobCreatorPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

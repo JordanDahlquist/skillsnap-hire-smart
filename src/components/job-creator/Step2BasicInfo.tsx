@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +14,94 @@ interface Step2BasicInfoProps {
   isAnalyzingWebsite?: boolean;
 }
 
+// Enhanced parsing functions
+const extractJobTitleFromOverview = (overview: string): string => {
+  const text = overview.toLowerCase();
+  
+  // Pattern for role + specialist/manager/developer etc.
+  const specialistMatch = overview.match(/(\w+\s+)?(\w+)\s+(specialist|manager|developer|designer|analyst|coordinator|director|lead|engineer|consultant)/i);
+  if (specialistMatch) {
+    return specialistMatch[0].trim();
+  }
+  
+  // Pattern for senior/junior + role
+  const seniorityMatch = overview.match(/(senior|junior|lead|principal|staff)\s+(\w+\s+)?(\w+)/i);
+  if (seniorityMatch) {
+    return seniorityMatch[0].trim();
+  }
+  
+  // Common job titles
+  const jobTitles = [
+    'product manager', 'project manager', 'marketing manager', 'sales manager',
+    'software engineer', 'data scientist', 'business analyst', 'ux designer',
+    'frontend developer', 'backend developer', 'fullstack developer',
+    'marketing specialist', 'hr specialist', 'operations specialist'
+  ];
+  
+  for (const title of jobTitles) {
+    if (text.includes(title)) {
+      return title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
+  }
+  
+  return '';
+};
+
+const extractCompanyNameFromOverview = (overview: string): string => {
+  // Patterns: "for [Company]", "at [Company]", "with [Company]"
+  const patterns = [
+    /for\s+([A-Z][a-zA-Z\s&,.-]+)(?:\s+(?:in|at|located))/i,
+    /at\s+([A-Z][a-zA-Z\s&,.-]+)(?:\s+(?:in|at|located))/i,
+    /with\s+([A-Z][a-zA-Z\s&,.-]+)(?:\s+(?:in|at|located))/i,
+    /for\s+([A-Z][a-zA-Z\s&,.-]+)$/i,
+    /at\s+([A-Z][a-zA-Z\s&,.-]+)$/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = overview.match(pattern);
+    if (match) {
+      let companyName = match[1].trim();
+      // Remove generic words
+      companyName = companyName.replace(/\s+(company|corp|inc|llc|agency|startup|firm|consulting|services)$/i, '');
+      if (companyName.length > 2 && !companyName.toLowerCase().includes('a ')) {
+        return companyName;
+      }
+    }
+  }
+  
+  return '';
+};
+
+const extractLocationFromOverview = (overview: string): { location: string; state: string; city: string } => {
+  // Pattern for "in [City] [State]" or "in [City], [State]"
+  const locationPattern = /in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)[,\s]+([A-Z]{2}|[A-Z][a-z]+)/i;
+  const match = overview.match(locationPattern);
+  
+  if (match) {
+    const city = match[1].trim();
+    const state = match[2].trim();
+    return {
+      location: `${city}, ${state}`,
+      city: city,
+      state: state
+    };
+  }
+  
+  // Simple city extraction
+  const simpleCityPattern = /in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i;
+  const simpleMatch = overview.match(simpleCityPattern);
+  if (simpleMatch) {
+    const location = simpleMatch[1].trim();
+    return {
+      location: location,
+      city: location,
+      state: ''
+    };
+  }
+  
+  return { location: '', city: '', state: '' };
+};
+
 export const Step2BasicInfo = ({
   formData,
   actions,
@@ -23,46 +110,68 @@ export const Step2BasicInfo = ({
 }: Step2BasicInfoProps) => {
   const isProjectBased = formData.employmentType === 'project';
 
-  // Auto-populate fields from job overview and website analysis
+  // Enhanced auto-population logic
   useEffect(() => {
+    let hasUpdates = false;
+    const updates: Partial<UnifiedJobFormData> = {};
+
+    // Extract job title if not set
     if (formData.jobOverview && !formData.title) {
-      // Extract potential job title from overview
-      const overview = formData.jobOverview.toLowerCase();
-      if (overview.includes('senior') && overview.includes('react')) {
-        actions.updateFormData('title', 'Senior React Developer');
-      } else if (overview.includes('react')) {
-        actions.updateFormData('title', 'React Developer');
-      } else if (overview.includes('developer')) {
-        actions.updateFormData('title', 'Software Developer');
-      } else if (overview.includes('designer')) {
-        actions.updateFormData('title', 'Designer');
-      } else if (overview.includes('manager')) {
-        actions.updateFormData('title', 'Manager');
+      const extractedTitle = extractJobTitleFromOverview(formData.jobOverview);
+      if (extractedTitle) {
+        updates.title = extractedTitle;
+        hasUpdates = true;
       }
     }
 
-    // Extract company name from job overview if not already set
-    if (formData.jobOverview && !formData.companyName) {
-      const overview = formData.jobOverview;
-      const companyPatterns = [
-        /for\s+([\w\s]+(?:company|corp|inc|llc|agency|startup|firm))/i,
-        /at\s+([\w\s]+(?:company|corp|inc|llc|agency|startup|firm))/i,
-        /with\s+([\w\s]+(?:company|corp|inc|llc|agency|startup|firm))/i
-      ];
-      
-      for (const pattern of companyPatterns) {
-        const match = overview.match(pattern);
-        if (match) {
-          actions.updateFormData('companyName', match[1].trim());
-          break;
+    // Extract company name - prioritize website analysis over job overview
+    if (!formData.companyName) {
+      if (websiteAnalysisData?.companyName) {
+        updates.companyName = websiteAnalysisData.companyName;
+        hasUpdates = true;
+      } else if (formData.jobOverview) {
+        const extractedCompany = extractCompanyNameFromOverview(formData.jobOverview);
+        if (extractedCompany) {
+          updates.companyName = extractedCompany;
+          hasUpdates = true;
         }
       }
     }
 
-    if (websiteAnalysisData && !formData.description && websiteAnalysisData.description) {
-      actions.updateFormData('description', websiteAnalysisData.description);
+    // Extract location information
+    if (formData.jobOverview && !formData.location) {
+      const locationInfo = extractLocationFromOverview(formData.jobOverview);
+      if (locationInfo.location) {
+        updates.location = locationInfo.location;
+        if (locationInfo.city) updates.city = locationInfo.city;
+        if (locationInfo.state) updates.state = locationInfo.state;
+        hasUpdates = true;
+      }
     }
-  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.description, formData.companyName, actions]);
+
+    // Use website analysis data for description
+    if (websiteAnalysisData?.description && !formData.description) {
+      updates.description = websiteAnalysisData.description;
+      hasUpdates = true;
+    } else if (websiteAnalysisData?.summary && !formData.description) {
+      updates.description = websiteAnalysisData.summary;
+      hasUpdates = true;
+    }
+
+    // Update location from website if available
+    if (websiteAnalysisData?.location && !formData.location) {
+      updates.location = websiteAnalysisData.location;
+      hasUpdates = true;
+    }
+
+    // Apply all updates at once
+    if (hasUpdates) {
+      Object.entries(updates).forEach(([field, value]) => {
+        actions.updateFormData(field as keyof UnifiedJobFormData, value);
+      });
+    }
+
+  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.description, formData.companyName, formData.location, actions]);
 
   return (
     <Card className="w-full">
@@ -81,7 +190,7 @@ export const Step2BasicInfo = ({
         {websiteAnalysisData && !isAnalyzingWebsite && (
           <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2 rounded-md">
             <CheckCircle className="w-4 h-4" />
-            Website analyzed successfully - some fields have been pre-filled
+            Website analyzed successfully - form has been pre-filled with company information
           </div>
         )}
       </CardHeader>

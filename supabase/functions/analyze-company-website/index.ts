@@ -45,16 +45,21 @@ serve(async (req) => {
     const html = await response.text();
     console.log('Fetched HTML content, length:', html.length);
 
-    // Extract text content from HTML (simple text extraction)
+    // Extract text content from HTML with better parsing
     const textContent = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 8000); // Limit content for API
+      .slice(0, 8000);
+
+    // Extract potential company name from title tag
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const pageTitle = titleMatch ? titleMatch[1].trim() : '';
 
     console.log('Extracted text content, length:', textContent.length);
+    console.log('Page title:', pageTitle);
 
     // Use AI to analyze the website content
     const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -68,27 +73,36 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing company websites to extract key information for job posting generation. 
-            
-            Analyze the provided website content and extract the following information in JSON format:
-            {
-              "description": "Brief company description (2-3 sentences)",
-              "industry": "Primary industry or sector",
-              "companySize": "Estimated company size (startup, small, medium, large, enterprise) or employee count if available",
-              "products": "Main products or services offered",
-              "culture": "Company culture, values, or work environment details",
-              "techStack": "Technology stack or tools mentioned (if tech company)",
-              "summary": "Overall summary combining key points for job description context"
-            }
-            
-            If any information is not available or unclear, use null for that field. Be concise but informative.`
+            content: `You are an expert at analyzing company websites to extract key information for job posting generation.
+
+CRITICAL: You must respond with ONLY a valid JSON object, no markdown formatting, no backticks, no extra text.
+
+Analyze the provided website content and page title to extract information. Pay special attention to:
+1. The actual company name (not generic descriptions like "a consulting agency" or "the company")
+2. Look for the company name in headers, navigation menus, page title, footer, about sections
+3. Industry and services offered
+4. Company size indicators
+5. Location information from contact pages
+
+Respond with this exact JSON structure:
+{
+  "companyName": "Actual company name from the website",
+  "description": "2-3 sentence company description",
+  "industry": "Primary industry or sector",
+  "companySize": "startup/small/medium/large/enterprise or employee count if found",
+  "products": "Main products or services offered",
+  "culture": "Company culture, values, or work environment details",
+  "techStack": "Technology stack or tools mentioned if tech company",
+  "location": "Company location if found on website",
+  "summary": "Overall summary for job description context"
+}`
           },
           {
             role: 'user',
-            content: `Please analyze this company website content and extract key information:\n\n${textContent}`
+            content: `Page Title: ${pageTitle}\n\nWebsite Content:\n${textContent}`
           }
         ],
-        temperature: 0.3,
+        temperature: 0.2,
         max_tokens: 1000
       }),
     });
@@ -98,29 +112,54 @@ serve(async (req) => {
     }
 
     const analysisData = await analysisResponse.json();
-    const analysisResult = analysisData.choices[0].message.content;
+    let analysisResult = analysisData.choices[0].message.content.trim();
 
-    console.log('AI analysis result:', analysisResult);
+    console.log('Raw AI analysis result:', analysisResult);
+
+    // Remove any markdown formatting if present
+    analysisResult = analysisResult.replace(/^```json\s*/, '').replace(/\s*```$/, '');
 
     // Parse the JSON response
     let companyData;
     try {
       companyData = JSON.parse(analysisResult);
+      
+      // Validate that we have a real company name
+      if (!companyData.companyName || 
+          companyData.companyName.toLowerCase().includes('consulting agency') ||
+          companyData.companyName.toLowerCase().includes('the company') ||
+          companyData.companyName.toLowerCase() === 'company') {
+        
+        // Try to extract company name from page title or domain
+        const domainName = websiteUrl.hostname.replace('www.', '').split('.')[0];
+        const titleCompanyName = pageTitle.split('|')[0].split('-')[0].trim();
+        
+        companyData.companyName = titleCompanyName.length > 2 ? titleCompanyName : 
+                                 domainName.charAt(0).toUpperCase() + domainName.slice(1);
+      }
+      
     } catch (error) {
       console.error('Failed to parse AI response as JSON:', error);
-      // Fallback to basic analysis
+      
+      // Enhanced fallback extraction
+      const domainName = websiteUrl.hostname.replace('www.', '').split('.')[0];
+      const titleCompanyName = pageTitle.split('|')[0].split('-')[0].trim();
+      
       companyData = {
-        description: "Company information extracted from website",
+        companyName: titleCompanyName.length > 2 ? titleCompanyName : 
+                    domainName.charAt(0).toUpperCase() + domainName.slice(1),
+        description: textContent.slice(0, 300) + "...",
         industry: null,
         companySize: null,
         products: null,
         culture: null,
         techStack: null,
+        location: null,
         summary: textContent.slice(0, 200) + "..."
       };
     }
 
-    console.log('Parsed company data:', companyData);
+    console.log('Final parsed company data:', companyData);
 
     return new Response(
       JSON.stringify(companyData),
@@ -132,12 +171,14 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
+        companyName: null,
         description: null,
         industry: null,
         companySize: null,
         products: null,
         culture: null,
         techStack: null,
+        location: null,
         summary: null
       }),
       { 
