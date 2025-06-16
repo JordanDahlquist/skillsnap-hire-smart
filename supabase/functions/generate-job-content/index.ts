@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -174,7 +173,7 @@ Make this posting comprehensive, professional, and attractive to qualified ${job
 - Products/Services: ${websiteAnalysisData.products || 'Not specified'}`;
       }
 
-      prompt = `You are an expert skills assessment designer. Create 3-5 high-quality, creative skills challenges (NOT basic questions) for a ${title} position.
+      prompt = `You are an expert skills assessment designer. Create ONE comprehensive, integrated project challenge for a ${title} position that can be completed in 60-90 minutes and demonstrates multiple key competencies.
 
 **ROLE CONTEXT:**
 - Job Title: ${title}
@@ -188,39 +187,27 @@ ${companyContext}
 **JOB DESCRIPTION CONTEXT:**
 ${existingJobPost}
 
-**ASSESSMENT DESIGN PRINCIPLES:**
-1. **QUALITY over QUANTITY**: 3-5 creative challenges, not 7+ basic questions
-2. **PRACTICAL DEMONSTRATION**: Focus on showing skills, not answering questions
-3. **ROLE-SPECIFIC TYPES**: Choose appropriate assessment types based on the role
-4. **COMPANY-AWARE**: Incorporate company culture, tech stack, and industry context
-5. **EXPERIENCE-APPROPRIATE**: Match challenge complexity to experience level
+**CRITICAL DESIGN PRINCIPLES:**
+1. **SINGLE INTEGRATED PROJECT**: Create ONE cohesive task, not multiple separate challenges
+2. **TIME-BOUNDED**: Must be completable in 60-90 minutes maximum
+3. **MULTI-SKILL DEMONSTRATION**: The single task should naturally require multiple skills from the job requirements
+4. **REALISTIC WORK SCENARIO**: Mirror actual work they'd do at ${companyName}
+5. **CLEAR SCOPE BOUNDARIES**: Prevent over-engineering with specific deliverable requirements
 
-**INTELLIGENT TYPE SELECTION:**
-Based on the role, automatically choose from these assessment types:
-- **text**: Brief written responses (max 500 words)
-- **long_text**: Detailed written analysis (up to 2000 words)
-- **video_upload**: Record demonstration/explanation (2-10 minutes)
-- **file_upload**: Submit work samples, documents, etc.
-- **portfolio_link**: Link to existing work (GitHub, Behance, etc.)
-- **code_submission**: Write/submit code solutions
-- **pdf_upload**: Upload formatted documents/presentations
-
-**ROLE-SPECIFIC GUIDANCE:**
-- **Developers**: Code challenges, architecture problems, portfolio reviews
-- **Designers**: Design briefs, portfolio submissions, creative challenges
-- **Video Editors**: Sample work uploads, editing demonstrations, workflow videos
-- **Marketing**: Campaign examples, strategy presentations, A/B test designs
-- **Content Writers**: Writing samples, SEO tasks, brand voice challenges
-- **Sales**: Pitch videos, objection handling, case studies
-- **Product Managers**: Feature specs, user story creation, roadmap exercises
-- **Data Analysts**: Data interpretation, visualization tasks, SQL challenges
+**INTEGRATED PROJECT EXAMPLES BY ROLE TYPE:**
+- **Developers**: "Build a small feature/component that demonstrates frontend skills, basic styling, and code organization - submit as GitHub repo with README"
+- **Designers**: "Create a design solution for a specific company challenge, including brief strategy and visual mockup - submit as PDF presentation"
+- **Marketing**: "Develop a mini-campaign concept with strategy, creative direction, and success metrics - submit as presentation or document"
+- **Video Editors**: "Edit a promotional video using provided concepts, showing technical skills and storytelling - submit final video file"
+- **Product Managers**: "Design a feature specification with user research insights and success metrics - submit as structured document"
+- **Content Writers**: "Write content for a specific company use case, demonstrating research, strategy, and execution - submit as document"
 
 **COMPANY INTEGRATION:**
 ${websiteAnalysisData ? `
-- Incorporate ${websiteAnalysisData.companyName}'s industry context
-- Reference their tech stack: ${websiteAnalysisData.techStack}
-- Align with company culture: ${websiteAnalysisData.culture}
-- Consider their products/services: ${websiteAnalysisData.products}` : ''}
+- Create a task directly relevant to ${websiteAnalysisData.companyName}'s business: ${websiteAnalysisData.products}
+- Incorporate their industry context: ${websiteAnalysisData.industry}
+- Reference relevant tools from their tech stack: ${websiteAnalysisData.techStack}
+- Align with company culture: ${websiteAnalysisData.culture}` : ''}
 
 **REQUIRED JSON RESPONSE FORMAT:**
 Return a JSON object with this exact structure:
@@ -229,31 +216,35 @@ Return a JSON object with this exact structure:
   "skillsTest": {
     "questions": [
       {
-        "question": "Challenge description here",
-        "type": "video_upload|code_submission|portfolio_link|file_upload|text|long_text|pdf_upload",
-        "candidateInstructions": "Clear instructions for the candidate",
-        "evaluationGuidelines": "How to evaluate this response",
-        "scoringCriteria": "What makes a good vs. great response",
+        "question": "Comprehensive project description that integrates multiple skills",
+        "type": "choose appropriate type based on deliverable (portfolio_link, pdf_upload, file_upload, video_upload, etc.)",
+        "candidateInstructions": "Clear, detailed instructions including scope boundaries and time limits. Be specific about what TO include and what NOT to include to keep it focused.",
+        "evaluationGuidelines": "How to evaluate this integrated project across multiple skill dimensions",
+        "scoringCriteria": "What makes a good vs. great submission across the different skill areas demonstrated",
         "required": true,
-        "timeLimit": 15, // minutes for video responses
-        "characterLimit": 2000, // for text responses
-        "allowedFileTypes": [".pdf", ".doc", ".zip"], // for file uploads
-        "maxFileSize": 10 // MB for file uploads
+        "timeLimit": 90, // maximum completion time in minutes
+        "characterLimit": null, // usually not applicable for project work
+        "allowedFileTypes": ["appropriate file types for deliverable"],
+        "maxFileSize": 25 // allow larger files for project submissions
       }
     ],
-    "maxQuestions": 5,
-    "estimatedCompletionTime": 45,
-    "instructions": "Complete these challenges to demonstrate your qualifications for this specific role at ${companyName}."
+    "maxQuestions": 1,
+    "estimatedCompletionTime": 75, // realistic 60-90 minute estimate
+    "instructions": "Complete this integrated project to demonstrate your qualifications for the ${title} role at ${companyName}. Focus on quality over perfection - this should take no more than 90 minutes to complete."
   }
 }
 
-**EXAMPLES OF CREATIVE CHALLENGES:**
-- Video Editor: "Record a 3-minute video explaining your editing workflow for a recent project"
-- Developer: "Submit a code sample that demonstrates clean architecture principles"
-- Designer: "Create a quick wireframe for a mobile app feature based on this user story"
-- Marketing: "Design a 30-second social media campaign strategy for our product launch"
+**SCOPE CONTROL GUIDELINES:**
+- Include specific deliverable requirements (e.g., "2-3 slides maximum", "basic styling only", "brief outline not full content")
+- Provide clear boundaries (e.g., "don't worry about responsive design", "focus on core functionality only")
+- Emphasize demonstration over perfection
+- Give realistic constraints that prevent over-engineering
 
-Create challenges that candidates will find engaging and directly relevant to the actual work they'll do at ${companyName}.`;
+**EXAMPLE INTEGRATED PROJECT:**
+For a Frontend Developer at a SaaS company:
+"Create a simple user dashboard component that displays key metrics for our ${websiteAnalysisData?.products || 'software'} users. Build this as a React component with basic styling and include a brief README explaining your approach. Focus on clean code structure and user experience - don't worry about responsive design or advanced animations. Submit as a GitHub repository link. This should demonstrate your React skills, UI thinking, and code organization in one cohesive deliverable."
+
+Create an integrated project that candidates will find engaging, realistic, and directly relevant to the actual work they'll do at ${companyName}.`;
 
     } else if (type === 'interview-questions') {
       responseKey = 'questions';
@@ -306,7 +297,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
           {
             role: 'system',
             content: type === 'skills-test' 
-              ? 'You are an expert skills assessment designer. Create creative, practical challenges that test real skills, not basic questions. ALWAYS return valid JSON in the exact format specified. Focus on quality over quantity - 3-5 high-impact challenges are better than 7+ basic questions.'
+              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. Focus on quality demonstrations over extensive requirements. ALWAYS return valid JSON in the exact format specified.'
               : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email.'
           },
           {
@@ -315,7 +306,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
           }
         ],
         temperature: 0.8,
-        max_tokens: type === 'skills-test' ? 2500 : 1500
+        max_tokens: type === 'skills-test' ? 2000 : 1500
       }),
     });
 
@@ -340,7 +331,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
         const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const skillsTestData = JSON.parse(jsonMatch[0]);
-          console.log('Parsed enhanced skills test:', skillsTestData);
+          console.log('Parsed integrated skills project:', skillsTestData);
           
           return new Response(
             JSON.stringify({ skillsTest: skillsTestData.skillsTest }),
