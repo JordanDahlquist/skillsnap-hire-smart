@@ -1,4 +1,5 @@
 
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -81,19 +82,6 @@ export const ToneControlSliders = ({
                   step={1} 
                   className="w-full" 
                 />
-                <div className="relative mt-1 h-2 mx-2">
-                  {[1, 2, 3, 4, 5].map(dot => (
-                    <div
-                      key={dot}
-                      className={`absolute w-1.5 h-1.5 rounded-full transform -translate-x-1/2 ${
-                        dot === setting.value ? 'bg-primary' : 'bg-gray-300'
-                      }`}
-                      style={{
-                        left: `${6 + ((dot - 1) / 4) * 88}%`
-                      }}
-                    />
-                  ))}
-                </div>
               </div>
             </div>
           ))}
@@ -102,3 +90,4 @@ export const ToneControlSliders = ({
     </Card>
   );
 };
+
