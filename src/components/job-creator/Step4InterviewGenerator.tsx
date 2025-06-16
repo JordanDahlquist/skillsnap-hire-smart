@@ -10,7 +10,6 @@ import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
 import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
-import { InterviewQuestionModeSelector } from "./interview/InterviewQuestionModeSelector";
 import { InterviewQuestionTemplateSelector } from "./interview/InterviewQuestionTemplateSelector";
 import { InterviewQuestionEditor } from "./interview/InterviewQuestionEditor";
 import { InterviewQuestionPreview } from "./interview/InterviewQuestionPreview";
@@ -204,20 +203,51 @@ export const Step4InterviewGenerator = ({
                 </Select>
               </div>
 
-              {/* Mode Selection */}
-              <InterviewQuestionModeSelector onSelectMode={handleModeSelect} />
-              
-              <div className="mt-6">
+              {/* Consistent Button Stack - Same as Steps 2 & 3 */}
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => handleModeSelect('ai_generated')}
+                  disabled={isGenerating}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isGenerating ? (
+                    <CustomSpinningLogo size={16} animationSpeed="fast" className="mr-2" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 mr-2" />
+                  )}
+                  Generate with AI
+                </Button>
+                
                 <Button 
                   variant="outline" 
-                  onClick={() => actions.setCurrentStep(5)} 
-                  className="text-gray-600 hover:text-gray-800" 
-                  size="default"
+                  onClick={() => handleModeSelect('template_based')}
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
-                  <SkipForward className="w-4 h-4 mr-2" />
-                  Skip Interview Questions
+                  <Video className="w-4 h-4 mr-2" />
+                  Use Template
                 </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleModeSelect('custom')}
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Build Custom
+                </Button>
+                
+                <div className="pt-3 border-t border-gray-200">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => actions.setCurrentStep(5)} 
+                    className="w-full text-gray-600 hover:text-gray-800 border-gray-200" 
+                  >
+                    <SkipForward className="w-4 h-4 mr-2" />
+                    Skip Interview Questions
+                  </Button>
+                </div>
               </div>
+              
               <p className="text-xs text-gray-500 mt-4">
                 You can always add interview questions later after publishing your job
               </p>
