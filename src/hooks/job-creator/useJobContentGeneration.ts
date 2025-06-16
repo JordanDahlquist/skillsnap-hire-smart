@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { SkillsTestData } from "@/types/skillsAssessment";
@@ -6,13 +5,19 @@ import { SkillsTestData } from "@/types/skillsAssessment";
 export const useJobContentGeneration = () => {
   const { toast } = useToast();
 
-  const generateJobPost = async (formData: any, setIsGenerating: (loading: boolean) => void, setGeneratedJobPost: (content: string) => void) => {
+  const generateJobPost = async (
+    formData: any, 
+    setIsGenerating: (loading: boolean) => void, 
+    setGeneratedJobPost: (content: string) => void,
+    websiteAnalysisData?: any
+  ) => {
     setIsGenerating(true);
     try {
       const response = await supabase.functions.invoke('generate-job-content', {
         body: {
           type: 'job-post',
-          jobData: formData
+          jobData: formData,
+          websiteAnalysisData: websiteAnalysisData
         }
       });
 

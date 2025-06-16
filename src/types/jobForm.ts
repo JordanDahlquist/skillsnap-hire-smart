@@ -14,9 +14,20 @@ export interface PersonalInfo {
   coverLetter: string;
 }
 
+export interface CompanyAnalysisData {
+  description?: string;
+  industry?: string;
+  companySize?: string;
+  products?: string;
+  culture?: string;
+  techStack?: string;
+  summary?: string;
+}
+
 export interface UnifiedJobFormData {
   // Company and basic info
   companyName: string;
+  companyWebsite: string;
   title: string;
   description: string;
   employmentType: string;
@@ -53,6 +64,10 @@ export interface UnifiedJobCreatorState {
   interviewVideoMaxLength: number;
   isEditingJobPost: boolean;
   isEditingInterviewQuestions: boolean;
+  // Website analysis state
+  isAnalyzingWebsite: boolean;
+  websiteAnalysisData: CompanyAnalysisData | null;
+  websiteAnalysisError: string | null;
   // Edit mode
   isEditMode: boolean;
   editingJobId?: string;
@@ -74,8 +89,14 @@ export interface UnifiedJobCreatorActions {
   setIsEditingInterviewQuestions: (editing: boolean) => void;
   setEditMode: (isEdit: boolean, jobId?: string) => void;
   populateFormFromJob: (job: any) => void;
+  // Website analysis actions
+  setIsAnalyzingWebsite: (analyzing: boolean) => void;
+  setWebsiteAnalysisData: (data: CompanyAnalysisData | null) => void;
+  setWebsiteAnalysisError: (error: string | null) => void;
+  analyzeWebsite: (url: string) => Promise<void>;
 }
 
+// ... keep existing code (UnifiedJobCreatorPanelProps interface)
 export interface UnifiedJobCreatorPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

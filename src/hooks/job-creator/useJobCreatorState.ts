@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { UnifiedJobFormData, UnifiedJobCreatorState } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
@@ -5,6 +6,7 @@ import { InterviewQuestionsData } from "@/types/interviewQuestions";
 
 const initialFormData: UnifiedJobFormData = {
   companyName: "",
+  companyWebsite: "",
   title: "",
   description: "",
   employmentType: "project",
@@ -52,6 +54,9 @@ const getInitialState = (): UnifiedJobCreatorState => ({
   interviewVideoMaxLength: 5,
   isEditingJobPost: false,
   isEditingInterviewQuestions: false,
+  isAnalyzingWebsite: false,
+  websiteAnalysisData: null,
+  websiteAnalysisError: null,
   isEditMode: false,
   editingJobId: undefined
 });

@@ -29,6 +29,9 @@ export const StepRenderer = ({
         <Step1BasicInfo
           formData={state.formData}
           actions={actions}
+          isAnalyzingWebsite={state.isAnalyzingWebsite}
+          websiteAnalysisData={state.websiteAnalysisData}
+          websiteAnalysisError={state.websiteAnalysisError}
         />
       );
     case 2:

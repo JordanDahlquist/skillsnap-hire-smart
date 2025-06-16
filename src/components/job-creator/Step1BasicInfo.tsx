@@ -4,18 +4,41 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { UnifiedJobFormData, UnifiedJobCreatorActions } from "@/types/jobForm";
+import { Globe, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
 interface Step1BasicInfoProps {
   formData: UnifiedJobFormData;
   actions: UnifiedJobCreatorActions;
+  isAnalyzingWebsite?: boolean;
+  websiteAnalysisData?: any;
+  websiteAnalysisError?: string | null;
 }
 
 export const Step1BasicInfo = ({
   formData,
-  actions
+  actions,
+  isAnalyzingWebsite = false,
+  websiteAnalysisData,
+  websiteAnalysisError
 }: Step1BasicInfoProps) => {
   const isProjectBased = formData.employmentType === 'project';
+
+  const handleWebsiteAnalysis = () => {
+    if (formData.companyWebsite) {
+      actions.analyzeWebsite(formData.companyWebsite);
+    }
+  };
+
+  const handleWebsiteChange = (value: string) => {
+    actions.updateFormData('companyWebsite', value);
+    // Clear previous analysis when URL changes
+    if (websiteAnalysisData || websiteAnalysisError) {
+      actions.setWebsiteAnalysisData(null);
+      actions.setWebsiteAnalysisError(null);
+    }
+  };
 
   return (
     <Card className="w-full">
@@ -46,6 +69,63 @@ export const Step1BasicInfo = ({
               required
             />
           </div>
+        </div>
+
+        {/* Company Website with Analysis */}
+        <div>
+          <Label htmlFor="companyWebsite" className="text-sm">Company Website</Label>
+          <div className="flex gap-2 mt-1">
+            <Input
+              id="companyWebsite"
+              value={formData.companyWebsite}
+              onChange={(e) => handleWebsiteChange(e.target.value)}
+              placeholder="e.g. https://company.com"
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleWebsiteAnalysis}
+              disabled={!formData.companyWebsite || isAnalyzingWebsite}
+              className="px-3"
+            >
+              {isAnalyzingWebsite ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Globe className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+          
+          {/* Analysis Status */}
+          {isAnalyzingWebsite && (
+            <div className="flex items-center gap-2 mt-2 text-sm text-blue-600">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Analyzing website...
+            </div>
+          )}
+          
+          {websiteAnalysisData && (
+            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+              <div className="flex items-center gap-2 text-sm text-green-700 mb-2">
+                <CheckCircle className="w-4 h-4" />
+                Website analyzed successfully
+              </div>
+              {websiteAnalysisData.summary && (
+                <p className="text-sm text-gray-600">{websiteAnalysisData.summary}</p>
+              )}
+            </div>
+          )}
+          
+          {websiteAnalysisError && (
+            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-center gap-2 text-sm text-red-700">
+                <AlertCircle className="w-4 h-4" />
+                {websiteAnalysisError}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

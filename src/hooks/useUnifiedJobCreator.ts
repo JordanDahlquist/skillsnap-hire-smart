@@ -15,7 +15,12 @@ export const useUnifiedJobCreator = (
   const { saveJob } = useJobSaving();
 
   const handleGenerateJobPost = async () => {
-    await generateJobPost(state.formData, actions.setIsGenerating, actions.setGeneratedJobPost);
+    await generateJobPost(
+      state.formData, 
+      actions.setIsGenerating, 
+      actions.setGeneratedJobPost,
+      state.websiteAnalysisData
+    );
   };
 
   const handleGenerateSkillsQuestions = async () => {
