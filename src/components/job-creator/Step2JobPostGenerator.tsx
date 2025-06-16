@@ -84,10 +84,12 @@ export const Step2JobPostGenerator = ({
 
   return (
     <div className="h-full flex flex-col overflow-hidden space-y-4">
-      {/* Tone Control Sliders */}
+      {/* Tone Control Sliders with Regenerate Button */}
       <ToneControlSliders
         writingTone={writingTone}
         onToneChange={actions.setWritingTone}
+        onRegenerate={onGenerateJobPost}
+        isGenerating={isGenerating}
       />
 
       {/* Job Post Content */}
@@ -98,17 +100,6 @@ export const Step2JobPostGenerator = ({
               <Sparkles className="w-5 h-5 text-blue-600" />
               Generated Job Post
             </CardTitle>
-            {!isEditingJobPost && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={onGenerateJobPost}
-                disabled={isGenerating}
-                className="text-xs h-8 px-3"
-              >
-                {isGenerating ? 'Regenerating...' : 'Regenerate'}
-              </Button>
-            )}
           </div>
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden p-0">

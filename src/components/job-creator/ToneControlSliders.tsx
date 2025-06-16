@@ -2,15 +2,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { WritingTone } from "@/types/jobForm";
 
 interface ToneControlSlidersProps {
   writingTone: WritingTone;
   onToneChange: (field: keyof WritingTone, value: number) => void;
+  onRegenerate?: () => void;
+  isGenerating?: boolean;
 }
 
-export const ToneControlSliders = ({ writingTone, onToneChange }: ToneControlSlidersProps) => {
+export const ToneControlSliders = ({ 
+  writingTone, 
+  onToneChange, 
+  onRegenerate, 
+  isGenerating = false 
+}: ToneControlSlidersProps) => {
   const toneSettings = [
     {
       key: 'professional' as keyof WritingTone,
@@ -35,7 +44,21 @@ export const ToneControlSliders = ({ writingTone, onToneChange }: ToneControlSli
   return (
     <Card className="mb-4">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Writing Tone</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium">Writing Tone</CardTitle>
+          {onRegenerate && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={onRegenerate}
+              disabled={isGenerating}
+              className="text-xs h-8 px-3"
+            >
+              {isGenerating ? 'Regenerating...' : 'Regenerate'}
+              <Sparkles className="w-3 h-3 ml-1" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="grid grid-cols-3 gap-4">
