@@ -34,7 +34,6 @@ export interface UnifiedJobFormData {
   companyName: string;
   companyWebsite: string;
   title: string;
-  description: string;
   employmentType: string;
   experienceLevel: string;
   skills: string;

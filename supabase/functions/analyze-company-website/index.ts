@@ -9,6 +9,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const extractCompanyFromHTML = (html: string): string => {
+  // Extract potential company names from HTML structure
+  const patterns = [
+    /<h1[^>]*>([^<]+)<\/h1>/i,
+    /<title[^>]*>([^<|]+)/i,
+    /<meta[^>]*property="og:site_name"[^>]*content="([^"]+)"/i,
+    /<meta[^>]*name="application-name"[^>]*content="([^"]+)"/i,
+    /<nav[^>]*>[\s\S]*?<[^>]*class="[^"]*logo[^"]*"[^>]*>([^<]+)</i,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      const candidate = match[1].trim();
+      if (candidate.length > 1 && candidate.length < 50 && !candidate.includes('|')) {
+        return candidate;
+      }
+    }
+  }
+  
+  return '';
+};
+
+const extractCompanyFromDomain = (url: string): string => {
+  try {
+    const domain = new URL(url).hostname.replace('www.', '');
+    const mainPart = domain.split('.')[0];
+    
+    // Convert to proper case
+    return mainPart.charAt(0).toUpperCase() + mainPart.slice(1);
+  } catch {
+    return '';
+  }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -54,12 +89,15 @@ serve(async (req) => {
       .trim()
       .slice(0, 8000);
 
-    // Extract potential company name from title tag
+    // Extract potential company name from HTML structure
+    const htmlCompanyName = extractCompanyFromHTML(html);
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     const pageTitle = titleMatch ? titleMatch[1].trim() : '';
+    const domainCompanyName = extractCompanyFromDomain(websiteUrl.href);
 
-    console.log('Extracted text content, length:', textContent.length);
+    console.log('Extracted company name from HTML:', htmlCompanyName);
     console.log('Page title:', pageTitle);
+    console.log('Domain company name:', domainCompanyName);
 
     // Use AI to analyze the website content
     const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -77,17 +115,22 @@ serve(async (req) => {
 
 CRITICAL: You must respond with ONLY a valid JSON object, no markdown formatting, no backticks, no extra text.
 
-Analyze the provided website content and page title to extract information. Pay special attention to:
-1. The actual company name (not generic descriptions like "a consulting agency" or "the company")
-2. Look for the company name in headers, navigation menus, page title, footer, about sections
-3. Industry and services offered
-4. Company size indicators
-5. Location information from contact pages
+Analyze the provided website content and extract the actual company name. Look for:
+1. The real company name in headers, navigation, page title, footer
+2. Avoid generic descriptions like "a consulting agency", "the company", "business"
+3. Extract the actual brand name or legal entity name
+
+Additional context provided:
+- HTML extracted company name: ${htmlCompanyName}
+- Page title: ${pageTitle}
+- Domain-based name: ${domainCompanyName}
+
+Prioritize the HTML extracted name if it looks like a real company name, otherwise use your analysis.
 
 Respond with this exact JSON structure:
 {
-  "companyName": "Actual company name from the website",
-  "description": "2-3 sentence company description",
+  "companyName": "Actual company name from the website (use provided HTML name if valid, otherwise extract from content)",
+  "description": "2-3 sentence company description for job context",
   "industry": "Primary industry or sector",
   "companySize": "startup/small/medium/large/enterprise or employee count if found",
   "products": "Main products or services offered",
@@ -99,7 +142,7 @@ Respond with this exact JSON structure:
           },
           {
             role: 'user',
-            content: `Page Title: ${pageTitle}\n\nWebsite Content:\n${textContent}`
+            content: `Website Content:\n${textContent}`
           }
         ],
         temperature: 0.2,
@@ -124,30 +167,25 @@ Respond with this exact JSON structure:
     try {
       companyData = JSON.parse(analysisResult);
       
-      // Validate that we have a real company name
-      if (!companyData.companyName || 
-          companyData.companyName.toLowerCase().includes('consulting agency') ||
-          companyData.companyName.toLowerCase().includes('the company') ||
-          companyData.companyName.toLowerCase() === 'company') {
-        
-        // Try to extract company name from page title or domain
-        const domainName = websiteUrl.hostname.replace('www.', '').split('.')[0];
-        const titleCompanyName = pageTitle.split('|')[0].split('-')[0].trim();
-        
-        companyData.companyName = titleCompanyName.length > 2 ? titleCompanyName : 
-                                 domainName.charAt(0).toUpperCase() + domainName.slice(1);
+      // Use the HTML extracted company name if it's valid and better than AI result
+      if (htmlCompanyName && htmlCompanyName.length > 2 && 
+          (!companyData.companyName || 
+           companyData.companyName.toLowerCase().includes('consulting agency') ||
+           companyData.companyName.toLowerCase().includes('the company'))) {
+        companyData.companyName = htmlCompanyName;
+      }
+      
+      // Fallback to domain name if still no valid company name
+      if (!companyData.companyName || companyData.companyName.length < 3) {
+        companyData.companyName = domainCompanyName;
       }
       
     } catch (error) {
       console.error('Failed to parse AI response as JSON:', error);
       
       // Enhanced fallback extraction
-      const domainName = websiteUrl.hostname.replace('www.', '').split('.')[0];
-      const titleCompanyName = pageTitle.split('|')[0].split('-')[0].trim();
-      
       companyData = {
-        companyName: titleCompanyName.length > 2 ? titleCompanyName : 
-                    domainName.charAt(0).toUpperCase() + domainName.slice(1),
+        companyName: htmlCompanyName || domainCompanyName,
         description: textContent.slice(0, 300) + "...",
         industry: null,
         companySize: null,

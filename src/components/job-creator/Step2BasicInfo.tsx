@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } from "@/types/jobForm";
 import { useEffect } from "react";
 import { Loader2, CheckCircle } from "lucide-react";
+import { toTitleCase, isValidCompanyName } from "./formUtils";
 
 interface Step2BasicInfoProps {
   formData: UnifiedJobFormData;
@@ -21,13 +23,13 @@ const extractJobTitleFromOverview = (overview: string): string => {
   // Pattern for role + specialist/manager/developer etc.
   const specialistMatch = overview.match(/(\w+\s+)?(\w+)\s+(specialist|manager|developer|designer|analyst|coordinator|director|lead|engineer|consultant)/i);
   if (specialistMatch) {
-    return specialistMatch[0].trim();
+    return toTitleCase(specialistMatch[0].trim());
   }
   
   // Pattern for senior/junior + role
   const seniorityMatch = overview.match(/(senior|junior|lead|principal|staff)\s+(\w+\s+)?(\w+)/i);
   if (seniorityMatch) {
-    return seniorityMatch[0].trim();
+    return toTitleCase(seniorityMatch[0].trim());
   }
   
   // Common job titles
@@ -40,7 +42,7 @@ const extractJobTitleFromOverview = (overview: string): string => {
   
   for (const title of jobTitles) {
     if (text.includes(title)) {
-      return title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      return toTitleCase(title);
     }
   }
   
@@ -63,7 +65,7 @@ const extractCompanyNameFromOverview = (overview: string): string => {
       let companyName = match[1].trim();
       // Remove generic words
       companyName = companyName.replace(/\s+(company|corp|inc|llc|agency|startup|firm|consulting|services)$/i, '');
-      if (companyName.length > 2 && !companyName.toLowerCase().includes('a ')) {
+      if (companyName.length > 2 && isValidCompanyName(companyName)) {
         return companyName;
       }
     }
@@ -80,6 +82,19 @@ const extractLocationFromOverview = (overview: string): { location: string; stat
   if (match) {
     const city = match[1].trim();
     const state = match[2].trim();
+    return {
+      location: `${city}, ${state}`,
+      city: city,
+      state: state
+    };
+  }
+  
+  // Handle formats like "Orange County CA" → "Orange County, CA"
+  const countyPattern = /in\s+([A-Z][a-z]+\s+County)\s+([A-Z]{2})/i;
+  const countyMatch = overview.match(countyPattern);
+  if (countyMatch) {
+    const city = countyMatch[1].trim();
+    const state = countyMatch[2].trim();
     return {
       location: `${city}, ${state}`,
       city: city,
@@ -126,12 +141,12 @@ export const Step2BasicInfo = ({
 
     // Extract company name - prioritize website analysis over job overview
     if (!formData.companyName) {
-      if (websiteAnalysisData?.companyName) {
+      if (websiteAnalysisData?.companyName && isValidCompanyName(websiteAnalysisData.companyName)) {
         updates.companyName = websiteAnalysisData.companyName;
         hasUpdates = true;
       } else if (formData.jobOverview) {
         const extractedCompany = extractCompanyNameFromOverview(formData.jobOverview);
-        if (extractedCompany) {
+        if (extractedCompany && isValidCompanyName(extractedCompany)) {
           updates.companyName = extractedCompany;
           hasUpdates = true;
         }
@@ -149,16 +164,7 @@ export const Step2BasicInfo = ({
       }
     }
 
-    // Use website analysis data for description
-    if (websiteAnalysisData?.description && !formData.description) {
-      updates.description = websiteAnalysisData.description;
-      hasUpdates = true;
-    } else if (websiteAnalysisData?.summary && !formData.description) {
-      updates.description = websiteAnalysisData.summary;
-      hasUpdates = true;
-    }
-
-    // Update location from website if available
+    // Use website analysis data for location if available
     if (websiteAnalysisData?.location && !formData.location) {
       updates.location = websiteAnalysisData.location;
       hasUpdates = true;
@@ -171,7 +177,7 @@ export const Step2BasicInfo = ({
       });
     }
 
-  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.description, formData.companyName, formData.location, actions]);
+  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.companyName, formData.location, actions]);
 
   return (
     <Card className="w-full">
@@ -218,18 +224,6 @@ export const Step2BasicInfo = ({
               required
             />
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor="description" className="text-sm">Job Description</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) => actions.updateFormData('description', e.target.value)}
-            placeholder="Brief description of the role and responsibilities..."
-            className="mt-1"
-            rows={3}
-          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

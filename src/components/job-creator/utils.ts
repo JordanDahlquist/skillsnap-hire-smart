@@ -1,4 +1,3 @@
-
 import { UnifiedJobFormData } from "@/types/jobForm";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,7 +27,6 @@ export const getStepTitle = (step: number): string => {
 export const createJobFromFormData = (formData: UnifiedJobFormData, additionalData: any = {}) => {
   return {
     title: formData.title,
-    description: formData.description,
     company_name: formData.companyName,
     company_website: formData.companyWebsite,
     employment_type: formData.employmentType,
@@ -65,7 +63,7 @@ export const generateJobPost = async (
     budget: formData.budget,
     skills: formData.skills,
     location: formData.location,
-    description: formData.description,
+    companyName: formData.companyName,
     // Include PDF content for AI rewriting if available
     pdfContent: uploadedPdfContent && useOriginalPdf === false ? uploadedPdfContent : null
   };
@@ -109,8 +107,7 @@ export const generateInterviewQuestions = async (
         title: formData.title,
         employmentType: formData.employmentType,
         experienceLevel: formData.experienceLevel,
-        skills: formData.skills,
-        description: formData.description
+        skills: formData.skills
       }
     }
   });
@@ -133,7 +130,6 @@ export const saveJob = async (
     .insert({
       user_id: userId,
       title: formData.title,
-      description: formData.description,
       role_type: formData.employmentType,
       employment_type: formData.employmentType,
       experience_level: formData.experienceLevel,
@@ -160,7 +156,6 @@ export const getInitialFormData = (): UnifiedJobFormData => ({
   jobOverview: "",
   companyWebsite: "",
   title: "",
-  description: "",
   employmentType: "full-time",
   experienceLevel: "mid-level",
   skills: "",
