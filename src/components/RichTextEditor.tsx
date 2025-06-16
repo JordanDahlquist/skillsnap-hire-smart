@@ -41,52 +41,39 @@ export const RichTextEditor = ({ value, onChange, onSave, onCancel, placeholder 
     }
   }, [value]);
 
-  // Cursor position utilities
-  const saveCursorPosition = useCallback(() => {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0 && editorRef.current) {
-      const range = selection.getRangeAt(0);
-      return {
-        startContainer: range.startContainer,
-        startOffset: range.startOffset,
-        endContainer: range.endContainer,
-        endOffset: range.endOffset
-      };
-    }
-    return null;
-  }, []);
-
-  const restoreCursorPosition = useCallback((position: any) => {
-    if (position && editorRef.current) {
-      try {
-        const selection = window.getSelection();
-        if (selection) {
-          const range = document.createRange();
-          range.setStart(position.startContainer, position.startOffset);
-          range.setEnd(position.endContainer, position.endOffset);
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
-      } catch (error) {
-        // Silently handle cases where the position is no longer valid
-        console.warn('Could not restore cursor position:', error);
-      }
-    }
-  }, []);
-
   const handleCommand = useCallback((command: string, value?: string) => {
-    const cursorPosition = saveCursorPosition();
+    if (!editorRef.current) return;
+    
+    // Store the current selection
+    const selection = window.getSelection();
+    let range: Range | null = null;
+    
+    if (selection && selection.rangeCount > 0) {
+      range = selection.getRangeAt(0).cloneRange();
+    }
+    
+    // Apply the formatting command
     document.execCommand(command, false, value);
     
-    if (editorRef.current) {
-      const newContent = editorRef.current.innerHTML;
-      lastValueRef.current = newContent;
-      onChange(newContent);
-    }
+    // Update the content
+    const newContent = editorRef.current.innerHTML;
+    lastValueRef.current = newContent;
+    onChange(newContent);
     
-    // Restore cursor position after a brief delay to ensure DOM updates
-    setTimeout(() => restoreCursorPosition(cursorPosition), 0);
-  }, [onChange, saveCursorPosition, restoreCursorPosition]);
+    // Restore focus to the editor
+    editorRef.current.focus();
+    
+    // Try to restore the selection/cursor position
+    if (range && selection) {
+      try {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } catch (error) {
+        // If we can't restore the exact selection, just focus the editor
+        console.warn('Could not restore selection:', error);
+      }
+    }
+  }, [onChange]);
 
   const handleBold = () => handleCommand('bold');
   const handleItalic = () => handleCommand('italic');

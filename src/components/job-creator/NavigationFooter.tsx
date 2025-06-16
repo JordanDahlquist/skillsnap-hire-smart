@@ -42,17 +42,6 @@ export const NavigationFooter = ({
     }
   };
 
-  const getValidationMessage = () => {
-    switch (currentStep) {
-      case 1: return !canProceedToStep2 ? "Please enter a job overview to continue" : "";
-      case 2: return !canProceedToStep3 ? "Please fill in the company name, job title, and work arrangement" : "";
-      case 3: return !canProceedToStep4 ? "Please generate a job post to continue" : "";
-      case 4: return !canProceedToStep5 ? "Please generate a job post first" : "";
-      case 5: return !canProceedToStep6 ? "Please generate a job post first" : "";
-      default: return "";
-    }
-  };
-
   return (
     <div className="border-t p-3 sm:p-4 flex-shrink-0">
       <div className="flex items-center justify-between">
@@ -65,13 +54,6 @@ export const NavigationFooter = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Validation message */}
-          {!canProceed() && (
-            <span className="text-sm text-red-600 mr-2">
-              {getValidationMessage()}
-            </span>
-          )}
-
           {/* Final step - save options */}
           {currentStep === totalSteps ? (
             <div className="flex gap-2">
