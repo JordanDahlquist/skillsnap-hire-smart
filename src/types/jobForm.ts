@@ -27,6 +27,12 @@ export interface CompanyAnalysisData {
   summary?: string;
 }
 
+export interface WritingTone {
+  professional: number; // 1-5 scale
+  friendly: number; // 1-5 scale
+  excited: number; // 1-5 scale
+}
+
 export interface UnifiedJobFormData {
   // New job overview field
   jobOverview: string;
@@ -61,6 +67,7 @@ export interface UnifiedJobCreatorState {
   isSaving: boolean;
   formData: UnifiedJobFormData;
   generatedJobPost: string;
+  writingTone: WritingTone;
   skillsTestData: SkillsTestData;
   skillsTestViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
   generatedInterviewQuestions: string;
@@ -84,6 +91,7 @@ export interface UnifiedJobCreatorActions {
   setIsSaving: (saving: boolean) => void;
   updateFormData: (field: keyof UnifiedJobFormData, value: string) => void;
   setGeneratedJobPost: (content: string) => void;
+  setWritingTone: (field: keyof WritingTone, value: number) => void;
   setSkillsTestData: (data: SkillsTestData) => void;
   setSkillsTestViewState: (viewState: 'initial' | 'template_selector' | 'editor' | 'preview') => void;
   setGeneratedInterviewQuestions: (content: string) => void;

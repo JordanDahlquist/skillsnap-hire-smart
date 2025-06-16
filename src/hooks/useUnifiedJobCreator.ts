@@ -19,7 +19,8 @@ export const useUnifiedJobCreator = (
       state.formData, 
       actions.setIsGenerating, 
       actions.setGeneratedJobPost,
-      state.websiteAnalysisData
+      state.websiteAnalysisData,
+      state.writingTone
     );
   };
 

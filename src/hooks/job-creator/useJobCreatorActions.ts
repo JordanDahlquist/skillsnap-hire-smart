@@ -1,4 +1,5 @@
-import { UnifiedJobCreatorActions, UnifiedJobFormData, CompanyAnalysisData } from "@/types/jobForm";
+
+import { UnifiedJobCreatorActions, UnifiedJobFormData, CompanyAnalysisData, WritingTone } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
 import { InterviewQuestionsData } from "@/types/interviewQuestions";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,10 @@ export const createJobCreatorActions = (
       formData: { ...prev.formData, [field]: value }
     })),
     setGeneratedJobPost: (content) => setState((prev: any) => ({ ...prev, generatedJobPost: content })),
+    setWritingTone: (field, value) => setState((prev: any) => ({
+      ...prev,
+      writingTone: { ...prev.writingTone, [field]: value }
+    })),
     setSkillsTestData: (data) => setState((prev: any) => ({ ...prev, skillsTestData: data })),
     setSkillsTestViewState: (viewState) => setState((prev: any) => ({ ...prev, skillsTestViewState: viewState })),
     setGeneratedInterviewQuestions: (content) => setState((prev: any) => ({ ...prev, generatedInterviewQuestions: content })),
@@ -148,6 +153,25 @@ export const createJobCreatorActions = (
         benefits = benefitsMatch[1].trim();
         jobPost = jobPost.replace(benefitsMarker, "").trim();
       }
+
+      // Parse writing tone from job data (if exists) or use defaults
+      let writingTone: WritingTone = {
+        professional: 3,
+        friendly: 3,
+        excited: 3
+      };
+      if (job.writing_tone) {
+        try {
+          const parsed = JSON.parse(job.writing_tone);
+          writingTone = {
+            professional: parsed.professional || 3,
+            friendly: parsed.friendly || 3,
+            excited: parsed.excited || 3
+          };
+        } catch (error) {
+          console.log('No writing tone data found, using defaults');
+        }
+      }
       
       console.log('Updating state with job data...');
       setState((prev: any) => {
@@ -178,6 +202,7 @@ export const createJobCreatorActions = (
             companyWebsite: job.company_website || ""
           },
           generatedJobPost: jobPost,
+          writingTone: writingTone,
           skillsTestData: parsedSkillsTestData,
           skillsTestViewState: parsedSkillsTestData.questions.length > 0 ? 'editor' : 'initial',
           generatedInterviewQuestions: generatedInterviewQuestions,
@@ -188,6 +213,7 @@ export const createJobCreatorActions = (
         
         console.log('New state formData:', newState.formData);
         console.log('New state generatedJobPost:', newState.generatedJobPost ? 'Has content' : 'Empty');
+        console.log('New state writingTone:', newState.writingTone);
         console.log('New state skillsTestData:', newState.skillsTestData);
         console.log('New state interviewQuestionsData:', newState.interviewQuestionsData);
         

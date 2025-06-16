@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { UnifiedJobFormData, UnifiedJobCreatorState } from "@/types/jobForm";
+import { UnifiedJobFormData, UnifiedJobCreatorState, WritingTone } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
 import { InterviewQuestionsData } from "@/types/interviewQuestions";
 
@@ -21,6 +21,12 @@ const initialFormData: UnifiedJobFormData = {
   country: "",
   state: "",
   city: ""
+};
+
+const initialWritingTone: WritingTone = {
+  professional: 3,
+  friendly: 3,
+  excited: 3
 };
 
 const initialSkillsTestData: SkillsTestData = {
@@ -46,6 +52,7 @@ const getInitialState = (): UnifiedJobCreatorState => ({
   isSaving: false,
   formData: { ...initialFormData },
   generatedJobPost: "",
+  writingTone: { ...initialWritingTone },
   skillsTestData: { ...initialSkillsTestData },
   skillsTestViewState: 'initial',
   generatedInterviewQuestions: "",

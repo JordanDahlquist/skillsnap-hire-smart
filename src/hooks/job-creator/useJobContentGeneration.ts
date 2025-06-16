@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { SkillsTestData } from "@/types/skillsAssessment";
-import { UnifiedJobFormData, CompanyAnalysisData } from "@/types/jobForm";
+import { UnifiedJobFormData, CompanyAnalysisData, WritingTone } from "@/types/jobForm";
 
 export const useJobContentGeneration = () => {
   const { toast } = useToast();
@@ -11,7 +11,8 @@ export const useJobContentGeneration = () => {
     formData: any, 
     setIsGenerating: (loading: boolean) => void, 
     setGeneratedJobPost: (content: string) => void,
-    websiteAnalysisData?: any
+    websiteAnalysisData?: any,
+    writingTone?: WritingTone
   ) => {
     setIsGenerating(true);
     try {
@@ -19,7 +20,8 @@ export const useJobContentGeneration = () => {
         body: {
           type: 'job-post',
           jobData: formData,
-          websiteAnalysisData: websiteAnalysisData
+          websiteAnalysisData: websiteAnalysisData,
+          writingTone: writingTone
         }
       });
 
