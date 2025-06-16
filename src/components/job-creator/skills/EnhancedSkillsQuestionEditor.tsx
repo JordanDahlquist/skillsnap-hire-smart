@@ -126,14 +126,37 @@ export const EnhancedSkillsQuestionEditor = ({
       <Card className="border border-gray-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Assessment Instructions</CardTitle>
+          <p className="text-sm text-gray-600">
+            Provide clear, well-formatted instructions for candidates. Use markdown for better formatting.
+          </p>
         </CardHeader>
         <CardContent>
           <Textarea
             value={skillsTestData.instructions || ""}
             onChange={(e) => onChange({ ...skillsTestData, instructions: e.target.value })}
-            placeholder="Provide overall instructions for candidates taking this assessment..."
-            rows={3}
+            placeholder={`Welcome to the skills assessment! Please follow these guidelines:
+
+**Before you begin:**
+- Set aside approximately ${skillsTestData.estimatedCompletionTime || skillsTestData.questions.length * 5} minutes to complete this assessment
+- Ensure you have a stable internet connection
+- Prepare any materials you might need
+
+**Instructions:**
+- Read each question carefully before responding
+- Provide detailed, thoughtful answers
+- Take your time - quality is more important than speed
+
+**Technical Requirements:**
+- Some questions may require file uploads or video recordings
+- Make sure your browser allows camera/microphone access if needed
+
+Good luck!`}
+            rows={8}
+            className="font-mono text-sm"
           />
+          <div className="mt-2 text-xs text-gray-500">
+            <span className="font-medium">Formatting tips:</span> Use **bold** for emphasis, bullet points with -, numbered lists with 1., and ## for headings
+          </div>
         </CardContent>
       </Card>
 
@@ -233,14 +256,34 @@ export const EnhancedSkillsQuestionEditor = ({
 
                     <div>
                       <Label htmlFor={`instructions-${question.id}`}>Instructions for Candidates</Label>
+                      <p className="text-xs text-gray-600 mb-2">
+                        Use markdown formatting for better presentation. This will be displayed to candidates.
+                      </p>
                       <Textarea
                         id={`instructions-${question.id}`}
                         value={question.candidateInstructions || ""}
                         onChange={(e) => updateQuestion(question.id, { candidateInstructions: e.target.value })}
-                        placeholder="Provide detailed instructions for candidates..."
-                        rows={2}
-                        className="mt-1"
+                        placeholder={`Please provide detailed instructions here. For example:
+
+**What we're looking for:**
+- Clear communication skills
+- Technical knowledge demonstration
+- Problem-solving approach
+
+**Requirements:**
+- Include specific examples
+- Explain your reasoning
+- Keep your response between 200-500 words
+
+**Tips:**
+- Take your time to think through your answer
+- Use bullet points for clarity where appropriate`}
+                        rows={6}
+                        className="mt-1 font-mono text-sm"
                       />
+                      <div className="mt-1 text-xs text-gray-500">
+                        Use **bold**, bullet points with -, numbered lists with 1., and ## for headings
+                      </div>
                     </div>
                   </div>
 
@@ -313,7 +356,7 @@ export const EnhancedSkillsQuestionEditor = ({
                           id={`example-${question.id}`}
                           value={question.exampleResponse || ""}
                           onChange={(e) => updateQuestion(question.id, { exampleResponse: e.target.value })}
-                          placeholder="Optional example of a good response"
+                          placeholder="Optional example of a good response (supports markdown formatting)"
                           rows={2}
                           className="mt-1"
                         />

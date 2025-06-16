@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, FileText, Video, Link, Code, Upload } from "lucide-react";
 import { SkillsTestData } from "@/types/skillsAssessment";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface SkillsTestPreviewProps {
   skillsTestData: SkillsTestData;
@@ -80,11 +81,14 @@ export const SkillsTestPreview = ({ skillsTestData, onBack }: SkillsTestPreviewP
             </div>
             
             {skillsTestData.instructions && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
-                <h3 className="font-medium text-blue-900 mb-2">Instructions</h3>
-                <p className="text-blue-800 text-sm leading-relaxed">
-                  {skillsTestData.instructions}
-                </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-left">
+                <h3 className="font-semibold text-blue-900 mb-3">Instructions</h3>
+                <div 
+                  className="text-blue-800 prose prose-sm max-w-none prose-headings:text-blue-900 prose-headings:font-semibold prose-p:mb-3 prose-ul:mb-3 prose-li:mb-1"
+                  dangerouslySetInnerHTML={{ 
+                    __html: parseMarkdown(skillsTestData.instructions) 
+                  }}
+                />
               </div>
             )}
           </div>
@@ -103,17 +107,22 @@ export const SkillsTestPreview = ({ skillsTestData, onBack }: SkillsTestPreviewP
                           <span className="text-blue-600 font-medium text-sm">{index + 1}</span>
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-medium text-gray-900">{question.question}</h3>
+                          <div className="flex items-center gap-2 mb-3">
+                            <h3 className="font-semibold text-gray-900 text-lg leading-relaxed">{question.question}</h3>
                             {question.required && (
                               <span className="text-red-500 text-sm">*</span>
                             )}
                           </div>
                           
                           {question.candidateInstructions && (
-                            <p className="text-gray-600 text-sm mb-3">
-                              {question.candidateInstructions}
-                            </p>
+                            <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                              <div 
+                                className="text-gray-700 prose prose-sm max-w-none prose-headings:text-gray-800 prose-headings:font-medium prose-headings:mb-2 prose-p:mb-3 prose-p:leading-relaxed prose-ul:mb-3 prose-li:mb-1 prose-strong:text-gray-900"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: parseMarkdown(question.candidateInstructions) 
+                                }}
+                              />
+                            </div>
                           )}
 
                           <div className="flex items-center gap-2 mb-4">
@@ -177,9 +186,14 @@ export const SkillsTestPreview = ({ skillsTestData, onBack }: SkillsTestPreviewP
                           </div>
 
                           {question.exampleResponse && (
-                            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                              <h4 className="text-sm font-medium text-green-900 mb-1">Example Response:</h4>
-                              <p className="text-sm text-green-800">{question.exampleResponse}</p>
+                            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                              <h4 className="text-sm font-semibold text-green-900 mb-2">Example Response:</h4>
+                              <div 
+                                className="text-green-800 prose prose-sm max-w-none prose-p:mb-2 prose-ul:mb-2 prose-li:mb-1"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: parseMarkdown(question.exampleResponse) 
+                                }}
+                              />
                             </div>
                           )}
                         </div>
