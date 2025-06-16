@@ -58,6 +58,8 @@ export const StepRenderer = ({
         <Step4InterviewGenerator
           generatedJobPost={state.generatedJobPost}
           generatedInterviewQuestions={state.generatedInterviewQuestions}
+          interviewQuestionsData={state.interviewQuestionsData}
+          interviewQuestionsViewState={state.interviewQuestionsViewState}
           interviewVideoMaxLength={state.interviewVideoMaxLength}
           isGenerating={state.isGenerating}
           isEditingInterviewQuestions={state.isEditingInterviewQuestions}
