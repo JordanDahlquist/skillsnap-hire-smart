@@ -30,7 +30,7 @@ export const useJobSaving = () => {
       const isProjectBased = state.formData.employmentType === 'project';
       const jobData = {
         title: state.formData.title,
-        description: state.formData.description,
+        description: state.generatedJobPost || '', // Use generated job post as description
         role_type: state.formData.employmentType,
         experience_level: state.formData.experienceLevel,
         required_skills: state.formData.skills,
