@@ -82,9 +82,14 @@ export const SkillsTestPreview = ({ skillsTestData, onBack }: SkillsTestPreviewP
             
             {skillsTestData.instructions && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-left">
-                <h3 className="font-semibold text-blue-900 mb-3">Instructions</h3>
+                <h3 className="font-semibold text-blue-900 mb-4">Instructions</h3>
                 <div 
-                  className="text-blue-800 prose prose-sm max-w-none prose-headings:text-blue-900 prose-headings:font-semibold prose-p:mb-3 prose-ul:mb-3 prose-li:mb-1"
+                  className="text-blue-800 prose prose-sm max-w-none 
+                    prose-headings:text-blue-900 prose-headings:font-semibold prose-headings:mb-2 prose-headings:mt-3
+                    prose-p:mb-3 prose-p:leading-relaxed prose-p:text-blue-800
+                    prose-ul:mb-4 prose-ul:pl-2 prose-li:mb-1 prose-li:text-blue-800
+                    prose-strong:text-blue-900 prose-strong:font-semibold
+                    prose-code:bg-blue-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
                   dangerouslySetInnerHTML={{ 
                     __html: parseMarkdown(skillsTestData.instructions) 
                   }}
@@ -117,7 +122,12 @@ export const SkillsTestPreview = ({ skillsTestData, onBack }: SkillsTestPreviewP
                           {question.candidateInstructions && (
                             <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                               <div 
-                                className="text-gray-700 prose prose-sm max-w-none prose-headings:text-gray-800 prose-headings:font-medium prose-headings:mb-2 prose-p:mb-3 prose-p:leading-relaxed prose-ul:mb-3 prose-li:mb-1 prose-strong:text-gray-900"
+                                className="text-gray-700 prose prose-sm max-w-none 
+                                  prose-headings:text-gray-800 prose-headings:font-medium prose-headings:mb-2 prose-headings:mt-3
+                                  prose-p:mb-3 prose-p:leading-relaxed prose-p:text-gray-700
+                                  prose-ul:mb-4 prose-ul:pl-2 prose-li:mb-1 prose-li:text-gray-700
+                                  prose-strong:text-gray-900 prose-strong:font-semibold
+                                  prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
                                 dangerouslySetInnerHTML={{ 
                                   __html: parseMarkdown(question.candidateInstructions) 
                                 }}
@@ -187,9 +197,14 @@ export const SkillsTestPreview = ({ skillsTestData, onBack }: SkillsTestPreviewP
 
                           {question.exampleResponse && (
                             <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                              <h4 className="text-sm font-semibold text-green-900 mb-2">Example Response:</h4>
+                              <h4 className="text-sm font-semibold text-green-900 mb-3">Example Response:</h4>
                               <div 
-                                className="text-green-800 prose prose-sm max-w-none prose-p:mb-2 prose-ul:mb-2 prose-li:mb-1"
+                                className="text-green-800 prose prose-sm max-w-none 
+                                  prose-headings:text-green-900 prose-headings:font-medium prose-headings:mb-2 prose-headings:mt-3
+                                  prose-p:mb-3 prose-p:leading-relaxed prose-p:text-green-800
+                                  prose-ul:mb-4 prose-ul:pl-2 prose-li:mb-1 prose-li:text-green-800
+                                  prose-strong:text-green-900 prose-strong:font-semibold
+                                  prose-code:bg-green-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
                                 dangerouslySetInnerHTML={{ 
                                   __html: parseMarkdown(question.exampleResponse) 
                                 }}
