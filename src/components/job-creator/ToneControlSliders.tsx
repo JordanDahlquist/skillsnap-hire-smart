@@ -85,15 +85,18 @@ export const ToneControlSliders = ({
                   step={1}
                   className="w-full"
                 />
-                <div className="flex justify-between mt-0.5">
+                <div className="relative mt-1 h-2">
                   {[1, 2, 3, 4, 5].map((dot) => (
                     <div
                       key={dot}
-                      className={`w-1 h-1 rounded-full ${
+                      className={`absolute w-1 h-1 rounded-full transform -translate-x-1/2 ${
                         dot === setting.value 
                           ? 'bg-primary' 
                           : 'bg-gray-300'
                       }`}
+                      style={{
+                        left: `${((dot - 1) / 4) * 100}%`
+                      }}
                     />
                   ))}
                 </div>
