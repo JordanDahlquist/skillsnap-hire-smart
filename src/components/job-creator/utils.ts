@@ -1,4 +1,6 @@
+
 import { UnifiedJobFormData } from "@/types/jobForm";
+import { supabase } from "@/integrations/supabase/client";
 
 export const validateStep = (step: number, formData: UnifiedJobFormData): boolean => {
   switch (step) {
@@ -155,6 +157,8 @@ export const saveJob = async (
 };
 
 export const getInitialFormData = (): UnifiedJobFormData => ({
+  jobOverview: "",
+  companyWebsite: "",
   title: "",
   description: "",
   employmentType: "full-time",
