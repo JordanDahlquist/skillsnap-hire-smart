@@ -1,7 +1,7 @@
-
 import { useState } from "react";
 import { UnifiedJobFormData, UnifiedJobCreatorState } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
+import { InterviewQuestionsData } from "@/types/interviewQuestions";
 
 const initialFormData: UnifiedJobFormData = {
   companyName: "",
@@ -29,6 +29,15 @@ const initialSkillsTestData: SkillsTestData = {
   instructions: ""
 };
 
+const initialInterviewQuestionsData: InterviewQuestionsData = {
+  questions: [],
+  maxQuestions: 10,
+  mode: 'ai_generated',
+  estimatedCompletionTime: 0,
+  instructions: "",
+  defaultVideoLength: 5
+};
+
 const getInitialState = (): UnifiedJobCreatorState => ({
   currentStep: 1,
   isGenerating: false,
@@ -38,6 +47,8 @@ const getInitialState = (): UnifiedJobCreatorState => ({
   skillsTestData: { ...initialSkillsTestData },
   skillsTestViewState: 'initial',
   generatedInterviewQuestions: "",
+  interviewQuestionsData: { ...initialInterviewQuestionsData },
+  interviewQuestionsViewState: 'initial',
   interviewVideoMaxLength: 5,
   isEditingJobPost: false,
   isEditingInterviewQuestions: false,

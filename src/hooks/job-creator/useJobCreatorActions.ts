@@ -1,6 +1,6 @@
-
 import { UnifiedJobCreatorActions, UnifiedJobFormData } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
+import { InterviewQuestionsData } from "@/types/interviewQuestions";
 
 export const createJobCreatorActions = (
   setState: React.Dispatch<React.SetStateAction<any>>
@@ -20,6 +20,8 @@ export const createJobCreatorActions = (
   setIsEditingJobPost: (editing) => setState((prev: any) => ({ ...prev, isEditingJobPost: editing })),
   setIsEditingInterviewQuestions: (editing) => setState((prev: any) => ({ ...prev, isEditingInterviewQuestions: editing })),
   setEditMode: (isEdit, jobId) => setState((prev: any) => ({ ...prev, isEditMode: isEdit, editingJobId: jobId })),
+  setInterviewQuestionsData: (data) => setState((prev: any) => ({ ...prev, interviewQuestionsData: data })),
+  setInterviewQuestionsViewState: (viewState) => setState((prev: any) => ({ ...prev, interviewQuestionsViewState: viewState })),
   populateFormFromJob: (job) => {
     console.log('populateFormFromJob called with job:', job);
     
@@ -54,6 +56,30 @@ export const createJobCreatorActions = (
           maxQuestions: 10,
           mode: 'ai_generated'
         };
+      }
+    }
+
+    // Parse existing interview questions data
+    let parsedInterviewQuestionsData: InterviewQuestionsData = {
+      questions: [],
+      maxQuestions: 10,
+      mode: 'ai_generated',
+      defaultVideoLength: 5
+    };
+    let generatedInterviewQuestions = job.generated_interview_questions || "";
+
+    // Try to parse structured interview questions if they exist
+    if (job.generated_interview_questions) {
+      try {
+        // Check if it's structured data (JSON)
+        const parsed = JSON.parse(job.generated_interview_questions);
+        if (parsed.questions && Array.isArray(parsed.questions)) {
+          parsedInterviewQuestionsData = parsed;
+          generatedInterviewQuestions = ""; // Clear the string version
+        }
+      } catch (error) {
+        // It's a string, keep as is
+        console.log('Interview questions are in string format');
       }
     }
     
@@ -97,13 +123,16 @@ export const createJobCreatorActions = (
         generatedJobPost: jobPost,
         skillsTestData: parsedSkillsTestData,
         skillsTestViewState: parsedSkillsTestData.questions.length > 0 ? 'editor' : 'initial',
-        generatedInterviewQuestions: job.generated_interview_questions || "",
+        generatedInterviewQuestions: generatedInterviewQuestions,
+        interviewQuestionsData: parsedInterviewQuestionsData,
+        interviewQuestionsViewState: parsedInterviewQuestionsData.questions.length > 0 ? 'editor' : 'initial',
         interviewVideoMaxLength: job.interview_video_max_length || 5
       };
       
       console.log('New state formData:', newState.formData);
       console.log('New state generatedJobPost:', newState.generatedJobPost ? 'Has content' : 'Empty');
       console.log('New state skillsTestData:', newState.skillsTestData);
+      console.log('New state interviewQuestionsData:', newState.interviewQuestionsData);
       
       return newState;
     });

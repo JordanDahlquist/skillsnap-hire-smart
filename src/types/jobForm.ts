@@ -1,5 +1,5 @@
-
 import { SkillsTestData } from "./skillsAssessment";
+import { InterviewQuestionsData } from "./interviewQuestions";
 
 export interface PersonalInfo {
   fullName: string;
@@ -48,6 +48,8 @@ export interface UnifiedJobCreatorState {
   skillsTestData: SkillsTestData;
   skillsTestViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
   generatedInterviewQuestions: string;
+  interviewQuestionsData: InterviewQuestionsData;
+  interviewQuestionsViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
   interviewVideoMaxLength: number;
   isEditingJobPost: boolean;
   isEditingInterviewQuestions: boolean;
@@ -65,6 +67,8 @@ export interface UnifiedJobCreatorActions {
   setSkillsTestData: (data: SkillsTestData) => void;
   setSkillsTestViewState: (viewState: 'initial' | 'template_selector' | 'editor' | 'preview') => void;
   setGeneratedInterviewQuestions: (content: string) => void;
+  setInterviewQuestionsData: (data: InterviewQuestionsData) => void;
+  setInterviewQuestionsViewState: (viewState: 'initial' | 'template_selector' | 'editor' | 'preview') => void;
   setInterviewVideoMaxLength: (length: number) => void;
   setIsEditingJobPost: (editing: boolean) => void;
   setIsEditingInterviewQuestions: (editing: boolean) => void;
