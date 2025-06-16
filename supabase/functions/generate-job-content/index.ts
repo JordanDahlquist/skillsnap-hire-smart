@@ -57,35 +57,48 @@ const buildToneInstructions = (writingTone: any) => {
   
   const { professional = 3, friendly = 3, excited = 3 } = writingTone;
   
+  console.log('Building tone instructions with values:', { professional, friendly, excited });
+  
   // Convert 1-5 scale to descriptive instructions
   const getProfessionalTone = (level: number) => {
-    if (level <= 2) return "casual and conversational tone, avoiding overly formal corporate language";
-    if (level <= 3) return "balanced professional tone with clear, direct communication";
-    if (level <= 4) return "formal business tone with professional terminology";
-    return "highly formal and corporate tone with sophisticated language";
+    if (level <= 2) return "use casual, conversational language with contractions and informal phrasing. Avoid corporate jargon and stiff formal language.";
+    if (level <= 3) return "use balanced professional tone with clear, straightforward communication that's neither too casual nor overly formal.";
+    if (level <= 4) return "use formal business language with professional terminology and structured communication.";
+    return "use highly formal, sophisticated corporate language with advanced business terminology and polished communication style.";
   };
   
   const getFriendlyTone = (level: number) => {
-    if (level <= 2) return "neutral and direct communication style";
-    if (level <= 3) return "approachable and welcoming tone";
-    if (level <= 4) return "warm and personable language that builds connection";
-    return "exceptionally warm, inviting, and people-focused communication";
+    if (level <= 2) return "keep communication neutral and direct without personal warmth or emotional language.";
+    if (level <= 3) return "use approachable, welcoming language that shows genuine interest in candidates.";
+    if (level <= 4) return "use warm, personable language that builds connection. Include words like 'we're excited,' 'love to have you,' and 'amazing team.'";
+    return "use exceptionally warm, inviting language with phrases like 'we absolutely love,' 'incredible opportunity,' 'fantastic team,' and 'can't wait to meet you!'";
   };
   
   const getExcitedTone = (level: number) => {
-    if (level <= 2) return "calm and measured language";
-    if (level <= 3) return "positive and optimistic tone";
-    if (level <= 4) return "energetic and enthusiastic language";
-    return "highly energetic, dynamic, and passionate communication";
+    if (level <= 2) return "use calm, measured language without enthusiasm or energy words.";
+    if (level <= 3) return "use positive, optimistic language that shows confidence in the opportunity.";
+    if (level <= 4) return "use energetic language with words like 'exciting,' 'dynamic,' 'innovative,' and 'thriving.'";
+    return "use highly energetic, passionate language with phrases like 'incredible opportunity,' 'game-changing,' 'revolutionary,' 'explosive growth,' and exclamation points where appropriate!";
   };
   
-  return `
-**WRITING TONE REQUIREMENTS:**
-- Professional Level (${professional}/5): Use ${getProfessionalTone(professional)}
-- Friendliness Level (${friendly}/5): Use ${getFriendlyTone(friendly)}
-- Excitement Level (${excited}/5): Use ${getExcitedTone(excited)}
+  const instructions = `
+**CRITICAL WRITING TONE REQUIREMENTS - FOLLOW THESE EXACTLY:**
 
-IMPORTANT: These tone requirements must be consistently applied throughout the entire job posting. Adjust your word choice, sentence structure, and overall communication style to match these specific tone levels.`;
+Professional Level (${professional}/5): ${getProfessionalTone(professional)}
+
+Friendliness Level (${friendly}/5): ${getFriendlyTone(friendly)}
+
+Excitement Level (${excited}/5): ${getExcitedTone(excited)}
+
+**TONE IMPLEMENTATION RULES:**
+- These tone requirements MUST be consistently applied throughout the ENTIRE job posting
+- Adjust your word choice, sentence structure, and overall communication style to match these specific tone levels
+- The combination of these three dimensions should create a distinct voice that matches the slider settings
+- Pay special attention to adjectives, verbs, and overall energy of the language used
+`;
+
+  console.log('Generated tone instructions:', instructions);
+  return instructions;
 };
 
 serve(async (req) => {
@@ -126,7 +139,9 @@ serve(async (req) => {
       
       prompt = `CRITICAL WARNING: You MUST NOT include any application instructions, email addresses, or "How to Apply" sections. The job posting MUST end with the exact phrase specified below and NOTHING ELSE.
 
-Create a compelling and comprehensive job posting for a ${jobData.title} position at ${jobData.companyName}.${toneInstructions}
+Create a compelling and comprehensive job posting for a ${jobData.title} position at ${jobData.companyName}.
+
+${toneInstructions}
 
 **COMPANY AND ROLE DETAILS:**
 - Company: ${jobData.companyName}
