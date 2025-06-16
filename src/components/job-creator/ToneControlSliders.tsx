@@ -85,7 +85,7 @@ export const ToneControlSliders = ({
                   step={1}
                   className="w-full"
                 />
-                <div className="relative mt-1 h-2">
+                <div className="relative mt-1 h-2 mx-2">
                   {[1, 2, 3, 4, 5].map((dot) => (
                     <div
                       key={dot}
@@ -95,7 +95,7 @@ export const ToneControlSliders = ({
                           : 'bg-gray-300'
                       }`}
                       style={{
-                        left: `${((dot - 1) / 4) * 100}%`
+                        left: `${6 + ((dot - 1) / 4) * 88}%`
                       }}
                     />
                   ))}
