@@ -7,7 +7,7 @@ import { Sparkles, SkipForward, Settings } from "lucide-react";
 import { SkillsTestData, SkillsTestTemplate } from "@/types/skillsAssessment";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
 import { SkillsTestTemplateSelector } from "./skills/SkillsTestTemplateSelector";
-import { EnhancedSkillsQuestionEditor } from "./skills/EnhancedSkillsQuestionEditor";
+import { RedesignedSkillsQuestionEditor } from "./skills/RedesignedSkillsQuestionEditor";
 import { SkillsTestPreview } from "./skills/SkillsTestPreview";
 import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
 
@@ -171,7 +171,7 @@ export const Step3SkillsTestGenerator = ({
             </div>
           </CardHeader>
           <CardContent className="flex-1 overflow-auto p-4">
-            <EnhancedSkillsQuestionEditor
+            <RedesignedSkillsQuestionEditor
               skillsTestData={skillsTestData}
               onChange={onSkillsTestDataChange}
               onPreview={handlePreview}
