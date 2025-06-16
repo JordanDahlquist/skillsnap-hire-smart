@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -116,6 +115,29 @@ const extractLocationFromOverview = (overview: string): { location: string; stat
   return { location: '', city: '', state: '' };
 };
 
+const extractExperienceLevelFromOverview = (overview: string): string => {
+  const text = overview.toLowerCase();
+  
+  // Senior level keywords
+  const seniorKeywords = ['senior', 'lead', 'principal', 'staff', 'director', 'head of', 'vp', 'vice president', 'chief'];
+  for (const keyword of seniorKeywords) {
+    if (text.includes(keyword)) {
+      return 'senior-level';
+    }
+  }
+  
+  // Entry level keywords
+  const entryKeywords = ['junior', 'entry', 'associate', 'trainee', 'intern', 'graduate', 'new grad'];
+  for (const keyword of entryKeywords) {
+    if (text.includes(keyword)) {
+      return 'entry-level';
+    }
+  }
+  
+  // Default to mid-level if no specific seniority is detected
+  return 'mid-level';
+};
+
 export const Step2BasicInfo = ({
   formData,
   actions,
@@ -134,6 +156,15 @@ export const Step2BasicInfo = ({
       const extractedTitle = extractJobTitleFromOverview(formData.jobOverview);
       if (extractedTitle) {
         updates.title = extractedTitle;
+        hasUpdates = true;
+      }
+    }
+
+    // Extract experience level if not set
+    if (formData.jobOverview && formData.experienceLevel === 'intermediate') {
+      const extractedExperienceLevel = extractExperienceLevelFromOverview(formData.jobOverview);
+      if (extractedExperienceLevel && extractedExperienceLevel !== 'mid-level') {
+        updates.experienceLevel = extractedExperienceLevel;
         hasUpdates = true;
       }
     }
@@ -176,7 +207,7 @@ export const Step2BasicInfo = ({
       });
     }
 
-  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.companyName, formData.location, actions]);
+  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.companyName, formData.location, formData.experienceLevel, actions]);
 
   return (
     <Card className="w-full">
