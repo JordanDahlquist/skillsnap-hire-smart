@@ -68,6 +68,7 @@ export const NavigationFooter = ({
               <Button
                 onClick={() => onSaveJob('active')}
                 disabled={isSaving || !canActivate}
+                className="bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700"
               >
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Publish Job
