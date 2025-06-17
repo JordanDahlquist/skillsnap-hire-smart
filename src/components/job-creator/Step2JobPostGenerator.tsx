@@ -132,11 +132,11 @@ export const Step2JobPostGenerator = ({
               <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full w-full">
                   <div 
-                    className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-full prose prose-sm max-w-none"
+                    className="p-6 cursor-pointer hover:bg-gray-50 transition-colors min-h-full"
                     onClick={() => actions.setIsEditingJobPost(true)}
                     style={{
-                      lineHeight: '1.6',
-                      fontSize: '14px',
+                      lineHeight: '1.7',
+                      fontSize: '16px',
                       wordWrap: 'break-word'
                     }}
                     dangerouslySetInnerHTML={{ 

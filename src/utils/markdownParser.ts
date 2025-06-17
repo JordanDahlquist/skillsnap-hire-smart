@@ -70,14 +70,14 @@ const processListParagraph = (paragraph: string, isNumbered: boolean): string =>
   
   if (listItems.length === 0) return '';
   
-  // Generate HTML list
+  // Generate HTML list with enhanced styling
   const listType = isNumbered ? 'ol' : 'ul';
   const listClass = isNumbered 
-    ? 'list-decimal list-inside space-y-2 mb-4 pl-2'
-    : 'list-disc list-inside space-y-2 mb-4 pl-2';
+    ? 'list-decimal list-inside space-y-3 mb-6 pl-4'
+    : 'list-disc list-inside space-y-3 mb-6 pl-4';
   
   const itemsHtml = listItems
-    .map(item => `<li class="ml-4 mb-2 leading-relaxed">${item}</li>`)
+    .map(item => `<li class="ml-6 mb-3 leading-relaxed text-gray-700 text-base">${item}</li>`)
     .join('');
   
   return `<${listType} class="${listClass}">${itemsHtml}</${listType}>`;
@@ -86,20 +86,20 @@ const processListParagraph = (paragraph: string, isNumbered: boolean): string =>
 const processRegularParagraph = (paragraph: string): string => {
   let processed = paragraph;
   
-  // Headers with proper spacing
+  // Enhanced headers with better visual hierarchy
   processed = processed
-    .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mb-3 mt-4 text-gray-900">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mb-3 mt-5 text-gray-900">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mb-4 mt-6 text-gray-900">$1</h1>');
+    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold mb-4 mt-6 text-gray-900 border-b-2 border-blue-100 pb-2">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold mb-5 mt-8 text-gray-900 border-b-3 border-blue-200 pb-3">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 class="text-3xl font-bold mb-6 mt-8 text-gray-900 border-b-4 border-blue-300 pb-4">$1</h1>');
   
   // If it contains headers, don't wrap in paragraph tags
   if (processed.includes('<h1') || processed.includes('<h2') || processed.includes('<h3')) {
     return processed;
   }
   
-  // Code blocks
+  // Enhanced code blocks
   processed = processed
-    .replace(/```([^`]+)```/g, '<pre class="bg-gray-100 border border-gray-200 rounded p-3 my-3 overflow-x-auto"><code class="text-sm font-mono">$1</code></pre>');
+    .replace(/```([^`]+)```/g, '<pre class="bg-gray-100 border border-gray-300 rounded-lg p-4 my-4 overflow-x-auto shadow-sm"><code class="text-sm font-mono text-gray-800">$1</code></pre>');
   
   if (processed.includes('<pre')) {
     return processed;
@@ -111,18 +111,18 @@ const processRegularParagraph = (paragraph: string): string => {
   // Convert to paragraph with line breaks
   const lines = processed.split('\n').filter(line => line.trim());
   if (lines.length <= 1) {
-    return `<p class="mb-3 leading-relaxed">${processed}</p>`;
+    return `<p class="mb-4 leading-relaxed text-gray-700 text-base">${processed}</p>`;
   } else {
-    return `<p class="mb-3 leading-relaxed">${lines.join('<br>')}</p>`;
+    return `<p class="mb-4 leading-relaxed text-gray-700 text-base">${lines.join('<br>')}</p>`;
   }
 };
 
 const processInlineFormatting = (text: string): string => {
   return text
-    // Bold text
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-    // Italic text
-    .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
-    // Inline code
-    .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
+    // Enhanced bold text
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-gray-900">$1</strong>')
+    // Enhanced italic text
+    .replace(/\*(.+?)\*/g, '<em class="italic text-gray-800">$1</em>')
+    // Enhanced inline code
+    .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-blue-700 border">$1</code>');
 };

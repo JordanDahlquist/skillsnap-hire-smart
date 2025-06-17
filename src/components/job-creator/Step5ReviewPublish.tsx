@@ -85,10 +85,10 @@ export const Step5ReviewPublish = ({
             </CardHeader>
             <CardContent>
               <div 
-                className="prose max-w-none text-sm leading-relaxed bg-gray-50 rounded-lg p-4 border"
+                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm"
                 style={{
                   lineHeight: '1.7',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   wordWrap: 'break-word'
                 }}
                 dangerouslySetInnerHTML={{ 
@@ -119,10 +119,10 @@ export const Step5ReviewPublish = ({
             </CardHeader>
             <CardContent>
               <div 
-                className="prose max-w-none text-sm leading-relaxed bg-gray-50 rounded-lg p-4 border"
+                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm"
                 style={{
                   lineHeight: '1.7',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   wordWrap: 'break-word'
                 }}
                 dangerouslySetInnerHTML={{ 
@@ -153,10 +153,10 @@ export const Step5ReviewPublish = ({
             </CardHeader>
             <CardContent>
               <div 
-                className="prose max-w-none text-sm leading-relaxed bg-gray-50 rounded-lg p-4 border"
+                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm"
                 style={{
                   lineHeight: '1.7',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   wordWrap: 'break-word'
                 }}
                 dangerouslySetInnerHTML={{ 
