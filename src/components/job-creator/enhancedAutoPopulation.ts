@@ -1,3 +1,4 @@
+
 import { UnifiedJobFormData, CompanyAnalysisData } from "@/types/jobForm";
 
 type EmploymentType = "full-time" | "part-time" | "contract" | "project";
@@ -55,6 +56,45 @@ const DEFAULT_SALARY_RANGES = {
   'executive': [155, 210]
 };
 
+// Enhanced city to state mapping for better location detection
+const CITY_STATE_MAP: { [key: string]: string } = {
+  'los angeles': 'Los Angeles, CA',
+  'la': 'Los Angeles, CA',
+  'new york': 'New York, NY',
+  'new york city': 'New York, NY',
+  'nyc': 'New York, NY',
+  'san francisco': 'San Francisco, CA',
+  'sf': 'San Francisco, CA',
+  'chicago': 'Chicago, IL',
+  'houston': 'Houston, TX',
+  'phoenix': 'Phoenix, AZ',
+  'philadelphia': 'Philadelphia, PA',
+  'san antonio': 'San Antonio, TX',
+  'san diego': 'San Diego, CA',
+  'dallas': 'Dallas, TX',
+  'austin': 'Austin, TX',
+  'seattle': 'Seattle, WA',
+  'denver': 'Denver, CO',
+  'boston': 'Boston, MA',
+  'miami': 'Miami, FL',
+  'atlanta': 'Atlanta, GA',
+  'washington': 'Washington, DC',
+  'dc': 'Washington, DC'
+};
+
+// Related skills mapping for common roles
+const ROLE_SKILLS_MAP: { [key: string]: string[] } = {
+  'react': ['TypeScript', 'JavaScript', 'HTML', 'CSS', 'Node.js'],
+  'frontend': ['JavaScript', 'HTML', 'CSS', 'TypeScript', 'React'],
+  'backend': ['Node.js', 'Python', 'SQL', 'API', 'Database'],
+  'full stack': ['JavaScript', 'TypeScript', 'React', 'Node.js', 'SQL'],
+  'mobile': ['React Native', 'iOS', 'Android', 'JavaScript'],
+  'data': ['Python', 'SQL', 'Machine Learning', 'Analytics', 'Statistics'],
+  'devops': ['AWS', 'Docker', 'Kubernetes', 'CI/CD', 'Linux'],
+  'ui': ['Figma', 'Adobe', 'Design Systems', 'Prototyping'],
+  'ux': ['User Research', 'Wireframing', 'Prototyping', 'Figma']
+};
+
 // Enhanced text processing utilities
 const toTitleCase = (str: string): string => {
   return str.replace(/\w\S*/g, (txt) => 
@@ -101,16 +141,34 @@ const extractSkills = (text: string, jobTitle?: string): string => {
 
   const skills = new Set<string>();
   
-  // Extract skills from job title (e.g., "React Specialist" -> "React")
+  // Extract skills from job title and add related skills
   if (jobTitle) {
-    const titleWords = jobTitle.toLowerCase().split(/\s+/);
+    const titleLower = jobTitle.toLowerCase();
+    
+    // Add skills mentioned in title
+    Object.keys(ROLE_SKILLS_MAP).forEach(role => {
+      if (titleLower.includes(role)) {
+        // Add the primary skill
+        skills.add(formatJobTitle(role));
+        // Add related skills
+        ROLE_SKILLS_MAP[role].forEach(skill => skills.add(skill));
+      }
+    });
+    
+    // Check for specific technologies in title
+    const titleWords = titleLower.split(/\s+/);
     titleWords.forEach(word => {
       if (['react', 'vue', 'angular', 'node', 'python', 'java', 'javascript', 'typescript'].includes(word)) {
         skills.add(formatJobTitle(word));
+        // Add related skills if available
+        if (ROLE_SKILLS_MAP[word]) {
+          ROLE_SKILLS_MAP[word].forEach(skill => skills.add(skill));
+        }
       }
     });
   }
   
+  // Extract skills from text content
   skillPatterns.forEach(pattern => {
     const matches = text.match(pattern);
     if (matches) {
@@ -118,15 +176,28 @@ const extractSkills = (text: string, jobTitle?: string): string => {
     }
   });
 
-  return Array.from(skills).join(', ');
+  // Remove duplicates (case-insensitive)
+  const uniqueSkills = new Set<string>();
+  const lowerSkills = new Set<string>();
+  
+  skills.forEach(skill => {
+    const lowerSkill = skill.toLowerCase();
+    if (!lowerSkills.has(lowerSkill)) {
+      lowerSkills.add(lowerSkill);
+      uniqueSkills.add(skill);
+    }
+  });
+
+  return Array.from(uniqueSkills).join(', ');
 };
 
 const extractLocation = (text: string): string => {
   // Enhanced location patterns to handle various formats
   const locationPatterns = [
-    // "in City, State" or "in City State"
-    /\bin\s+([A-Z][a-zA-Z\s]+?,?\s*[A-Z]{2})\b/i,
-    /\bin\s+([A-Z][a-zA-Z\s]+?,?\s*[A-Z][a-zA-Z]+)\b/i,
+    // "in City" - try to match with our city mapping first
+    /\bin\s+([a-zA-Z\s]+?)(?:\s|$|,|\.|!|\?)/i,
+    // "at [company] in City"
+    /\bat\s+[^,\n]*?\s+in\s+([a-zA-Z\s]+?)(?:\s|$|,|\.|!|\?)/i,
     // "based in City, State"
     /(?:based|located)\s+in\s+([A-Z][a-zA-Z\s,]+?)(?:\s|$|,|\.|!|\?)/i,
     // "City, State based" or "City State based"
@@ -139,14 +210,22 @@ const extractLocation = (text: string): string => {
   for (const pattern of locationPatterns) {
     const match = text.match(pattern);
     if (match && match[1]) {
-      let location = match[1].trim().replace(/,$/, '');
+      let location = match[1].trim().replace(/,$/, '').toLowerCase();
       
-      // Handle state abbreviations
+      console.log('Extracted location candidate:', location);
+      
+      // Check our city mapping first
+      if (CITY_STATE_MAP[location]) {
+        console.log('Found in city mapping:', CITY_STATE_MAP[location]);
+        return CITY_STATE_MAP[location];
+      }
+      
+      // Handle state abbreviations from original match
       if (match[2]) {
         const state = match[2].length === 2 ? match[2].toUpperCase() : toTitleCase(match[2]);
-        location = `${toTitleCase(location)}, ${state}`;
+        location = `${toTitleCase(match[1])}, ${state}`;
       } else {
-        location = formatLocation(location);
+        location = toTitleCase(match[1]);
       }
       
       if (location.length > 2) {
@@ -159,30 +238,11 @@ const extractLocation = (text: string): string => {
 };
 
 const formatLocation = (location: string): string => {
-  // Handle common city/state combinations
-  const cityStateMap: { [key: string]: string } = {
-    'los angeles ca': 'Los Angeles, CA',
-    'new york ny': 'New York, NY',
-    'san francisco ca': 'San Francisco, CA',
-    'chicago il': 'Chicago, IL',
-    'houston tx': 'Houston, TX',
-    'phoenix az': 'Phoenix, AZ',
-    'philadelphia pa': 'Philadelphia, PA',
-    'san antonio tx': 'San Antonio, TX',
-    'san diego ca': 'San Diego, CA',
-    'dallas tx': 'Dallas, TX',
-    'austin tx': 'Austin, TX',
-    'seattle wa': 'Seattle, WA',
-    'denver co': 'Denver, CO',
-    'boston ma': 'Boston, MA',
-    'miami fl': 'Miami, FL',
-    'atlanta ga': 'Atlanta, GA'
-  };
-
-  const normalized = location.toLowerCase().replace(/[,\s]+/g, ' ').trim();
+  const normalized = location.toLowerCase().trim();
   
-  if (cityStateMap[normalized]) {
-    return cityStateMap[normalized];
+  // Check our enhanced city mapping first
+  if (CITY_STATE_MAP[normalized]) {
+    return CITY_STATE_MAP[normalized];
   }
   
   // Try to format as Title Case with proper comma placement
@@ -230,12 +290,13 @@ const getSuggestedSalary = (
       console.log('Using software engineer fallback:', roleData);
     }
     
-    // Get base salary range for experience level with safety checks
+    // Get base salary range for experience level with enhanced safety checks
     let baseRange = roleData[experienceLevel];
     console.log('Base range for', experienceLevel, ':', baseRange);
     
-    // Add safety check for baseRange
-    if (!baseRange || !Array.isArray(baseRange) || baseRange.length < 2) {
+    // Enhanced safety checks for baseRange
+    if (!baseRange || !Array.isArray(baseRange) || baseRange.length < 2 || 
+        typeof baseRange[0] !== 'number' || typeof baseRange[1] !== 'number') {
       console.log('Invalid baseRange, trying mid-level fallback');
       baseRange = roleData['mid-level'];
       
@@ -248,8 +309,9 @@ const getSuggestedSalary = (
     
     console.log('Final baseRange:', baseRange);
     
-    // Ensure we have a valid array with two numbers
-    if (!Array.isArray(baseRange) || baseRange.length < 2) {
+    // Final validation - ensure we have a valid array with two numbers
+    if (!Array.isArray(baseRange) || baseRange.length < 2 || 
+        typeof baseRange[0] !== 'number' || typeof baseRange[1] !== 'number') {
       console.error('Invalid baseRange after all fallbacks:', baseRange);
       return '$80,000 - $120,000 per year'; // Emergency fallback
     }
@@ -268,16 +330,16 @@ const getSuggestedSalary = (
       }
     }
     
-    // Apply adjustments
-    minSalary = Math.round(minSalary * locationMultiplier);
-    maxSalary = Math.round(maxSalary * locationMultiplier);
+    // Apply adjustments and convert from thousands to actual amounts
+    minSalary = Math.round(minSalary * locationMultiplier * 1000);
+    maxSalary = Math.round(maxSalary * locationMultiplier * 1000);
     
     console.log('Final salary range:', { minSalary, maxSalary, locationMultiplier });
     
     // Format based on employment type
     if (employmentType === 'contract') {
-      const hourlyMin = Math.round(minSalary / 2);
-      const hourlyMax = Math.round(maxSalary / 2);
+      const hourlyMin = Math.round(minSalary / 2000); // Assuming 2000 hours per year
+      const hourlyMax = Math.round(maxSalary / 2000);
       return `$${hourlyMin} - $${hourlyMax} per hour`;
     }
     
@@ -319,7 +381,7 @@ const getSuggestedBudget = (
     }
     
     const avgSalary = (baseRange[0] + baseRange[1]) / 2;
-    const hourlyRate = Math.round(avgSalary / 2);
+    const hourlyRate = Math.round(avgSalary / 2); // Convert from thousands to hourly
     
     // Estimate project budget based on duration
     const durationMatch = duration.match(/(\d+)\s*(month|week|day)/i);
@@ -456,26 +518,32 @@ export const enhancedAutoPopulateFromOverview = (
   websiteData: CompanyAnalysisData | null,
   currentFormData: UnifiedJobFormData
 ): Partial<UnifiedJobFormData> => {
-  console.log('=== ENHANCED AUTO-POPULATION WITH INTELLIGENT SALARY SUGGESTIONS ===');
+  console.log('=== ENHANCED AUTO-POPULATION WITH INTELLIGENT SUGGESTIONS ===');
   console.log('Overview:', overview);
   console.log('Website data:', websiteData);
   
   const updates: Partial<UnifiedJobFormData> = {};
   
-  // 1. Extract and format job title
+  // 1. Enhanced job title extraction
   if (!currentFormData.title?.trim()) {
     const titlePatterns = [
+      // "Senior react developer at..."
+      /^([^,\n.]+?)(?:\s+(?:at|for|with|in)\s)/i,
+      // "Looking for a Senior Developer"
       /(?:looking for|seeking|hiring|need)\s+(?:a\s+)?([^,\n.]+?)(?:\s+(?:for|at|with|in|position|role)|$)/i,
-      /^([^,\n.]+?)(?:\s+(?:for|at|with|in)\s)/i,
-      /(?:position|role|job):\s*([^,\n.]+)/i
+      // "Position: Developer"
+      /(?:position|role|job):\s*([^,\n.]+)/i,
+      // First meaningful phrase before contextual words
+      /^([a-zA-Z\s]+?)(?:\s+(?:at|for|with|in|position|role|job))/i
     ];
     
     for (const pattern of titlePatterns) {
       const match = overview.match(pattern);
       if (match && match[1]) {
         const rawTitle = match[1].trim();
-        if (rawTitle.length > 2 && !['the', 'a', 'an', 'we', 'our'].includes(rawTitle.toLowerCase())) {
+        if (rawTitle.length > 2 && !['the', 'a', 'an', 'we', 'our', 'i', 'am', 'looking'].includes(rawTitle.toLowerCase())) {
           updates.title = formatJobTitle(rawTitle);
+          console.log('Extracted title:', updates.title);
           break;
         }
       }
@@ -487,7 +555,7 @@ export const enhancedAutoPopulateFromOverview = (
     updates.companyName = websiteData.companyName;
   }
   
-  // 3. Enhanced location extraction
+  // 3. Enhanced location extraction with better city mapping
   if (!currentFormData.location?.trim()) {
     if (websiteData?.location) {
       updates.location = formatLocation(websiteData.location);
@@ -495,11 +563,12 @@ export const enhancedAutoPopulateFromOverview = (
       const extractedLocation = extractLocation(overview);
       if (extractedLocation) {
         updates.location = extractedLocation;
+        console.log('Extracted location:', extractedLocation);
       }
     }
   }
   
-  // 4. Enhanced skills extraction with job title context
+  // 4. Enhanced skills extraction with related skills and deduplication
   if (!currentFormData.skills?.trim()) {
     const jobTitle = updates.title || currentFormData.title;
     let extractedSkills = extractSkills(overview, jobTitle);
@@ -510,9 +579,21 @@ export const enhancedAutoPopulateFromOverview = (
     }
     
     if (extractedSkills) {
+      // Final deduplication pass
       const skillsArray = extractedSkills.split(',').map(s => s.trim()).filter(s => s.length > 0);
-      const uniqueSkills = Array.from(new Set(skillsArray));
-      updates.skills = uniqueSkills.join(', ');
+      const uniqueSkills = new Set<string>();
+      const lowerSkills = new Set<string>();
+      
+      skillsArray.forEach(skill => {
+        const lowerSkill = skill.toLowerCase();
+        if (!lowerSkills.has(lowerSkill)) {
+          lowerSkills.add(lowerSkill);
+          uniqueSkills.add(skill);
+        }
+      });
+      
+      updates.skills = Array.from(uniqueSkills).join(', ');
+      console.log('Final skills:', updates.skills);
     }
   }
   
@@ -534,7 +615,7 @@ export const enhancedAutoPopulateFromOverview = (
     updates.locationType = detectedLocationType;
   }
   
-  // 8. Intelligent salary/budget suggestions
+  // 8. Intelligent salary/budget suggestions with proper formatting
   const finalEmploymentType = updates.employmentType || currentFormData.employmentType;
   const finalExperienceLevel = updates.experienceLevel || currentFormData.experienceLevel;
   const finalJobTitle = updates.title || currentFormData.title;
@@ -562,7 +643,7 @@ export const enhancedAutoPopulateFromOverview = (
       }
     }
   } else {
-    // Handle full-time/part-time/contract salary
+    // Handle full-time/part-time/contract salary with proper formatting
     if (!currentFormData.salary?.trim()) {
       const extractedSalary = extractSalaryOrBudget(overview, false);
       if (extractedSalary) {
@@ -571,6 +652,7 @@ export const enhancedAutoPopulateFromOverview = (
         // Intelligent salary suggestion based on market data
         const suggestedSalary = getSuggestedSalary(finalJobTitle, finalExperienceLevel, finalLocation, finalEmploymentType);
         updates.salary = suggestedSalary;
+        console.log('Suggested salary:', suggestedSalary);
       }
     }
   }
