@@ -35,7 +35,7 @@ const processParagraph = (paragraph: string): string => {
     .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold mb-6 mt-8 text-gray-900 border-b-2 border-blue-200 pb-3">$1</h2>')
     .replace(/^# (.+)$/gm, '<h1 class="text-3xl font-bold mb-8 mt-8 text-gray-900 border-b-3 border-blue-300 pb-4">$1</h1>');
   
-  // If it contains headers, don't wrap in paragraph tags
+  // If it contains headers, don't wrap in paragraph tags and don't process as lists
   if (processed.includes('<h1') || processed.includes('<h2') || processed.includes('<h3')) {
     return processed;
   }
@@ -48,9 +48,17 @@ const processParagraph = (paragraph: string): string => {
     return processed;
   }
   
-  // Check if this paragraph contains lists
-  const hasBulletList = /^[-*•]\s+/m.test(processed);
-  const hasNumberedList = /^\d+\.\s+/m.test(processed);
+  // More precise list detection - only process as lists if multiple lines start with genuine list markers
+  const lines = processed.split('\n').filter(line => line.trim());
+  const hasBulletList = lines.length > 1 && lines.filter(line => /^[-*•]\s+/.test(line.trim())).length >= 2;
+  const hasNumberedList = lines.length > 1 && lines.filter(line => /^\d+\.\s+/.test(line.trim())).length >= 2;
+  
+  // Additional check: if it's just a single line with emphasis markers, don't treat as list
+  if (lines.length === 1 && (/^\*[^*]+\*$/.test(lines[0].trim()) || /^\*\*[^*]+\*\*$/.test(lines[0].trim()))) {
+    // Apply inline formatting and wrap as paragraph
+    processed = processInlineFormatting(processed);
+    return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${processed}</p>`;
+  }
   
   if (hasBulletList || hasNumberedList) {
     return processListParagraph(processed, hasNumberedList);
@@ -60,7 +68,6 @@ const processParagraph = (paragraph: string): string => {
   processed = processInlineFormatting(processed);
   
   // Convert to paragraph with line breaks
-  const lines = processed.split('\n').filter(line => line.trim());
   if (lines.length <= 1) {
     return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${processed}</p>`;
   } else {
@@ -92,8 +99,14 @@ const processListParagraph = (paragraph: string, isNumbered: boolean): string =>
         ? trimmedLine.replace(/^\d+\.\s+/, '')
         : trimmedLine.replace(/^[-*•]\s+/, '');
     } else if (trimmedLine) {
-      // Continue current item
-      currentItem += ' ' + trimmedLine;
+      // Continue current item (only if we're already in a list item)
+      if (currentItem) {
+        currentItem += ' ' + trimmedLine;
+      } else {
+        // This line doesn't start with a list marker and we're not in a list item
+        // Treat it as a regular paragraph line
+        listItems.push(processInlineFormatting(trimmedLine));
+      }
     }
   }
   
@@ -103,6 +116,11 @@ const processListParagraph = (paragraph: string, isNumbered: boolean): string =>
   }
   
   if (listItems.length === 0) return '';
+  
+  // If we only have one item, it might not actually be a list
+  if (listItems.length === 1 && !isNumbered && !/^[-*•]\s+/.test(paragraph.trim())) {
+    return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${listItems[0]}</p>`;
+  }
   
   // Limit the number of items displayed to avoid overwhelming lists
   const displayItems = listItems.slice(0, 8);
