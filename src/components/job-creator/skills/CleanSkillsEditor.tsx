@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -118,25 +119,33 @@ export const CleanSkillsEditor = ({
             
             return (
               <Card key={challenge.id} className="border border-gray-200">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                         <span className="text-sm font-medium text-blue-600">{index + 1}</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <Input
-                          value={challenge.question}
-                          onChange={(e) => updateChallenge(challenge.id, { question: e.target.value })}
-                          className="text-lg font-semibold border-none p-0 h-auto bg-transparent focus-visible:ring-0 w-full"
-                          placeholder="Challenge title..."
-                        />
-                        <div className="flex items-center gap-2 mt-2">
+                      <div className="flex-1 space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Challenge Title
+                          </label>
+                          <Input
+                            value={challenge.question}
+                            onChange={(e) => updateChallenge(challenge.id, { question: e.target.value })}
+                            className="text-lg font-semibold border-gray-300 bg-white px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter challenge title..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Response Type
+                          </label>
                           <Select
                             value={challenge.type}
                             onValueChange={(value: any) => updateChallenge(challenge.id, { type: value })}
                           >
-                            <SelectTrigger className="w-auto h-6 border-none p-0 bg-transparent text-xs text-gray-600">
+                            <SelectTrigger className="w-full h-10 bg-white border-gray-300 text-sm">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
