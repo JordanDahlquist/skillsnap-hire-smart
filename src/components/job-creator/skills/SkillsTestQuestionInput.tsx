@@ -1,5 +1,5 @@
 
-import { Upload, Link, Code } from "lucide-react";
+import { Upload, Link, Code, FileText, Video } from "lucide-react";
 
 interface SkillsTestQuestionInputProps {
   type: string;
@@ -13,7 +13,7 @@ export const SkillsTestQuestionInput = ({ type }: SkillsTestQuestionInputProps) 
           <input 
             type="text" 
             placeholder="Your answer here..." 
-            className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+            className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-700"
             disabled 
           />
         );
@@ -22,20 +22,26 @@ export const SkillsTestQuestionInput = ({ type }: SkillsTestQuestionInputProps) 
         return (
           <textarea 
             placeholder="Your detailed response here..." 
-            className="w-full bg-white border border-gray-300 rounded px-3 py-2 h-20 resize-none"
+            className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 h-24 resize-none text-gray-700"
             disabled 
           />
         );
 
-      case 'video_upload':
       case 'file_upload':
-      case 'pdf_upload':
         return (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-500 text-sm">
-              {type === 'video_upload' ? 'Click to upload video or record' : 'Click to upload file'}
-            </p>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600 font-medium mb-1">Click to upload file</p>
+            <p className="text-sm text-gray-500">PDF, DOC, TXT, ZIP up to 50MB</p>
+          </div>
+        );
+
+      case 'video_upload':
+        return (
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+            <Video className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600 font-medium mb-1">Click to upload video</p>
+            <p className="text-sm text-gray-500">MP4, WebM, MOV up to 50MB</p>
           </div>
         );
 
@@ -43,20 +49,30 @@ export const SkillsTestQuestionInput = ({ type }: SkillsTestQuestionInputProps) 
       case 'video_link':
       case 'url_submission':
         return (
-          <input 
-            type="url" 
-            placeholder="https://..." 
-            className="w-full bg-white border border-gray-300 rounded px-3 py-2"
-            disabled 
-          />
+          <div className="space-y-2">
+            <input 
+              type="url" 
+              placeholder="https://your-portfolio.com" 
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-700"
+              disabled 
+            />
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Link className="w-4 h-4" />
+              <span>Provide a valid URL link</span>
+            </div>
+          </div>
         );
 
       case 'code_submission':
         return (
-          <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm">
-            <div className="text-gray-500">// Your code here...</div>
+          <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm border">
+            <div className="flex items-center gap-2 mb-2 text-gray-400">
+              <Code className="w-4 h-4" />
+              <span className="text-xs">Code Editor</span>
+            </div>
+            <div className="text-gray-500">// Your code implementation here...</div>
             <div className="text-gray-600">function solution() {'{'}  </div>
-            <div className="text-gray-600 ml-4">// Implementation</div>
+            <div className="text-gray-600 ml-4">// Write your solution</div>
             <div className="text-gray-600">{'}'}</div>
           </div>
         );
@@ -66,7 +82,7 @@ export const SkillsTestQuestionInput = ({ type }: SkillsTestQuestionInputProps) 
           <input 
             type="text" 
             placeholder="Your answer here..." 
-            className="w-full bg-white border border-gray-300 rounded px-3 py-2"
+            className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-700"
             disabled 
           />
         );
@@ -74,7 +90,11 @@ export const SkillsTestQuestionInput = ({ type }: SkillsTestQuestionInputProps) 
   };
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <FileText className="w-4 h-4 text-gray-500" />
+        <span className="text-sm text-gray-600 font-medium">Preview - How candidates will see this</span>
+      </div>
       {renderInput()}
     </div>
   );
