@@ -3,10 +3,10 @@ import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, SkipForward, Settings } from "lucide-react";
+import { Sparkles, SkipForward } from "lucide-react";
 import { SkillsTestData } from "@/types/skillsAssessment";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
-import { RedesignedSkillsQuestionEditor } from "./skills/RedesignedSkillsQuestionEditor";
+import { SimplifiedSkillsStepEditor } from "./skills/SimplifiedSkillsStepEditor";
 import { SkillsTestPreview } from "./skills/SkillsTestPreview";
 import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
 
@@ -96,7 +96,7 @@ export const Step3SkillsTestGenerator = ({
               <div className="flex items-center gap-2">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Sparkles className="w-5 h-5 text-blue-600" />
-                  Skills Assessment Builder
+                  Skills Assessment
                 </CardTitle>
                 <Badge variant="outline" className="text-xs text-gray-600 bg-gray-50">
                   Optional
@@ -120,7 +120,7 @@ export const Step3SkillsTestGenerator = ({
                       Regenerating...
                     </div>
                   ) : (
-                    'Regenerate with AI'
+                    'Generate with AI'
                   )}
                 </Button>
                 <Button 
@@ -135,7 +135,7 @@ export const Step3SkillsTestGenerator = ({
             </div>
           </CardHeader>
           <CardContent className="flex-1 overflow-auto p-4">
-            <RedesignedSkillsQuestionEditor
+            <SimplifiedSkillsStepEditor
               skillsTestData={skillsTestData}
               onChange={onSkillsTestDataChange}
               onPreview={handlePreview}
@@ -151,7 +151,7 @@ export const Step3SkillsTestGenerator = ({
             <div className="flex items-center gap-2 mb-2">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Sparkles className="w-5 h-5 text-blue-600" />
-                Skills Assessment Generator
+                Skills Assessment
               </CardTitle>
               <Badge variant="outline" className="text-xs text-gray-600 bg-gray-50">
                 Optional
@@ -171,7 +171,7 @@ export const Step3SkillsTestGenerator = ({
                 Create Skills Assessment
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Choose how you'd like to create your skills assessment. You can generate questions with AI or build a custom assessment from scratch.
+                Create assessment steps to evaluate candidate skills. You can generate with AI or build custom steps.
               </p>
               <div className="flex flex-col gap-3">
                 <Button 
@@ -198,7 +198,6 @@ export const Step3SkillsTestGenerator = ({
                   className="border-blue-200 text-blue-700 hover:bg-blue-50"
                   size="default"
                 >
-                  <Settings className="w-4 h-4 mr-2" />
                   Build Custom Assessment
                 </Button>
                 <Button 
@@ -208,11 +207,11 @@ export const Step3SkillsTestGenerator = ({
                   size="default"
                 >
                   <SkipForward className="w-4 h-4 mr-2" />
-                  Skip Skills Test
+                  Skip for Now
                 </Button>
               </div>
               <p className="text-xs text-gray-500 mt-4">
-                You can always add a skills test later after publishing your job
+                You can always add a skills assessment later
               </p>
             </div>
           </CardContent>
