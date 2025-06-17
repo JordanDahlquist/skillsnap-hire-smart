@@ -1,3 +1,4 @@
+
 import { SkillsTestData } from "./skillsAssessment";
 import { InterviewQuestionsData } from "./interviewQuestions";
 
@@ -97,6 +98,9 @@ export interface UnifiedJobCreatorActions {
   
   // Form population from existing job
   populateFormFromJob: (job: any) => void;
+  
+  // Reset actions
+  resetInterviewQuestions: () => void;
 }
 
 export interface UnifiedJobCreatorPanelProps {

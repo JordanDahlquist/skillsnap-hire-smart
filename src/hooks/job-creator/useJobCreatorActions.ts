@@ -80,6 +80,18 @@ export const createJobCreatorActions = (
       }
     },
 
+    resetInterviewQuestions: () => {
+      setState((prev: any) => ({
+        ...prev,
+        generatedInterviewQuestions: "",
+        interviewQuestionsData: {
+          questions: [],
+          mode: 'ai_generated'
+        },
+        interviewQuestionsViewState: 'initial'
+      }));
+    },
+
     populateFormFromJob: (job) => {
       console.log('populateFormFromJob called with job:', job);
       

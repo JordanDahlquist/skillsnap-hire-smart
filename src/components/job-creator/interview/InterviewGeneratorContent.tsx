@@ -53,7 +53,7 @@ export const InterviewGeneratorContent = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => actions.setInterviewQuestionsViewState('initial')} 
+                onClick={actions.resetInterviewQuestions} 
                 className="text-xs h-8 px-3 text-gray-600 hover:text-gray-900"
               >
                 Start Over
