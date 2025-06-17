@@ -10,6 +10,7 @@ import { ArrowLeft, ArrowRight, Clock, FileText, Upload, Link, Type, AlertCircle
 import { Job } from "@/types";
 import { SkillsQuestion, SkillsResponse } from "@/types/skillsAssessment";
 import { SkillsFileUpload } from "../SkillsFileUpload";
+import { MarkdownTextRenderer } from "../MarkdownTextRenderer";
 import { toast } from "sonner";
 
 interface SkillsAssessmentStepProps {
@@ -84,7 +85,7 @@ export const SkillsAssessmentStep = ({
     }
   }, [formData.skillsTestResponses]);
 
-  // Validation
+  // Enhanced validation logic
   useEffect(() => {
     const errors: { [key: string]: string } = {};
     let isValid = true;
@@ -92,13 +93,28 @@ export const SkillsAssessmentStep = ({
     skillsData.questions.forEach((question) => {
       if (question.required) {
         const response = responses[question.id];
-        if (!response || !response.answer?.trim()) {
+        
+        // Check if response exists and has appropriate content based on question type
+        if (!response) {
           errors[question.id] = 'This field is required';
           isValid = false;
+        } else if (question.type === 'file_upload') {
+          // For file uploads, check if we have a file URL
+          if (!response.fileUrl || !response.answer?.trim()) {
+            errors[question.id] = 'Please upload a file';
+            isValid = false;
+          }
+        } else {
+          // For text responses, check if answer exists and is not empty
+          if (!response.answer?.trim()) {
+            errors[question.id] = 'This field is required';
+            isValid = false;
+          }
         }
       }
     });
 
+    console.log('Validation state:', { errors, isValid, responses });
     setValidationErrors(errors);
     onValidationChange(isValid);
   }, [responses, skillsData.questions, onValidationChange]);
@@ -114,6 +130,7 @@ export const SkillsAssessmentStep = ({
       }
     };
     
+    console.log('Updating response:', { questionId, updates, updatedResponses });
     setResponses(updatedResponses);
     
     // Convert to array for form data
@@ -123,6 +140,8 @@ export const SkillsAssessmentStep = ({
 
   const handleSubmit = () => {
     const hasErrors = Object.keys(validationErrors).length > 0;
+    console.log('Submit attempt:', { hasErrors, validationErrors, responses });
+    
     if (hasErrors) {
       toast.error("Please complete all required fields before continuing.");
       return;
@@ -172,11 +191,7 @@ export const SkillsAssessmentStep = ({
             <CardTitle className="text-lg">Instructions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
-              {skillsData.instructions.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-3">{paragraph}</p>
-              ))}
-            </div>
+            <MarkdownTextRenderer text={skillsData.instructions} />
           </CardContent>
         </Card>
       )}
@@ -222,9 +237,7 @@ export const SkillsAssessmentStep = ({
                 {/* Instructions */}
                 {question.candidateInstructions && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-blue-800 leading-relaxed">
-                      {question.candidateInstructions}
-                    </p>
+                    <MarkdownTextRenderer text={question.candidateInstructions} />
                   </div>
                 )}
 
@@ -234,6 +247,7 @@ export const SkillsAssessmentStep = ({
                     <SkillsFileUpload
                       questionId={question.id}
                       onFileUploaded={(result) => {
+                        console.log('File uploaded for question:', question.id, result);
                         updateResponse(question.id, {
                           answer: result.fileName,
                           fileUrl: result.url,

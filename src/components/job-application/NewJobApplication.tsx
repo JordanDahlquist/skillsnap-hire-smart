@@ -61,6 +61,13 @@ export const NewJobApplication = () => {
           .single();
         
         if (error) throw error;
+        console.log('Fetched job data:', {
+          id: data.id,
+          title: data.title,
+          hasSkillsTest: !!data.generated_test,
+          hasInterviewQuestions: !!data.generated_interview_questions,
+          interviewQuestionsLength: data.generated_interview_questions?.length || 0
+        });
         setJob(data);
       } catch (error) {
         console.error('Error fetching job:', error);
@@ -99,10 +106,18 @@ export const NewJobApplication = () => {
   const steps = ['Overview'];
   if (job.status === 'active') {
     steps.push('Personal Info');
-    if (job.generated_test) steps.push('Skills Test');
-    if (job.generated_interview_questions) steps.push('Video Interview');
+    if (job.generated_test) {
+      console.log('Adding Skills Test step');
+      steps.push('Skills Test');
+    }
+    if (job.generated_interview_questions && job.generated_interview_questions.trim()) {
+      console.log('Adding Video Interview step', { questionsLength: job.generated_interview_questions.length });
+      steps.push('Video Interview');
+    }
     steps.push('Review & Submit');
   }
+
+  console.log('Application steps:', steps);
 
   const stepLabels = steps;
   
@@ -126,22 +141,27 @@ export const NewJobApplication = () => {
   };
 
   const updateStepValidation = (step: number, isValid: boolean) => {
+    console.log('Step validation update:', { step, isValid });
     setStepValidations(prev => ({ ...prev, [step]: isValid }));
   };
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
+      console.log('Moving to next step:', currentStep + 1);
       setCurrentStep(prev => prev + 1);
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
+      console.log('Moving to previous step:', currentStep - 1);
       setCurrentStep(prev => prev - 1);
     }
   };
 
   const renderCurrentStep = () => {
+    console.log('Rendering step:', currentStep, 'of', steps.length, 'steps:', steps);
+    
     if (currentStep === 0) {
       return <JobOverviewSection job={job} onContinue={nextStep} />;
     }
@@ -157,7 +177,9 @@ export const NewJobApplication = () => {
 
     let stepIndex = 1;
     
+    // Personal Info Step
     if (currentStep === stepIndex) {
+      console.log('Rendering Personal Info step');
       return (
         <PersonalInfoForm
           data={formData.personalInfo}
@@ -169,7 +191,9 @@ export const NewJobApplication = () => {
     }
     stepIndex++;
     
+    // Skills Test Step (if enabled)
     if (job.generated_test && currentStep === stepIndex) {
+      console.log('Rendering Skills Assessment step');
       return (
         <SkillsAssessmentStep
           job={job}
@@ -184,7 +208,9 @@ export const NewJobApplication = () => {
     
     if (job.generated_test) stepIndex++;
     
-    if (job.generated_interview_questions && currentStep === stepIndex) {
+    // Video Interview Step (if enabled)
+    if (job.generated_interview_questions && job.generated_interview_questions.trim() && currentStep === stepIndex) {
+      console.log('Rendering Video Interview step', { currentStep, stepIndex });
       return (
         <VideoInterview
           questions={job.generated_interview_questions}
@@ -197,10 +223,11 @@ export const NewJobApplication = () => {
       );
     }
     
-    if (job.generated_interview_questions) stepIndex++;
+    if (job.generated_interview_questions && job.generated_interview_questions.trim()) stepIndex++;
     
+    // Review & Submit Step
     if (currentStep === stepIndex) {
-      // Use ApplicationReview instead of ReviewSubmitStep to ensure correct data flow
+      console.log('Rendering Review & Submit step');
       return (
         <ApplicationReview
           job={job}
@@ -216,6 +243,7 @@ export const NewJobApplication = () => {
       );
     }
 
+    console.log('No matching step found for currentStep:', currentStep);
     return null;
   };
 
