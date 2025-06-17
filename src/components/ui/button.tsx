@@ -12,6 +12,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "",
+        solid: "",
         "glass-premium": "",
         destructive: "",
         outline: "",
@@ -50,6 +51,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       const isBlack = currentTheme === 'black';
       
       switch (variant) {
+        case 'solid':
+          if (isBlack) {
+            return "bg-white text-black border border-white hover:bg-gray-100 shadow-lg hover:shadow-xl";
+          }
+          return isDark 
+            ? "bg-white text-black border border-white hover:bg-gray-100 shadow-lg hover:shadow-xl"
+            : "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 hover:border-blue-700 shadow-lg hover:shadow-xl";
+            
         case 'default':
           if (isBlack) {
             return "bg-black text-white border border-white/20 hover:bg-gray-900 hover:border-white/30 shadow-lg hover:shadow-xl";

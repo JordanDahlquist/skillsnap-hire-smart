@@ -156,7 +156,7 @@ export const SkillsAssessmentStep = ({
           <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Skills Assessment</h3>
           <p className="text-gray-600 mb-6">This position doesn't require a skills assessment.</p>
-          <Button onClick={onNext}>Continue to Next Step</Button>
+          <Button variant="solid" onClick={onNext}>Continue to Next Step</Button>
         </CardContent>
       </Card>
     );
@@ -300,7 +300,7 @@ export const SkillsAssessmentStep = ({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button onClick={handleSubmit}>
+        <Button variant="solid" onClick={handleSubmit}>
           Continue
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
