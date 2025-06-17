@@ -1,8 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { SkillsTestData } from "@/types/skillsAssessment";
 import { UnifiedJobFormData, CompanyAnalysisData, WritingTone } from "@/types/jobForm";
+import { InterviewQuestionsData, InterviewQuestion } from "@/types/interviewQuestions";
 
 export const useJobContentGeneration = () => {
   const { toast } = useToast();
@@ -141,7 +141,8 @@ export const useJobContentGeneration = () => {
     generatedJobPost: string,
     skillsTestData: SkillsTestData,
     setIsGenerating: (loading: boolean) => void,
-    setGeneratedInterviewQuestions: (content: string) => void
+    setInterviewQuestionsData: (data: InterviewQuestionsData) => void,
+    setInterviewQuestionsViewState: (viewState: 'initial' | 'editor' | 'preview') => void
   ) => {
     setIsGenerating(true);
     try {
@@ -156,10 +157,26 @@ export const useJobContentGeneration = () => {
 
       if (response.error) throw response.error;
       
-      setGeneratedInterviewQuestions(response.data.questions);
+      // Parse the AI-generated text into structured InterviewQuestion objects
+      const generatedText = response.data.questions;
+      const parsedQuestions = parseInterviewQuestionsFromText(generatedText);
+      
+      // Set the structured data directly into the questions builder
+      const interviewQuestionsData: InterviewQuestionsData = {
+        questions: parsedQuestions,
+        mode: 'ai_generated',
+        estimatedCompletionTime: parsedQuestions.length * 5, // Estimate 5 minutes per question
+        instructions: 'Please answer the following interview questions to help us better understand your qualifications and fit for this role.'
+      };
+      
+      setInterviewQuestionsData(interviewQuestionsData);
+      
+      // Switch to editor view to show the pre-filled questions builder
+      setInterviewQuestionsViewState('editor');
+      
       toast({
         title: "Interview questions generated!",
-        description: "Your interview questions have been generated successfully.",
+        description: `${parsedQuestions.length} interview questions have been generated and added to your questions builder.`,
       });
     } catch (error) {
       console.error('Error generating interview questions:', error);
@@ -178,4 +195,80 @@ export const useJobContentGeneration = () => {
     generateSkillsQuestions,
     generateInterviewQuestions
   };
+};
+
+// Helper function to parse AI-generated text into structured InterviewQuestion objects
+const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
+  const questions: InterviewQuestion[] = [];
+  
+  // Split by numbered questions or bullet points
+  const questionBlocks = text.split(/(?:\d+\.|•|\*)\s+/).filter(block => block.trim());
+  
+  questionBlocks.forEach((block, index) => {
+    const lines = block.trim().split('\n').filter(line => line.trim());
+    if (lines.length === 0) return;
+    
+    const questionText = lines[0].trim();
+    if (questionText.length < 10) return; // Skip very short text that's not a real question
+    
+    // Determine question type based on content
+    let questionType: InterviewQuestion['type'] = 'video_response';
+    let videoMaxLength = 5;
+    
+    if (questionText.toLowerCase().includes('technical') || 
+        questionText.toLowerCase().includes('code') ||
+        questionText.toLowerCase().includes('implement')) {
+      questionType = 'technical';
+    } else if (questionText.toLowerCase().includes('behavior') ||
+               questionText.toLowerCase().includes('situation') ||
+               questionText.toLowerCase().includes('experience')) {
+      questionType = 'behavioral';
+    } else if (questionText.toLowerCase().includes('write') ||
+               questionText.toLowerCase().includes('describe in detail') ||
+               questionText.toLowerCase().includes('explain your approach')) {
+      questionType = 'text_response';
+    }
+    
+    // Adjust video length based on question complexity
+    if (questionText.length > 200 || questionText.toLowerCase().includes('detailed')) {
+      videoMaxLength = 10;
+    } else if (questionText.length < 100) {
+      videoMaxLength = 3;
+    }
+    
+    // Extract candidate instructions if present
+    let candidateInstructions = '';
+    if (lines.length > 1) {
+      const potentialInstructions = lines.slice(1).join(' ').trim();
+      if (potentialInstructions.toLowerCase().includes('please') || 
+          potentialInstructions.toLowerCase().includes('consider') ||
+          potentialInstructions.toLowerCase().includes('include')) {
+        candidateInstructions = potentialInstructions;
+      }
+    }
+    
+    questions.push({
+      id: crypto.randomUUID(),
+      question: questionText,
+      type: questionType,
+      required: index < 3, // Make first 3 questions required
+      order: index + 1,
+      videoMaxLength: questionType === 'video_response' ? videoMaxLength : undefined,
+      candidateInstructions: candidateInstructions || undefined
+    });
+  });
+  
+  // If we couldn't parse properly, create a fallback question
+  if (questions.length === 0) {
+    questions.push({
+      id: crypto.randomUUID(),
+      question: text.trim() || 'Tell us about your interest in this position and relevant experience.',
+      type: 'video_response',
+      required: true,
+      order: 1,
+      videoMaxLength: 5
+    });
+  }
+  
+  return questions;
 };

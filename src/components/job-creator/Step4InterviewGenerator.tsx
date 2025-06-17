@@ -4,7 +4,6 @@ import { InterviewQuestionEditor } from "./interview/InterviewQuestionEditor";
 import { InterviewQuestionPreview } from "./interview/InterviewQuestionPreview";
 import { InterviewQuestionsData } from "@/types/interviewQuestions";
 import { InterviewGeneratorInitialState } from "./interview/InterviewGeneratorInitialState";
-import { InterviewGeneratorContent } from "./interview/InterviewGeneratorContent";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video } from "lucide-react";
 
@@ -29,11 +28,7 @@ export const Step4InterviewGenerator = ({
   actions,
   onGenerateInterviewQuestions
 }: Step4InterviewGeneratorProps) => {
-  const hasAnyInterviewContent = Boolean(
-    generatedInterviewQuestions || interviewQuestionsData.questions.length > 0
-  );
-
-  // Render based on view state
+  // Render based on view state - unified flow for AI and custom
   if (interviewQuestionsViewState === 'editor') {
     return (
       <div className="h-full">
@@ -78,24 +73,12 @@ export const Step4InterviewGenerator = ({
     );
   }
 
-  // Initial state or showing generated content
-  if (!hasAnyInterviewContent) {
-    return (
-      <InterviewGeneratorInitialState
-        isGenerating={isGenerating}
-        actions={actions}
-        onGenerateInterviewQuestions={onGenerateInterviewQuestions}
-      />
-    );
-  }
-
-  // Show generated/structured content
+  // Initial state - both AI generation and custom building start here
   return (
-    <InterviewGeneratorContent
-      generatedInterviewQuestions={generatedInterviewQuestions}
-      interviewQuestionsData={interviewQuestionsData}
-      isEditingInterviewQuestions={isEditingInterviewQuestions}
+    <InterviewGeneratorInitialState
+      isGenerating={isGenerating}
       actions={actions}
+      onGenerateInterviewQuestions={onGenerateInterviewQuestions}
     />
   );
 };

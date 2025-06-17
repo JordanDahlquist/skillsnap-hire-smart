@@ -83,7 +83,6 @@ export const createJobCreatorActions = (
     resetInterviewQuestions: () => {
       setState((prev: any) => ({
         ...prev,
-        generatedInterviewQuestions: "",
         interviewQuestionsData: {
           questions: [],
           mode: 'ai_generated'

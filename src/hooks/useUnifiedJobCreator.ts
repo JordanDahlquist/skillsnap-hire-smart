@@ -40,7 +40,8 @@ export const useUnifiedJobCreator = (
       state.generatedJobPost,
       state.skillsTestData,
       actions.setIsGenerating,
-      actions.setGeneratedInterviewQuestions
+      actions.setInterviewQuestionsData,
+      actions.setInterviewQuestionsViewState
     );
   };
 
