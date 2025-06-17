@@ -120,18 +120,18 @@ export const CleanSkillsEditor = ({
               <Card key={challenge.id} className="border border-gray-200">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-sm font-medium text-blue-600">{index + 1}</span>
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <Input
                           value={challenge.question}
                           onChange={(e) => updateChallenge(challenge.id, { question: e.target.value })}
-                          className="text-base font-medium border-none p-0 h-auto bg-transparent focus-visible:ring-0"
+                          className="text-lg font-semibold border-none p-0 h-auto bg-transparent focus-visible:ring-0 w-full"
                           placeholder="Challenge title..."
                         />
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-2">
                           <Select
                             value={challenge.type}
                             onValueChange={(value: any) => updateChallenge(challenge.id, { type: value })}
@@ -151,7 +151,7 @@ export const CleanSkillsEditor = ({
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {!isEditing && (
                         <Button 
                           variant="ghost" 
