@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +23,7 @@ export const CleanSkillsEditor = ({
   jobTitle = "Position"
 }: CleanSkillsEditorProps) => {
   const [editingChallenge, setEditingChallenge] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState<string | null>(null);
 
   const addChallenge = () => {
     if (skillsTestData.questions.length >= 10) return;
@@ -116,7 +116,8 @@ export const CleanSkillsEditor = ({
           </div>
         ) : (
           skillsTestData.questions.map((challenge, index) => {
-            const isEditing = editingChallenge === challenge.id;
+            const isEditingInstructions = editingChallenge === challenge.id;
+            const isEditingChallengeTitle = editingTitle === challenge.id;
             
             return (
               <Card key={challenge.id} className="border border-gray-200">
@@ -131,13 +132,48 @@ export const CleanSkillsEditor = ({
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Challenge Title
                           </label>
-                          <Textarea
-                            value={challenge.question}
-                            onChange={(e) => updateChallenge(challenge.id, { question: e.target.value })}
-                            className="text-lg font-semibold border-gray-300 bg-white px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                            placeholder="Enter challenge title..."
-                            rows={2}
-                          />
+                          {isEditingChallengeTitle ? (
+                            <div className="space-y-2">
+                              <Textarea
+                                value={challenge.question}
+                                onChange={(e) => updateChallenge(challenge.id, { question: e.target.value })}
+                                className="text-lg font-semibold border-gray-300 bg-white px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                placeholder="Enter challenge title..."
+                                rows={2}
+                                autoFocus
+                              />
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => setEditingTitle(null)}
+                                  className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700"
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setEditingTitle(null)}
+                                  className="h-7 px-3 text-xs"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div 
+                              className="cursor-pointer hover:bg-gray-50 transition-colors p-3 rounded-lg border border-gray-200 min-h-[60px] flex items-center"
+                              onClick={() => setEditingTitle(challenge.id)}
+                            >
+                              {challenge.question ? (
+                                <h3 className="text-lg font-semibold text-gray-900 leading-tight">
+                                  {challenge.question}
+                                </h3>
+                              ) : (
+                                <p className="text-gray-500 italic text-sm">Click to add challenge title...</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -163,7 +199,7 @@ export const CleanSkillsEditor = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {!isEditing && (
+                      {!isEditingInstructions && !isEditingChallengeTitle && (
                         <Button 
                           variant="ghost" 
                           size="sm"
@@ -185,7 +221,7 @@ export const CleanSkillsEditor = ({
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                  {isEditing ? (
+                  {isEditingInstructions ? (
                     <div className="p-4 border-t border-gray-100">
                       <RichTextEditor
                         value={challenge.candidateInstructions || ""}
