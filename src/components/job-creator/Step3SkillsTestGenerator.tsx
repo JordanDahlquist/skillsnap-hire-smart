@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, SkipForward } from "lucide-react";
 import { SkillsTestData } from "@/types/skillsAssessment";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
-import { SimplifiedSkillsStepEditor } from "./skills/SimplifiedSkillsStepEditor";
-import { SkillsTestPreview } from "./skills/SkillsTestPreview";
+import { CleanSkillsEditor } from "./skills/CleanSkillsEditor";
+import { CleanSkillsPreview } from "./skills/CleanSkillsPreview";
 import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
 
 interface Step3SkillsTestGeneratorProps {
@@ -18,6 +18,7 @@ interface Step3SkillsTestGeneratorProps {
   actions: UnifiedJobCreatorActions;
   onGenerateQuestions: () => Promise<void>;
   onSkillsTestDataChange: (data: SkillsTestData) => void;
+  formData: any;
 }
 
 export const Step3SkillsTestGenerator = ({
@@ -27,7 +28,8 @@ export const Step3SkillsTestGenerator = ({
   isGenerating,
   actions,
   onGenerateQuestions,
-  onSkillsTestDataChange
+  onSkillsTestDataChange,
+  formData
 }: Step3SkillsTestGeneratorProps) => {
   // Smart initial view determination - if we have questions, show editor
   useEffect(() => {
@@ -82,9 +84,10 @@ export const Step3SkillsTestGenerator = ({
   switch (skillsTestViewState) {
     case 'preview':
       return (
-        <SkillsTestPreview
+        <CleanSkillsPreview
           skillsTestData={skillsTestData}
           onBack={handleBackToEditor}
+          jobTitle={formData.title}
         />
       );
 
@@ -120,7 +123,7 @@ export const Step3SkillsTestGenerator = ({
                       Regenerating...
                     </div>
                   ) : (
-                    'Generate with AI'
+                    'Regenerate'
                   )}
                 </Button>
                 <Button 
@@ -135,10 +138,11 @@ export const Step3SkillsTestGenerator = ({
             </div>
           </CardHeader>
           <CardContent className="flex-1 overflow-auto p-4">
-            <SimplifiedSkillsStepEditor
+            <CleanSkillsEditor
               skillsTestData={skillsTestData}
               onChange={onSkillsTestDataChange}
               onPreview={handlePreview}
+              jobTitle={formData.title}
             />
           </CardContent>
         </Card>
@@ -171,7 +175,7 @@ export const Step3SkillsTestGenerator = ({
                 Create Skills Assessment
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Create assessment steps to evaluate candidate skills. You can generate with AI or build custom steps.
+                Create assessment challenges to evaluate candidate skills. You can generate with AI or build custom challenges.
               </p>
               <div className="flex flex-col gap-3">
                 <Button 
@@ -202,7 +206,7 @@ export const Step3SkillsTestGenerator = ({
                 </Button>
                 <Button 
                   variant="outline"
-                  onClick={() => actions.setCurrentStep(4)}
+                  onClick={() => actions.setCurrentStep(5)}
                   className="text-gray-600 hover:text-gray-800"
                   size="default"
                 >

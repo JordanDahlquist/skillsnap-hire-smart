@@ -63,6 +63,7 @@ export const StepRenderer = ({
           actions={actions}
           onGenerateQuestions={onGenerateSkillsQuestions}
           onSkillsTestDataChange={actions.setSkillsTestData}
+          formData={state.formData}
         />
       );
     case 5:
