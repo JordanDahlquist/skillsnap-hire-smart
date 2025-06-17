@@ -2,144 +2,253 @@
 export const parseMarkdown = (text: string): string => {
   if (!text) return '';
   
-  // Pre-process: normalize line breaks and clean up spacing
-  let processedText = text
+  // Normalize input
+  const normalizedText = text
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
     .trim();
 
-  // Split into paragraphs and process each one
-  const paragraphs = processedText.split(/\n\s*\n/);
-  
-  const processedParagraphs = paragraphs.map(paragraph => {
-    if (!paragraph.trim()) return '';
-    
-    return processParagraph(paragraph);
-  });
-  
-  return processedParagraphs.filter(p => p.trim()).join('\n\n');
+  // Multi-pass processing
+  const contentBlocks = analyzeContentStructure(normalizedText);
+  return generateHTML(contentBlocks);
 };
 
-const processParagraph = (paragraph: string): string => {
-  let processed = paragraph.trim();
-  
-  // Handle section headers (e.g., "*Job Summary *", "*Key Responsibilities *")
-  processed = processed.replace(/^\*([^*]+)\*\s*$/gm, '<h2 class="text-2xl font-bold mb-6 mt-8 text-gray-900 border-b-2 border-blue-200 pb-3">$1</h2>');
-  
-  // Handle subsection headers (e.g., "**Requirements:**")
-  processed = processed.replace(/^\*\*([^*]+):\*\*\s*$/gm, '<h3 class="text-xl font-semibold mb-4 mt-6 text-gray-800">$1:</h3>');
-  
-  // Handle traditional markdown headers
-  processed = processed
-    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-semibold mb-4 mt-6 text-gray-800">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold mb-6 mt-8 text-gray-900 border-b-2 border-blue-200 pb-3">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 class="text-3xl font-bold mb-8 mt-8 text-gray-900 border-b-3 border-blue-300 pb-4">$1</h1>');
-  
-  // If it contains headers, don't wrap in paragraph tags and don't process as lists
-  if (processed.includes('<h1') || processed.includes('<h2') || processed.includes('<h3')) {
-    return processed;
+interface ContentBlock {
+  type: 'header' | 'list' | 'paragraph' | 'code';
+  level?: number; // for headers
+  content: string;
+  items?: string[]; // for lists
+  isNumbered?: boolean; // for lists
+}
+
+const analyzeContentStructure = (text: string): ContentBlock[] => {
+  const blocks: ContentBlock[] = [];
+  const lines = text.split('\n');
+  let currentBlock: ContentBlock | null = null;
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    
+    // Skip empty lines
+    if (!line) {
+      i++;
+      continue;
+    }
+
+    // Check for code blocks first
+    if (line.startsWith('```')) {
+      const codeBlock = processCodeBlock(lines, i);
+      blocks.push(codeBlock.block);
+      i = codeBlock.nextIndex;
+      continue;
+    }
+
+    // Check for headers
+    const headerResult = detectHeader(line);
+    if (headerResult) {
+      // Save any current block
+      if (currentBlock) {
+        blocks.push(currentBlock);
+        currentBlock = null;
+      }
+      
+      blocks.push({
+        type: 'header',
+        level: headerResult.level,
+        content: headerResult.content
+      });
+      i++;
+      continue;
+    }
+
+    // Check for list items
+    const listItemResult = detectListItem(line);
+    if (listItemResult) {
+      // If we're not in a list block or the list type changed, start a new one
+      if (!currentBlock || 
+          currentBlock.type !== 'list' || 
+          currentBlock.isNumbered !== listItemResult.isNumbered) {
+        
+        if (currentBlock) {
+          blocks.push(currentBlock);
+        }
+        
+        currentBlock = {
+          type: 'list',
+          content: '',
+          items: [],
+          isNumbered: listItemResult.isNumbered
+        };
+      }
+      
+      currentBlock.items!.push(listItemResult.content);
+      i++;
+      continue;
+    }
+
+    // Regular paragraph text
+    if (!currentBlock || currentBlock.type !== 'paragraph') {
+      if (currentBlock) {
+        blocks.push(currentBlock);
+      }
+      
+      currentBlock = {
+        type: 'paragraph',
+        content: line
+      };
+    } else {
+      // Continue current paragraph
+      currentBlock.content += '\n' + line;
+    }
+    
+    i++;
+  }
+
+  // Don't forget the last block
+  if (currentBlock) {
+    blocks.push(currentBlock);
+  }
+
+  return blocks;
+};
+
+const detectHeader = (line: string): { level: number; content: string } | null => {
+  // Main section headers: **Header** or *Header*
+  const boldHeaderMatch = line.match(/^\*\*([^*]+)\*\*\s*$/);
+  if (boldHeaderMatch) {
+    return { level: 2, content: boldHeaderMatch[1].trim() };
   }
   
-  // Enhanced code blocks
-  processed = processed
-    .replace(/```([^`]+)```/g, '<pre class="bg-gray-100 border border-gray-300 rounded-lg p-4 my-6 overflow-x-auto shadow-sm"><code class="text-sm font-mono text-gray-800">$1</code></pre>');
+  const italicHeaderMatch = line.match(/^\*([^*]+)\*\s*$/);
+  if (italicHeaderMatch) {
+    return { level: 2, content: italicHeaderMatch[1].trim() };
+  }
+
+  // Subsection headers: **Header:** or **Header**:
+  const subHeaderMatch = line.match(/^\*\*([^*]+):\*\*\s*$/) || line.match(/^\*\*([^*]+)\*\*:\s*$/);
+  if (subHeaderMatch) {
+    return { level: 3, content: subHeaderMatch[1].trim() + ':' };
+  }
+
+  // Traditional markdown headers
+  const h3Match = line.match(/^### (.+)$/);
+  if (h3Match) {
+    return { level: 3, content: h3Match[1].trim() };
+  }
+
+  const h2Match = line.match(/^## (.+)$/);
+  if (h2Match) {
+    return { level: 2, content: h2Match[1].trim() };
+  }
+
+  const h1Match = line.match(/^# (.+)$/);
+  if (h1Match) {
+    return { level: 1, content: h1Match[1].trim() };
+  }
+
+  return null;
+};
+
+const detectListItem = (line: string): { content: string; isNumbered: boolean } | null => {
+  // Bullet list item
+  const bulletMatch = line.match(/^[-*•]\s+(.+)$/);
+  if (bulletMatch) {
+    return { content: bulletMatch[1].trim(), isNumbered: false };
+  }
+
+  // Numbered list item
+  const numberedMatch = line.match(/^\d+\.\s+(.+)$/);
+  if (numberedMatch) {
+    return { content: numberedMatch[1].trim(), isNumbered: true };
+  }
+
+  return null;
+};
+
+const processCodeBlock = (lines: string[], startIndex: number): { block: ContentBlock; nextIndex: number } => {
+  let i = startIndex + 1;
+  let codeContent = '';
   
-  if (processed.includes('<pre')) {
-    return processed;
+  while (i < lines.length && !lines[i].trim().startsWith('```')) {
+    codeContent += lines[i] + '\n';
+    i++;
   }
   
-  // More precise list detection - only process as lists if multiple lines start with genuine list markers
-  const lines = processed.split('\n').filter(line => line.trim());
-  const hasBulletList = lines.length > 1 && lines.filter(line => /^[-*•]\s+/.test(line.trim())).length >= 2;
-  const hasNumberedList = lines.length > 1 && lines.filter(line => /^\d+\.\s+/.test(line.trim())).length >= 2;
+  return {
+    block: {
+      type: 'code',
+      content: codeContent.trim()
+    },
+    nextIndex: i + 1
+  };
+};
+
+const generateHTML = (blocks: ContentBlock[]): string => {
+  return blocks.map(block => {
+    switch (block.type) {
+      case 'header':
+        return generateHeaderHTML(block);
+      case 'list':
+        return generateListHTML(block);
+      case 'paragraph':
+        return generateParagraphHTML(block);
+      case 'code':
+        return generateCodeHTML(block);
+      default:
+        return '';
+    }
+  }).filter(html => html.trim()).join('\n\n');
+};
+
+const generateHeaderHTML = (block: ContentBlock): string => {
+  const content = processInlineFormatting(block.content);
   
-  // Additional check: if it's just a single line with emphasis markers, don't treat as list
-  if (lines.length === 1 && (/^\*[^*]+\*$/.test(lines[0].trim()) || /^\*\*[^*]+\*\*$/.test(lines[0].trim()))) {
-    // Apply inline formatting and wrap as paragraph
-    processed = processInlineFormatting(processed);
-    return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${processed}</p>`;
+  switch (block.level) {
+    case 1:
+      return `<h1 class="text-3xl font-bold mb-8 mt-8 text-gray-900 border-b-3 border-blue-300 pb-4">${content}</h1>`;
+    case 2:
+      return `<h2 class="text-2xl font-bold mb-6 mt-8 text-gray-900 border-b-2 border-blue-200 pb-3">${content}</h2>`;
+    case 3:
+      return `<h3 class="text-xl font-semibold mb-4 mt-6 text-gray-800">${content}</h3>`;
+    default:
+      return `<h2 class="text-2xl font-bold mb-6 mt-8 text-gray-900 border-b-2 border-blue-200 pb-3">${content}</h2>`;
   }
+};
+
+const generateListHTML = (block: ContentBlock): string => {
+  if (!block.items || block.items.length === 0) return '';
   
-  if (hasBulletList || hasNumberedList) {
-    return processListParagraph(processed, hasNumberedList);
-  }
+  const listType = block.isNumbered ? 'ol' : 'ul';
+  const listClass = block.isNumbered 
+    ? 'list-decimal list-inside space-y-3 mb-8 pl-6'
+    : 'list-disc list-inside space-y-3 mb-8 pl-6';
   
-  // Apply inline formatting
-  processed = processInlineFormatting(processed);
+  const displayItems = block.items.slice(0, 8);
+  const itemsHTML = displayItems
+    .map(item => `<li class="ml-4 mb-3 leading-relaxed text-gray-700 text-lg">${processInlineFormatting(item)}</li>`)
+    .join('');
   
-  // Convert to paragraph with line breaks
+  const moreItemsNote = block.items.length > 8 
+    ? `<li class="ml-4 mb-3 leading-relaxed text-gray-500 text-lg italic">... and ${block.items.length - 8} more</li>`
+    : '';
+  
+  return `<${listType} class="${listClass}">${itemsHTML}${moreItemsNote}</${listType}>`;
+};
+
+const generateParagraphHTML = (block: ContentBlock): string => {
+  const content = processInlineFormatting(block.content);
+  const lines = content.split('\n').filter(line => line.trim());
+  
   if (lines.length <= 1) {
-    return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${processed}</p>`;
+    return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${content}</p>`;
   } else {
     return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${lines.join('<br>')}</p>`;
   }
 };
 
-const processListParagraph = (paragraph: string, isNumbered: boolean): string => {
-  const lines = paragraph.split('\n').filter(line => line.trim());
-  const listItems: string[] = [];
-  let currentItem = '';
-  
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    
-    // Check if this line starts a new list item
-    const isNewItem = isNumbered 
-      ? /^\d+\.\s+/.test(trimmedLine)
-      : /^[-*•]\s+/.test(trimmedLine);
-    
-    if (isNewItem) {
-      // Save previous item if exists
-      if (currentItem.trim()) {
-        listItems.push(processInlineFormatting(currentItem.trim()));
-      }
-      
-      // Start new item (remove the marker)
-      currentItem = isNumbered 
-        ? trimmedLine.replace(/^\d+\.\s+/, '')
-        : trimmedLine.replace(/^[-*•]\s+/, '');
-    } else if (trimmedLine) {
-      // Continue current item (only if we're already in a list item)
-      if (currentItem) {
-        currentItem += ' ' + trimmedLine;
-      } else {
-        // This line doesn't start with a list marker and we're not in a list item
-        // Treat it as a regular paragraph line
-        listItems.push(processInlineFormatting(trimmedLine));
-      }
-    }
-  }
-  
-  // Don't forget the last item
-  if (currentItem.trim()) {
-    listItems.push(processInlineFormatting(currentItem.trim()));
-  }
-  
-  if (listItems.length === 0) return '';
-  
-  // If we only have one item, it might not actually be a list
-  if (listItems.length === 1 && !isNumbered && !/^[-*•]\s+/.test(paragraph.trim())) {
-    return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${listItems[0]}</p>`;
-  }
-  
-  // Limit the number of items displayed to avoid overwhelming lists
-  const displayItems = listItems.slice(0, 8);
-  
-  // Generate HTML list with enhanced styling
-  const listType = isNumbered ? 'ol' : 'ul';
-  const listClass = isNumbered 
-    ? 'list-decimal list-inside space-y-3 mb-8 pl-6'
-    : 'list-disc list-inside space-y-3 mb-8 pl-6';
-  
-  const itemsHtml = displayItems
-    .map(item => `<li class="ml-4 mb-3 leading-relaxed text-gray-700 text-lg">${item}</li>`)
-    .join('');
-  
-  const moreItemsNote = listItems.length > 8 
-    ? `<li class="ml-4 mb-3 leading-relaxed text-gray-500 text-lg italic">... and ${listItems.length - 8} more</li>`
-    : '';
-  
-  return `<${listType} class="${listClass}">${itemsHtml}${moreItemsNote}</${listType}>`;
+const generateCodeHTML = (block: ContentBlock): string => {
+  return `<pre class="bg-gray-100 border border-gray-300 rounded-lg p-4 my-6 overflow-x-auto shadow-sm"><code class="text-sm font-mono text-gray-800">${block.content}</code></pre>`;
 };
 
 const processInlineFormatting = (text: string): string => {
