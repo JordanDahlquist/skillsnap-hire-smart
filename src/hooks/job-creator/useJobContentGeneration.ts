@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { SkillsTestData } from "@/types/skillsAssessment";
@@ -80,12 +79,43 @@ export const useJobContentGeneration = () => {
       let skillsTestData: SkillsTestData;
       
       if (response.data.skillsTest && response.data.skillsTest.questions) {
-        // New structured response with question types and metadata
-        skillsTestData = {
-          questions: response.data.skillsTest.questions.map((q: any, index: number) => ({
+        // Post-process questions to fix titles and instructions
+        const processedQuestions = response.data.skillsTest.questions.map((q: any, index: number) => {
+          // Clean up the title - should be short and concise
+          let cleanTitle = q.title || q.question || `Challenge ${index + 1}`;
+          
+          // If title is too long (more than 60 characters), truncate and move excess to instructions
+          if (cleanTitle.length > 60) {
+            const words = cleanTitle.split(' ');
+            let shortTitle = '';
+            let remainingContent = '';
+            
+            // Build title word by word until we hit reasonable length
+            for (let i = 0; i < words.length; i++) {
+              if ((shortTitle + words[i]).length <= 60) {
+                shortTitle += (shortTitle ? ' ' : '') + words[i];
+              } else {
+                remainingContent = words.slice(i).join(' ');
+                break;
+              }
+            }
+            
+            cleanTitle = shortTitle;
+            
+            // Add remaining content to instructions if there's excess
+            if (remainingContent && !q.candidateInstructions?.includes(remainingContent)) {
+              q.candidateInstructions = remainingContent + 
+                (q.candidateInstructions ? '\n\n' + q.candidateInstructions : '');
+            }
+          }
+          
+          // Ensure title doesn't end with periods or colons
+          cleanTitle = cleanTitle.replace(/[.:]$/, '');
+          
+          return {
             id: crypto.randomUUID(),
-            title: q.title || undefined, // Include the custom title if present
-            question: q.question || q.challenge || '',
+            title: cleanTitle,
+            question: q.question || q.challenge || cleanTitle,
             type: q.type || 'text',
             candidateInstructions: q.candidateInstructions || q.instructions,
             evaluationGuidelines: q.evaluationGuidelines,
@@ -97,7 +127,11 @@ export const useJobContentGeneration = () => {
             timeLimit: q.timeLimit,
             allowedFileTypes: q.allowedFileTypes,
             maxFileSize: q.maxFileSize
-          })),
+          };
+        });
+
+        skillsTestData = {
+          questions: processedQuestions,
           maxQuestions: response.data.skillsTest.maxQuestions || 5,
           mode: 'ai_generated',
           estimatedCompletionTime: response.data.skillsTest.estimatedCompletionTime || 30,
@@ -108,6 +142,7 @@ export const useJobContentGeneration = () => {
         skillsTestData = {
           questions: response.data.questions.map((q: any, index: number) => ({
             id: crypto.randomUUID(),
+            title: `Challenge ${index + 1}`,
             question: typeof q === 'string' ? q : q.question || q.text || '',
             type: 'text' as const,
             required: true,

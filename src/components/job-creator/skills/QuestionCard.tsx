@@ -18,7 +18,8 @@ import {
   Video,
   Link,
   Code,
-  Upload
+  Upload,
+  AlertTriangle
 } from "lucide-react";
 import { SkillsQuestion } from "@/types/skillsAssessment";
 import { QuestionTypeSelector } from "./QuestionTypeSelector";
@@ -77,6 +78,10 @@ export const QuestionCard = ({
 
   const IconComponent = getQuestionIcon(question.type);
   const isComplete = question.question.trim().length > 0;
+  
+  // Check if title is too long
+  const titleLength = question.title?.length || 0;
+  const isTitleTooLong = titleLength > 60;
 
   const handleTypeChange = (newType: string) => {
     onUpdate({ type: newType as any });
@@ -107,7 +112,7 @@ export const QuestionCard = ({
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h4 className="font-medium text-gray-900">
-                {question.question || `Question ${index + 1}`}
+                {question.title || question.question || `Question ${index + 1}`}
               </h4>
               {isComplete && (
                 <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">
@@ -178,6 +183,39 @@ export const QuestionCard = ({
           </div>
         )}
 
+        {/* Challenge Title */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <Label htmlFor={`title-${question.id}`} className="text-sm font-medium">
+              Challenge Title
+            </Label>
+            <div className="flex items-center gap-2 text-xs">
+              {isTitleTooLong && (
+                <div className="flex items-center gap-1 text-amber-600">
+                  <AlertTriangle className="w-3 h-3" />
+                  <span>Too long</span>
+                </div>
+              )}
+              <span className={`${isTitleTooLong ? 'text-amber-600' : 'text-gray-500'}`}>
+                {titleLength}/60
+              </span>
+            </div>
+          </div>
+          <Input
+            id={`title-${question.id}`}
+            value={question.title || ""}
+            onChange={(e) => onUpdate({ title: e.target.value })}
+            placeholder="Brief, one-sentence description (e.g., 'Build a responsive landing page')"
+            className={`mt-1 ${isTitleTooLong ? 'border-amber-300 bg-amber-50' : ''}`}
+          />
+          {isTitleTooLong && (
+            <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" />
+              Titles should be concise. Move detailed instructions to the instructions section below.
+            </p>
+          )}
+        </div>
+
         {/* Question Text */}
         <div>
           <Label htmlFor={`question-${question.id}`} className="text-sm font-medium">
@@ -202,12 +240,12 @@ export const QuestionCard = ({
             id={`instructions-${question.id}`}
             value={question.candidateInstructions || ""}
             onChange={(e) => onUpdate({ candidateInstructions: e.target.value })}
-            placeholder="Provide clear instructions and context for this question..."
+            placeholder="Provide detailed instructions, requirements, deliverables, and guidance for this challenge..."
             className="mt-1 resize-none"
             rows={3}
           />
           <p className="text-xs text-gray-500 mt-1">
-            Use **bold** for emphasis, bullet points with -, and ## for headings
+            Use **bold** for emphasis, bullet points with -, and ## for headings. This is where detailed instructions should go.
           </p>
         </div>
 
