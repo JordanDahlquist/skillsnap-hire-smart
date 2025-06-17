@@ -1,4 +1,3 @@
-
 import { UnifiedJobFormData, CompanyAnalysisData } from "@/types/jobForm";
 
 type EmploymentType = "full-time" | "part-time" | "contract" | "project";
@@ -10,6 +9,11 @@ const toTitleCase = (str: string): string => {
   return str.replace(/\w\S*/g, (txt) => 
     txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
   );
+};
+
+// Escape special regex characters
+const escapeRegex = (str: string): string => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
 const formatJobTitle = (title: string): string => {
@@ -46,9 +50,10 @@ const formatJobTitle = (title: string): string => {
 
   let formatted = toTitleCase(title.trim());
   
-  // Apply special casing
+  // Apply special casing with proper regex escaping
   Object.entries(specialCases).forEach(([key, value]) => {
-    const regex = new RegExp(`\\b${key}\\b`, 'gi');
+    const escapedKey = escapeRegex(key);
+    const regex = new RegExp(`\\b${escapedKey}\\b`, 'gi');
     formatted = formatted.replace(regex, value);
   });
   
