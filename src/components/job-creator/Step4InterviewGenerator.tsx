@@ -1,8 +1,7 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Sparkles, Edit3, SkipForward, Video } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
@@ -12,29 +11,30 @@ import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
 import { InterviewQuestionEditor } from "./interview/InterviewQuestionEditor";
 import { InterviewQuestionPreview } from "./interview/InterviewQuestionPreview";
 import { InterviewQuestionsData } from "@/types/interviewQuestions";
+
 interface Step4InterviewGeneratorProps {
   generatedJobPost: string;
   generatedInterviewQuestions: string;
   interviewQuestionsData: InterviewQuestionsData;
   interviewQuestionsViewState: 'initial' | 'editor' | 'preview';
-  interviewVideoMaxLength: number;
   isGenerating: boolean;
   isEditingInterviewQuestions: boolean;
   actions: UnifiedJobCreatorActions;
   onGenerateInterviewQuestions: () => Promise<void>;
 }
+
 export const Step4InterviewGenerator = ({
   generatedJobPost,
   generatedInterviewQuestions,
   interviewQuestionsData,
   interviewQuestionsViewState,
-  interviewVideoMaxLength,
   isGenerating,
   isEditingInterviewQuestions,
   actions,
   onGenerateInterviewQuestions
 }: Step4InterviewGeneratorProps) => {
   const hasAnyInterviewContent = Boolean(generatedInterviewQuestions || interviewQuestionsData.questions.length > 0);
+
   const handleModeSelect = (mode: 'ai_generated' | 'custom') => {
     if (mode === 'ai_generated') {
       onGenerateInterviewQuestions();
@@ -46,9 +46,11 @@ export const Step4InterviewGenerator = ({
       actions.setInterviewQuestionsViewState('editor');
     }
   };
+
   const handleInterviewQuestionsSave = () => {
     actions.setIsEditingInterviewQuestions(false);
   };
+
   const handleInterviewQuestionsCancel = () => {
     actions.setIsEditingInterviewQuestions(false);
   };
@@ -69,6 +71,7 @@ export const Step4InterviewGenerator = ({
         </Card>
       </div>;
   }
+
   if (interviewQuestionsViewState === 'preview') {
     return <div className="h-full">
         <Card className="h-full">
@@ -109,25 +112,8 @@ export const Step4InterviewGenerator = ({
                 Create Interview Questions
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Generate targeted interview questions that candidates will answer via video submission. Set video length limits and customize questions to evaluate candidates effectively.
+                Generate targeted interview questions that candidates will answer via video submission. Each question can have its own video length limit to evaluate candidates effectively.
               </p>
-              
-              {/* Video Length Setting */}
-              <div className="mb-6 text-left">
-                <Label htmlFor="video-length" className="text-sm font-medium text-gray-700 mb-2 block">Default Video Length Per Question</Label>
-                <Select value={interviewVideoMaxLength.toString()} onValueChange={value => actions.setInterviewVideoMaxLength(parseInt(value))}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select video length" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 minute</SelectItem>
-                    <SelectItem value="3">3 minutes</SelectItem>
-                    <SelectItem value="5">5 minutes</SelectItem>
-                    <SelectItem value="10">10 minutes</SelectItem>
-                    <SelectItem value="15">15 minutes</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
               {/* Consistent Button Stack - Same as Steps 2 & 3 */}
               <div className="space-y-3">
@@ -175,9 +161,6 @@ export const Step4InterviewGenerator = ({
             </Badge>
           </div>
           {!isEditingInterviewQuestions && <div className="flex items-center gap-2">
-              <div className="text-sm text-gray-600">
-                Max length: {interviewVideoMaxLength} min
-              </div>
               <Button variant="outline" size="sm" onClick={() => actions.setInterviewQuestionsViewState('initial')} className="text-xs h-8 px-3">
                 Change Mode
               </Button>
@@ -192,22 +175,6 @@ export const Step4InterviewGenerator = ({
                   <p className="text-sm text-gray-600">
                     {interviewQuestionsData.questions.length > 0 ? 'Structured interview questions' : 'Click to edit or use the buttons on the right'}
                   </p>
-                  {/* Video Length Setting in View Mode */}
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="video-length-view" className="text-sm font-medium text-gray-700">Max Video Length Per Question:</Label>
-                    <Select value={interviewVideoMaxLength.toString()} onValueChange={value => actions.setInterviewVideoMaxLength(parseInt(value))}>
-                      <SelectTrigger className="w-32 h-8 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 minute</SelectItem>
-                        <SelectItem value="3">3 minutes</SelectItem>
-                        <SelectItem value="5">5 minutes</SelectItem>
-                        <SelectItem value="10">10 minutes</SelectItem>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {interviewQuestionsData.questions.length > 0 && <Button variant="outline" size="sm" onClick={() => actions.setInterviewQuestionsViewState('editor')} className="flex items-center gap-1 text-xs h-8 px-3">

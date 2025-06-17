@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -33,7 +32,7 @@ export const InterviewQuestionEditor = ({
       type: 'video_response',
       required: true,
       order: interviewQuestionsData.questions.length + 1,
-      videoMaxLength: interviewQuestionsData.defaultVideoLength || 5
+      videoMaxLength: 5 // Default to 5 minutes for new video questions
     };
 
     onInterviewQuestionsDataChange({
@@ -95,44 +94,6 @@ export const InterviewQuestionEditor = ({
           <CardTitle className="text-base">Interview Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="defaultVideoLength">Default Video Length (minutes)</Label>
-              <Select 
-                value={(interviewQuestionsData.defaultVideoLength || 5).toString()} 
-                onValueChange={(value) => onInterviewQuestionsDataChange({
-                  ...interviewQuestionsData,
-                  defaultVideoLength: parseInt(value)
-                })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 minute</SelectItem>
-                  <SelectItem value="3">3 minutes</SelectItem>
-                  <SelectItem value="5">5 minutes</SelectItem>
-                  <SelectItem value="10">10 minutes</SelectItem>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="maxQuestions">Maximum Questions</Label>
-              <Input
-                id="maxQuestions"
-                type="number"
-                value={interviewQuestionsData.maxQuestions}
-                onChange={(e) => onInterviewQuestionsDataChange({
-                  ...interviewQuestionsData,
-                  maxQuestions: parseInt(e.target.value) || 10
-                })}
-                min={1}
-                max={20}
-              />
-            </div>
-          </div>
-          
           <div>
             <Label htmlFor="instructions">Instructions for Candidates</Label>
             <Textarea

@@ -12,11 +12,9 @@ export interface InterviewQuestion {
 
 export interface InterviewQuestionsData {
   questions: InterviewQuestion[];
-  maxQuestions: number;
   mode: 'ai_generated' | 'template_based' | 'custom';
   estimatedCompletionTime?: number;
   instructions?: string;
-  defaultVideoLength?: number;
 }
 
 export interface InterviewQuestionTemplate {

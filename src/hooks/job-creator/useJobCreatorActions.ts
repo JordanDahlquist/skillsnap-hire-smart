@@ -1,4 +1,3 @@
-
 import { UnifiedJobCreatorActions, UnifiedJobFormData, CompanyAnalysisData, WritingTone } from "@/types/jobForm";
 import { SkillsTestData } from "@/types/skillsAssessment";
 import { InterviewQuestionsData } from "@/types/interviewQuestions";
@@ -26,7 +25,6 @@ export const createJobCreatorActions = (
     setSkillsTestData: (data) => setState((prev: any) => ({ ...prev, skillsTestData: data })),
     setSkillsTestViewState: (viewState) => setState((prev: any) => ({ ...prev, skillsTestViewState: viewState })),
     setGeneratedInterviewQuestions: (content) => setState((prev: any) => ({ ...prev, generatedInterviewQuestions: content })),
-    setInterviewVideoMaxLength: (length) => setState((prev: any) => ({ ...prev, interviewVideoMaxLength: length })),
     setIsEditingJobPost: (editing) => setState((prev: any) => ({ ...prev, isEditingJobPost: editing })),
     setIsEditingInterviewQuestions: (editing) => setState((prev: any) => ({ ...prev, isEditingInterviewQuestions: editing })),
     setEditMode: (isEdit, jobId) => setState((prev: any) => ({ ...prev, isEditMode: isEdit, editingJobId: jobId })),
@@ -122,9 +120,7 @@ export const createJobCreatorActions = (
       // Parse existing interview questions data
       let parsedInterviewQuestionsData: InterviewQuestionsData = {
         questions: [],
-        maxQuestions: 10,
-        mode: 'ai_generated',
-        defaultVideoLength: 5
+        mode: 'ai_generated'
       };
       let generatedInterviewQuestions = job.generated_interview_questions || "";
 
@@ -207,8 +203,7 @@ export const createJobCreatorActions = (
           skillsTestViewState: parsedSkillsTestData.questions.length > 0 ? 'editor' : 'initial',
           generatedInterviewQuestions: generatedInterviewQuestions,
           interviewQuestionsData: parsedInterviewQuestionsData,
-          interviewQuestionsViewState: parsedInterviewQuestionsData.questions.length > 0 ? 'editor' : 'initial',
-          interviewVideoMaxLength: job.interview_video_max_length || 5
+          interviewQuestionsViewState: parsedInterviewQuestionsData.questions.length > 0 ? 'editor' : 'initial'
         };
         
         console.log('New state formData:', newState.formData);

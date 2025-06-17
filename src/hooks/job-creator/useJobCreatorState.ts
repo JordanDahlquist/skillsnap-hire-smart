@@ -39,11 +39,9 @@ const initialSkillsTestData: SkillsTestData = {
 
 const initialInterviewQuestionsData: InterviewQuestionsData = {
   questions: [],
-  maxQuestions: 10,
   mode: 'ai_generated',
   estimatedCompletionTime: 0,
-  instructions: "",
-  defaultVideoLength: 5
+  instructions: ""
 };
 
 const getInitialState = (): UnifiedJobCreatorState => ({
@@ -58,7 +56,6 @@ const getInitialState = (): UnifiedJobCreatorState => ({
   generatedInterviewQuestions: "",
   interviewQuestionsData: { ...initialInterviewQuestionsData },
   interviewQuestionsViewState: 'initial',
-  interviewVideoMaxLength: 5,
   isEditingJobPost: false,
   isEditingInterviewQuestions: false,
   isAnalyzingWebsite: false,
