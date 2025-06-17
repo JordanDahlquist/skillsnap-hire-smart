@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +25,7 @@ export const Step2BasicInfo = ({
   const hasAutoPopulated = useRef(false);
   const lastOverview = useRef('');
 
-  // Enhanced auto-population logic with safeguards
+  // Enhanced auto-population logic with website priority
   useEffect(() => {
     // Only run if overview has content and has changed
     if (!formData.jobOverview.trim() || formData.jobOverview === lastOverview.current) {
@@ -38,22 +39,41 @@ export const Step2BasicInfo = ({
     
     console.log('Running enhanced auto-population for:', formData.jobOverview);
     
-    // Get auto-population suggestions
+    // Get auto-population suggestions from job overview text
     const autoPopulated = autoPopulateFromOverview(formData.jobOverview, formData);
     
-    // Apply website analysis data if available and relevant fields are empty
+    // Apply website analysis data with priority over text extraction
     let websiteUpdates: Partial<UnifiedJobFormData> = {};
     if (websiteAnalysisData) {
-      if (websiteAnalysisData.companyName && !formData.companyName && !autoPopulated.companyName) {
+      // Website analysis takes priority for company name (only respect user input, not text extraction)
+      if (websiteAnalysisData.companyName && !formData.companyName.trim()) {
         websiteUpdates.companyName = websiteAnalysisData.companyName;
+        console.log('Using website analysis company name:', websiteAnalysisData.companyName);
       }
-      if (websiteAnalysisData.location && !formData.location && !autoPopulated.location) {
+      
+      // Website analysis takes priority for location (only respect user input, not text extraction)
+      if (websiteAnalysisData.location && !formData.location.trim()) {
         websiteUpdates.location = websiteAnalysisData.location;
+        console.log('Using website analysis location:', websiteAnalysisData.location);
       }
     }
     
-    // Combine all updates
-    const allUpdates = { ...autoPopulated, ...websiteUpdates };
+    // Combine updates: website data takes priority, then auto-populated data for empty fields
+    const allUpdates: Partial<UnifiedJobFormData> = {};
+    
+    // Apply auto-populated data for empty fields (excluding fields that website analysis will fill)
+    Object.entries(autoPopulated).forEach(([field, value]) => {
+      const fieldKey = field as keyof UnifiedJobFormData;
+      const currentValue = formData[fieldKey] as string;
+      
+      // Only apply if field is empty and not being overridden by website data
+      if (value && typeof value === 'string' && !currentValue.trim() && !websiteUpdates[fieldKey]) {
+        allUpdates[fieldKey] = value;
+      }
+    });
+    
+    // Apply website updates (these take priority)
+    Object.assign(allUpdates, websiteUpdates);
     
     // Apply updates if there are any
     if (Object.keys(allUpdates).length > 0) {
@@ -69,7 +89,7 @@ export const Step2BasicInfo = ({
       lastOverview.current = formData.jobOverview;
     }
 
-  }, [formData.jobOverview, websiteAnalysisData, actions]);
+  }, [formData.jobOverview, websiteAnalysisData, actions, formData.companyName, formData.location]);
 
   // Reset auto-population flag when overview changes significantly
   useEffect(() => {
