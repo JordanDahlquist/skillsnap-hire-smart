@@ -1,4 +1,3 @@
-
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
 import { InterviewQuestionEditor } from "./interview/InterviewQuestionEditor";
 import { InterviewQuestionPreview } from "./interview/InterviewQuestionPreview";
@@ -32,6 +31,11 @@ export const Step4InterviewGenerator = ({
   const hasAnyInterviewContent = Boolean(
     generatedInterviewQuestions || interviewQuestionsData.questions.length > 0
   );
+
+  // Enhanced generate function that includes the new parameters
+  const handleGenerateInterviewQuestions = async () => {
+    await onGenerateInterviewQuestions();
+  };
 
   // Render based on view state
   if (interviewQuestionsViewState === 'editor') {
@@ -84,7 +88,7 @@ export const Step4InterviewGenerator = ({
       <InterviewGeneratorInitialState
         isGenerating={isGenerating}
         actions={actions}
-        onGenerateInterviewQuestions={onGenerateInterviewQuestions}
+        onGenerateInterviewQuestions={handleGenerateInterviewQuestions}
       />
     );
   }

@@ -1,11 +1,33 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { SkillsTestData } from "@/types/skillsAssessment";
 import { UnifiedJobFormData, CompanyAnalysisData, WritingTone } from "@/types/jobForm";
+import { InterviewQuestion, InterviewQuestionsData } from "@/types/interviewQuestions";
 
 export const useJobContentGeneration = () => {
   const { toast } = useToast();
+
+  // Helper function to parse AI-generated text into structured questions
+  const parseAITextToQuestions = (text: string): InterviewQuestion[] => {
+    if (!text) return [];
+    
+    // Split by numbered questions (1., 2., etc.) or bullet points (-, *)
+    const parsedQuestions = text
+      .split(/\d+\.|\n-|\n\*/)
+      .map(q => q.trim())
+      .filter(q => q.length > 10 && !q.toLowerCase().includes('interview questions'))
+      .slice(0, 10); // Limit to 10 questions max
+    
+    return parsedQuestions.map((questionText, index) => ({
+      id: crypto.randomUUID(),
+      question: questionText,
+      type: 'video_response' as const,
+      required: true,
+      order: index + 1,
+      videoMaxLength: 5,
+      candidateInstructions: 'Please provide a thoughtful response to this question.'
+    }));
+  };
 
   const generateJobPost = async (
     formData: any, 
@@ -141,7 +163,9 @@ export const useJobContentGeneration = () => {
     generatedJobPost: string,
     skillsTestData: SkillsTestData,
     setIsGenerating: (loading: boolean) => void,
-    setGeneratedInterviewQuestions: (content: string) => void
+    setGeneratedInterviewQuestions: (content: string) => void,
+    setInterviewQuestionsData: (data: InterviewQuestionsData) => void,
+    setInterviewQuestionsViewState: (state: 'initial' | 'editor' | 'preview') => void
   ) => {
     setIsGenerating(true);
     try {
@@ -156,10 +180,28 @@ export const useJobContentGeneration = () => {
 
       if (response.error) throw response.error;
       
+      // Store the raw generated text for fallback
       setGeneratedInterviewQuestions(response.data.questions);
+      
+      // Convert to structured questions
+      const structuredQuestions = parseAITextToQuestions(response.data.questions);
+      
+      // Set the structured data
+      const interviewQuestionsData: InterviewQuestionsData = {
+        questions: structuredQuestions,
+        mode: 'ai_generated',
+        estimatedCompletionTime: structuredQuestions.length * 3, // 3 minutes per question average
+        instructions: 'Please answer each question thoughtfully. You will have up to 5 minutes per video response.'
+      };
+      
+      setInterviewQuestionsData(interviewQuestionsData);
+      
+      // Automatically switch to editor view to show the structured questions
+      setInterviewQuestionsViewState('editor');
+      
       toast({
         title: "Interview questions generated!",
-        description: "Your interview questions have been generated successfully.",
+        description: `${structuredQuestions.length} interview questions have been generated and are ready for editing.`,
       });
     } catch (error) {
       console.error('Error generating interview questions:', error);
