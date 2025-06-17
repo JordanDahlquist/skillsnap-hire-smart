@@ -1,3 +1,4 @@
+
 import { useJobCreatorState } from "./job-creator/useJobCreatorState";
 import { createJobCreatorActions } from "./job-creator/useJobCreatorActions";
 import { useJobContentGeneration } from "./job-creator/useJobContentGeneration";
@@ -39,9 +40,7 @@ export const useUnifiedJobCreator = (
       state.generatedJobPost,
       state.skillsTestData,
       actions.setIsGenerating,
-      actions.setGeneratedInterviewQuestions,
-      actions.setInterviewQuestionsData,
-      actions.setInterviewQuestionsViewState
+      actions.setGeneratedInterviewQuestions
     );
   };
 

@@ -77,10 +77,10 @@ export const InterviewGeneratorContent = ({
                   className="text-xs h-8 px-3 text-gray-600 hover:text-gray-900"
                 >
                   <Edit3 className="w-3 h-3 mr-1" />
-                  Edit Questions
+                  Edit Structure
                 </Button>
               )}
-              {generatedInterviewQuestions && interviewQuestionsData.questions.length === 0 && (
+              {generatedInterviewQuestions && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -88,7 +88,7 @@ export const InterviewGeneratorContent = ({
                   className="text-xs h-8 px-3 text-gray-600 hover:text-gray-900"
                 >
                   <Edit3 className="w-3 h-3" />
-                  Edit Raw Text
+                  Edit
                 </Button>
               )}
             </div>
