@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, FileText } from "lucide-react";
@@ -130,11 +131,12 @@ export const CleanSkillsEditor = ({
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Challenge Title
                           </label>
-                          <Input
+                          <Textarea
                             value={challenge.question}
                             onChange={(e) => updateChallenge(challenge.id, { question: e.target.value })}
-                            className="text-lg font-semibold border-gray-300 bg-white px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="text-lg font-semibold border-gray-300 bg-white px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                             placeholder="Enter challenge title..."
+                            rows={2}
                           />
                         </div>
                         <div>
@@ -201,12 +203,14 @@ export const CleanSkillsEditor = ({
                       {challenge.candidateInstructions ? (
                         <div 
                           className="prose prose-sm max-w-none 
-                            prose-headings:text-gray-900 prose-headings:font-semibold prose-headings:mb-2 prose-headings:mt-3
-                            prose-p:mb-3 prose-p:leading-relaxed prose-p:text-gray-700
-                            prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
-                            prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
+                            prose-headings:text-gray-900 prose-headings:font-semibold prose-headings:mb-3 prose-headings:mt-4 prose-headings:leading-tight
+                            prose-p:mb-4 prose-p:leading-relaxed prose-p:text-gray-700
+                            prose-ul:mb-5 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed prose-li:pl-1
+                            prose-ol:mb-5 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed prose-li:pl-1
                             prose-strong:text-gray-900 prose-strong:font-semibold
-                            prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
+                            prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm prose-code:font-mono
+                            prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:my-4 prose-blockquote:text-gray-600
+                            prose-hr:my-6 prose-hr:border-gray-300"
                           dangerouslySetInnerHTML={{ __html: parseMarkdown(challenge.candidateInstructions) }} 
                         />
                       ) : (
