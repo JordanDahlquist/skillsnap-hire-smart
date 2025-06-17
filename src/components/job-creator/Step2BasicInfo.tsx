@@ -5,8 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } from "@/types/jobForm";
 import { useEffect, useRef } from "react";
-import { Loader2, CheckCircle } from "lucide-react";
-import { autoPopulateFromOverview } from "./autoPopulationUtils";
+import { Loader2, CheckCircle, Sparkles } from "lucide-react";
+import { enhancedAutoPopulateFromOverview } from "./enhancedAutoPopulation";
 
 interface Step2BasicInfoProps {
   formData: UnifiedJobFormData;
@@ -24,72 +24,47 @@ export const Step2BasicInfo = ({
   const isProjectBased = formData.employmentType === 'project';
   const hasAutoPopulated = useRef(false);
   const lastOverview = useRef('');
+  const lastWebsiteData = useRef<CompanyAnalysisData | null>(null);
 
-  // Enhanced auto-population logic with website priority
+  // Enhanced auto-population with smart field mapping and formatting
   useEffect(() => {
-    // Only run if overview has content and has changed
-    if (!formData.jobOverview.trim() || formData.jobOverview === lastOverview.current) {
+    // Check if we should run auto-population
+    const overviewChanged = formData.jobOverview.trim() && formData.jobOverview !== lastOverview.current;
+    const websiteDataChanged = websiteAnalysisData !== lastWebsiteData.current;
+    const shouldRun = overviewChanged || (websiteDataChanged && websiteAnalysisData);
+    
+    if (!shouldRun) {
       return;
     }
-
-    // Only run once per overview text to prevent loops
-    if (hasAutoPopulated.current && formData.jobOverview === lastOverview.current) {
-      return;
-    }
     
-    console.log('Running enhanced auto-population for:', formData.jobOverview);
+    console.log('Running enhanced auto-population...');
+    console.log('Overview changed:', overviewChanged);
+    console.log('Website data changed:', websiteDataChanged);
     
-    // Get auto-population suggestions from job overview text
-    const autoPopulated = autoPopulateFromOverview(formData.jobOverview, formData);
-    
-    // Apply website analysis data with priority over text extraction
-    let websiteUpdates: Partial<UnifiedJobFormData> = {};
-    if (websiteAnalysisData) {
-      // Website analysis takes priority for company name (only respect user input, not text extraction)
-      if (websiteAnalysisData.companyName && !formData.companyName.trim()) {
-        websiteUpdates.companyName = websiteAnalysisData.companyName;
-        console.log('Using website analysis company name:', websiteAnalysisData.companyName);
-      }
-      
-      // Website analysis takes priority for location (only respect user input, not text extraction)
-      if (websiteAnalysisData.location && !formData.location.trim()) {
-        websiteUpdates.location = websiteAnalysisData.location;
-        console.log('Using website analysis location:', websiteAnalysisData.location);
-      }
-    }
-    
-    // Combine updates: website data takes priority, then auto-populated data for empty fields
-    const allUpdates: Partial<UnifiedJobFormData> = {};
-    
-    // Apply auto-populated data for empty fields (excluding fields that website analysis will fill)
-    Object.entries(autoPopulated).forEach(([field, value]) => {
-      const fieldKey = field as keyof UnifiedJobFormData;
-      const currentValue = formData[fieldKey];
-      
-      // Only apply if field is empty, value is a string, and not being overridden by website data
-      if (value && typeof value === 'string' && typeof currentValue === 'string' && !currentValue.trim() && !websiteUpdates[fieldKey]) {
-        (allUpdates as any)[fieldKey] = value;
-      }
-    });
-    
-    // Apply website updates (these take priority)
-    Object.assign(allUpdates, websiteUpdates);
+    // Get enhanced auto-population suggestions
+    const updates = enhancedAutoPopulateFromOverview(
+      formData.jobOverview, 
+      websiteAnalysisData, 
+      formData
+    );
     
     // Apply updates if there are any
-    if (Object.keys(allUpdates).length > 0) {
-      console.log('Applying auto-population updates:', allUpdates);
-      Object.entries(allUpdates).forEach(([field, value]) => {
+    if (Object.keys(updates).length > 0) {
+      console.log('Applying enhanced auto-population updates:', updates);
+      
+      Object.entries(updates).forEach(([field, value]) => {
         if (value && typeof value === 'string') {
           actions.updateFormData(field as keyof UnifiedJobFormData, value);
         }
       });
       
-      // Mark as auto-populated and remember the overview text
+      // Update refs
       hasAutoPopulated.current = true;
       lastOverview.current = formData.jobOverview;
+      lastWebsiteData.current = websiteAnalysisData;
     }
 
-  }, [formData.jobOverview, websiteAnalysisData, actions, formData.companyName, formData.location]);
+  }, [formData.jobOverview, websiteAnalysisData, actions]);
 
   // Reset auto-population flag when overview changes significantly
   useEffect(() => {
@@ -101,21 +76,24 @@ export const Step2BasicInfo = ({
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Job Details</CardTitle>
-        <p className="text-sm text-gray-600">Review and edit the job information below</p>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-blue-500" />
+          Job Details
+        </CardTitle>
+        <p className="text-sm text-gray-600">Review and edit the auto-populated job information below</p>
         
         {/* Website Analysis Status */}
         {isAnalyzingWebsite && (
           <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded-md">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Analyzing website to help fill out details...
+            Analyzing website to intelligently populate fields...
           </div>
         )}
         
         {websiteAnalysisData && !isAnalyzingWebsite && (
           <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2 rounded-md">
             <CheckCircle className="w-4 h-4" />
-            Website analyzed successfully - form has been pre-filled with company information
+            Website analyzed and form intelligently populated with company information
           </div>
         )}
       </CardHeader>
@@ -170,6 +148,7 @@ export const Step2BasicInfo = ({
                 <SelectItem value="entry-level">Entry Level</SelectItem>
                 <SelectItem value="mid-level">Mid Level</SelectItem>
                 <SelectItem value="senior-level">Senior Level</SelectItem>
+                <SelectItem value="executive">Executive</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -184,7 +163,7 @@ export const Step2BasicInfo = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="remote">Remote</SelectItem>
-                <SelectItem value="on-site">On-site</SelectItem>
+                <SelectItem value="office">On-site</SelectItem>
                 <SelectItem value="hybrid">Hybrid</SelectItem>
               </SelectContent>
             </Select>

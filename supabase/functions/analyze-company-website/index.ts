@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -87,7 +86,7 @@ serve(async (req) => {
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 8000);
+      .slice(0, 12000); // Increased limit for better analysis
 
     // Extract potential company name from HTML structure
     const htmlCompanyName = extractCompanyFromHTML(html);
@@ -99,7 +98,7 @@ serve(async (req) => {
     console.log('Page title:', pageTitle);
     console.log('Domain company name:', domainCompanyName);
 
-    // Use AI to analyze the website content
+    // Enhanced AI analysis with more comprehensive prompting
     const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -111,33 +110,40 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing company websites to extract key information for job posting generation.
+            content: `You are an expert at analyzing company websites to extract comprehensive information for intelligent job posting auto-population.
 
 CRITICAL: You must respond with ONLY a valid JSON object, no markdown formatting, no backticks, no extra text.
 
-Analyze the provided website content and extract the actual company name. Look for:
-1. The real company name in headers, navigation, page title, footer
-2. Avoid generic descriptions like "a consulting agency", "the company", "business"
-3. Extract the actual brand name or legal entity name
+Extract comprehensive company information focusing on details that would help auto-populate job forms intelligently. Pay special attention to:
+
+1. COMPANY NAME: Extract the actual company name, not generic descriptions
+2. LOCATION: Look for headquarters, office locations, "based in", "located in" 
+3. TECHNOLOGIES: Extract specific tech stack, programming languages, frameworks, tools mentioned
+4. BENEFITS: Look for employee benefits, perks, compensation details
+5. COMPANY CULTURE: Extract values, work environment, company culture details
+6. INDUSTRY: Determine the primary industry/sector
+7. COMPANY SIZE: Look for employee count, company size indicators
+8. PRODUCTS/SERVICES: What the company does/offers
 
 Additional context provided:
 - HTML extracted company name: ${htmlCompanyName}
 - Page title: ${pageTitle}
 - Domain-based name: ${domainCompanyName}
 
-Prioritize the HTML extracted name if it looks like a real company name, otherwise use your analysis.
+Prioritize the HTML extracted name if it looks like a real company name.
 
 Respond with this exact JSON structure:
 {
-  "companyName": "Actual company name from the website (use provided HTML name if valid, otherwise extract from content)",
-  "description": "2-3 sentence company description for job context",
+  "companyName": "Actual company name (prioritize HTML extracted if valid)",
+  "location": "Primary location/headquarters if found",
+  "technologies": ["Array", "of", "specific", "technologies", "mentioned"],
+  "benefits": ["Array", "of", "employee", "benefits", "found"],
   "industry": "Primary industry or sector",
-  "companySize": "startup/small/medium/large/enterprise or employee count if found",
+  "companySize": "startup/small/medium/large/enterprise or specific count if found",
+  "description": "2-3 sentence company description",
+  "culture": "Company culture and values summary",
   "products": "Main products or services offered",
-  "culture": "Company culture, values, or work environment details",
-  "techStack": "Technology stack or tools mentioned if tech company",
-  "location": "Company location if found on website",
-  "summary": "Overall summary for job description context"
+  "summary": "Overall summary for job context"
 }`
           },
           {
@@ -145,8 +151,8 @@ Respond with this exact JSON structure:
             content: `Website Content:\n${textContent}`
           }
         ],
-        temperature: 0.2,
-        max_tokens: 1000
+        temperature: 0.1,
+        max_tokens: 1500
       }),
     });
 
@@ -180,19 +186,24 @@ Respond with this exact JSON structure:
         companyData.companyName = domainCompanyName;
       }
       
+      // Ensure arrays exist
+      companyData.technologies = companyData.technologies || [];
+      companyData.benefits = companyData.benefits || [];
+      
     } catch (error) {
       console.error('Failed to parse AI response as JSON:', error);
       
       // Enhanced fallback extraction
       companyData = {
         companyName: htmlCompanyName || domainCompanyName,
-        description: textContent.slice(0, 300) + "...",
+        location: null,
+        technologies: [],
+        benefits: [],
         industry: null,
         companySize: null,
-        products: null,
+        description: textContent.slice(0, 300) + "...",
         culture: null,
-        techStack: null,
-        location: null,
+        products: null,
         summary: textContent.slice(0, 200) + "..."
       };
     }
@@ -210,13 +221,14 @@ Respond with this exact JSON structure:
       JSON.stringify({ 
         error: error.message,
         companyName: null,
-        description: null,
+        location: null,
+        technologies: [],
+        benefits: [],
         industry: null,
         companySize: null,
-        products: null,
+        description: null,
         culture: null,
-        techStack: null,
-        location: null,
+        products: null,
         summary: null
       }),
       { 

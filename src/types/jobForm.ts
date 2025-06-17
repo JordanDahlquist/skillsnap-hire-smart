@@ -1,4 +1,3 @@
-
 import { SkillsTestData } from "./skillsAssessment";
 import { InterviewQuestionsData } from "./interviewQuestions";
 
@@ -42,17 +41,15 @@ export interface WritingTone {
 
 export interface CompanyAnalysisData {
   companyName: string;
-  companyDescription: string;
-  industry: string;
-  companySize: string;
-  headquarters: string;
-  foundedYear: string;
-  keyValues: string[];
+  location?: string;
   technologies: string[];
   benefits: string[];
-  workCulture: string;
-  missionStatement: string;
-  location?: string; // Add location property
+  industry: string;
+  companySize: string;
+  description: string;
+  culture: string;
+  products: string;
+  summary: string;
 }
 
 export interface UnifiedJobCreatorState {
