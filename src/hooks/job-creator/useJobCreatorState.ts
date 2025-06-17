@@ -9,8 +9,8 @@ const initialFormData: UnifiedJobFormData = {
   companyName: "",
   companyWebsite: "",
   title: "",
-  employmentType: "project",
-  experienceLevel: "intermediate",
+  employmentType: "full-time", // Changed from "project" to "full-time"
+  experienceLevel: "mid-level", // Changed from "intermediate" to "mid-level"
   skills: "",
   budget: "",
   duration: "",

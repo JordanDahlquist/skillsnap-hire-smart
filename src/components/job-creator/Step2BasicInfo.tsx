@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -5,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } from "@/types/jobForm";
 import { useEffect } from "react";
 import { Loader2, CheckCircle } from "lucide-react";
-import { toTitleCase, isValidCompanyName } from "./formUtils";
+import { autoPopulateFromOverview } from "./autoPopulationUtils";
 
 interface Step2BasicInfoProps {
   formData: UnifiedJobFormData;
@@ -13,130 +14,6 @@ interface Step2BasicInfoProps {
   websiteAnalysisData?: CompanyAnalysisData | null;
   isAnalyzingWebsite?: boolean;
 }
-
-// Enhanced parsing functions
-const extractJobTitleFromOverview = (overview: string): string => {
-  const text = overview.toLowerCase();
-  
-  // Pattern for role + specialist/manager/developer etc.
-  const specialistMatch = overview.match(/(\w+\s+)?(\w+)\s+(specialist|manager|developer|designer|analyst|coordinator|director|lead|engineer|consultant)/i);
-  if (specialistMatch) {
-    return toTitleCase(specialistMatch[0].trim());
-  }
-  
-  // Pattern for senior/junior + role
-  const seniorityMatch = overview.match(/(senior|junior|lead|principal|staff)\s+(\w+\s+)?(\w+)/i);
-  if (seniorityMatch) {
-    return toTitleCase(seniorityMatch[0].trim());
-  }
-  
-  // Common job titles
-  const jobTitles = [
-    'product manager', 'project manager', 'marketing manager', 'sales manager',
-    'software engineer', 'data scientist', 'business analyst', 'ux designer',
-    'frontend developer', 'backend developer', 'fullstack developer',
-    'marketing specialist', 'hr specialist', 'operations specialist'
-  ];
-  
-  for (const title of jobTitles) {
-    if (text.includes(title)) {
-      return toTitleCase(title);
-    }
-  }
-  
-  return '';
-};
-
-const extractCompanyNameFromOverview = (overview: string): string => {
-  // Patterns: "for [Company]", "at [Company]", "with [Company]"
-  const patterns = [
-    /for\s+([A-Z][a-zA-Z\s&,.-]+)(?:\s+(?:in|at|located))/i,
-    /at\s+([A-Z][a-zA-Z\s&,.-]+)(?:\s+(?:in|at|located))/i,
-    /with\s+([A-Z][a-zA-Z\s&,.-]+)(?:\s+(?:in|at|located))/i,
-    /for\s+([A-Z][a-zA-Z\s&,.-]+)$/i,
-    /at\s+([A-Z][a-zA-Z\s&,.-]+)$/i
-  ];
-  
-  for (const pattern of patterns) {
-    const match = overview.match(pattern);
-    if (match) {
-      let companyName = match[1].trim();
-      // Remove generic words
-      companyName = companyName.replace(/\s+(company|corp|inc|llc|agency|startup|firm|consulting|services)$/i, '');
-      if (companyName.length > 2 && isValidCompanyName(companyName)) {
-        return companyName;
-      }
-    }
-  }
-  
-  return '';
-};
-
-const extractLocationFromOverview = (overview: string): { location: string; state: string; city: string } => {
-  // Pattern for "in [City] [State]" or "in [City], [State]"
-  const locationPattern = /in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)[,\s]+([A-Z]{2}|[A-Z][a-z]+)/i;
-  const match = overview.match(locationPattern);
-  
-  if (match) {
-    const city = match[1].trim();
-    const state = match[2].trim();
-    return {
-      location: `${city}, ${state}`,
-      city: city,
-      state: state
-    };
-  }
-  
-  // Handle formats like "Orange County CA" → "Orange County, CA"
-  const countyPattern = /in\s+([A-Z][a-z]+\s+County)\s+([A-Z]{2})/i;
-  const countyMatch = overview.match(countyPattern);
-  if (countyMatch) {
-    const city = countyMatch[1].trim();
-    const state = countyMatch[2].trim();
-    return {
-      location: `${city}, ${state}`,
-      city: city,
-      state: state
-    };
-  }
-  
-  // Simple city extraction
-  const simpleCityPattern = /in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i;
-  const simpleMatch = overview.match(simpleCityPattern);
-  if (simpleMatch) {
-    const location = simpleMatch[1].trim();
-    return {
-      location: location,
-      city: location,
-      state: ''
-    };
-  }
-  
-  return { location: '', city: '', state: '' };
-};
-
-const extractExperienceLevelFromOverview = (overview: string): string => {
-  const text = overview.toLowerCase();
-  
-  // Senior level keywords
-  const seniorKeywords = ['senior', 'lead', 'principal', 'staff', 'director', 'head of', 'vp', 'vice president', 'chief'];
-  for (const keyword of seniorKeywords) {
-    if (text.includes(keyword)) {
-      return 'senior-level';
-    }
-  }
-  
-  // Entry level keywords
-  const entryKeywords = ['junior', 'entry', 'associate', 'trainee', 'intern', 'graduate', 'new grad'];
-  for (const keyword of entryKeywords) {
-    if (text.includes(keyword)) {
-      return 'entry-level';
-    }
-  }
-  
-  // Default to mid-level if no specific seniority is detected
-  return 'mid-level';
-};
 
 export const Step2BasicInfo = ({
   formData,
@@ -148,66 +25,38 @@ export const Step2BasicInfo = ({
 
   // Enhanced auto-population logic
   useEffect(() => {
-    let hasUpdates = false;
-    const updates: Partial<UnifiedJobFormData> = {};
-
-    // Extract job title if not set
-    if (formData.jobOverview && !formData.title) {
-      const extractedTitle = extractJobTitleFromOverview(formData.jobOverview);
-      if (extractedTitle) {
-        updates.title = extractedTitle;
-        hasUpdates = true;
+    if (!formData.jobOverview.trim()) return;
+    
+    console.log('Running enhanced auto-population for:', formData.jobOverview);
+    
+    // Get auto-population suggestions
+    const autoPopulated = autoPopulateFromOverview(formData.jobOverview, formData);
+    
+    // Apply website analysis data if available and relevant fields are empty
+    let websiteUpdates: Partial<UnifiedJobFormData> = {};
+    if (websiteAnalysisData) {
+      if (websiteAnalysisData.companyName && !formData.companyName && !autoPopulated.companyName) {
+        websiteUpdates.companyName = websiteAnalysisData.companyName;
+      }
+      if (websiteAnalysisData.location && !formData.location && !autoPopulated.location) {
+        websiteUpdates.location = websiteAnalysisData.location;
       }
     }
-
-    // Extract experience level if not set
-    if (formData.jobOverview && formData.experienceLevel === 'intermediate') {
-      const extractedExperienceLevel = extractExperienceLevelFromOverview(formData.jobOverview);
-      if (extractedExperienceLevel && extractedExperienceLevel !== 'mid-level') {
-        updates.experienceLevel = extractedExperienceLevel;
-        hasUpdates = true;
-      }
-    }
-
-    // Extract company name - prioritize website analysis over job overview
-    if (!formData.companyName) {
-      if (websiteAnalysisData?.companyName && isValidCompanyName(websiteAnalysisData.companyName)) {
-        updates.companyName = websiteAnalysisData.companyName;
-        hasUpdates = true;
-      } else if (formData.jobOverview) {
-        const extractedCompany = extractCompanyNameFromOverview(formData.jobOverview);
-        if (extractedCompany && isValidCompanyName(extractedCompany)) {
-          updates.companyName = extractedCompany;
-          hasUpdates = true;
+    
+    // Combine all updates
+    const allUpdates = { ...autoPopulated, ...websiteUpdates };
+    
+    // Apply updates if there are any
+    if (Object.keys(allUpdates).length > 0) {
+      console.log('Applying auto-population updates:', allUpdates);
+      Object.entries(allUpdates).forEach(([field, value]) => {
+        if (value) {
+          actions.updateFormData(field as keyof UnifiedJobFormData, value);
         }
-      }
-    }
-
-    // Extract location information
-    if (formData.jobOverview && !formData.location) {
-      const locationInfo = extractLocationFromOverview(formData.jobOverview);
-      if (locationInfo.location) {
-        updates.location = locationInfo.location;
-        if (locationInfo.city) updates.city = locationInfo.city;
-        if (locationInfo.state) updates.state = locationInfo.state;
-        hasUpdates = true;
-      }
-    }
-
-    // Use website analysis data for location if available
-    if (websiteAnalysisData?.location && !formData.location) {
-      updates.location = websiteAnalysisData.location;
-      hasUpdates = true;
-    }
-
-    // Apply all updates at once
-    if (hasUpdates) {
-      Object.entries(updates).forEach(([field, value]) => {
-        actions.updateFormData(field as keyof UnifiedJobFormData, value);
       });
     }
 
-  }, [formData.jobOverview, websiteAnalysisData, formData.title, formData.companyName, formData.location, formData.experienceLevel, actions]);
+  }, [formData.jobOverview, websiteAnalysisData, actions]);
 
   return (
     <Card className="w-full">
