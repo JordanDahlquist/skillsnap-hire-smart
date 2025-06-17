@@ -255,15 +255,10 @@ ${existingJobPost}
    - "Develop API Integration"
    - "Plan Content Strategy"
 
-**CRITICAL INSTRUCTION FORMATTING REQUIREMENTS:**
-1. **USE PROPER MARKDOWN FORMATTING**: Structure instructions with clear headers, numbered steps, and bullet points
-2. **INCLUDE THESE SECTIONS**: Overview, Steps, Deliverables, Evaluation Criteria
-3. **USE BOLD HEADERS**: Mark section headers with **bold** formatting
-4. **NUMBER THE STEPS**: Use numbered lists for sequential tasks
-5. **BULLET POINTS**: Use bullet points for requirements and deliverables
-6. **PROPER LINE BREAKS**: Include line breaks between sections for readability
+**CRITICAL MARKDOWN FORMATTING REQUIREMENTS - FOLLOW THESE EXACTLY:**
+THE candidateInstructions FIELD **MUST** USE PROPER MARKDOWN FORMATTING. THIS IS NON-NEGOTIABLE.
 
-**INSTRUCTION FORMATTING EXAMPLE:**
+**REQUIRED MARKDOWN STRUCTURE FOR candidateInstructions:**
 \`\`\`
 ## Overview
 Brief description of what they're creating and why it matters for the role.
@@ -295,13 +290,21 @@ Brief description of what they're creating and why it matters for the role.
 - **Relevance**: How well it addresses the business need
 \`\`\`
 
+**MANDATORY FORMATTING RULES:**
+1. **USE ## HEADERS**: Each major section MUST start with ## (Overview, Steps, Deliverables, Evaluation Criteria)
+2. **NUMBERED STEPS**: Use numbered lists (1., 2., 3.) for sequential tasks
+3. **BOLD SUB-HEADERS**: Use **bold text** for phase names and criteria names
+4. **BULLET POINTS**: Use - for lists within sections
+5. **LINE BREAKS**: Include blank lines between sections for readability
+6. **NO PARAGRAPHS**: Avoid wall-of-text paragraphs - break everything into structured sections
+
 **CRITICAL DESIGN PRINCIPLES:**
 1. **SINGLE INTEGRATED PROJECT**: Create ONE cohesive task, not multiple separate challenges
 2. **TIME-BOUNDED**: Must be completable in 60-90 minutes maximum
 3. **MULTI-SKILL DEMONSTRATION**: The single task should naturally require multiple skills from the job requirements
 4. **REALISTIC WORK SCENARIO**: Mirror actual work they'd do at ${companyName}
 5. **CLEAR SCOPE BOUNDARIES**: Prevent over-engineering with specific deliverable requirements
-6. **WELL-FORMATTED INSTRUCTIONS**: Use the formatting example above as a template
+6. **PROPERLY FORMATTED INSTRUCTIONS**: candidateInstructions MUST follow the exact markdown template above
 
 **COMPANY INTEGRATION:**
 ${websiteAnalysisData ? `
@@ -323,7 +326,7 @@ Return a JSON object with this exact structure:
         "title": "SHORT, descriptive title (5-10 words max, e.g., 'Build Customer Analytics Dashboard')",
         "question": "Brief project overview that summarizes the challenge in 1-2 sentences",
         "type": "choose appropriate type based on deliverable (portfolio_link, pdf_upload, file_upload, video_upload, etc.)",
-        "candidateInstructions": "PROPERLY FORMATTED instructions using the markdown structure shown above. Must include: ## Overview, ## Steps (numbered with bold headers), ## Deliverables (bullet points), ## Evaluation Criteria (bold headers). Use line breaks between sections. Minimum 250 words.",
+        "candidateInstructions": "PROPERLY FORMATTED instructions using the EXACT markdown structure shown above. Must include: ## Overview, ## Steps (numbered with **bold** phase headers), ## Deliverables (bullet points), ## Evaluation Criteria (**bold** criteria names). Use line breaks between sections. Minimum 250 words. NO WALL OF TEXT - MUST BE STRUCTURED.",
         "evaluationGuidelines": "Detailed criteria for evaluating this integrated project across multiple skill dimensions with specific examples",
         "scoringCriteria": "Clear explanation of what constitutes good vs. excellent submissions with specific examples",
         "required": true,
@@ -341,9 +344,9 @@ Return a JSON object with this exact structure:
 
 **CRITICAL REMINDER**: 
 - The "title" field MUST be short (10 words maximum)
-- The "candidateInstructions" field MUST use proper Markdown formatting with the structure shown above
-- Include clear sections with bold headers, numbered steps, and bullet points
-- Ensure proper line breaks between sections for readability
+- The "candidateInstructions" field MUST use the exact Markdown structure shown above with ## headers, numbered steps, **bold** text, bullet points, and proper line breaks
+- NO WALL OF TEXT allowed in candidateInstructions - it must be properly structured
+- If you don't follow the formatting template exactly, the instructions will be unreadable
 
 Create an integrated project that candidates will find engaging, realistic, and directly relevant to the actual work they'll do at ${companyName}.`;
 
@@ -398,7 +401,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
           {
             role: 'system',
             content: type === 'skills-test' 
-              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with clear sections, bold headers, numbered steps, and bullet points. ALWAYS return valid JSON in the exact format specified.'
+              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with ## headers, numbered steps with **bold** phase names, bullet points, and clear line breaks between sections. NO WALL OF TEXT ALLOWED - instructions must be properly structured and scannable. ALWAYS return valid JSON in the exact format specified.'
               : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
           },
           {
