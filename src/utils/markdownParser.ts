@@ -1,4 +1,3 @@
-
 export const parseMarkdown = (text: string): string => {
   if (!text) return '';
   
@@ -206,13 +205,13 @@ const generateHeaderHTML = (block: ContentBlock): string => {
   
   switch (block.level) {
     case 1:
-      return `<h1 class="text-3xl font-bold mb-8 mt-8 text-gray-900 border-b-3 border-blue-300 pb-4">${content}</h1>`;
+      return `<h1 class="text-lg font-semibold mb-3 mt-4 text-gray-900">${content}</h1>`;
     case 2:
-      return `<h2 class="text-2xl font-bold mb-6 mt-8 text-gray-900 border-b-2 border-blue-200 pb-3">${content}</h2>`;
+      return `<h2 class="text-base font-semibold mb-2 mt-3 text-gray-900">${content}</h2>`;
     case 3:
-      return `<h3 class="text-xl font-semibold mb-4 mt-6 text-gray-800">${content}</h3>`;
+      return `<h3 class="text-sm font-medium mb-2 mt-2 text-gray-800">${content}</h3>`;
     default:
-      return `<h2 class="text-2xl font-bold mb-6 mt-8 text-gray-900 border-b-2 border-blue-200 pb-3">${content}</h2>`;
+      return `<h2 class="text-base font-semibold mb-2 mt-3 text-gray-900">${content}</h2>`;
   }
 };
 
@@ -221,16 +220,16 @@ const generateListHTML = (block: ContentBlock): string => {
   
   const listType = block.isNumbered ? 'ol' : 'ul';
   const listClass = block.isNumbered 
-    ? 'list-decimal list-inside space-y-3 mb-8 pl-6'
-    : 'list-disc list-inside space-y-3 mb-8 pl-6';
+    ? 'list-decimal list-inside space-y-1 mb-3 pl-4'
+    : 'list-disc list-inside space-y-1 mb-3 pl-4';
   
   const displayItems = block.items.slice(0, 8);
   const itemsHTML = displayItems
-    .map(item => `<li class="ml-4 mb-3 leading-relaxed text-gray-700 text-lg">${processInlineFormatting(item)}</li>`)
+    .map(item => `<li class="ml-2 mb-1 leading-relaxed text-gray-700 text-sm">${processInlineFormatting(item)}</li>`)
     .join('');
   
   const moreItemsNote = block.items.length > 8 
-    ? `<li class="ml-4 mb-3 leading-relaxed text-gray-500 text-lg italic">... and ${block.items.length - 8} more</li>`
+    ? `<li class="ml-2 mb-1 leading-relaxed text-gray-500 text-sm italic">... and ${block.items.length - 8} more</li>`
     : '';
   
   return `<${listType} class="${listClass}">${itemsHTML}${moreItemsNote}</${listType}>`;
@@ -241,22 +240,22 @@ const generateParagraphHTML = (block: ContentBlock): string => {
   const lines = content.split('\n').filter(line => line.trim());
   
   if (lines.length <= 1) {
-    return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${content}</p>`;
+    return `<p class="mb-3 leading-relaxed text-gray-700 text-sm">${content}</p>`;
   } else {
-    return `<p class="mb-6 leading-relaxed text-gray-700 text-lg">${lines.join('<br>')}</p>`;
+    return `<p class="mb-3 leading-relaxed text-gray-700 text-sm">${lines.join('<br>')}</p>`;
   }
 };
 
 const generateCodeHTML = (block: ContentBlock): string => {
-  return `<pre class="bg-gray-100 border border-gray-300 rounded-lg p-4 my-6 overflow-x-auto shadow-sm"><code class="text-sm font-mono text-gray-800">${block.content}</code></pre>`;
+  return `<pre class="bg-gray-100 border border-gray-300 rounded-lg p-3 my-3 overflow-x-auto"><code class="text-xs font-mono text-gray-800">${block.content}</code></pre>`;
 };
 
 const processInlineFormatting = (text: string): string => {
   return text
     // Enhanced bold text
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-gray-900">$1</strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-medium text-gray-900">$1</strong>')
     // Enhanced italic text
     .replace(/\*(.+?)\*/g, '<em class="italic text-gray-800">$1</em>')
     // Enhanced inline code
-    .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-blue-700 border">$1</code>');
+    .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono text-blue-700">$1</code>');
 };
