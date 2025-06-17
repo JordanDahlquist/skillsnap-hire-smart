@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, GripVertical, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, GripVertical, ArrowLeft, Eye, Sparkles } from "lucide-react";
 import { InterviewQuestion, InterviewQuestionsData } from "@/types/interviewQuestions";
 
 interface InterviewQuestionEditorProps {
@@ -15,13 +15,17 @@ interface InterviewQuestionEditorProps {
   onInterviewQuestionsDataChange: (data: InterviewQuestionsData) => void;
   onBack: () => void;
   onPreview: () => void;
+  onRegenerate?: () => void;
+  isGenerating?: boolean;
 }
 
 export const InterviewQuestionEditor = ({
   interviewQuestionsData,
   onInterviewQuestionsDataChange,
   onBack,
-  onPreview
+  onPreview,
+  onRegenerate,
+  isGenerating = false
 }: InterviewQuestionEditorProps) => {
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
 
@@ -69,29 +73,46 @@ export const InterviewQuestionEditor = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <h3 className="text-lg font-medium">Edit Interview Questions</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={onPreview}>
-            Preview
-          </Button>
-          <Button onClick={addQuestion}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Question
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={onBack} className="h-8 px-3">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <CardTitle className="text-sm font-medium">Edit Interview Questions</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              {onRegenerate && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onRegenerate}
+                  disabled={isGenerating}
+                  className="h-8 px-3 text-xs"
+                >
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  {isGenerating ? 'Regenerating...' : 'Regenerate'}
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={onPreview} className="h-8 px-3 text-xs">
+                <Eye className="w-3 h-3 mr-1" />
+                Preview
+              </Button>
+              <Button size="sm" onClick={addQuestion} className="h-8 px-3 text-xs">
+                <Plus className="w-3 h-3 mr-1" />
+                Add Question
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Interview Settings</CardTitle>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Interview Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>

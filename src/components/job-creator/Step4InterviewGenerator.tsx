@@ -44,7 +44,9 @@ export const Step4InterviewGenerator = ({
               interviewQuestionsData={interviewQuestionsData} 
               onInterviewQuestionsDataChange={actions.setInterviewQuestionsData} 
               onBack={() => actions.setInterviewQuestionsViewState('initial')} 
-              onPreview={() => actions.setInterviewQuestionsViewState('preview')} 
+              onPreview={() => actions.setInterviewQuestionsViewState('preview')}
+              onRegenerate={onGenerateInterviewQuestions}
+              isGenerating={isGenerating}
             />
           </CardContent>
         </Card>
