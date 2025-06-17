@@ -65,7 +65,8 @@ export const SkillsTestQuestionCard = ({ question, index }: SkillsTestQuestionCa
                     className="text-gray-700 prose prose-sm max-w-none 
                       prose-headings:text-gray-800 prose-headings:font-medium prose-headings:mb-2 prose-headings:mt-3
                       prose-p:mb-3 prose-p:leading-relaxed prose-p:text-gray-700
-                      prose-ul:mb-4 prose-ul:pl-2 prose-li:mb-1 prose-li:text-gray-700
+                      prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
+                      prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
                       prose-strong:text-gray-900 prose-strong:font-semibold
                       prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
                     dangerouslySetInnerHTML={{ 
@@ -101,7 +102,8 @@ export const SkillsTestQuestionCard = ({ question, index }: SkillsTestQuestionCa
                     className="text-green-800 prose prose-sm max-w-none 
                       prose-headings:text-green-900 prose-headings:font-medium prose-headings:mb-2 prose-headings:mt-3
                       prose-p:mb-3 prose-p:leading-relaxed prose-p:text-green-800
-                      prose-ul:mb-4 prose-ul:pl-2 prose-li:mb-1 prose-li:text-green-800
+                      prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-green-800 prose-li:leading-relaxed
+                      prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-green-800 prose-li:leading-relaxed
                       prose-strong:text-green-900 prose-strong:font-semibold
                       prose-code:bg-green-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
                     dangerouslySetInnerHTML={{ 

@@ -146,7 +146,13 @@ export const QuestionPreview = ({ question }: QuestionPreviewProps) => {
             {question.candidateInstructions && (
               <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div 
-                  className="text-gray-700 prose prose-sm max-w-none"
+                  className="text-gray-700 prose prose-sm max-w-none
+                    prose-headings:text-gray-800 prose-headings:font-medium prose-headings:mb-2 prose-headings:mt-3
+                    prose-p:mb-3 prose-p:leading-relaxed prose-p:text-gray-700
+                    prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
+                    prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
+                    prose-strong:text-gray-900 prose-strong:font-semibold
+                    prose-code:bg-gray-200 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
                   dangerouslySetInnerHTML={{ 
                     __html: parseMarkdown(question.candidateInstructions) 
                   }}
@@ -181,7 +187,13 @@ export const QuestionPreview = ({ question }: QuestionPreviewProps) => {
               <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <h4 className="text-sm font-medium text-green-900 mb-2">Example Response:</h4>
                 <div 
-                  className="text-green-800 prose prose-sm max-w-none"
+                  className="text-green-800 prose prose-sm max-w-none
+                    prose-headings:text-green-900 prose-headings:font-medium prose-headings:mb-2 prose-headings:mt-3
+                    prose-p:mb-3 prose-p:leading-relaxed prose-p:text-green-800
+                    prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-green-800 prose-li:leading-relaxed
+                    prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-green-800 prose-li:leading-relaxed
+                    prose-strong:text-green-900 prose-strong:font-semibold
+                    prose-code:bg-green-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
                   dangerouslySetInnerHTML={{ 
                     __html: parseMarkdown(question.exampleResponse) 
                   }}

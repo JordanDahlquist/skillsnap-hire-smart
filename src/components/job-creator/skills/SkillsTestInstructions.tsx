@@ -15,7 +15,8 @@ export const SkillsTestInstructions = ({ instructions }: SkillsTestInstructionsP
         className="text-blue-800 prose prose-sm max-w-none 
           prose-headings:text-blue-900 prose-headings:font-semibold prose-headings:mb-2 prose-headings:mt-3
           prose-p:mb-3 prose-p:leading-relaxed prose-p:text-blue-800
-          prose-ul:mb-4 prose-ul:pl-2 prose-li:mb-1 prose-li:text-blue-800
+          prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-blue-800 prose-li:leading-relaxed
+          prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-blue-800 prose-li:leading-relaxed
           prose-strong:text-blue-900 prose-strong:font-semibold
           prose-code:bg-blue-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
         dangerouslySetInnerHTML={{ 
