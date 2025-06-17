@@ -1,4 +1,3 @@
-
 import { UnifiedJobFormData, CompanyAnalysisData } from "@/types/jobForm";
 
 type EmploymentType = "full-time" | "part-time" | "contract" | "project";
@@ -9,24 +8,24 @@ type LocationType = "remote" | "office" | "hybrid";
 const SALARY_DATABASE = {
   // Tech roles salary ranges (base amounts in thousands)
   roles: {
-    'react developer': { entry: [70, 95], mid: [95, 130], senior: [130, 180], executive: [180, 250] },
-    'frontend developer': { entry: [65, 90], mid: [90, 125], senior: [125, 170], executive: [170, 230] },
-    'backend developer': { entry: [75, 100], mid: [100, 135], senior: [135, 185], executive: [185, 260] },
-    'full stack developer': { entry: [70, 95], mid: [95, 130], senior: [130, 180], executive: [180, 250] },
-    'software engineer': { entry: [75, 100], mid: [100, 135], senior: [135, 185], executive: [185, 260] },
-    'data scientist': { entry: [85, 110], mid: [110, 150], senior: [150, 200], executive: [200, 280] },
-    'product manager': { entry: [80, 105], mid: [105, 140], senior: [140, 190], executive: [190, 270] },
-    'designer': { entry: [60, 85], mid: [85, 115], senior: [115, 155], executive: [155, 210] },
-    'ui designer': { entry: [55, 80], mid: [80, 110], senior: [110, 150], executive: [150, 200] },
-    'ux designer': { entry: [65, 90], mid: [90, 120], senior: [120, 160], executive: [160, 220] },
-    'devops engineer': { entry: [80, 105], mid: [105, 140], senior: [140, 190], executive: [190, 270] },
-    'mobile developer': { entry: [70, 95], mid: [95, 130], senior: [130, 180], executive: [180, 250] },
-    'ios developer': { entry: [75, 100], mid: [100, 135], senior: [135, 185], executive: [185, 260] },
-    'android developer': { entry: [70, 95], mid: [95, 130], senior: [130, 180], executive: [180, 250] },
-    'qa engineer': { entry: [55, 80], mid: [80, 110], senior: [110, 150], executive: [150, 200] },
-    'marketing specialist': { entry: [45, 65], mid: [65, 90], senior: [90, 125], executive: [125, 175] },
-    'content writer': { entry: [35, 55], mid: [55, 75], senior: [75, 105], executive: [105, 145] },
-    'sales representative': { entry: [40, 60], mid: [60, 85], senior: [85, 120], executive: [120, 170] }
+    'react developer': { 'entry-level': [70, 95], 'mid-level': [95, 130], 'senior-level': [130, 180], executive: [180, 250] },
+    'frontend developer': { 'entry-level': [65, 90], 'mid-level': [90, 125], 'senior-level': [125, 170], executive: [170, 230] },
+    'backend developer': { 'entry-level': [75, 100], 'mid-level': [100, 135], 'senior-level': [135, 185], executive: [185, 260] },
+    'full stack developer': { 'entry-level': [70, 95], 'mid-level': [95, 130], 'senior-level': [130, 180], executive: [180, 250] },
+    'software engineer': { 'entry-level': [75, 100], 'mid-level': [100, 135], 'senior-level': [135, 185], executive: [185, 260] },
+    'data scientist': { 'entry-level': [85, 110], 'mid-level': [110, 150], 'senior-level': [150, 200], executive: [200, 280] },
+    'product manager': { 'entry-level': [80, 105], 'mid-level': [105, 140], 'senior-level': [140, 190], executive: [190, 270] },
+    'designer': { 'entry-level': [60, 85], 'mid-level': [85, 115], 'senior-level': [115, 155], executive: [155, 210] },
+    'ui designer': { 'entry-level': [55, 80], 'mid-level': [80, 110], 'senior-level': [110, 150], executive: [150, 200] },
+    'ux designer': { 'entry-level': [65, 90], 'mid-level': [90, 120], 'senior-level': [120, 160], executive: [160, 220] },
+    'devops engineer': { 'entry-level': [80, 105], 'mid-level': [105, 140], 'senior-level': [140, 190], executive: [190, 270] },
+    'mobile developer': { 'entry-level': [70, 95], 'mid-level': [95, 130], 'senior-level': [130, 180], executive: [180, 250] },
+    'ios developer': { 'entry-level': [75, 100], 'mid-level': [100, 135], 'senior-level': [135, 185], executive: [185, 260] },
+    'android developer': { 'entry-level': [70, 95], 'mid-level': [95, 130], 'senior-level': [130, 180], executive: [180, 250] },
+    'qa engineer': { 'entry-level': [55, 80], 'mid-level': [80, 110], 'senior-level': [110, 150], executive: [150, 200] },
+    'marketing specialist': { 'entry-level': [45, 65], 'mid-level': [65, 90], 'senior-level': [90, 125], executive: [125, 175] },
+    'content writer': { 'entry-level': [35, 55], 'mid-level': [55, 75], 'senior-level': [75, 105], executive: [105, 145] },
+    'sales representative': { 'entry-level': [40, 60], 'mid-level': [60, 85], 'senior-level': [85, 120], executive: [120, 170] }
   },
   
   // Location multipliers for cost of living adjustments
@@ -46,6 +45,14 @@ const SALARY_DATABASE = {
     'phoenix': 0.85, 'phoenix, az': 0.85,
     'remote': 0.95, 'worldwide': 0.9
   }
+};
+
+// Default salary ranges as final fallback
+const DEFAULT_SALARY_RANGES = {
+  'entry-level': [60, 85],
+  'mid-level': [85, 115],
+  'senior-level': [115, 155],
+  'executive': [155, 210]
 };
 
 // Enhanced text processing utilities
@@ -195,54 +202,92 @@ const getSuggestedSalary = (
   location: string,
   employmentType: EmploymentType
 ): string => {
+  console.log('getSuggestedSalary called with:', { jobTitle, experienceLevel, location, employmentType });
+  
   if (employmentType === 'project') return '';
   
-  // Normalize job title for lookup
-  const normalizedTitle = jobTitle.toLowerCase()
-    .replace(/\b(senior|jr|junior|lead|principal|staff)\b/g, '')
-    .trim();
-  
-  // Find matching role in salary database
-  let roleData = null;
-  for (const [role, data] of Object.entries(SALARY_DATABASE.roles)) {
-    if (normalizedTitle.includes(role) || role.includes(normalizedTitle)) {
-      roleData = data;
-      break;
+  try {
+    // Normalize job title for lookup
+    const normalizedTitle = jobTitle.toLowerCase()
+      .replace(/\b(senior|jr|junior|lead|principal|staff)\b/g, '')
+      .trim();
+    
+    console.log('Normalized title:', normalizedTitle);
+    
+    // Find matching role in salary database
+    let roleData = null;
+    for (const [role, data] of Object.entries(SALARY_DATABASE.roles)) {
+      if (normalizedTitle.includes(role) || role.includes(normalizedTitle)) {
+        roleData = data;
+        console.log('Found matching role:', role, data);
+        break;
+      }
     }
-  }
-  
-  // Default to software engineer if no match found
-  if (!roleData) {
-    roleData = SALARY_DATABASE.roles['software engineer'];
-  }
-  
-  // Get base salary range for experience level
-  const baseRange = roleData[experienceLevel] || roleData['mid-level'];
-  let [minSalary, maxSalary] = baseRange;
-  
-  // Apply location multiplier
-  const normalizedLocation = location.toLowerCase();
-  let locationMultiplier = 1.0;
-  
-  for (const [loc, multiplier] of Object.entries(SALARY_DATABASE.locations)) {
-    if (normalizedLocation.includes(loc)) {
-      locationMultiplier = multiplier;
-      break;
+    
+    // Default to software engineer if no match found
+    if (!roleData) {
+      roleData = SALARY_DATABASE.roles['software engineer'];
+      console.log('Using software engineer fallback:', roleData);
     }
+    
+    // Get base salary range for experience level with safety checks
+    let baseRange = roleData[experienceLevel];
+    console.log('Base range for', experienceLevel, ':', baseRange);
+    
+    // Add safety check for baseRange
+    if (!baseRange || !Array.isArray(baseRange) || baseRange.length < 2) {
+      console.log('Invalid baseRange, trying mid-level fallback');
+      baseRange = roleData['mid-level'];
+      
+      // If mid-level also fails, use default ranges
+      if (!baseRange || !Array.isArray(baseRange) || baseRange.length < 2) {
+        console.log('Mid-level fallback failed, using default ranges');
+        baseRange = DEFAULT_SALARY_RANGES[experienceLevel] || DEFAULT_SALARY_RANGES['mid-level'];
+      }
+    }
+    
+    console.log('Final baseRange:', baseRange);
+    
+    // Ensure we have a valid array with two numbers
+    if (!Array.isArray(baseRange) || baseRange.length < 2) {
+      console.error('Invalid baseRange after all fallbacks:', baseRange);
+      return '$80,000 - $120,000 per year'; // Emergency fallback
+    }
+    
+    let [minSalary, maxSalary] = baseRange;
+    
+    // Apply location multiplier
+    const normalizedLocation = location.toLowerCase();
+    let locationMultiplier = 1.0;
+    
+    for (const [loc, multiplier] of Object.entries(SALARY_DATABASE.locations)) {
+      if (normalizedLocation.includes(loc)) {
+        locationMultiplier = multiplier;
+        console.log('Found location multiplier:', loc, multiplier);
+        break;
+      }
+    }
+    
+    // Apply adjustments
+    minSalary = Math.round(minSalary * locationMultiplier);
+    maxSalary = Math.round(maxSalary * locationMultiplier);
+    
+    console.log('Final salary range:', { minSalary, maxSalary, locationMultiplier });
+    
+    // Format based on employment type
+    if (employmentType === 'contract') {
+      const hourlyMin = Math.round(minSalary / 2);
+      const hourlyMax = Math.round(maxSalary / 2);
+      return `$${hourlyMin} - $${hourlyMax} per hour`;
+    }
+    
+    return `$${minSalary.toLocaleString()} - $${maxSalary.toLocaleString()} per year`;
+    
+  } catch (error) {
+    console.error('Error in getSuggestedSalary:', error);
+    // Return a sensible default if anything fails
+    return employmentType === 'contract' ? '$50 - $80 per hour' : '$80,000 - $120,000 per year';
   }
-  
-  // Apply adjustments
-  minSalary = Math.round(minSalary * locationMultiplier);
-  maxSalary = Math.round(maxSalary * locationMultiplier);
-  
-  // Format based on employment type
-  if (employmentType === 'contract') {
-    const hourlyMin = Math.round(minSalary / 2);
-    const hourlyMax = Math.round(maxSalary / 2);
-    return `$${hourlyMin} - $${hourlyMax} per hour`;
-  }
-  
-  return `$${minSalary.toLocaleString()} - $${maxSalary.toLocaleString()} per year`;
 };
 
 const getSuggestedBudget = (
@@ -250,49 +295,58 @@ const getSuggestedBudget = (
   experienceLevel: ExperienceLevel,
   duration: string
 ): string => {
-  // Get hourly rate based on role and experience
-  const normalizedTitle = jobTitle.toLowerCase()
-    .replace(/\b(senior|jr|junior|lead|principal|staff)\b/g, '')
-    .trim();
-  
-  let roleData = null;
-  for (const [role, data] of Object.entries(SALARY_DATABASE.roles)) {
-    if (normalizedTitle.includes(role) || role.includes(normalizedTitle)) {
-      roleData = data;
-      break;
-    }
-  }
-  
-  if (!roleData) {
-    roleData = SALARY_DATABASE.roles['software engineer'];
-  }
-  
-  const baseRange = roleData[experienceLevel] || roleData['mid-level'];
-  const avgSalary = (baseRange[0] + baseRange[1]) / 2;
-  const hourlyRate = Math.round(avgSalary / 2);
-  
-  // Estimate project budget based on duration
-  const durationMatch = duration.match(/(\d+)\s*(month|week|day)/i);
-  if (durationMatch) {
-    const amount = parseInt(durationMatch[1]);
-    const unit = durationMatch[2].toLowerCase();
+  try {
+    // Get hourly rate based on role and experience
+    const normalizedTitle = jobTitle.toLowerCase()
+      .replace(/\b(senior|jr|junior|lead|principal|staff)\b/g, '')
+      .trim();
     
-    let totalHours = 0;
-    if (unit.includes('month')) {
-      totalHours = amount * 160; // 40 hours/week * 4 weeks
-    } else if (unit.includes('week')) {
-      totalHours = amount * 40;
-    } else if (unit.includes('day')) {
-      totalHours = amount * 8;
+    let roleData = null;
+    for (const [role, data] of Object.entries(SALARY_DATABASE.roles)) {
+      if (normalizedTitle.includes(role) || role.includes(normalizedTitle)) {
+        roleData = data;
+        break;
+      }
     }
     
-    if (totalHours > 0) {
-      const totalBudget = Math.round(totalHours * hourlyRate);
-      return `$${totalBudget.toLocaleString()} (${hourlyRate}/hr)`;
+    if (!roleData) {
+      roleData = SALARY_DATABASE.roles['software engineer'];
     }
+    
+    let baseRange = roleData[experienceLevel];
+    if (!baseRange || !Array.isArray(baseRange) || baseRange.length < 2) {
+      baseRange = roleData['mid-level'] || DEFAULT_SALARY_RANGES[experienceLevel] || DEFAULT_SALARY_RANGES['mid-level'];
+    }
+    
+    const avgSalary = (baseRange[0] + baseRange[1]) / 2;
+    const hourlyRate = Math.round(avgSalary / 2);
+    
+    // Estimate project budget based on duration
+    const durationMatch = duration.match(/(\d+)\s*(month|week|day)/i);
+    if (durationMatch) {
+      const amount = parseInt(durationMatch[1]);
+      const unit = durationMatch[2].toLowerCase();
+      
+      let totalHours = 0;
+      if (unit.includes('month')) {
+        totalHours = amount * 160; // 40 hours/week * 4 weeks
+      } else if (unit.includes('week')) {
+        totalHours = amount * 40;
+      } else if (unit.includes('day')) {
+        totalHours = amount * 8;
+      }
+      
+      if (totalHours > 0) {
+        const totalBudget = Math.round(totalHours * hourlyRate);
+        return `$${totalBudget.toLocaleString()} (${hourlyRate}/hr)`;
+      }
+    }
+    
+    return `$${hourlyRate - 20} - $${hourlyRate + 20} per hour`;
+  } catch (error) {
+    console.error('Error in getSuggestedBudget:', error);
+    return '$50 - $80 per hour';
   }
-  
-  return `$${hourlyRate - 20} - $${hourlyRate + 20} per hour`;
 };
 
 const extractDuration = (text: string): string => {
