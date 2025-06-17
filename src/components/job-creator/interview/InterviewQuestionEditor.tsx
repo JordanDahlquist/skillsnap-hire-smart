@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,8 +138,8 @@ export const InterviewQuestionEditor = ({
                 <div className="flex items-center gap-3">
                   <GripVertical className="w-4 h-4 text-gray-400" />
                   <span className="font-medium">Question {index + 1}</span>
-                  <Badge className={getQuestionTypeColor(question.type)}>
-                    {question.type.replace('_', ' ')}
+                  <Badge className="bg-purple-100 text-purple-800">
+                    Video Response
                   </Badge>
                   {question.required && (
                     <Badge variant="outline" className="text-red-600 border-red-200">
@@ -172,45 +171,23 @@ export const InterviewQuestionEditor = ({
                     />
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor={`type-${question.id}`}>Question Type</Label>
-                      <Select
-                        value={question.type}
-                        onValueChange={(value: any) => updateQuestion(question.id, { type: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="video_response">Video Response</SelectItem>
-                          <SelectItem value="text_response">Text Response</SelectItem>
-                          <SelectItem value="behavioral">Behavioral</SelectItem>
-                          <SelectItem value="technical">Technical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {question.type === 'video_response' && (
-                      <div>
-                        <Label htmlFor={`videoLength-${question.id}`}>Video Length (minutes)</Label>
-                        <Select
-                          value={(question.videoMaxLength || 5).toString()}
-                          onValueChange={(value) => updateQuestion(question.id, { videoMaxLength: parseInt(value) })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">1 minute</SelectItem>
-                            <SelectItem value="3">3 minutes</SelectItem>
-                            <SelectItem value="5">5 minutes</SelectItem>
-                            <SelectItem value="10">10 minutes</SelectItem>
-                            <SelectItem value="15">15 minutes</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
+                  <div>
+                    <Label htmlFor={`videoLength-${question.id}`}>Video Length (minutes)</Label>
+                    <Select
+                      value={(question.videoMaxLength || 5).toString()}
+                      onValueChange={(value) => updateQuestion(question.id, { videoMaxLength: parseInt(value) })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 minute</SelectItem>
+                        <SelectItem value="3">3 minutes</SelectItem>
+                        <SelectItem value="5">5 minutes</SelectItem>
+                        <SelectItem value="10">10 minutes</SelectItem>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>
