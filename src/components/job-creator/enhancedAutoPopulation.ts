@@ -192,12 +192,12 @@ const extractSkills = (text: string, jobTitle?: string): string => {
 };
 
 const extractLocation = (text: string): string => {
-  // Enhanced location patterns to handle various formats
+  // Enhanced location patterns to handle various formats - FIXED REGEX
   const locationPatterns = [
-    // "in City" - try to match with our city mapping first
-    /\bin\s+([a-zA-Z\s]+?)(?:\s|$|,|\.|!|\?)/i,
-    // "at [company] in City"
-    /\bat\s+[^,\n]*?\s+in\s+([a-zA-Z\s]+?)(?:\s|$|,|\.|!|\?)/i,
+    // "in City" - FIXED: Use greedy quantifier and better word boundaries
+    /\bin\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s*(?:$|[,\.\!\?\s])/i,
+    // "at [company] in City" - FIXED: Better capture for multi-word cities
+    /\bat\s+[^,\n]*?\s+in\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s*(?:$|[,\.\!\?\s])/i,
     // "based in City, State"
     /(?:based|located)\s+in\s+([A-Z][a-zA-Z\s,]+?)(?:\s|$|,|\.|!|\?)/i,
     // "City, State based" or "City State based"
@@ -228,7 +228,8 @@ const extractLocation = (text: string): string => {
         location = toTitleCase(match[1]);
       }
       
-      if (location.length > 2) {
+      // Only return if we have a meaningful location (more than 2 characters)
+      if (location.length > 2 && !['in', 'at', 'the', 'and', 'or'].includes(location.toLowerCase())) {
         return location;
       }
     }
