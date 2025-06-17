@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { SkillsTestData } from "@/types/skillsAssessment";
@@ -159,7 +160,10 @@ export const useJobContentGeneration = () => {
       
       // Parse the AI-generated text into structured InterviewQuestion objects
       const generatedText = response.data.questions;
+      console.log('Raw AI response for interview questions:', generatedText);
+      
       const parsedQuestions = parseInterviewQuestionsFromText(generatedText);
+      console.log('Parsed interview questions:', parsedQuestions);
       
       // Set the structured data directly into the questions builder
       const interviewQuestionsData: InterviewQuestionsData = {
@@ -201,15 +205,85 @@ export const useJobContentGeneration = () => {
 const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
   const questions: InterviewQuestion[] = [];
   
-  // Split by numbered questions or bullet points
-  const questionBlocks = text.split(/(?:\d+\.|•|\*)\s+/).filter(block => block.trim());
+  console.log('Parsing interview questions from text:', text.substring(0, 200) + '...');
+  
+  // Clean the text first - remove excessive whitespace and normalize line breaks
+  const cleanedText = text.trim().replace(/\r\n/g, '\n').replace(/\n\s*\n/g, '\n\n');
+  
+  // Try multiple parsing strategies to handle different AI response formats
+  
+  // Strategy 1: Split by numbered questions with various formats
+  let questionBlocks = cleanedText.split(/(?:\n|^)(?:\*{0,2}(?:Question\s*)?(?:\d+)[.:)\s*]|\d+\.\s|\*\s|\•\s)/i);
+  
+  // If that didn't work well, try splitting by double line breaks
+  if (questionBlocks.length <= 2) {
+    questionBlocks = cleanedText.split(/\n\n+/);
+  }
+  
+  // If still no good results, try splitting by single line breaks with question indicators
+  if (questionBlocks.length <= 2) {
+    questionBlocks = cleanedText.split(/\n(?=.*(?:question|ask|tell|describe|explain|how|what|why|when|where))/i);
+  }
+  
+  console.log('Found question blocks:', questionBlocks.length, questionBlocks.map(b => b.substring(0, 50) + '...'));
   
   questionBlocks.forEach((block, index) => {
-    const lines = block.trim().split('\n').filter(line => line.trim());
+    const cleanBlock = block.trim();
+    if (!cleanBlock) return;
+    
+    // Extract title and question content
+    const lines = cleanBlock.split('\n').filter(line => line.trim());
     if (lines.length === 0) return;
     
-    const questionText = lines[0].trim();
-    if (questionText.length < 10) return; // Skip very short text that's not a real question
+    let title = '';
+    let questionText = '';
+    let candidateInstructions = '';
+    
+    // Look for formatted titles (with asterisks or colons)
+    const firstLine = lines[0].trim();
+    const titleMatch = firstLine.match(/^\*{0,2}(?:Question\s*\d+[.:]\s*)?(.+?)[:*]*$/i);
+    
+    if (titleMatch && lines.length > 1) {
+      // Extract title and use remaining lines as question
+      title = titleMatch[1].replace(/[*:]/g, '').trim();
+      questionText = lines.slice(1).join(' ').trim();
+    } else {
+      // No clear title, use the first substantial line as question
+      questionText = firstLine;
+      
+      // If there are additional lines, they might be instructions
+      if (lines.length > 1) {
+        const restOfContent = lines.slice(1).join(' ').trim();
+        if (restOfContent.toLowerCase().includes('please') || 
+            restOfContent.toLowerCase().includes('consider') ||
+            restOfContent.toLowerCase().includes('include') ||
+            restOfContent.toLowerCase().includes('explain') ||
+            restOfContent.length > 20) {
+          candidateInstructions = restOfContent;
+        }
+      }
+    }
+    
+    // Clean up the question text
+    questionText = questionText
+      .replace(/^\*+|\*+$/g, '') // Remove leading/trailing asterisks
+      .replace(/^[:\-\s]+|[:\-\s]+$/g, '') // Remove leading/trailing colons, dashes, spaces
+      .trim();
+    
+    // Validate that we have a real question
+    if (questionText.length < 10) {
+      console.log('Skipping short text:', questionText);
+      return;
+    }
+    
+    // Ensure it looks like a question (has question words or ends with question mark)
+    const hasQuestionWords = /\b(what|how|why|when|where|tell|describe|explain|discuss|share)\b/i.test(questionText);
+    const endsWithQuestionMark = questionText.endsWith('?');
+    
+    if (!hasQuestionWords && !endsWithQuestionMark && questionText.length < 30) {
+      console.log('Skipping non-question text:', questionText);
+      return;
+    }
     
     // Determine question type based on content
     let questionType: InterviewQuestion['type'] = 'video_response';
@@ -217,11 +291,14 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
     
     if (questionText.toLowerCase().includes('technical') || 
         questionText.toLowerCase().includes('code') ||
-        questionText.toLowerCase().includes('implement')) {
+        questionText.toLowerCase().includes('implement') ||
+        questionText.toLowerCase().includes('algorithm')) {
       questionType = 'technical';
     } else if (questionText.toLowerCase().includes('behavior') ||
                questionText.toLowerCase().includes('situation') ||
-               questionText.toLowerCase().includes('experience')) {
+               questionText.toLowerCase().includes('experience') ||
+               questionText.toLowerCase().includes('challenge') ||
+               questionText.toLowerCase().includes('conflict')) {
       questionType = 'behavioral';
     } else if (questionText.toLowerCase().includes('write') ||
                questionText.toLowerCase().includes('describe in detail') ||
@@ -236,18 +313,7 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
       videoMaxLength = 3;
     }
     
-    // Extract candidate instructions if present
-    let candidateInstructions = '';
-    if (lines.length > 1) {
-      const potentialInstructions = lines.slice(1).join(' ').trim();
-      if (potentialInstructions.toLowerCase().includes('please') || 
-          potentialInstructions.toLowerCase().includes('consider') ||
-          potentialInstructions.toLowerCase().includes('include')) {
-        candidateInstructions = potentialInstructions;
-      }
-    }
-    
-    questions.push({
+    const newQuestion: InterviewQuestion = {
       id: crypto.randomUUID(),
       question: questionText,
       type: questionType,
@@ -255,14 +321,20 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
       order: index + 1,
       videoMaxLength: questionType === 'video_response' ? videoMaxLength : undefined,
       candidateInstructions: candidateInstructions || undefined
-    });
+    };
+    
+    console.log('Created question:', newQuestion);
+    questions.push(newQuestion);
   });
   
-  // If we couldn't parse properly, create a fallback question
+  // If we couldn't parse any questions, create a fallback
   if (questions.length === 0) {
+    console.log('No questions parsed, creating fallback');
+    const fallbackQuestion = cleanedText.length > 20 ? cleanedText : 'Tell us about your interest in this position and relevant experience.';
+    
     questions.push({
       id: crypto.randomUUID(),
-      question: text.trim() || 'Tell us about your interest in this position and relevant experience.',
+      question: fallbackQuestion,
       type: 'video_response',
       required: true,
       order: 1,
@@ -270,5 +342,6 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
     });
   }
   
+  console.log('Final parsed questions:', questions);
   return questions;
 };
