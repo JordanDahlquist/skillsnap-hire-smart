@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { SkillsTestData } from "@/types/skillsAssessment";
@@ -311,7 +312,7 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
     
     // Determine question type based on content
     let questionType: InterviewQuestion['type'] = 'video_response';
-    let videoMaxLength = 5;
+    let videoMaxLength = 1; // Default to 1 minute
     
     if (questionText.toLowerCase().includes('technical') || 
         questionText.toLowerCase().includes('code') ||
@@ -330,11 +331,11 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
       questionType = 'text_response';
     }
     
-    // Adjust video length based on question complexity
+    // Adjust video length based on question complexity (starting from 1 minute)
     if (questionText.length > 200 || questionText.toLowerCase().includes('detailed')) {
-      videoMaxLength = 10;
-    } else if (questionText.length < 100) {
-      videoMaxLength = 3;
+      videoMaxLength = 3; // Increase to 3 minutes for complex questions
+    } else if (questionText.length > 100) {
+      videoMaxLength = 2; // 2 minutes for medium complexity
     }
     
     const newQuestion: InterviewQuestion = {
@@ -363,7 +364,7 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
       type: 'video_response',
       required: true,
       order: 1,
-      videoMaxLength: 5
+      videoMaxLength: 1 // Default to 1 minute
     });
   }
   

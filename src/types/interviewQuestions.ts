@@ -39,7 +39,7 @@ export const DEFAULT_INTERVIEW_TEMPLATES: InterviewQuestionTemplate[] = [
         type: 'video_response',
         required: true,
         order: 1,
-        videoMaxLength: 3,
+        videoMaxLength: 1,
         candidateInstructions: 'Please introduce yourself and explain your interest in this position.'
       },
       {
@@ -47,7 +47,7 @@ export const DEFAULT_INTERVIEW_TEMPLATES: InterviewQuestionTemplate[] = [
         type: 'video_response',
         required: true,
         order: 2,
-        videoMaxLength: 5,
+        videoMaxLength: 3,
         evaluationCriteria: 'Look for problem-solving approach, technical depth, and communication skills.'
       },
       {
@@ -71,14 +71,14 @@ export const DEFAULT_INTERVIEW_TEMPLATES: InterviewQuestionTemplate[] = [
         type: 'video_response',
         required: true,
         order: 1,
-        videoMaxLength: 3
+        videoMaxLength: 1
       },
       {
         question: 'What are your key strengths and how do they relate to this role?',
         type: 'video_response',
         required: true,
         order: 2,
-        videoMaxLength: 3
+        videoMaxLength: 1
       },
       {
         question: 'Where do you see yourself in 3-5 years?',

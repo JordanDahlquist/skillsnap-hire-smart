@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ export const InterviewQuestionEditor = ({
       type: 'video_response',
       required: true,
       order: interviewQuestionsData.questions.length + 1,
-      videoMaxLength: 5 // Default to 5 minutes for new video questions
+      videoMaxLength: 1 // Default to 1 minute for new video questions
     };
 
     onInterviewQuestionsDataChange({
@@ -174,7 +175,7 @@ export const InterviewQuestionEditor = ({
                   <div>
                     <Label htmlFor={`videoLength-${question.id}`}>Video Length (minutes)</Label>
                     <Select
-                      value={(question.videoMaxLength || 5).toString()}
+                      value={(question.videoMaxLength || 1).toString()}
                       onValueChange={(value) => updateQuestion(question.id, { videoMaxLength: parseInt(value) })}
                     >
                       <SelectTrigger>
