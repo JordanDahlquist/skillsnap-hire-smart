@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -254,22 +255,53 @@ ${existingJobPost}
    - "Develop API Integration"
    - "Plan Content Strategy"
 
+**CRITICAL INSTRUCTION FORMATTING REQUIREMENTS:**
+1. **USE PROPER MARKDOWN FORMATTING**: Structure instructions with clear headers, numbered steps, and bullet points
+2. **INCLUDE THESE SECTIONS**: Overview, Steps, Deliverables, Evaluation Criteria
+3. **USE BOLD HEADERS**: Mark section headers with **bold** formatting
+4. **NUMBER THE STEPS**: Use numbered lists for sequential tasks
+5. **BULLET POINTS**: Use bullet points for requirements and deliverables
+6. **PROPER LINE BREAKS**: Include line breaks between sections for readability
+
+**INSTRUCTION FORMATTING EXAMPLE:**
+\`\`\`
+## Overview
+Brief description of what they're creating and why it matters for the role.
+
+## Steps
+1. **Research Phase (20 minutes)**
+   - Research current trends in the industry
+   - Analyze competitor examples
+   - Identify key requirements
+
+2. **Planning Phase (15 minutes)**
+   - Create a project outline
+   - Define scope and priorities
+   - Set clear objectives
+
+3. **Execution Phase (45 minutes)**
+   - Implement the main deliverable
+   - Focus on core functionality
+   - Apply best practices
+
+## Deliverables
+- Primary deliverable in specified format
+- Supporting documentation (if needed)
+- Brief explanation of approach
+
+## Evaluation Criteria
+- **Quality**: Technical execution and attention to detail
+- **Creativity**: Original thinking and innovative approach
+- **Relevance**: How well it addresses the business need
+\`\`\`
+
 **CRITICAL DESIGN PRINCIPLES:**
 1. **SINGLE INTEGRATED PROJECT**: Create ONE cohesive task, not multiple separate challenges
 2. **TIME-BOUNDED**: Must be completable in 60-90 minutes maximum
 3. **MULTI-SKILL DEMONSTRATION**: The single task should naturally require multiple skills from the job requirements
 4. **REALISTIC WORK SCENARIO**: Mirror actual work they'd do at ${companyName}
 5. **CLEAR SCOPE BOUNDARIES**: Prevent over-engineering with specific deliverable requirements
-6. **DETAILED INSTRUCTIONS**: Provide comprehensive, step-by-step guidance with specific deliverables
-7. **CONCISE TITLE**: Create a descriptive but SHORT title (maximum 10 words)
-
-**INSTRUCTION QUALITY REQUIREMENTS:**
-- Provide DETAILED, step-by-step instructions (minimum 150 words)
-- Specify EXACT deliverables (file types, page limits, feature requirements)
-- Include clear scope boundaries ("focus on X, don't worry about Y")
-- Reference specific company context and business challenges
-- Provide time management guidance ("spend 30 minutes on research, 45 minutes on execution")
-- Include examples of what good vs. poor submissions look like
+6. **WELL-FORMATTED INSTRUCTIONS**: Use the formatting example above as a template
 
 **COMPANY INTEGRATION:**
 ${websiteAnalysisData ? `
@@ -291,7 +323,7 @@ Return a JSON object with this exact structure:
         "title": "SHORT, descriptive title (5-10 words max, e.g., 'Build Customer Analytics Dashboard')",
         "question": "Brief project overview that summarizes the challenge in 1-2 sentences",
         "type": "choose appropriate type based on deliverable (portfolio_link, pdf_upload, file_upload, video_upload, etc.)",
-        "candidateInstructions": "DETAILED step-by-step instructions (minimum 200 words) including: 1) Specific deliverables required, 2) Time allocation suggestions (e.g., 'Spend 30 minutes on research, 45 minutes on implementation'), 3) Scope boundaries (what to include/exclude), 4) File format requirements, 5) Evaluation focus areas, 6) Company-specific context to incorporate, 7) Examples of what good submissions include",
+        "candidateInstructions": "PROPERLY FORMATTED instructions using the markdown structure shown above. Must include: ## Overview, ## Steps (numbered with bold headers), ## Deliverables (bullet points), ## Evaluation Criteria (bold headers). Use line breaks between sections. Minimum 250 words.",
         "evaluationGuidelines": "Detailed criteria for evaluating this integrated project across multiple skill dimensions with specific examples",
         "scoringCriteria": "Clear explanation of what constitutes good vs. excellent submissions with specific examples",
         "required": true,
@@ -307,13 +339,11 @@ Return a JSON object with this exact structure:
   }
 }
 
-**TITLE EXAMPLES BY ROLE:**
-- **Developers**: "Build Payment Dashboard", "Create API Integration", "Develop User Authentication"
-- **Designers**: "Design Mobile App Interface", "Create Brand Guidelines", "Build User Onboarding Flow"
-- **Marketing**: "Create Launch Campaign", "Design Email Sequence", "Build Content Strategy"
-- **Product Managers**: "Create Feature Specification", "Design Product Roadmap", "Build User Research Plan"
-
-**CRITICAL REMINDER**: The "title" field MUST be short (10 words maximum). All detailed instructions, requirements, and context go in "candidateInstructions", NOT in the title.
+**CRITICAL REMINDER**: 
+- The "title" field MUST be short (10 words maximum)
+- The "candidateInstructions" field MUST use proper Markdown formatting with the structure shown above
+- Include clear sections with bold headers, numbered steps, and bullet points
+- Ensure proper line breaks between sections for readability
 
 Create an integrated project that candidates will find engaging, realistic, and directly relevant to the actual work they'll do at ${companyName}.`;
 
@@ -368,7 +398,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
           {
             role: 'system',
             content: type === 'skills-test' 
-              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). Put detailed instructions in candidateInstructions, NOT in the title. ALWAYS return valid JSON in the exact format specified.'
+              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with clear sections, bold headers, numbered steps, and bullet points. ALWAYS return valid JSON in the exact format specified.'
               : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
           },
           {
