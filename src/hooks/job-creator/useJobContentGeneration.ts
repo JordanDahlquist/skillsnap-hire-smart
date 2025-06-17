@@ -201,7 +201,7 @@ export const useJobContentGeneration = () => {
   };
 };
 
-// Helper function to parse AI-generated text into structured InterviewQuestion objects
+// Enhanced helper function to parse AI-generated text into structured InterviewQuestion objects
 const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
   const questions: InterviewQuestion[] = [];
   
@@ -210,77 +210,66 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
   // Clean the text first - remove excessive whitespace and normalize line breaks
   const cleanedText = text.trim().replace(/\r\n/g, '\n').replace(/\n\s*\n/g, '\n\n');
   
-  // Try multiple parsing strategies to handle different AI response formats
+  // Enhanced parsing to handle formatted titles and content sections
+  // Look for patterns like "**Question N:" or "Question N:" followed by content
+  const questionBlocks = cleanedText.split(/(?:\n|^)(?:\*{0,2}\s*Question\s*\d+[.:]?\s*[^*\n]*\*{0,2})/i);
   
-  // Strategy 1: Split by numbered questions with various formats
-  let questionBlocks = cleanedText.split(/(?:\n|^)(?:\*{0,2}(?:Question\s*)?(?:\d+)[.:)\s*]|\d+\.\s|\*\s|\•\s)/i);
-  
-  // If that didn't work well, try splitting by double line breaks
+  // If that didn't work well, try splitting by markdown headers
   if (questionBlocks.length <= 2) {
-    questionBlocks = cleanedText.split(/\n\n+/);
+    const headerSplit = cleanedText.split(/(?:\n|^)#{1,3}\s*[^#\n]+/);
+    if (headerSplit.length > 2) {
+      questionBlocks.splice(0, questionBlocks.length, ...headerSplit);
+    }
   }
   
-  // If still no good results, try splitting by single line breaks with question indicators
+  // If still no good results, try splitting by double line breaks with question indicators
   if (questionBlocks.length <= 2) {
-    questionBlocks = cleanedText.split(/\n(?=.*(?:question|ask|tell|describe|explain|how|what|why|when|where))/i);
+    const paragraphSplit = cleanedText.split(/\n\n+/);
+    questionBlocks.splice(0, questionBlocks.length, ...paragraphSplit);
   }
   
   console.log('Found question blocks:', questionBlocks.length, questionBlocks.map(b => b.substring(0, 50) + '...'));
   
+  // Also extract titles that might have been split out
+  const titleMatches = cleanedText.match(/(?:\*{0,2}\s*Question\s*\d+[.:]?\s*[^*\n]*\*{0,2})/gi) || [];
+  console.log('Found titles:', titleMatches);
+  
   questionBlocks.forEach((block, index) => {
     const cleanBlock = block.trim();
-    if (!cleanBlock) return;
+    if (!cleanBlock || cleanBlock.length < 10) return;
     
-    // Extract title and question content
-    const lines = cleanBlock.split('\n').filter(line => line.trim());
-    if (lines.length === 0) return;
-    
-    let title = '';
-    let questionText = '';
-    let candidateInstructions = '';
-    
-    // Look for formatted titles (with asterisks or colons)
-    const firstLine = lines[0].trim();
-    const titleMatch = firstLine.match(/^\*{0,2}(?:Question\s*\d+[.:]\s*)?(.+?)[:*]*$/i);
-    
-    if (titleMatch && lines.length > 1) {
-      // Extract title and use remaining lines as question
-      title = titleMatch[1].replace(/[*:]/g, '').trim();
-      questionText = lines.slice(1).join(' ').trim();
-    } else {
-      // No clear title, use the first substantial line as question
-      questionText = firstLine;
-      
-      // If there are additional lines, they might be instructions
-      if (lines.length > 1) {
-        const restOfContent = lines.slice(1).join(' ').trim();
-        if (restOfContent.toLowerCase().includes('please') || 
-            restOfContent.toLowerCase().includes('consider') ||
-            restOfContent.toLowerCase().includes('include') ||
-            restOfContent.toLowerCase().includes('explain') ||
-            restOfContent.length > 20) {
-          candidateInstructions = restOfContent;
-        }
-      }
+    // Try to get the corresponding title
+    let questionTitle = '';
+    if (titleMatches[index]) {
+      questionTitle = titleMatches[index].replace(/\*+/g, '').replace(/Question\s*\d+[.:]?\s*/i, '').trim();
     }
     
-    // Clean up the question text
+    console.log(`Processing block ${index}:`, cleanBlock.substring(0, 100) + '...');
+    
+    // Split the block into different sections
+    const sections = parseQuestionSections(cleanBlock);
+    
+    // Extract the main question text
+    let questionText = sections.question || cleanBlock.split('\n')[0] || cleanBlock;
+    
+    // Clean up the question text - remove formatting and get the core question
     questionText = questionText
-      .replace(/^\*+|\*+$/g, '') // Remove leading/trailing asterisks
-      .replace(/^[:\-\s]+|[:\-\s]+$/g, '') // Remove leading/trailing colons, dashes, spaces
+      .replace(/^\*+|\*+$/g, '') // Remove asterisks
+      .replace(/^[:\-\s]+|[:\-\s]+$/g, '') // Remove colons, dashes, spaces
+      .replace(/^\d+\.\s*/, '') // Remove numbering
       .trim();
     
     // Validate that we have a real question
-    if (questionText.length < 10) {
-      console.log('Skipping short text:', questionText);
+    if (questionText.length < 15) {
+      console.log('Skipping short question text:', questionText);
       return;
     }
     
-    // Ensure it looks like a question (has question words or ends with question mark)
-    const hasQuestionWords = /\b(what|how|why|when|where|tell|describe|explain|discuss|share)\b/i.test(questionText);
+    // Ensure it looks like a question
+    const hasQuestionWords = /\b(what|how|why|when|where|tell|describe|explain|discuss|share|can you)\b/i.test(questionText);
     const endsWithQuestionMark = questionText.endsWith('?');
     
-    if (!hasQuestionWords && !endsWithQuestionMark && questionText.length < 30) {
+    if (!hasQuestionWords && !endsWithQuestionMark && questionText.length < 50) {
       console.log('Skipping non-question text:', questionText);
       return;
     }
@@ -320,10 +309,11 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
       required: index < 3, // Make first 3 questions required
       order: index + 1,
       videoMaxLength: questionType === 'video_response' ? videoMaxLength : undefined,
-      candidateInstructions: candidateInstructions || undefined
+      candidateInstructions: sections.candidateInstructions || undefined,
+      evaluationCriteria: sections.evaluationCriteria || undefined
     };
     
-    console.log('Created question:', newQuestion);
+    console.log('Created structured question:', newQuestion);
     questions.push(newQuestion);
   });
   
@@ -344,4 +334,72 @@ const parseInterviewQuestionsFromText = (text: string): InterviewQuestion[] => {
   
   console.log('Final parsed questions:', questions);
   return questions;
+};
+
+// Helper function to parse different sections within a question block
+const parseQuestionSections = (block: string) => {
+  const sections = {
+    question: '',
+    candidateInstructions: '',
+    evaluationCriteria: ''
+  };
+  
+  // Split by common section indicators
+  const lines = block.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  
+  let currentSection = 'question';
+  let questionLines: string[] = [];
+  let instructionLines: string[] = [];
+  let criteriaLines: string[] = [];
+  
+  for (const line of lines) {
+    // Check for evaluation criteria indicators
+    if (/(?:what we're looking for|evaluation|criteria|look for|assess|evaluate)[:*]/i.test(line)) {
+      currentSection = 'criteria';
+      // If this line has content after the indicator, add it
+      const content = line.replace(/^[^:]*[:*]\s*/, '').trim();
+      if (content) criteriaLines.push(content);
+      continue;
+    }
+    
+    // Check for candidate instruction indicators
+    if (/(?:please|make sure|include|instructions|guidance|tips|remember|note)[:*]/i.test(line) ||
+        /^(?:please|make sure|include|remember|note)\b/i.test(line)) {
+      currentSection = 'instructions';
+      // If this line has content after the indicator, add it
+      const content = line.replace(/^[^:]*[:*]\s*/, '').trim();
+      if (content) instructionLines.push(content);
+      continue;
+    }
+    
+    // Add content to current section
+    if (currentSection === 'question') {
+      questionLines.push(line);
+    } else if (currentSection === 'instructions') {
+      instructionLines.push(line);
+    } else if (currentSection === 'criteria') {
+      criteriaLines.push(line);
+    }
+  }
+  
+  // Clean up and assign sections
+  sections.question = questionLines.join(' ').trim();
+  sections.candidateInstructions = instructionLines.length > 0 ? instructionLines.join(' ').trim() : '';
+  sections.evaluationCriteria = criteriaLines.length > 0 ? criteriaLines.join(' ').trim() : '';
+  
+  // If we have "What we're looking for" content in the question, move it to criteria
+  const questionText = sections.question;
+  const lookingForMatch = questionText.match(/(.+?)[\n\s]*(?:\*?what we're looking for[\s\S]*)/i);
+  if (lookingForMatch) {
+    sections.question = lookingForMatch[1].trim();
+    if (!sections.evaluationCriteria) {
+      const criteriaText = questionText.match(/(?:\*?what we're looking for[:*]?\s*)([\s\S]+)/i);
+      if (criteriaText) {
+        sections.evaluationCriteria = criteriaText[1].trim();
+      }
+    }
+  }
+  
+  console.log('Parsed sections:', sections);
+  return sections;
 };
