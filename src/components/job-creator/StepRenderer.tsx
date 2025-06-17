@@ -45,6 +45,7 @@ export const StepRenderer = ({
       return (
         <Step2JobPostGenerator
           generatedJobPost={state.generatedJobPost}
+          formData={state.formData}
           writingTone={state.writingTone}
           isGenerating={state.isGenerating}
           isEditingJobPost={state.isEditingJobPost}
