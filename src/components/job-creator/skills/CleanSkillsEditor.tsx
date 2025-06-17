@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, FileText } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { SkillsTestData, SkillsQuestion } from "@/types/skillsAssessment";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface CleanSkillsEditorProps {
   skillsTestData: SkillsTestData;
@@ -198,7 +198,7 @@ export const CleanSkillsEditor = ({
                             prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
                             prose-strong:text-gray-900 prose-strong:font-semibold
                             prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
-                          dangerouslySetInnerHTML={{ __html: challenge.candidateInstructions }} 
+                          dangerouslySetInnerHTML={{ __html: parseMarkdown(challenge.candidateInstructions) }} 
                         />
                       ) : (
                         <p className="text-gray-500 italic text-sm">Click to add challenge instructions...</p>
