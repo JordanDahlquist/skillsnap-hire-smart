@@ -16,6 +16,20 @@ interface InterviewGeneratorContentProps {
   actions: UnifiedJobCreatorActions;
 }
 
+// Helper function to parse generated text into individual questions
+const parseGeneratedQuestions = (text: string): string[] => {
+  if (!text) return [];
+  
+  // Split by numbered questions (1., 2., etc.) or bullet points (-, *)
+  const parsedQuestions = text
+    .split(/\d+\.|\n-|\n\*/)
+    .map(q => q.trim())
+    .filter(q => q.length > 10 && !q.toLowerCase().includes('interview questions'))
+    .slice(0, 10); // Limit to 10 questions max
+  
+  return parsedQuestions;
+};
+
 export const InterviewGeneratorContent = ({
   generatedInterviewQuestions,
   interviewQuestionsData,
@@ -30,6 +44,9 @@ export const InterviewGeneratorContent = ({
     actions.setIsEditingInterviewQuestions(false);
   };
 
+  // Parse generated questions for display
+  const parsedQuestions = parseGeneratedQuestions(generatedInterviewQuestions);
+
   return (
     <Card className="h-full flex flex-col overflow-hidden">
       <CardHeader className="pb-3 flex-shrink-0">
@@ -38,9 +55,13 @@ export const InterviewGeneratorContent = ({
             <CardTitle className="flex items-center gap-2 text-lg">
               <Video className="w-5 h-5 text-purple-600" />
               Interview Questions
-              {interviewQuestionsData.questions.length > 0 && (
+              {interviewQuestionsData.questions.length > 0 ? (
                 <Badge variant="outline" className="text-xs">
                   {interviewQuestionsData.questions.length} questions
+                </Badge>
+              ) : parsedQuestions.length > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  {parsedQuestions.length} questions
                 </Badge>
               )}
             </CardTitle>
@@ -136,6 +157,25 @@ export const InterviewGeneratorContent = ({
                             Max video length: {question.videoMaxLength || 5} minutes
                           </p>
                         )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : parsedQuestions.length > 0 ? (
+                <div className="p-4 space-y-4">
+                  {parsedQuestions.map((question, index) => (
+                    <Card key={index} className="border-l-4 border-l-purple-500">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <h4 className="font-semibold text-base text-gray-900">Question {index + 1}</h4>
+                          <Badge variant="outline" className="text-xs">
+                            video response
+                          </Badge>
+                        </div>
+                        <p className="text-gray-900 mb-3 text-sm leading-relaxed">{question}</p>
+                        <p className="text-purple-600 font-medium text-sm">
+                          Max video length: 5 minutes
+                        </p>
                       </CardContent>
                     </Card>
                   ))}
