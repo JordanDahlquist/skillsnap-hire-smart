@@ -263,7 +263,7 @@ export const InterviewQuestionEditor = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setEditingQuestion(question.id)}
-                    className="mt-2"
+                    className="mt-2 h-8 px-3 text-xs"
                   >
                     Edit Question
                   </Button>
