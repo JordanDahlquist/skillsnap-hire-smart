@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit3, FileText } from "lucide-react";
@@ -85,10 +84,10 @@ export const Step5ReviewPublish = ({
             </CardHeader>
             <CardContent>
               <div 
-                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm"
+                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm prose prose-lg max-w-none"
                 style={{
-                  lineHeight: '1.7',
-                  fontSize: '16px',
+                  lineHeight: '1.8',
+                  fontSize: '18px',
                   wordWrap: 'break-word'
                 }}
                 dangerouslySetInnerHTML={{ 
@@ -119,10 +118,10 @@ export const Step5ReviewPublish = ({
             </CardHeader>
             <CardContent>
               <div 
-                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm"
+                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm prose prose-lg max-w-none"
                 style={{
-                  lineHeight: '1.7',
-                  fontSize: '16px',
+                  lineHeight: '1.8',
+                  fontSize: '18px',
                   wordWrap: 'break-word'
                 }}
                 dangerouslySetInnerHTML={{ 
@@ -153,10 +152,10 @@ export const Step5ReviewPublish = ({
             </CardHeader>
             <CardContent>
               <div 
-                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm"
+                className="bg-white rounded-lg p-6 border-2 border-gray-100 shadow-sm prose prose-lg max-w-none"
                 style={{
-                  lineHeight: '1.7',
-                  fontSize: '16px',
+                  lineHeight: '1.8',
+                  fontSize: '18px',
                   wordWrap: 'break-word'
                 }}
                 dangerouslySetInnerHTML={{ 
