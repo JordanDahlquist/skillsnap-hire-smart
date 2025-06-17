@@ -4,9 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, SkipForward, Settings } from "lucide-react";
-import { SkillsTestData, SkillsTestTemplate } from "@/types/skillsAssessment";
+import { SkillsTestData } from "@/types/skillsAssessment";
 import { UnifiedJobCreatorActions } from "@/types/jobForm";
-import { SkillsTestTemplateSelector } from "./skills/SkillsTestTemplateSelector";
 import { RedesignedSkillsQuestionEditor } from "./skills/RedesignedSkillsQuestionEditor";
 import { SkillsTestPreview } from "./skills/SkillsTestPreview";
 import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
@@ -14,7 +13,7 @@ import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
 interface Step3SkillsTestGeneratorProps {
   generatedJobPost: string;
   skillsTestData: SkillsTestData;
-  skillsTestViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
+  skillsTestViewState: 'initial' | 'editor' | 'preview';
   isGenerating: boolean;
   actions: UnifiedJobCreatorActions;
   onGenerateQuestions: () => Promise<void>;
@@ -48,37 +47,14 @@ export const Step3SkillsTestGenerator = ({
   };
 
   const handleBuildCustomAssessment = () => {
-    // Go directly to template selector for custom building
-    actions.setSkillsTestViewState('template_selector');
-  };
-
-  const handleTemplateSelect = (template: SkillsTestTemplate | null) => {
-    if (template) {
-      const questionsWithIds = template.questions.map((q, index) => ({
-        ...q,
-        id: crypto.randomUUID(),
-        order: index + 1
-      }));
-
-      const updatedData: SkillsTestData = {
-        ...skillsTestData,
-        mode: 'custom_builder',
-        questions: questionsWithIds,
-        estimatedCompletionTime: template.estimatedTime
-      };
-      
-      onSkillsTestDataChange(updatedData);
-    } else {
-      // Start with empty custom template
-      const updatedData: SkillsTestData = {
-        ...skillsTestData,
-        mode: 'custom_builder',
-        questions: [],
-        estimatedCompletionTime: 0
-      };
-      onSkillsTestDataChange(updatedData);
-    }
-    
+    // Start with empty custom template and go directly to editor
+    const updatedData: SkillsTestData = {
+      ...skillsTestData,
+      mode: 'custom_builder',
+      questions: [],
+      estimatedCompletionTime: 0
+    };
+    onSkillsTestDataChange(updatedData);
     actions.setSkillsTestViewState('editor');
   };
 
@@ -88,10 +64,6 @@ export const Step3SkillsTestGenerator = ({
 
   const handleBackToEditor = () => {
     actions.setSkillsTestViewState('editor');
-  };
-
-  const handleBackToTemplateSelector = () => {
-    actions.setSkillsTestViewState('template_selector');
   };
 
   const handleBackToInitial = () => {
@@ -108,14 +80,6 @@ export const Step3SkillsTestGenerator = ({
 
   // Render based on current view state
   switch (skillsTestViewState) {
-    case 'template_selector':
-      return (
-        <SkillsTestTemplateSelector
-          onSelectTemplate={handleTemplateSelect}
-          onBack={handleBackToInitial}
-        />
-      );
-
     case 'preview':
       return (
         <SkillsTestPreview
@@ -207,7 +171,7 @@ export const Step3SkillsTestGenerator = ({
                 Create Skills Assessment
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Choose how you'd like to create your skills assessment. You can generate questions with AI or build a custom assessment from templates.
+                Choose how you'd like to create your skills assessment. You can generate questions with AI or build a custom assessment from scratch.
               </p>
               <div className="flex flex-col gap-3">
                 <Button 

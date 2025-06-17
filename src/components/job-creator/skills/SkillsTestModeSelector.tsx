@@ -70,7 +70,7 @@ export const SkillsTestModeSelector = ({
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Custom Builder</h4>
                   <p className="text-sm text-gray-600 mb-4">
-                    Build your own assessment with templates or from scratch. Full control.
+                    Build your own assessment from scratch. Full control and customization.
                   </p>
                   <Button 
                     variant="outline"
