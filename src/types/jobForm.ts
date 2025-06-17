@@ -2,63 +2,43 @@
 import { SkillsTestData } from "./skillsAssessment";
 import { InterviewQuestionsData } from "./interviewQuestions";
 
-export interface PersonalInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  location: string;
-  portfolioUrl: string;
-  linkedinUrl: string;
-  githubUrl: string;
-  resumeFile: File | null;
-  resumeUrl: string | null;
-  coverLetter: string;
-}
-
-export interface CompanyAnalysisData {
-  companyName?: string;
-  description?: string;
-  industry?: string;
-  companySize?: string;
-  products?: string;
-  culture?: string;
-  techStack?: string;
-  location?: string;
-  summary?: string;
-}
-
-export interface WritingTone {
-  professional: number; // 1-5 scale
-  friendly: number; // 1-5 scale
-  excited: number; // 1-5 scale
-}
-
 export interface UnifiedJobFormData {
-  // New job overview field
   jobOverview: string;
-  
-  // Company and basic info
   companyName: string;
   companyWebsite: string;
   title: string;
-  employmentType: string;
-  experienceLevel: string;
+  employmentType: "full-time" | "part-time" | "contract" | "project";
+  experienceLevel: "entry-level" | "mid-level" | "senior-level" | "executive";
   skills: string;
-  
-  // Budget and duration
   budget: string;
   duration: string;
-  
-  // Salary and Benefits
   salary: string;
   benefits: string;
-
-  // Location
   location: string;
-  locationType: string; // Required: "remote" | "on-site" | "hybrid"
+  locationType: "remote" | "office" | "hybrid";
   country: string;
   state: string;
   city: string;
+}
+
+export interface WritingTone {
+  professional: number;
+  friendly: number;
+  excited: number;
+}
+
+export interface CompanyAnalysisData {
+  companyName: string;
+  companyDescription: string;
+  industry: string;
+  companySize: string;
+  headquarters: string;
+  foundedYear: string;
+  keyValues: string[];
+  technologies: string[];
+  benefits: string[];
+  workCulture: string;
+  missionStatement: string;
 }
 
 export interface UnifiedJobCreatorState {
@@ -69,17 +49,15 @@ export interface UnifiedJobCreatorState {
   generatedJobPost: string;
   writingTone: WritingTone;
   skillsTestData: SkillsTestData;
-  skillsTestViewState: 'initial' | 'template_selector' | 'editor' | 'preview';
+  skillsTestViewState: 'initial' | 'editor' | 'preview';
   generatedInterviewQuestions: string;
   interviewQuestionsData: InterviewQuestionsData;
   interviewQuestionsViewState: 'initial' | 'editor' | 'preview';
   isEditingJobPost: boolean;
   isEditingInterviewQuestions: boolean;
-  // Website analysis state
   isAnalyzingWebsite: boolean;
   websiteAnalysisData: CompanyAnalysisData | null;
   websiteAnalysisError: string | null;
-  // Edit mode
   isEditMode: boolean;
   editingJobId?: string;
 }
@@ -92,24 +70,27 @@ export interface UnifiedJobCreatorActions {
   setGeneratedJobPost: (content: string) => void;
   setWritingTone: (field: keyof WritingTone, value: number) => void;
   setSkillsTestData: (data: SkillsTestData) => void;
-  setSkillsTestViewState: (viewState: 'initial' | 'template_selector' | 'editor' | 'preview') => void;
+  setSkillsTestViewState: (viewState: 'initial' | 'editor' | 'preview') => void;
   setGeneratedInterviewQuestions: (content: string) => void;
-  setInterviewQuestionsData: (data: InterviewQuestionsData) => void;
-  setInterviewQuestionsViewState: (viewState: 'initial' | 'editor' | 'preview') => void;
   setIsEditingJobPost: (editing: boolean) => void;
   setIsEditingInterviewQuestions: (editing: boolean) => void;
   setEditMode: (isEdit: boolean, jobId?: string) => void;
-  populateFormFromJob: (job: any) => void;
+  setInterviewQuestionsData: (data: InterviewQuestionsData) => void;
+  setInterviewQuestionsViewState: (viewState: 'initial' | 'editor' | 'preview') => void;
+  
   // Website analysis actions
   setIsAnalyzingWebsite: (analyzing: boolean) => void;
   setWebsiteAnalysisData: (data: CompanyAnalysisData | null) => void;
   setWebsiteAnalysisError: (error: string | null) => void;
   analyzeWebsite: (url: string) => Promise<void>;
+  
+  // Form population from existing job
+  populateFormFromJob: (job: any) => void;
 }
 
 export interface UnifiedJobCreatorPanelProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: (open: boolean) => void;
   onJobCreated?: () => void;
-  editingJob?: any; // Job to edit, if in edit mode
+  editingJob?: any;
 }
