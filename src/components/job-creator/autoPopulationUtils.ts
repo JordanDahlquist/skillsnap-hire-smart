@@ -55,31 +55,58 @@ export const extractLocationTypeFromOverview = (overview: string): string => {
   return 'remote'; // Default to remote if unclear
 };
 
-// Enhanced job title extraction
+// Enhanced job title extraction with better boundaries
 export const extractJobTitleFromOverview = (overview: string): string => {
-  const text = overview.toLowerCase();
+  const text = overview;
   
-  // Enhanced patterns for various job title formats
+  // Context stop words that indicate we should stop extracting the title
+  const contextStopWords = ['for', 'at', 'with', 'in', 'to', 'from', 'of', 'by', 'on', 'within', 'inside', 'outside'];
+  
+  // Enhanced patterns for various job title formats with proper boundaries
   const patterns = [
-    // "Senior React Developer" or "Lead UI/UX Designer"
-    /(senior|junior|lead|principal|staff|head of|director of|vp of|chief)\s+([a-z/]+\s+)*([a-z/]+)/i,
-    // "React Developer" or "Product Manager"
-    /(?:^|\s)([A-Z][a-z]+(?:\s+[A-Z][a-z/]+)*(?:\s+(?:developer|engineer|designer|manager|analyst|specialist|coordinator|director|lead|consultant|architect)))/i,
-    // "Software Engineer" or "Data Scientist"
-    /(?:software|data|product|project|marketing|sales|business|systems|network|security|mobile|frontend|backend|fullstack|full-stack)\s+(?:engineer|developer|scientist|analyst|manager|specialist|architect)/i,
-    // Generic roles
-    /(developer|engineer|designer|manager|analyst|specialist|coordinator|director|consultant|architect)/i
+    // "Senior React Developer" - matches seniority + title, stops at context words
+    /((?:senior|junior|lead|principal|staff|head\s+of|director\s+of|vp\s+of|chief)\s+[a-z/]+(?:\s+[a-z/]+)*(?:\s+(?:developer|engineer|designer|manager|analyst|specialist|coordinator|director|lead|consultant|architect|officer))?)(?=\s+(?:for|at|with|in|to|from|of|by|on|within|inside|outside|$))/i,
+    
+    // "React Developer" or "Product Manager" - matches title, stops at context words
+    /([A-Z][a-z/]+(?:\s+[A-Z][a-z/]+)*(?:\s+(?:developer|engineer|designer|manager|analyst|specialist|coordinator|director|lead|consultant|architect|officer)))(?=\s+(?:for|at|with|in|to|from|of|by|on|within|inside|outside|$))/i,
+    
+    // "Software Engineer" or "Data Scientist" - compound roles with boundaries
+    /((?:software|data|product|project|marketing|sales|business|systems|network|security|mobile|frontend|backend|fullstack|full-stack)\s+(?:engineer|developer|scientist|analyst|manager|specialist|architect|officer))(?=\s+(?:for|at|with|in|to|from|of|by|on|within|inside|outside|$))/i,
+    
+    // Specialist roles like "Productization Specialist"
+    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+specialist)(?=\s+(?:for|at|with|in|to|from|of|by|on|within|inside|outside|$))/i,
+    
+    // Generic roles with proper boundaries
+    /((?:senior|junior|lead|principal|staff)?\s*(?:developer|engineer|designer|manager|analyst|specialist|coordinator|director|consultant|architect|officer))(?=\s+(?:for|at|with|in|to|from|of|by|on|within|inside|outside|$))/i
   ];
   
   for (const pattern of patterns) {
-    const match = overview.match(pattern);
+    const match = text.match(pattern);
     if (match) {
-      let title = match[0].trim();
-      // Clean up and title case
-      title = title.replace(/^(for|at|with|as|the)\s+/i, '');
+      let title = match[1].trim();
+      
+      // Clean up any remaining context words at the beginning
+      title = title.replace(/^(looking|seeking|hiring|need|want|require)\s+/i, '');
+      title = title.replace(/^(a|an|the)\s+/i, '');
+      
+      // Clean up any remaining context words at the end
+      title = title.replace(/\s+(for|at|with|in|to|from|of|by|on|within|inside|outside).*$/i, '');
+      
       if (title.length > 2) {
         return toTitleCase(title);
       }
+    }
+  }
+  
+  // Fallback: look for common job titles without context
+  const simplePatterns = [
+    /(developer|engineer|designer|manager|analyst|specialist|coordinator|director|consultant|architect|officer)/i
+  ];
+  
+  for (const pattern of simplePatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return toTitleCase(match[1]);
     }
   }
   
