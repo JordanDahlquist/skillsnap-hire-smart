@@ -2,6 +2,19 @@
 import { SkillsTestData } from "./skillsAssessment";
 import { InterviewQuestionsData } from "./interviewQuestions";
 
+export interface PersonalInfo {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  portfolioUrl: string;
+  linkedinUrl: string;
+  githubUrl: string;
+  resumeFile: File | null;
+  resumeUrl: string | null;
+  coverLetter: string;
+}
+
 export interface UnifiedJobFormData {
   jobOverview: string;
   companyName: string;
@@ -39,6 +52,7 @@ export interface CompanyAnalysisData {
   benefits: string[];
   workCulture: string;
   missionStatement: string;
+  location?: string; // Add location property
 }
 
 export interface UnifiedJobCreatorState {
@@ -89,8 +103,8 @@ export interface UnifiedJobCreatorActions {
 }
 
 export interface UnifiedJobCreatorPanelProps {
-  isOpen: boolean;
-  onClose: (open: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onJobCreated?: () => void;
   editingJob?: any;
 }
