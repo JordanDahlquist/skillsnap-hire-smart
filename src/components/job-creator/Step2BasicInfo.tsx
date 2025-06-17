@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,14 +6,12 @@ import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } fro
 import { useEffect, useRef } from "react";
 import { Loader2, CheckCircle, Sparkles } from "lucide-react";
 import { enhancedAutoPopulateFromOverview } from "./enhancedAutoPopulation";
-
 interface Step2BasicInfoProps {
   formData: UnifiedJobFormData;
   actions: UnifiedJobCreatorActions;
   websiteAnalysisData?: CompanyAnalysisData | null;
   isAnalyzingWebsite?: boolean;
 }
-
 export const Step2BasicInfo = ({
   formData,
   actions,
@@ -31,39 +28,31 @@ export const Step2BasicInfo = ({
     // Check if we should run auto-population
     const overviewChanged = formData.jobOverview.trim() && formData.jobOverview !== lastOverview.current;
     const websiteDataChanged = websiteAnalysisData !== lastWebsiteData.current;
-    const shouldRun = overviewChanged || (websiteDataChanged && websiteAnalysisData);
-    
+    const shouldRun = overviewChanged || websiteDataChanged && websiteAnalysisData;
     if (!shouldRun) {
       return;
     }
-    
     console.log('Running enhanced auto-population...');
     console.log('Overview changed:', overviewChanged);
     console.log('Website data changed:', websiteDataChanged);
-    
+
     // Get enhanced auto-population suggestions
-    const updates = enhancedAutoPopulateFromOverview(
-      formData.jobOverview, 
-      websiteAnalysisData, 
-      formData
-    );
-    
+    const updates = enhancedAutoPopulateFromOverview(formData.jobOverview, websiteAnalysisData, formData);
+
     // Apply updates if there are any
     if (Object.keys(updates).length > 0) {
       console.log('Applying enhanced auto-population updates:', updates);
-      
       Object.entries(updates).forEach(([field, value]) => {
         if (value && typeof value === 'string') {
           actions.updateFormData(field as keyof UnifiedJobFormData, value);
         }
       });
-      
+
       // Update refs
       hasAutoPopulated.current = true;
       lastOverview.current = formData.jobOverview;
       lastWebsiteData.current = websiteAnalysisData;
     }
-
   }, [formData.jobOverview, websiteAnalysisData, actions]);
 
   // Reset auto-population flag when overview changes significantly
@@ -72,9 +61,7 @@ export const Step2BasicInfo = ({
       hasAutoPopulated.current = false;
     }
   }, [formData.jobOverview]);
-
-  return (
-    <Card className="w-full">
+  return <Card className="w-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-blue-500" />
@@ -83,50 +70,32 @@ export const Step2BasicInfo = ({
         <p className="text-sm text-gray-600">Review and edit the auto-populated job information below</p>
         
         {/* Website Analysis Status */}
-        {isAnalyzingWebsite && (
-          <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded-md">
+        {isAnalyzingWebsite && <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded-md">
             <Loader2 className="w-4 h-4 animate-spin" />
             Analyzing website to intelligently populate fields...
-          </div>
-        )}
+          </div>}
         
-        {websiteAnalysisData && !isAnalyzingWebsite && (
-          <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2 rounded-md">
+        {websiteAnalysisData && !isAnalyzingWebsite && <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2 rounded-md">
             <CheckCircle className="w-4 h-4" />
             Website analyzed and form intelligently populated with company information
-          </div>
-        )}
+          </div>}
       </CardHeader>
       <CardContent className="space-y-4 pt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="companyName" className="text-sm">Company Name *</Label>
-            <Input
-              id="companyName"
-              value={formData.companyName}
-              onChange={(e) => actions.updateFormData('companyName', e.target.value)}
-              placeholder="e.g. TechCorp Inc."
-              className="mt-1"
-              required
-            />
+            <Input id="companyName" value={formData.companyName} onChange={e => actions.updateFormData('companyName', e.target.value)} placeholder="e.g. TechCorp Inc." className="mt-1" required />
           </div>
           <div>
             <Label htmlFor="title" className="text-sm">Job Title *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => actions.updateFormData('title', e.target.value)}
-              placeholder="e.g. Senior React Developer"
-              className="mt-1"
-              required
-            />
+            <Input id="title" value={formData.title} onChange={e => actions.updateFormData('title', e.target.value)} placeholder="e.g. Senior React Developer" className="mt-1" required />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="employmentType" className="text-sm">Employment Type</Label>
-            <Select value={formData.employmentType} onValueChange={(value) => actions.updateFormData('employmentType', value)}>
+            <Select value={formData.employmentType} onValueChange={value => actions.updateFormData('employmentType', value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
@@ -140,7 +109,7 @@ export const Step2BasicInfo = ({
           </div>
           <div>
             <Label htmlFor="experienceLevel" className="text-sm">Experience Level</Label>
-            <Select value={formData.experienceLevel} onValueChange={(value) => actions.updateFormData('experienceLevel', value)}>
+            <Select value={formData.experienceLevel} onValueChange={value => actions.updateFormData('experienceLevel', value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
@@ -157,7 +126,7 @@ export const Step2BasicInfo = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="locationType" className="text-sm">Work Arrangement *</Label>
-            <Select value={formData.locationType} onValueChange={(value) => actions.updateFormData('locationType', value)}>
+            <Select value={formData.locationType} onValueChange={value => actions.updateFormData('locationType', value)}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select work arrangement" />
               </SelectTrigger>
@@ -170,78 +139,35 @@ export const Step2BasicInfo = ({
           </div>
           <div>
             <Label htmlFor="location" className="text-sm">Location</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => actions.updateFormData('location', e.target.value)}
-              placeholder="e.g. New York, NY or Worldwide"
-              className="mt-1"
-            />
+            <Input id="location" value={formData.location} onChange={e => actions.updateFormData('location', e.target.value)} placeholder="e.g. New York, NY or Worldwide" className="mt-1" />
           </div>
         </div>
 
         <div className={`grid ${isProjectBased ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
-          {isProjectBased ? (
-            <>
+          {isProjectBased ? <>
               <div>
                 <Label htmlFor="budget" className="text-sm">Budget</Label>
-                <Input
-                  id="budget"
-                  value={formData.budget}
-                  onChange={(e) => actions.updateFormData('budget', e.target.value)}
-                  placeholder="$50-100/hr or $5k project"
-                  className="mt-1"
-                />
+                <Input id="budget" value={formData.budget} onChange={e => actions.updateFormData('budget', e.target.value)} placeholder="$50-100/hr or $5k project" className="mt-1" />
               </div>
               <div>
                 <Label htmlFor="duration" className="text-sm">Duration</Label>
-                <Input
-                  id="duration"
-                  value={formData.duration}
-                  onChange={(e) => actions.updateFormData('duration', e.target.value)}
-                  placeholder="3 months"
-                  className="mt-1"
-                />
+                <Input id="duration" value={formData.duration} onChange={e => actions.updateFormData('duration', e.target.value)} placeholder="3 months" className="mt-1" />
               </div>
-            </>
-          ) : (
-            <div>
+            </> : <div>
               <Label htmlFor="salary" className="text-sm">Salary</Label>
-              <Input
-                id="salary"
-                value={formData.salary}
-                onChange={(e) => actions.updateFormData('salary', e.target.value)}
-                placeholder="$100,000 - $120,000 per year"
-                className="mt-1"
-              />
-            </div>
-          )}
+              <Input id="salary" value={formData.salary} onChange={e => actions.updateFormData('salary', e.target.value)} placeholder="$100,000 - $120,000 per year" className="mt-1" />
+            </div>}
         </div>
         
-        {!isProjectBased && (
-          <div>
+        {!isProjectBased && <div>
             <Label htmlFor="benefits" className="text-sm">Benefits</Label>
-            <Input
-              id="benefits"
-              value={formData.benefits}
-              onChange={(e) => actions.updateFormData('benefits', e.target.value)}
-              placeholder="e.g. Health insurance, 401(k), paid time off..."
-              className="mt-1"
-            />
-          </div>
-        )}
+            <Input id="benefits" value={formData.benefits} onChange={e => actions.updateFormData('benefits', e.target.value)} placeholder="e.g. Health insurance, 401(k), paid time off..." className="mt-1" />
+          </div>}
 
         <div>
-          <Label htmlFor="skills" className="text-sm">Required Skills</Label>
-          <Input
-            id="skills"
-            value={formData.skills}
-            onChange={(e) => actions.updateFormData('skills', e.target.value)}
-            placeholder="React, TypeScript, Node.js..."
-            className="mt-1"
-          />
+          <Label htmlFor="skills" className="text-sm">Required Skills (separate with commas)</Label>
+          <Input id="skills" value={formData.skills} onChange={e => actions.updateFormData('skills', e.target.value)} placeholder="React, TypeScript, Node.js..." className="mt-1" />
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
