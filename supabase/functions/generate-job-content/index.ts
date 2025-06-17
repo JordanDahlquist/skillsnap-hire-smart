@@ -243,6 +243,17 @@ ${companyContext}
 **JOB DESCRIPTION CONTEXT:**
 ${existingJobPost}
 
+**CRITICAL TITLE REQUIREMENTS:**
+1. **TITLE MUST BE SHORT**: Maximum 10 words, preferably 5-8 words
+2. **TITLE FORMAT**: "Action + Object" (e.g., "Build Customer Dashboard", "Design Landing Page", "Create Marketing Campaign")
+3. **NO DETAILED INSTRUCTIONS IN TITLE**: The title should only describe WHAT they're creating, not HOW
+4. **EXAMPLES OF GOOD TITLES**:
+   - "Build Analytics Dashboard"
+   - "Create Marketing Video"
+   - "Design User Interface"
+   - "Develop API Integration"
+   - "Plan Content Strategy"
+
 **CRITICAL DESIGN PRINCIPLES:**
 1. **SINGLE INTEGRATED PROJECT**: Create ONE cohesive task, not multiple separate challenges
 2. **TIME-BOUNDED**: Must be completable in 60-90 minutes maximum
@@ -250,10 +261,10 @@ ${existingJobPost}
 4. **REALISTIC WORK SCENARIO**: Mirror actual work they'd do at ${companyName}
 5. **CLEAR SCOPE BOUNDARIES**: Prevent over-engineering with specific deliverable requirements
 6. **DETAILED INSTRUCTIONS**: Provide comprehensive, step-by-step guidance with specific deliverables
-7. **CUSTOM TITLE**: Create a descriptive title that reflects the actual task, not "Question 1"
+7. **CONCISE TITLE**: Create a descriptive but SHORT title (maximum 10 words)
 
 **INSTRUCTION QUALITY REQUIREMENTS:**
-- Provide DETAILED, step-by-step instructions (minimum 100 words)
+- Provide DETAILED, step-by-step instructions (minimum 150 words)
 - Specify EXACT deliverables (file types, page limits, feature requirements)
 - Include clear scope boundaries ("focus on X, don't worry about Y")
 - Reference specific company context and business challenges
@@ -270,12 +281,6 @@ ${websiteAnalysisData ? `
 - Use specific business scenarios relevant to their industry
 - Reference the skills they actually need: ${skills}`}
 
-**TASK EXAMPLES BY ROLE (for guidance only):**
-- **Developers**: "Build a ${companyName} dashboard feature that displays [specific metrics]. Include React components, basic styling, and a README with your technical decisions. Focus on clean code structure and user experience."
-- **Designers**: "Design a user onboarding flow for ${companyName}'s [specific product]. Create wireframes, visual mockups, and a brief strategy document explaining your design decisions."
-- **Marketing**: "Develop a launch strategy for ${companyName}'s new [specific service]. Include market research, campaign concepts, and success metrics in a 5-slide presentation."
-- **Product Managers**: "Create a feature specification for improving ${companyName}'s [specific process]. Include user stories, success metrics, and implementation roadmap."
-
 **REQUIRED JSON RESPONSE FORMAT:**
 Return a JSON object with this exact structure:
 
@@ -283,10 +288,10 @@ Return a JSON object with this exact structure:
   "skillsTest": {
     "questions": [
       {
-        "title": "Descriptive task title that explains what they're building/creating (e.g., 'Build a Customer Analytics Dashboard', 'Design User Onboarding Experience')",
-        "question": "Comprehensive project description that integrates multiple skills and provides context",
+        "title": "SHORT, descriptive title (5-10 words max, e.g., 'Build Customer Analytics Dashboard')",
+        "question": "Brief project overview that summarizes the challenge in 1-2 sentences",
         "type": "choose appropriate type based on deliverable (portfolio_link, pdf_upload, file_upload, video_upload, etc.)",
-        "candidateInstructions": "DETAILED step-by-step instructions (minimum 150 words) including: 1) Specific deliverables required, 2) Time allocation suggestions, 3) Scope boundaries (what to include/exclude), 4) File format requirements, 5) Evaluation focus areas, 6) Company-specific context to incorporate",
+        "candidateInstructions": "DETAILED step-by-step instructions (minimum 200 words) including: 1) Specific deliverables required, 2) Time allocation suggestions (e.g., 'Spend 30 minutes on research, 45 minutes on implementation'), 3) Scope boundaries (what to include/exclude), 4) File format requirements, 5) Evaluation focus areas, 6) Company-specific context to incorporate, 7) Examples of what good submissions include",
         "evaluationGuidelines": "Detailed criteria for evaluating this integrated project across multiple skill dimensions with specific examples",
         "scoringCriteria": "Clear explanation of what constitutes good vs. excellent submissions with specific examples",
         "required": true,
@@ -302,30 +307,13 @@ Return a JSON object with this exact structure:
   }
 }
 
-**EXAMPLE OF DETAILED INSTRUCTIONS:**
-"Build a customer analytics dashboard component for ${companyName} using React. Your deliverable should include:
+**TITLE EXAMPLES BY ROLE:**
+- **Developers**: "Build Payment Dashboard", "Create API Integration", "Develop User Authentication"
+- **Designers**: "Design Mobile App Interface", "Create Brand Guidelines", "Build User Onboarding Flow"
+- **Marketing**: "Create Launch Campaign", "Design Email Sequence", "Build Content Strategy"
+- **Product Managers**: "Create Feature Specification", "Design Product Roadmap", "Build User Research Plan"
 
-1. **React Component** (45 minutes): Create a dashboard that displays 3-4 key metrics relevant to ${companyName}'s business. Use mock data and focus on clean component structure and basic responsiveness.
-
-2. **Styling** (20 minutes): Apply professional styling using CSS or a framework. Don't worry about complex animations - focus on clean, readable design.
-
-3. **Documentation** (15 minutes): Include a README explaining your technical decisions, how to run the project, and what you would improve with more time.
-
-4. **Deployment**: Host your solution on Vercel, Netlify, or GitHub Pages.
-
-**Scope Boundaries:**
-- Use mock/dummy data (don't build a real backend)
-- Focus on 3-4 core metrics, not comprehensive analytics
-- Basic responsive design only (mobile-first not required)
-- Simple state management (no Redux/complex patterns needed)
-
-**What We're Looking For:**
-- Clean, readable React code
-- Thoughtful component structure
-- Professional visual design
-- Clear technical communication
-
-**Submission Format:** Provide GitHub repository link and live demo URL."
+**CRITICAL REMINDER**: The "title" field MUST be short (10 words maximum). All detailed instructions, requirements, and context go in "candidateInstructions", NOT in the title.
 
 Create an integrated project that candidates will find engaging, realistic, and directly relevant to the actual work they'll do at ${companyName}.`;
 
@@ -380,7 +368,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
           {
             role: 'system',
             content: type === 'skills-test' 
-              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. Focus on detailed, specific instructions that prevent ambiguity. ALWAYS return valid JSON in the exact format specified.'
+              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). Put detailed instructions in candidateInstructions, NOT in the title. ALWAYS return valid JSON in the exact format specified.'
               : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
           },
           {
