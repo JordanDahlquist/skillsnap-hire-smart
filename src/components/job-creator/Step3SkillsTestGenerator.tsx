@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, SkipForward } from "lucide-react";
 import { SkillsTestData } from "@/types/skillsAssessment";
-import { UnifiedJobCreatorActions, UnifiedJobFormData } from "@/types/jobForm";
+import { UnifiedJobCreatorActions } from "@/types/jobForm";
 import { SimplifiedSkillsStepEditor } from "./skills/SimplifiedSkillsStepEditor";
 import { SkillsTestPreview } from "./skills/SkillsTestPreview";
 import { CustomSpinningLogo } from "@/components/CustomSpinningLogo";
@@ -16,7 +16,6 @@ interface Step3SkillsTestGeneratorProps {
   skillsTestViewState: 'initial' | 'editor' | 'preview';
   isGenerating: boolean;
   actions: UnifiedJobCreatorActions;
-  formData: UnifiedJobFormData;
   onGenerateQuestions: () => Promise<void>;
   onSkillsTestDataChange: (data: SkillsTestData) => void;
 }
@@ -27,7 +26,6 @@ export const Step3SkillsTestGenerator = ({
   skillsTestViewState,
   isGenerating,
   actions,
-  formData,
   onGenerateQuestions,
   onSkillsTestDataChange
 }: Step3SkillsTestGeneratorProps) => {
@@ -79,9 +77,6 @@ export const Step3SkillsTestGenerator = ({
     onSkillsTestDataChange(clearedData);
     actions.setSkillsTestViewState('initial');
   };
-
-  // Get job title for the header
-  const jobTitle = formData.title || "Skills";
 
   // Render based on current view state
   switch (skillsTestViewState) {
@@ -144,7 +139,6 @@ export const Step3SkillsTestGenerator = ({
               skillsTestData={skillsTestData}
               onChange={onSkillsTestDataChange}
               onPreview={handlePreview}
-              jobTitle={jobTitle}
             />
           </CardContent>
         </Card>
