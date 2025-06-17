@@ -14,14 +14,6 @@ export const InterviewQuestionPreview = ({
   interviewQuestionsData,
   onBack
 }: InterviewQuestionPreviewProps) => {
-  const totalVideoTime = interviewQuestionsData.questions
-    .filter(q => q.type === 'video_response')
-    .reduce((total, q) => total + (q.videoMaxLength || 5), 0);
-
-  const videoQuestions = interviewQuestionsData.questions.filter(q => q.type === 'video_response').length;
-  const textQuestions = interviewQuestionsData.questions.filter(q => q.type === 'text_response').length;
-  const requiredQuestions = interviewQuestionsData.questions.filter(q => q.required).length;
-
   const getQuestionIcon = (type: string) => {
     switch (type) {
       case 'video_response': return <Video className="w-4 h-4 text-purple-600" />;
@@ -49,33 +41,6 @@ export const InterviewQuestionPreview = ({
         </Button>
         <h3 className="text-lg font-medium">Interview Preview</h3>
       </div>
-
-      {/* Overview Stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Interview Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{interviewQuestionsData.questions.length}</div>
-              <div className="text-sm text-gray-600">Total Questions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{videoQuestions}</div>
-              <div className="text-sm text-gray-600">Video Questions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{textQuestions}</div>
-              <div className="text-sm text-gray-600">Text Questions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{totalVideoTime}</div>
-              <div className="text-sm text-gray-600">Max Video Time (min)</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Instructions */}
       {interviewQuestionsData.instructions && (
