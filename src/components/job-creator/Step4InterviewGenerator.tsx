@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Edit3, SkipForward, Video } from "lucide-react";
+import { Sparkles, Edit3, SkipForward, Video, Eye } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { parseMarkdown } from "@/utils/markdownParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -162,8 +162,12 @@ export const Step4InterviewGenerator = ({
           </div>
           {!isEditingInterviewQuestions && <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => actions.setInterviewQuestionsViewState('initial')} className="text-xs h-8 px-3">
-                Change Mode
+                Start Over
               </Button>
+              {interviewQuestionsData.questions.length > 0 && <Button variant="outline" size="sm" onClick={() => actions.setInterviewQuestionsViewState('preview')} className="text-xs h-8 px-3">
+                  <Eye className="w-3 h-3 mr-1" />
+                  Preview
+                </Button>}
             </div>}
         </div>
       </CardHeader>
