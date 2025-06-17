@@ -51,22 +51,44 @@ export const InterviewGeneratorContent = ({
           {!isEditingInterviewQuestions && (
             <div className="flex items-center gap-2">
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="sm" 
                 onClick={() => actions.setInterviewQuestionsViewState('initial')} 
-                className="text-xs h-8 px-3"
+                className="text-xs h-8 px-3 text-gray-600 hover:text-gray-900"
               >
                 Start Over
               </Button>
               {interviewQuestionsData.questions.length > 0 && (
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="sm" 
                   onClick={() => actions.setInterviewQuestionsViewState('preview')} 
-                  className="text-xs h-8 px-3"
+                  className="text-xs h-8 px-3 text-gray-600 hover:text-gray-900"
                 >
                   <Eye className="w-3 h-3 mr-1" />
                   Preview
+                </Button>
+              )}
+              {interviewQuestionsData.questions.length > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => actions.setInterviewQuestionsViewState('editor')} 
+                  className="text-xs h-8 px-3 text-gray-600 hover:text-gray-900"
+                >
+                  <Edit3 className="w-3 h-3 mr-1" />
+                  Edit Structure
+                </Button>
+              )}
+              {generatedInterviewQuestions && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => actions.setIsEditingInterviewQuestions(true)} 
+                  className="text-xs h-8 px-3 text-gray-600 hover:text-gray-900"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  Edit
                 </Button>
               )}
             </div>
@@ -83,93 +105,56 @@ export const InterviewGeneratorContent = ({
             placeholder="Enter your interview questions here..."
           />
         ) : (
-          <div className="h-full flex flex-col">
-            <div className="flex-shrink-0 p-4 border-b bg-gray-50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <p className="text-sm text-gray-600">
-                    {interviewQuestionsData.questions.length > 0 
-                      ? 'Structured interview questions' 
-                      : 'Review generated interview questions below'}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {interviewQuestionsData.questions.length > 0 && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => actions.setInterviewQuestionsViewState('editor')} 
-                      className="flex items-center gap-1 text-xs h-8 px-3"
-                    >
-                      <Edit3 className="w-3 h-3" />
-                      Edit Structure
-                    </Button>
-                  )}
-                  {generatedInterviewQuestions && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => actions.setIsEditingInterviewQuestions(true)} 
-                      className="flex items-center gap-1 text-xs h-8 px-3"
-                    >
-                      <Edit3 className="w-3 h-3" />
-                      Edit Text
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full w-full">
-                {interviewQuestionsData.questions.length > 0 ? (
-                  <div className="p-6 space-y-6">
-                    {interviewQuestionsData.questions.map((question, index) => (
-                      <Card key={question.id} className="border-l-4 border-l-purple-500">
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <h4 className="font-semibold text-lg text-gray-900">Question {index + 1}</h4>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-sm">
-                                {question.type.replace('_', ' ')}
+          <div className="h-full overflow-hidden">
+            <ScrollArea className="h-full w-full">
+              {interviewQuestionsData.questions.length > 0 ? (
+                <div className="p-4 space-y-4">
+                  {interviewQuestionsData.questions.map((question, index) => (
+                    <Card key={question.id} className="border-l-4 border-l-purple-500">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <h4 className="font-semibold text-base text-gray-900">Question {index + 1}</h4>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {question.type.replace('_', ' ')}
+                            </Badge>
+                            {question.required && (
+                              <Badge variant="outline" className="text-xs text-red-600">
+                                Required
                               </Badge>
-                              {question.required && (
-                                <Badge variant="outline" className="text-sm text-red-600">
-                                  Required
-                                </Badge>
-                              )}
-                            </div>
+                            )}
                           </div>
-                          <p className="text-gray-900 mb-4 text-lg leading-relaxed">{question.question}</p>
-                          {question.candidateInstructions && (
-                            <p className="text-gray-600 italic mb-4 text-base leading-relaxed">
-                              Instructions: {question.candidateInstructions}
-                            </p>
-                          )}
-                          {question.type === 'video_response' && (
-                            <p className="text-purple-600 font-medium text-base">
-                              Max video length: {question.videoMaxLength || 5} minutes
-                            </p>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div 
-                    className="p-6 cursor-pointer hover:bg-gray-50 transition-colors min-h-full"
-                    onClick={() => actions.setIsEditingInterviewQuestions(true)}
-                    style={{
-                      lineHeight: '1.8',
-                      fontSize: '18px',
-                      wordWrap: 'break-word'
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: parseMarkdown(generatedInterviewQuestions)
-                    }}
-                  />
-                )}
-              </ScrollArea>
-            </div>
+                        </div>
+                        <p className="text-gray-900 mb-3 text-sm leading-relaxed">{question.question}</p>
+                        {question.candidateInstructions && (
+                          <p className="text-gray-600 italic mb-3 text-sm leading-relaxed">
+                            Instructions: {question.candidateInstructions}
+                          </p>
+                        )}
+                        {question.type === 'video_response' && (
+                          <p className="text-purple-600 font-medium text-sm">
+                            Max video length: {question.videoMaxLength || 5} minutes
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div 
+                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-full"
+                  onClick={() => actions.setIsEditingInterviewQuestions(true)}
+                  style={{
+                    lineHeight: '1.6',
+                    fontSize: '14px',
+                    wordWrap: 'break-word'
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: parseMarkdown(generatedInterviewQuestions)
+                  }}
+                />
+              )}
+            </ScrollArea>
           </div>
         )}
       </CardContent>
