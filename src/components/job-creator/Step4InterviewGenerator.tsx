@@ -173,7 +173,7 @@ export const Step4InterviewGenerator = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <p className="text-sm text-gray-600">
-                    {interviewQuestionsData.questions.length > 0 ? 'Structured interview questions' : 'Click to edit or use the buttons on the right'}
+                    {interviewQuestionsData.questions.length > 0 ? 'Structured interview questions' : 'Review generated interview questions below'}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -190,32 +190,32 @@ export const Step4InterviewGenerator = ({
             </div>
             <div className="flex-1 overflow-hidden">
               <ScrollArea className="h-full w-full">
-                {interviewQuestionsData.questions.length > 0 ? <div className="p-4 space-y-4">
+                {interviewQuestionsData.questions.length > 0 ? <div className="p-6 space-y-6">
                     {interviewQuestionsData.questions.map((question, index) => <Card key={question.id} className="border-l-4 border-l-purple-500">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="font-medium">Question {index + 1}</h4>
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <h4 className="font-semibold text-lg text-gray-900">Question {index + 1}</h4>
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-sm">
                                 {question.type.replace('_', ' ')}
                               </Badge>
-                              {question.required && <Badge variant="outline" className="text-xs text-red-600">
+                              {question.required && <Badge variant="outline" className="text-sm text-red-600">
                                   Required
                                 </Badge>}
                             </div>
                           </div>
-                          <p className="text-gray-900 mb-2">{question.question}</p>
-                          {question.candidateInstructions && <p className="text-sm text-gray-600 italic">
+                          <p className="text-gray-900 mb-4 text-lg leading-relaxed">{question.question}</p>
+                          {question.candidateInstructions && <p className="text-gray-600 italic mb-4 text-base leading-relaxed">
                               Instructions: {question.candidateInstructions}
                             </p>}
-                          {question.type === 'video_response' && <p className="text-sm text-purple-600 mt-2">
+                          {question.type === 'video_response' && <p className="text-purple-600 font-medium text-base">
                               Max video length: {question.videoMaxLength || 5} minutes
                             </p>}
                         </CardContent>
                       </Card>)}
-                  </div> : <div className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-full" onClick={() => actions.setIsEditingInterviewQuestions(true)} style={{
-              lineHeight: '1.6',
-              fontSize: '14px',
+                  </div> : <div className="p-6 cursor-pointer hover:bg-gray-50 transition-colors min-h-full" onClick={() => actions.setIsEditingInterviewQuestions(true)} style={{
+              lineHeight: '1.8',
+              fontSize: '18px',
               wordWrap: 'break-word'
             }} dangerouslySetInnerHTML={{
               __html: parseMarkdown(generatedInterviewQuestions)
