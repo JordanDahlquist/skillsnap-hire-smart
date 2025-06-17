@@ -64,11 +64,11 @@ export const Step2BasicInfo = ({
     // Apply auto-populated data for empty fields (excluding fields that website analysis will fill)
     Object.entries(autoPopulated).forEach(([field, value]) => {
       const fieldKey = field as keyof UnifiedJobFormData;
-      const currentValue = formData[fieldKey] as string;
+      const currentValue = formData[fieldKey];
       
-      // Only apply if field is empty and not being overridden by website data
-      if (value && typeof value === 'string' && !currentValue.trim() && !websiteUpdates[fieldKey]) {
-        allUpdates[fieldKey] = value;
+      // Only apply if field is empty, value is a string, and not being overridden by website data
+      if (value && typeof value === 'string' && typeof currentValue === 'string' && !currentValue.trim() && !websiteUpdates[fieldKey]) {
+        (allUpdates as any)[fieldKey] = value;
       }
     });
     
