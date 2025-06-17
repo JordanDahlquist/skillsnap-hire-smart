@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } from "@/types/jobForm";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Loader2, CheckCircle } from "lucide-react";
 import { autoPopulateFromOverview } from "./autoPopulationUtils";
 
@@ -22,10 +21,20 @@ export const Step2BasicInfo = ({
   isAnalyzingWebsite = false
 }: Step2BasicInfoProps) => {
   const isProjectBased = formData.employmentType === 'project';
+  const hasAutoPopulated = useRef(false);
+  const lastOverview = useRef('');
 
-  // Enhanced auto-population logic
+  // Enhanced auto-population logic with safeguards
   useEffect(() => {
-    if (!formData.jobOverview.trim()) return;
+    // Only run if overview has content and has changed
+    if (!formData.jobOverview.trim() || formData.jobOverview === lastOverview.current) {
+      return;
+    }
+
+    // Only run once per overview text to prevent loops
+    if (hasAutoPopulated.current && formData.jobOverview === lastOverview.current) {
+      return;
+    }
     
     console.log('Running enhanced auto-population for:', formData.jobOverview);
     
@@ -50,13 +59,24 @@ export const Step2BasicInfo = ({
     if (Object.keys(allUpdates).length > 0) {
       console.log('Applying auto-population updates:', allUpdates);
       Object.entries(allUpdates).forEach(([field, value]) => {
-        if (value) {
+        if (value && typeof value === 'string') {
           actions.updateFormData(field as keyof UnifiedJobFormData, value);
         }
       });
+      
+      // Mark as auto-populated and remember the overview text
+      hasAutoPopulated.current = true;
+      lastOverview.current = formData.jobOverview;
     }
 
   }, [formData.jobOverview, websiteAnalysisData, actions]);
+
+  // Reset auto-population flag when overview changes significantly
+  useEffect(() => {
+    if (formData.jobOverview !== lastOverview.current) {
+      hasAutoPopulated.current = false;
+    }
+  }, [formData.jobOverview]);
 
   return (
     <Card className="w-full">
