@@ -73,7 +73,6 @@ export interface UnifiedJobCreatorState {
   generatedInterviewQuestions: string;
   interviewQuestionsData: InterviewQuestionsData;
   interviewQuestionsViewState: 'initial' | 'editor' | 'preview';
-  interviewVideoMaxLength: number;
   isEditingJobPost: boolean;
   isEditingInterviewQuestions: boolean;
   // Website analysis state
@@ -97,7 +96,6 @@ export interface UnifiedJobCreatorActions {
   setGeneratedInterviewQuestions: (content: string) => void;
   setInterviewQuestionsData: (data: InterviewQuestionsData) => void;
   setInterviewQuestionsViewState: (viewState: 'initial' | 'editor' | 'preview') => void;
-  setInterviewVideoMaxLength: (length: number) => void;
   setIsEditingJobPost: (editing: boolean) => void;
   setIsEditingInterviewQuestions: (editing: boolean) => void;
   setEditMode: (isEdit: boolean, jobId?: string) => void;

@@ -71,7 +71,6 @@ export const StepRenderer = ({
           generatedInterviewQuestions={state.generatedInterviewQuestions}
           interviewQuestionsData={state.interviewQuestionsData}
           interviewQuestionsViewState={state.interviewQuestionsViewState}
-          interviewVideoMaxLength={state.interviewVideoMaxLength}
           isGenerating={state.isGenerating}
           isEditingInterviewQuestions={state.isEditingInterviewQuestions}
           actions={actions}
@@ -87,7 +86,6 @@ export const StepRenderer = ({
           generatedJobPost={state.generatedJobPost}
           generatedSkillsTest={state.skillsTestData.questions.length > 0 ? JSON.stringify(state.skillsTestData) : ""}
           generatedInterviewQuestions={state.generatedInterviewQuestions}
-          interviewVideoMaxLength={state.interviewVideoMaxLength}
           actions={actions}
         />
       );
