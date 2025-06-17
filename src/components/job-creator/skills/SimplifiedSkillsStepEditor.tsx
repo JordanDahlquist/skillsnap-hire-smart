@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, FileText, Video, Upload, Link, Code } from "lucide-react";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { SkillsTestData, SkillsQuestion } from "@/types/skillsAssessment";
+import { parseMarkdown } from "@/utils/markdownParser";
 
 interface SimplifiedSkillsStepEditorProps {
   skillsTestData: SkillsTestData;
@@ -158,14 +159,18 @@ export const SimplifiedSkillsStepEditor = ({
             <div 
               className="p-4 cursor-pointer hover:bg-gray-50 transition-colors min-h-[100px]"
               onClick={() => setEditingOverallInstructions(true)}
-              style={{
-                lineHeight: '1.6',
-                fontSize: '14px',
-                wordWrap: 'break-word'
-              }}
             >
               {skillsTestData.instructions ? (
-                <div dangerouslySetInnerHTML={{ __html: skillsTestData.instructions }} />
+                <div 
+                  className="prose prose-sm max-w-none 
+                    prose-headings:text-gray-900 prose-headings:font-semibold prose-headings:mb-2 prose-headings:mt-3
+                    prose-p:mb-3 prose-p:leading-relaxed prose-p:text-gray-700
+                    prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
+                    prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
+                    prose-strong:text-gray-900 prose-strong:font-semibold
+                    prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
+                  dangerouslySetInnerHTML={{ __html: parseMarkdown(skillsTestData.instructions) }} 
+                />
               ) : (
                 <p className="text-gray-500 italic">Click to add assessment instructions...</p>
               )}
@@ -290,16 +295,28 @@ export const SimplifiedSkillsStepEditor = ({
                           <div>
                             <p className="text-xs font-medium text-gray-600 mb-1">Instructions</p>
                             <div 
-                              className="text-sm text-gray-800"
-                              dangerouslySetInnerHTML={{ __html: step.candidateInstructions }} 
+                              className="prose prose-sm max-w-none 
+                                prose-headings:text-gray-900 prose-headings:font-semibold prose-headings:mb-2 prose-headings:mt-3
+                                prose-p:mb-3 prose-p:leading-relaxed prose-p:text-gray-700
+                                prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
+                                prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-gray-700 prose-li:leading-relaxed
+                                prose-strong:text-gray-900 prose-strong:font-semibold
+                                prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
+                              dangerouslySetInnerHTML={{ __html: parseMarkdown(step.candidateInstructions) }} 
                             />
                           </div>
                           {step.evaluationGuidelines && (
                             <div>
                               <p className="text-xs font-medium text-gray-600 mb-1">What You're Looking For</p>
                               <div 
-                                className="text-sm text-gray-600"
-                                dangerouslySetInnerHTML={{ __html: step.evaluationGuidelines }} 
+                                className="prose prose-sm max-w-none 
+                                  prose-headings:text-gray-800 prose-headings:font-medium prose-headings:mb-2 prose-headings:mt-3
+                                  prose-p:mb-3 prose-p:leading-relaxed prose-p:text-gray-600
+                                  prose-ul:mb-4 prose-ul:space-y-2 prose-li:mb-2 prose-li:text-gray-600 prose-li:leading-relaxed
+                                  prose-ol:mb-4 prose-ol:space-y-2 prose-li:mb-2 prose-li:text-gray-600 prose-li:leading-relaxed
+                                  prose-strong:text-gray-800 prose-strong:font-semibold
+                                  prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm"
+                                dangerouslySetInnerHTML={{ __html: parseMarkdown(step.evaluationGuidelines) }} 
                               />
                             </div>
                           )}
