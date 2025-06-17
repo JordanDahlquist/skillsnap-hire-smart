@@ -47,7 +47,6 @@ export const useJobSaving = () => {
           ? JSON.stringify(state.skillsTestData) 
           : null,
         generated_interview_questions: state.generatedInterviewQuestions || null,
-        interview_video_max_length: state.interviewVideoMaxLength,
         status,
         user_id: user.id,
         updated_at: new Date().toISOString()
