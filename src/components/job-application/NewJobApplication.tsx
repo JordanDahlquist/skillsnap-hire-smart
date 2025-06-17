@@ -102,27 +102,37 @@ export const NewJobApplication = () => {
     );
   }
 
-  // Determine steps based on job configuration
-  const steps = ['Overview'];
-  if (job.status === 'active') {
-    steps.push('Personal Info');
-    if (job.generated_test) {
-      console.log('Adding Skills Test step');
-      steps.push('Skills Test');
-    }
-    if (job.generated_interview_questions && job.generated_interview_questions.trim()) {
-      console.log('Adding Video Interview step', { questionsLength: job.generated_interview_questions.length });
-      steps.push('Video Interview');
-    }
-    steps.push('Review & Submit');
-  }
+  // Create step configuration with proper indexing
+  const createStepConfiguration = () => {
+    const stepConfig = [
+      { name: 'Overview', type: 'overview', enabled: true }
+    ];
 
-  console.log('Application steps:', steps);
+    if (job.status === 'active') {
+      stepConfig.push({ name: 'Personal Info', type: 'personal-info', enabled: true });
+      
+      if (job.generated_test) {
+        stepConfig.push({ name: 'Skills Test', type: 'skills-test', enabled: true });
+      }
+      
+      if (job.generated_interview_questions && job.generated_interview_questions.trim()) {
+        stepConfig.push({ name: 'Video Interview', type: 'video-interview', enabled: true });
+      }
+      
+      stepConfig.push({ name: 'Review & Submit', type: 'review-submit', enabled: true });
+    }
 
-  const stepLabels = steps;
+    return stepConfig;
+  };
+
+  const stepConfig = createStepConfiguration();
+  const stepLabels = stepConfig.map(step => step.name);
+  
+  console.log('Step configuration:', stepConfig);
+  console.log('Current step:', currentStep, 'Total steps:', stepConfig.length);
   
   // Fix the completion logic: mark all steps before current step as completed
-  const completedSteps = Array(steps.length).fill(false);
+  const completedSteps = Array(stepConfig.length).fill(false);
   
   // Mark all steps before the current step as completed
   for (let i = 0; i < currentStep; i++) {
@@ -146,7 +156,7 @@ export const NewJobApplication = () => {
   };
 
   const nextStep = () => {
-    if (currentStep < steps.length - 1) {
+    if (currentStep < stepConfig.length - 1) {
       console.log('Moving to next step:', currentStep + 1);
       setCurrentStep(prev => prev + 1);
     }
@@ -160,91 +170,80 @@ export const NewJobApplication = () => {
   };
 
   const renderCurrentStep = () => {
-    console.log('Rendering step:', currentStep, 'of', steps.length, 'steps:', steps);
+    const currentStepConfig = stepConfig[currentStep];
     
-    if (currentStep === 0) {
-      return <JobOverviewSection job={job} onContinue={nextStep} />;
-    }
-    
-    if (job.status !== 'active') {
-      return (
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Applications Not Available</h2>
-          <p className="text-gray-600">This job is not currently accepting applications.</p>
-        </div>
-      );
+    if (!currentStepConfig) {
+      console.error('Invalid step configuration for step:', currentStep);
+      return null;
     }
 
-    let stepIndex = 1;
+    console.log('Rendering step:', currentStep, 'Type:', currentStepConfig.type, 'Name:', currentStepConfig.name);
     
-    // Personal Info Step
-    if (currentStep === stepIndex) {
-      console.log('Rendering Personal Info step');
-      return (
-        <PersonalInfoForm
-          data={formData.personalInfo}
-          onChange={(personalInfo) => updateFormData({ personalInfo })}
-          onNext={nextStep}
-          onBack={prevStep}
-        />
-      );
+    switch (currentStepConfig.type) {
+      case 'overview':
+        return <JobOverviewSection job={job} onContinue={nextStep} />;
+      
+      case 'personal-info':
+        if (job.status !== 'active') {
+          return (
+            <div className="text-center py-12">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Applications Not Available</h2>
+              <p className="text-gray-600">This job is not currently accepting applications.</p>
+            </div>
+          );
+        }
+        return (
+          <PersonalInfoForm
+            data={formData.personalInfo}
+            onChange={(personalInfo) => updateFormData({ personalInfo })}
+            onNext={nextStep}
+            onBack={prevStep}
+          />
+        );
+      
+      case 'skills-test':
+        return (
+          <SkillsAssessmentStep
+            job={job}
+            formData={formData}
+            onFormDataChange={updateFormData}
+            onValidationChange={(isValid) => updateStepValidation(currentStep, isValid)}
+            onNext={nextStep}
+            onBack={prevStep}
+          />
+        );
+      
+      case 'video-interview':
+        return (
+          <VideoInterview
+            questions={job.generated_interview_questions}
+            maxLength={job.interview_video_max_length || 5}
+            videoUrl={formData.videoUrl}
+            onChange={(videoUrl) => updateFormData({ videoUrl })}
+            onNext={nextStep}
+            onBack={prevStep}
+          />
+        );
+      
+      case 'review-submit':
+        return (
+          <ApplicationReview
+            job={job}
+            personalInfo={formData.personalInfo}
+            skillsResponses={formData.skillsTestResponses || []}
+            videoUrl={formData.videoUrl}
+            onBack={prevStep}
+            onSubmit={() => {
+              console.log('Application submitted successfully');
+              // Application submission is handled within ApplicationReview
+            }}
+          />
+        );
+      
+      default:
+        console.error('Unknown step type:', currentStepConfig.type);
+        return null;
     }
-    stepIndex++;
-    
-    // Skills Test Step (if enabled)
-    if (job.generated_test && currentStep === stepIndex) {
-      console.log('Rendering Skills Assessment step');
-      return (
-        <SkillsAssessmentStep
-          job={job}
-          formData={formData}
-          onFormDataChange={updateFormData}
-          onValidationChange={(isValid) => updateStepValidation(stepIndex, isValid)}
-          onNext={nextStep}
-          onBack={prevStep}
-        />
-      );
-    }
-    
-    if (job.generated_test) stepIndex++;
-    
-    // Video Interview Step (if enabled)
-    if (job.generated_interview_questions && job.generated_interview_questions.trim() && currentStep === stepIndex) {
-      console.log('Rendering Video Interview step', { currentStep, stepIndex });
-      return (
-        <VideoInterview
-          questions={job.generated_interview_questions}
-          maxLength={job.interview_video_max_length || 5}
-          videoUrl={formData.videoUrl}
-          onChange={(videoUrl) => updateFormData({ videoUrl })}
-          onNext={nextStep}
-          onBack={prevStep}
-        />
-      );
-    }
-    
-    if (job.generated_interview_questions && job.generated_interview_questions.trim()) stepIndex++;
-    
-    // Review & Submit Step
-    if (currentStep === stepIndex) {
-      console.log('Rendering Review & Submit step');
-      return (
-        <ApplicationReview
-          job={job}
-          personalInfo={formData.personalInfo}
-          skillsResponses={formData.skillsTestResponses || []}
-          videoUrl={formData.videoUrl}
-          onBack={prevStep}
-          onSubmit={() => {
-            console.log('Application submitted successfully');
-            // Application submission is handled within ApplicationReview
-          }}
-        />
-      );
-    }
-
-    console.log('No matching step found for currentStep:', currentStep);
-    return null;
   };
 
   return (
@@ -252,7 +251,7 @@ export const NewJobApplication = () => {
       {job.status === 'active' && (
         <ApplicationProgress
           currentStep={currentStep}
-          totalSteps={steps.length}
+          totalSteps={stepConfig.length}
           stepLabels={stepLabels}
           completedSteps={completedSteps}
         />
