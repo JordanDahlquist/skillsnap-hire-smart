@@ -18,7 +18,7 @@ export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRende
         const paragraphText = currentParagraph.join(' ').trim();
         if (paragraphText) {
           elements.push(
-            <p key={`p-${key++}`} className="mb-3 leading-relaxed text-sm text-gray-700">
+            <p key={`p-${key++}`} className="mb-4 leading-relaxed text-gray-700">
               {formatInlineText(paragraphText)}
             </p>
           );
@@ -35,13 +35,25 @@ export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRende
         continue;
       }
 
-      // Check for bold headers
-      const boldHeaderMatch = trimmedLine.match(/^\*\*(.+)\*\*$/);
-      if (boldHeaderMatch) {
+      // Check for main headers (## Header)
+      const h2Match = trimmedLine.match(/^##\s+(.+)$/);
+      if (h2Match) {
         flushParagraph();
         elements.push(
-          <h3 key={`h-${key++}`} className="font-semibold text-gray-900 mb-2 mt-4 text-sm">
-            {boldHeaderMatch[1]}
+          <h2 key={`h2-${key++}`} className="text-lg font-bold text-gray-900 mb-3 mt-6 first:mt-0">
+            {h2Match[1]}
+          </h2>
+        );
+        continue;
+      }
+
+      // Check for sub-headers (### Header or **Header**)
+      const h3Match = trimmedLine.match(/^###\s+(.+)$/) || trimmedLine.match(/^\*\*(.+)\*\*$/);
+      if (h3Match) {
+        flushParagraph();
+        elements.push(
+          <h3 key={`h3-${key++}`} className="text-base font-semibold text-gray-900 mb-2 mt-4">
+            {h3Match[1]}
           </h3>
         );
         continue;
@@ -52,11 +64,11 @@ export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRende
       if (numberedMatch) {
         flushParagraph();
         elements.push(
-          <div key={`n-${key++}`} className="mb-2 flex items-start gap-2">
-            <span className="font-medium text-blue-700 text-sm min-w-[1.5rem]">
+          <div key={`num-${key++}`} className="mb-2 flex items-start gap-3">
+            <span className="font-bold text-blue-600 text-sm min-w-[1.5rem] mt-0.5">
               {numberedMatch[1]}.
             </span>
-            <span className="text-sm text-gray-700 leading-relaxed">
+            <span className="text-gray-700 leading-relaxed">
               {formatInlineText(numberedMatch[2])}
             </span>
           </div>
@@ -69,9 +81,9 @@ export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRende
       if (bulletMatch) {
         flushParagraph();
         elements.push(
-          <div key={`b-${key++}`} className="mb-2 flex items-start gap-2">
-            <span className="text-blue-700 text-sm min-w-[1rem]">•</span>
-            <span className="text-sm text-gray-700 leading-relaxed">
+          <div key={`bullet-${key++}`} className="mb-2 flex items-start gap-3 ml-4">
+            <span className="text-blue-600 text-sm min-w-[1rem] mt-1">•</span>
+            <span className="text-gray-700 leading-relaxed">
               {formatInlineText(bulletMatch[1])}
             </span>
           </div>
@@ -88,7 +100,7 @@ export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRende
   };
 
   const formatInlineText = (text: string): JSX.Element => {
-    // Handle inline bold text
+    // Handle inline bold text (**text**)
     const parts = text.split(/(\*\*[^*]+\*\*)/);
     
     return (
@@ -96,7 +108,7 @@ export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRende
         {parts.map((part, index) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             return (
-              <strong key={index} className="font-medium text-gray-900">
+              <strong key={index} className="font-semibold text-gray-900">
                 {part.slice(2, -2)}
               </strong>
             );

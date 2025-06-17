@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Clock, FileText, Upload, Link, Type, AlertCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, FileText, Upload, Link, Type, AlertCircle, Info } from "lucide-react";
 import { Job } from "@/types";
 import { SkillsQuestion, SkillsResponse } from "@/types/skillsAssessment";
 import { SkillsFileUpload } from "../SkillsFileUpload";
@@ -50,6 +50,18 @@ const getQuestionTypeLabel = (type: string) => {
       return 'Portfolio Link';
     default:
       return 'Text Response';
+  }
+};
+
+const getPlaceholderText = (type: string) => {
+  switch (type) {
+    case 'url_submission':
+    case 'portfolio_link':
+      return 'Share a public Google Drive link, Dropbox link, or website URL...';
+    case 'long_text':
+      return 'Provide your detailed response here...';
+    default:
+      return 'Enter your response here...';
   }
 };
 
@@ -165,20 +177,20 @@ export const SkillsAssessmentStep = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <Card>
+      <Card className="border-blue-200 bg-blue-50">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <FileText className="w-6 h-6 text-blue-600" />
-            <CardTitle className="text-2xl">Skills Assessment</CardTitle>
+            <CardTitle className="text-2xl text-blue-900">Skills Assessment</CardTitle>
           </div>
-          <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center justify-center gap-4 text-sm text-blue-700">
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              <span>~{skillsData.questions.length * 5} minutes</span>
+              <span>~{skillsData.questions.length * 15} minutes</span>
             </div>
             <div className="flex items-center gap-1">
               <FileText className="w-4 h-4" />
-              <span>{skillsData.questions.length} questions</span>
+              <span>{skillsData.questions.length} challenge{skillsData.questions.length !== 1 ? 's' : ''}</span>
             </div>
           </div>
         </CardHeader>
@@ -186,9 +198,12 @@ export const SkillsAssessmentStep = ({
 
       {/* Instructions */}
       {skillsData.instructions && (
-        <Card>
+        <Card className="border-blue-200">
           <CardHeader>
-            <CardTitle className="text-lg">Instructions</CardTitle>
+            <div className="flex items-center gap-2">
+              <Info className="w-5 h-5 text-blue-600" />
+              <CardTitle className="text-lg text-blue-900">Instructions</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <MarkdownTextRenderer text={skillsData.instructions} />
@@ -204,7 +219,7 @@ export const SkillsAssessmentStep = ({
           const hasError = validationErrors[question.id];
 
           return (
-            <Card key={question.id} className={`border-l-4 ${hasError ? 'border-l-red-500' : 'border-l-blue-500'}`}>
+            <Card key={question.id} className={`transition-all ${hasError ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:border-blue-300'}`}>
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -217,7 +232,7 @@ export const SkillsAssessmentStep = ({
                         {getQuestionTypeLabel(question.type)}
                       </Badge>
                       {question.required && (
-                        <Badge variant="destructive" className="text-xs">
+                        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
                           Required
                         </Badge>
                       )}
@@ -227,17 +242,46 @@ export const SkillsAssessmentStep = ({
               </CardHeader>
 
               <CardContent className="space-y-4">
+                {/* Question Title */}
+                {question.title && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 leading-relaxed mb-2">
+                      {question.title}
+                    </h3>
+                  </div>
+                )}
+
                 {/* Question */}
                 <div>
-                  <Label className="text-lg font-semibold text-gray-900 leading-relaxed">
+                  <Label className="text-base text-gray-800 leading-relaxed font-medium">
                     {question.question}
                   </Label>
                 </div>
 
                 {/* Instructions */}
                 {question.candidateInstructions && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <MarkdownTextRenderer text={question.candidateInstructions} />
+                  <Card className="bg-blue-50 border-blue-200">
+                    <CardContent className="p-4">
+                      <MarkdownTextRenderer text={question.candidateInstructions} />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Submission Guidelines */}
+                {(question.type === 'url_submission' || question.type === 'portfolio_link' || question.type === 'file_upload') && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <Info className="w-4 h-4 text-green-600 mt-0.5" />
+                      <div className="text-sm text-green-800">
+                        <p className="font-medium mb-1">Submission Guidelines:</p>
+                        <ul className="space-y-1 text-green-700">
+                          <li>• Upload your work to Google Drive, Dropbox, or similar platform</li>
+                          <li>• Make sure the link is publicly accessible (anyone with the link can view)</li>
+                          <li>• Paste the shareable link in the field below</li>
+                          <li>• Double-check that the link works before submitting</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -265,24 +309,22 @@ export const SkillsAssessmentStep = ({
                     <Textarea
                       value={response?.answer || ''}
                       onChange={(e) => updateResponse(question.id, { answer: e.target.value })}
-                      placeholder="Enter your detailed response here..."
-                      className="min-h-[120px]"
+                      placeholder={getPlaceholderText(question.type)}
+                      className="min-h-[120px] border-gray-300 focus:border-blue-500"
+                      rows={6}
                     />
                   ) : (
                     <Input
                       type={question.type === 'url_submission' || question.type === 'portfolio_link' ? 'url' : 'text'}
                       value={response?.answer || ''}
                       onChange={(e) => updateResponse(question.id, { answer: e.target.value })}
-                      placeholder={
-                        question.type === 'url_submission' || question.type === 'portfolio_link' 
-                          ? 'https://...' 
-                          : 'Enter your response here...'
-                      }
+                      placeholder={getPlaceholderText(question.type)}
+                      className="border-gray-300 focus:border-blue-500"
                     />
                   )}
                   
                   {hasError && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
+                    <p className="text-sm text-orange-600 flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
                       {hasError}
                     </p>
@@ -300,8 +342,8 @@ export const SkillsAssessmentStep = ({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button variant="solid" onClick={handleSubmit}>
-          Continue
+        <Button variant="solid" onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700">
+          Continue to Next Step
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>

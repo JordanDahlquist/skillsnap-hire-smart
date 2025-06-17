@@ -255,6 +255,22 @@ ${existingJobPost}
    - "Develop API Integration"
    - "Plan Content Strategy"
 
+**MANDATORY SUBMISSION INSTRUCTIONS - MUST INCLUDE THESE EXACT GUIDELINES:**
+
+ALL skills assessments MUST include these submission guidelines in the candidateInstructions:
+
+"**How to Submit Your Work:**
+
+1. **Upload to Cloud Storage**: Upload your completed work to Google Drive, Dropbox, OneDrive, or similar platform
+2. **Set Public Access**: Make sure the sharing settings allow 'Anyone with the link' to view your work
+3. **Copy the Link**: Copy the shareable public link to your work
+4. **Paste Below**: Paste the link in the submission field below
+5. **Test the Link**: Before submitting, test your link in an incognito/private browser window to ensure it works
+
+**Accepted Formats**: Documents, presentations, images, videos, code repositories, design files, or any format relevant to your work.
+
+**Important**: Your submission link must be publicly accessible for our review team to evaluate your work."
+
 **CRITICAL MARKDOWN FORMATTING REQUIREMENTS - FOLLOW THESE EXACTLY:**
 THE candidateInstructions FIELD **MUST** USE PROPER MARKDOWN FORMATTING. THIS IS NON-NEGOTIABLE.
 
@@ -284,6 +300,21 @@ Brief description of what they're creating and why it matters for the role.
 - Supporting documentation (if needed)
 - Brief explanation of approach
 
+## How to Submit Your Work
+**Upload to Cloud Storage**: Upload your completed work to Google Drive, Dropbox, OneDrive, or similar platform
+
+**Set Public Access**: Make sure the sharing settings allow 'Anyone with the link' to view your work
+
+**Copy the Link**: Copy the shareable public link to your work
+
+**Paste Below**: Paste the link in the submission field below
+
+**Test the Link**: Before submitting, test your link in an incognito/private browser window to ensure it works
+
+**Accepted Formats**: Documents, presentations, images, videos, code repositories, design files, or any format relevant to your work.
+
+**Important**: Your submission link must be publicly accessible for our review team to evaluate your work.
+
 ## Evaluation Criteria
 - **Quality**: Technical execution and attention to detail
 - **Creativity**: Original thinking and innovative approach
@@ -291,12 +322,12 @@ Brief description of what they're creating and why it matters for the role.
 \`\`\`
 
 **MANDATORY FORMATTING RULES:**
-1. **USE ## HEADERS**: Each major section MUST start with ## (Overview, Steps, Deliverables, Evaluation Criteria)
+1. **USE ## HEADERS**: Each major section MUST start with ## (Overview, Steps, Deliverables, How to Submit Your Work, Evaluation Criteria)
 2. **NUMBERED STEPS**: Use numbered lists (1., 2., 3.) for sequential tasks
 3. **BOLD SUB-HEADERS**: Use **bold text** for phase names and criteria names
 4. **BULLET POINTS**: Use - for lists within sections
 5. **LINE BREAKS**: Include blank lines between sections for readability
-6. **NO PARAGRAPHS**: Avoid wall-of-text paragraphs - break everything into structured sections
+6. **NO WALL OF TEXT**: Break everything into structured sections with clear headers
 
 **CRITICAL DESIGN PRINCIPLES:**
 1. **SINGLE INTEGRATED PROJECT**: Create ONE cohesive task, not multiple separate challenges
@@ -305,6 +336,7 @@ Brief description of what they're creating and why it matters for the role.
 4. **REALISTIC WORK SCENARIO**: Mirror actual work they'd do at ${companyName}
 5. **CLEAR SCOPE BOUNDARIES**: Prevent over-engineering with specific deliverable requirements
 6. **PROPERLY FORMATTED INSTRUCTIONS**: candidateInstructions MUST follow the exact markdown template above
+7. **CLEAR SUBMISSION PROCESS**: MUST include detailed submission instructions about sharing public links
 
 **COMPANY INTEGRATION:**
 ${websiteAnalysisData ? `
@@ -325,14 +357,14 @@ Return a JSON object with this exact structure:
       {
         "title": "SHORT, descriptive title (5-10 words max, e.g., 'Build Customer Analytics Dashboard')",
         "question": "Brief project overview that summarizes the challenge in 1-2 sentences",
-        "type": "choose appropriate type based on deliverable (portfolio_link, pdf_upload, file_upload, video_upload, etc.)",
-        "candidateInstructions": "PROPERLY FORMATTED instructions using the EXACT markdown structure shown above. Must include: ## Overview, ## Steps (numbered with **bold** phase headers), ## Deliverables (bullet points), ## Evaluation Criteria (**bold** criteria names). Use line breaks between sections. Minimum 250 words. NO WALL OF TEXT - MUST BE STRUCTURED.",
+        "type": "url_submission",
+        "candidateInstructions": "PROPERLY FORMATTED instructions using the EXACT markdown structure shown above. Must include: ## Overview, ## Steps (numbered with **bold** phase headers), ## Deliverables (bullet points), ## How to Submit Your Work (with detailed submission instructions), ## Evaluation Criteria (**bold** criteria names). Use line breaks between sections. Minimum 300 words. MUST BE STRUCTURED WITH HEADERS.",
         "evaluationGuidelines": "Detailed criteria for evaluating this integrated project across multiple skill dimensions with specific examples",
         "scoringCriteria": "Clear explanation of what constitutes good vs. excellent submissions with specific examples",
         "required": true,
         "timeLimit": 90,
         "characterLimit": null,
-        "allowedFileTypes": ["appropriate file types for deliverable"],
+        "allowedFileTypes": [],
         "maxFileSize": 25
       }
     ],
@@ -344,8 +376,9 @@ Return a JSON object with this exact structure:
 
 **CRITICAL REMINDER**: 
 - The "title" field MUST be short (10 words maximum)
-- The "candidateInstructions" field MUST use the exact Markdown structure shown above with ## headers, numbered steps, **bold** text, bullet points, and proper line breaks
-- NO WALL OF TEXT allowed in candidateInstructions - it must be properly structured
+- The "candidateInstructions" field MUST use the exact Markdown structure shown above with ## headers, numbered steps, **bold** text, bullet points, proper line breaks, and DETAILED submission instructions
+- NO WALL OF TEXT allowed in candidateInstructions - it must be properly structured with clear headers
+- MUST include comprehensive submission guidelines about sharing public links
 - If you don't follow the formatting template exactly, the instructions will be unreadable
 
 Create an integrated project that candidates will find engaging, realistic, and directly relevant to the actual work they'll do at ${companyName}.`;
@@ -401,7 +434,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
           {
             role: 'system',
             content: type === 'skills-test' 
-              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with ## headers, numbered steps with **bold** phase names, bullet points, and clear line breaks between sections. NO WALL OF TEXT ALLOWED - instructions must be properly structured and scannable. ALWAYS return valid JSON in the exact format specified.'
+              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with ## headers, numbered steps with **bold** phase names, bullet points, clear line breaks between sections, and DETAILED submission instructions about sharing public links. NO WALL OF TEXT ALLOWED - instructions must be properly structured and scannable with clear headers. MUST include comprehensive submission guidelines. ALWAYS return valid JSON in the exact format specified.'
               : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
           },
           {
