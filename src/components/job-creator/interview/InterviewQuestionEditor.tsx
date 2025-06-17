@@ -245,10 +245,10 @@ export const InterviewQuestionEditor = ({
                   </div>
 
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setEditingQuestion(null)}>
+                    <Button variant="outline" size="sm" onClick={() => setEditingQuestion(null)} className="h-8 px-3 text-xs">
                       Cancel
                     </Button>
-                    <Button onClick={() => setEditingQuestion(null)}>
+                    <Button size="sm" onClick={() => setEditingQuestion(null)} className="h-8 px-3 text-xs">
                       Save
                     </Button>
                   </div>
