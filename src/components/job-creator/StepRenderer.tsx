@@ -61,6 +61,7 @@ export const StepRenderer = ({
           skillsTestViewState={state.skillsTestViewState}
           isGenerating={state.isGenerating}
           actions={actions}
+          formData={state.formData}
           onGenerateQuestions={onGenerateSkillsQuestions}
           onSkillsTestDataChange={actions.setSkillsTestData}
         />
