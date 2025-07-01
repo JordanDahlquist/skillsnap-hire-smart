@@ -18,12 +18,16 @@ export const BulkStageSelector = ({ jobId, onStageChange, disabled }: BulkStageS
 
   if (stages.length === 0) return null;
 
+  // Separate rejected stage from other stages
+  const activeStages = stages.filter(stage => stage.name.toLowerCase() !== 'rejected');
+  const rejectedStage = stages.find(stage => stage.name.toLowerCase() === 'rejected');
+
   return (
     <>
       <DropdownMenuItem disabled className="font-medium text-xs text-gray-500 uppercase tracking-wide">
         Move to Stage
       </DropdownMenuItem>
-      {stages.map((stage) => (
+      {activeStages.map((stage) => (
         <DropdownMenuItem
           key={stage.id}
           onClick={() => onStageChange(getStageKey(stage.name))}
@@ -38,6 +42,27 @@ export const BulkStageSelector = ({ jobId, onStageChange, disabled }: BulkStageS
           </div>
         </DropdownMenuItem>
       ))}
+      
+      {/* Separator for rejected stage */}
+      {rejectedStage && (
+        <>
+          <DropdownMenuItem disabled className="h-px bg-border my-1" />
+          <DropdownMenuItem
+            key={rejectedStage.id}
+            onClick={() => onStageChange(getStageKey(rejectedStage.name))}
+            disabled={disabled}
+            className="text-red-600"
+          >
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-2 h-2 rounded-full" 
+                style={{ backgroundColor: rejectedStage.color }}
+              />
+              {rejectedStage.name}
+            </div>
+          </DropdownMenuItem>
+        </>
+      )}
     </>
   );
 };

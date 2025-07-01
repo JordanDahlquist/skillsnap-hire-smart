@@ -45,6 +45,7 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         .from('applications')
         .update({ 
           status: 'rejected',
+          pipeline_stage: 'rejected',
           rejection_reason: reason || 'No reason provided',
           updated_at: new Date().toISOString()
         })
@@ -77,6 +78,7 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         .from('applications')
         .update({ 
           status: 'pending',
+          pipeline_stage: 'applied',
           rejection_reason: null,
           updated_at: new Date().toISOString()
         })

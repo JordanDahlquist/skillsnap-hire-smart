@@ -25,6 +25,7 @@ export const StageCard = ({
   };
 
   const stageKey = getStageKey(stage.name);
+  const isRejectedStage = stage.name.toLowerCase() === 'rejected';
 
   return (
     <div className="flex items-center gap-3">
@@ -34,7 +35,7 @@ export const StageCard = ({
           isSelected
             ? 'ring-2 ring-opacity-20 scale-105 shadow-lg'
             : 'hover:scale-102 hover:shadow-md'
-        }`}
+        } ${isRejectedStage ? 'border-red-200/50' : ''}`}
         style={{
           borderColor: isSelected ? stage.color : undefined,
         }}
@@ -48,7 +49,7 @@ export const StageCard = ({
               ></div>
               <h3 className={`font-semibold text-sm transition-colors duration-200 ${
                 isSelected ? 'text-foreground' : 'text-foreground/80'
-              }`}>
+              } ${isRejectedStage ? 'text-red-700' : ''}`}>
                 {stage.name}
               </h3>
             </div>
@@ -57,7 +58,9 @@ export const StageCard = ({
           <div className="flex items-center justify-between">
             <Badge 
               variant={isSelected ? "default" : "secondary"}
-              className="text-lg font-bold px-3 py-1 transition-all duration-200"
+              className={`text-lg font-bold px-3 py-1 transition-all duration-200 ${
+                isRejectedStage && !isSelected ? 'bg-red-50 text-red-700 border-red-200' : ''
+              }`}
               style={{
                 backgroundColor: isSelected ? stage.color : undefined,
                 color: isSelected ? 'white' : undefined,
@@ -93,8 +96,8 @@ export const StageCard = ({
         ></div>
       </div>
       
-      {/* Arrow connector */}
-      {isNextStage && (
+      {/* Arrow connector - don't show after Rejected stage */}
+      {isNextStage && !isRejectedStage && (
         <ArrowRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
       )}
     </div>
