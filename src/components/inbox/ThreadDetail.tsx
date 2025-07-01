@@ -89,6 +89,8 @@ export const ThreadDetail = ({
               <Button
                 onClick={handleSendReply}
                 disabled={!hasContent || isSending}
+                size="sm"
+                variant="solid"
                 className="flex items-center gap-2"
               >
                 <Send className="w-4 h-4" />
