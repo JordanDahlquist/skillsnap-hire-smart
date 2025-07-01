@@ -1,4 +1,5 @@
 
+
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
@@ -120,6 +121,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
                 onClick={handleSendReply}
                 disabled={isSending || !replyContent.trim()}
                 size="sm"
+                variant="solid"
               >
                 <Send className="w-4 h-4 mr-2" />
                 {isSending ? 'Sending...' : 'Send Message'}
@@ -131,3 +133,4 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
     </div>
   );
 };
+
