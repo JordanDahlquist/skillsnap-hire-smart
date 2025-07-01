@@ -1,0 +1,92 @@
+
+/* Email content styling */
+.email-content {
+  line-height: 1.6;
+}
+
+.email-content p {
+  margin-bottom: 0.75rem;
+}
+
+.email-content p:last-child {
+  margin-bottom: 0;
+}
+
+.email-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.email-content-outbound a {
+  color: #bfdbfe;
+}
+
+.email-content strong,
+.email-content b {
+  font-weight: 600;
+}
+
+.email-content em,
+.email-content i {
+  font-style: italic;
+}
+
+.email-content ul,
+.email-content ol {
+  margin-left: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.email-content li {
+  margin-bottom: 0.25rem;
+}
+
+.email-content blockquote {
+  border-left: 3px solid #e5e7eb;
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.email-content-outbound blockquote {
+  border-left-color: #93c5fd;
+  color: #bfdbfe;
+}
+
+.email-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+}
+
+.email-content th,
+.email-content td {
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.email-content-outbound th,
+.email-content-outbound td {
+  border-color: #93c5fd;
+}
+
+.email-content th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.email-content-outbound th {
+  background-color: rgba(147, 197, 253, 0.2);
+}
+
+/* Remove excessive spacing from email clients */
+.email-content div + div {
+  margin-top: 0;
+}
+
+.email-content br + br {
+  display: none;
+}
