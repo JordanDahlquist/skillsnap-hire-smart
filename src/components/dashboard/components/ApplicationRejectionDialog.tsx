@@ -87,12 +87,14 @@ export const ApplicationRejectionDialog = ({
         <DialogFooter>
           <Button 
             variant="outline" 
+            size="sm"
             onClick={onCancel}
             disabled={isUpdating}
           >
             Cancel
           </Button>
           <Button 
+            size="sm"
             onClick={onConfirm}
             disabled={isUpdating || !selectedReason || (selectedReason === "Other" && !customReason.trim())}
             className="bg-red-600 hover:bg-red-700 text-white"
