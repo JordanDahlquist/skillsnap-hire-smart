@@ -84,12 +84,13 @@ export const ApplicationRejectionDialog = ({
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button 
             variant="outline" 
             size="sm"
             onClick={onCancel}
             disabled={isUpdating}
+            className="h-8 px-3 text-xs shadow-none"
           >
             Cancel
           </Button>
@@ -97,7 +98,7 @@ export const ApplicationRejectionDialog = ({
             size="sm"
             onClick={onConfirm}
             disabled={isUpdating || !selectedReason || (selectedReason === "Other" && !customReason.trim())}
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="h-8 px-3 text-xs bg-red-600 hover:bg-red-700 text-white shadow-none"
           >
             {isUpdating ? "Rejecting..." : "Confirm Rejection"}
           </Button>
