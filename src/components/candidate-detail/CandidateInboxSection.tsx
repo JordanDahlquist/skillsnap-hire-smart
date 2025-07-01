@@ -1,11 +1,10 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
 import { ConversationContainer } from '@/components/inbox/ConversationContainer';
 import { EmailRichTextEditor } from '@/components/inbox/EmailRichTextEditor';
 import { Button } from '@/components/ui/button';
-import { Send, RefreshCw, Mail } from 'lucide-react';
+import { Send, Mail } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import type { Application, Job } from '@/types';
 
@@ -20,8 +19,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
     messages,
     threads,
     isLoading,
-    sendReply,
-    refetchThreads
+    sendReply
   } = useCandidateInboxData(application.id);
 
   const [replyContent, setReplyContent] = React.useState('');
@@ -84,7 +82,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
       {/* Messages Container */}
       <Card>
         <CardContent className="p-0">
-          <div className="h-96 border-b">
+          <div className={`border-b ${candidateMessages.length > 0 ? 'h-96' : 'h-32'}`}>
             {candidateMessages.length > 0 ? (
               <ConversationContainer 
                 messages={candidateMessages}
@@ -93,8 +91,8 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                  <h3 className="text-lg font-medium text-foreground mb-1">
+                  <Mail className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <h3 className="text-base font-medium text-foreground mb-1">
                     No messages yet
                   </h3>
                   <p className="text-sm text-muted-foreground">
@@ -113,17 +111,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
               placeholder={`Send a message to ${application.name}...`}
             />
             
-            <div className="flex items-center justify-between">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refetchThreads}
-                disabled={isLoading}
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-              
+            <div className="flex justify-end">
               <Button
                 onClick={handleSendReply}
                 disabled={isSending || !replyContent.trim()}
