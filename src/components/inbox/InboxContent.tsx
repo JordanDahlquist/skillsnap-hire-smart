@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ThreadList } from "./ThreadList";
+import { useOptimizedEmailSubjects } from "@/hooks/useOptimizedEmailSubjects";
 import type { EmailThread } from "@/types/inbox";
 
 interface InboxContentProps {
@@ -37,7 +38,10 @@ export const InboxContent = ({
 }: InboxContentProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredThreads = threads.filter(thread =>
+  // Process email subjects for template variables
+  const { processedThreads } = useOptimizedEmailSubjects(threads);
+
+  const filteredThreads = processedThreads.filter(thread =>
     thread.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
     thread.participants.some(p => 
       typeof p === 'string' ? p.toLowerCase().includes(searchTerm.toLowerCase()) : false
