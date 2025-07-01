@@ -2,6 +2,8 @@
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { processTemplateVariables } from "@/utils/templateProcessor";
+import { extractMessagePreview } from "@/utils/emailContentCleaner";
 import type { EmailThread } from "@/types/inbox";
 
 interface ThreadListProps {
@@ -27,10 +29,8 @@ export const ThreadList = ({
   }
 
   const handleThreadClick = (thread: EmailThread) => {
-    // Always select the thread without affecting the list
     onSelectThread(thread.id);
     
-    // Mark as read if needed, but don't let it affect list visibility
     if (thread.unread_count > 0) {
       onMarkAsRead(thread.id);
     }
@@ -38,42 +38,68 @@ export const ThreadList = ({
 
   return (
     <div className="divide-y divide-gray-200">
-      {threads.map((thread) => (
-        <div
-          key={thread.id}
-          onClick={() => handleThreadClick(thread)}
-          className={cn(
-            "p-4 cursor-pointer hover:bg-gray-50 transition-colors",
-            selectedThreadId === thread.id && "bg-blue-50 border-l-4 border-l-blue-500",
-            thread.unread_count > 0 && "bg-blue-25"
-          )}
-        >
-          <div className="flex items-start justify-between mb-2">
-            <h3 className={cn(
-              "text-sm truncate flex-1 mr-2",
-              thread.unread_count > 0 ? "font-semibold text-gray-900" : "font-medium text-gray-700"
-            )}>
-              {thread.subject}
-            </h3>
-            {thread.unread_count > 0 && (
-              <Badge variant="destructive" className="text-xs flex-shrink-0">
-                {thread.unread_count}
-              </Badge>
+      {threads.map((thread) => {
+        // Process template variables in subject
+        const cleanSubject = processTemplateVariables(thread.subject);
+        
+        // Get participant names (excluding current user's email)
+        const participants = Array.isArray(thread.participants) 
+          ? thread.participants.filter(p => 
+              typeof p === 'string' && 
+              !p.includes('inbound.atract.ai')
+            )
+          : [];
+
+        const participantDisplay = participants.length > 0 
+          ? participants.map(email => {
+              // Extract name from email if possible
+              const nameMatch = email.match(/^(.+?)\s*<.+>$/);
+              if (nameMatch) {
+                return nameMatch[1].replace(/['"]/g, '').trim();
+              }
+              return email.split('@')[0].replace(/[._-]/g, ' ');
+            }).join(', ')
+          : 'No participants';
+
+        return (
+          <div
+            key={thread.id}
+            onClick={() => handleThreadClick(thread)}
+            className={cn(
+              "p-4 cursor-pointer hover:bg-gray-50 transition-colors border-l-4",
+              selectedThreadId === thread.id 
+                ? "bg-blue-50 border-l-blue-500" 
+                : "border-l-transparent",
+              thread.unread_count > 0 && "bg-blue-25"
             )}
+          >
+            <div className="flex items-start justify-between mb-2">
+              <h3 className={cn(
+                "text-sm truncate flex-1 mr-2 leading-tight",
+                thread.unread_count > 0 
+                  ? "font-semibold text-gray-900" 
+                  : "font-medium text-gray-700"
+              )}>
+                {cleanSubject || 'No Subject'}
+              </h3>
+              {thread.unread_count > 0 && (
+                <Badge variant="destructive" className="text-xs flex-shrink-0 ml-2">
+                  {thread.unread_count}
+                </Badge>
+              )}
+            </div>
+            
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span className="truncate flex-1 mr-2 font-medium">
+                {participantDisplay}
+              </span>
+              <span className="whitespace-nowrap flex-shrink-0">
+                {formatDistanceToNow(new Date(thread.last_message_at), { addSuffix: true })}
+              </span>
+            </div>
           </div>
-          
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span className="truncate flex-1 mr-2">
-              {Array.isArray(thread.participants) 
-                ? thread.participants.filter(p => typeof p === 'string').join(', ') 
-                : 'No participants'}
-            </span>
-            <span className="whitespace-nowrap flex-shrink-0">
-              {formatDistanceToNow(new Date(thread.last_message_at), { addSuffix: true })}
-            </span>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

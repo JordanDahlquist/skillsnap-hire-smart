@@ -61,7 +61,6 @@ const handler = async (req: Request): Promise<Response> => {
   console.log('=== Email Webhook Called ===');
   console.log('Request method:', req.method);
   console.log('Request URL:', req.url);
-  console.log('Request headers:', Object.fromEntries(req.headers));
 
   if (req.method === "OPTIONS") {
     console.log('Handling CORS preflight request');
@@ -70,17 +69,13 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const rawBody = await req.text();
-    console.log('Raw webhook body:', rawBody);
+    console.log('Raw webhook body received');
     
     let webhookData: MailerSendWebhook;
     
     try {
       webhookData = JSON.parse(rawBody);
       console.log('Parsed webhook data type:', webhookData.type);
-      console.log('Parsed webhook data structure:', {
-        hasData: !!webhookData.data,
-        dataKeys: webhookData.data ? Object.keys(webhookData.data) : []
-      });
     } catch (parseError) {
       console.error('Failed to parse webhook body as JSON:', parseError);
       return new Response(
@@ -126,8 +121,6 @@ const handler = async (req: Request): Promise<Response> => {
       from: emailData.from,
       to: emailData.to,
       subject: emailData.subject,
-      hasText: !!emailData.text,
-      hasHtml: !!emailData.html,
       messageId: emailData.message_id
     });
 
@@ -135,6 +128,28 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Check for duplicate messages first
+    const { data: existingMessage, error: duplicateCheckError } = await supabase
+      .from('email_messages')
+      .select('id')
+      .eq('external_message_id', emailData.message_id)
+      .single();
+
+    if (existingMessage) {
+      console.log('Duplicate message detected, ignoring:', emailData.message_id);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Duplicate message ignored',
+          message_id: emailData.message_id
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     // Find user by their unique email address
     console.log('Looking up user by unique email:', emailData.to);
@@ -152,7 +167,7 @@ const handler = async (req: Request): Promise<Response> => {
           message: `No user found for email address: ${emailData.to}` 
         }),
         {
-          status: 200, // Return 200 to prevent MailerSend retries for invalid emails
+          status: 200,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         }
       );
@@ -280,7 +295,7 @@ const handler = async (req: Request): Promise<Response> => {
         direction: 'inbound',
         message_type: 'reply',
         is_read: false,
-        external_message_id: emailData.message_id || emailData.in_reply_to || null
+        external_message_id: emailData.message_id || null
       });
 
     if (messageError) {
@@ -288,17 +303,37 @@ const handler = async (req: Request): Promise<Response> => {
       throw messageError;
     }
 
-    // Update thread last message time and unread count
+    // Update thread last message time and increment unread count using proper SQL
     const { error: updateError } = await supabase
       .from('email_threads')
       .update({
         last_message_at: new Date().toISOString(),
-        unread_count: supabase.raw('unread_count + 1')
+        unread_count: supabase.rpc('increment_unread_count', { thread_id: threadId })
       })
       .eq('id', threadId);
 
+    // If RPC doesn't work, use a direct update with a subquery
     if (updateError) {
-      console.error('Failed to update thread:', updateError);
+      console.log('RPC failed, using direct update approach');
+      const { data: currentThread } = await supabase
+        .from('email_threads')
+        .select('unread_count')
+        .eq('id', threadId)
+        .single();
+
+      const newUnreadCount = (currentThread?.unread_count || 0) + 1;
+
+      const { error: directUpdateError } = await supabase
+        .from('email_threads')
+        .update({
+          last_message_at: new Date().toISOString(),
+          unread_count: newUnreadCount
+        })
+        .eq('id', threadId);
+
+      if (directUpdateError) {
+        console.error('Failed to update thread:', directUpdateError);
+      }
     }
 
     console.log('Successfully processed incoming email for thread:', threadId);

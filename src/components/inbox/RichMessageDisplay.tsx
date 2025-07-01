@@ -2,37 +2,48 @@
 import React from 'react';
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
-import { cleanEmailContent } from "@/utils/emailContentCleaner";
-import { extractSenderName, getSenderInitials } from "@/utils/emailSenderUtils";
+import { cleanEmailContent, extractMessagePreview } from "@/utils/emailContentCleaner";
+import { extractSenderName, getSenderInitials, formatSenderForDisplay } from "@/utils/emailSenderUtils";
 import type { EmailMessage } from "@/types/inbox";
 
 interface RichMessageDisplayProps {
   message: EmailMessage;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
-export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
+export const RichMessageDisplay = ({ 
+  message, 
+  isExpanded = true, 
+  onToggleExpand 
+}: RichMessageDisplayProps) => {
   const cleanedContent = cleanEmailContent(message.content);
-  const isRichContent = cleanedContent.includes('<') || cleanedContent.includes('&');
+  const isRichContent = cleanedContent.includes('<') && cleanedContent.includes('&');
   const senderName = extractSenderName(message.sender_email);
   const senderInitials = getSenderInitials(message.sender_email);
+  const displayName = formatSenderForDisplay(message.sender_email);
+  
+  // For collapsed view, show preview
+  const contentToShow = isExpanded ? cleanedContent : extractMessagePreview(cleanedContent, 120);
+  const isLongMessage = cleanedContent.length > 300;
 
   return (
     <div
       className={cn(
-        "p-4 rounded-lg max-w-[85%] shadow-sm",
+        "p-4 rounded-lg max-w-[85%] shadow-sm transition-all duration-200",
         message.direction === 'outbound'
           ? "ml-auto bg-blue-600 text-white"
-          : "mr-auto bg-white border border-gray-200 text-gray-900"
+          : "mr-auto bg-white border border-gray-200 text-gray-900 hover:shadow-md"
       )}
     >
       {/* Message Header */}
       <div className="flex items-center gap-3 mb-3">
         {/* Avatar */}
         <div className={cn(
-          "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium",
+          "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0",
           message.direction === 'outbound'
             ? "bg-blue-500 text-white"
-            : "bg-gray-100 text-gray-600"
+            : "bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700"
         )}>
           {message.direction === 'outbound' ? 'You' : senderInitials}
         </div>
@@ -43,22 +54,40 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
             "text-sm font-medium truncate",
             message.direction === 'outbound' ? "text-blue-100" : "text-gray-900"
           )}>
-            {message.direction === 'outbound' ? 'You' : senderName}
+            {message.direction === 'outbound' ? 'You' : displayName}
           </div>
           <div className={cn(
-            "text-xs truncate",
+            "text-xs truncate flex items-center gap-1",
             message.direction === 'outbound' ? "text-blue-200" : "text-gray-500"
           )}>
-            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+            <span>{formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}</span>
+            {!message.is_read && message.direction === 'inbound' && (
+              <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+            )}
           </div>
         </div>
+
+        {/* Expand/Collapse button for long messages */}
+        {isLongMessage && onToggleExpand && (
+          <button
+            onClick={onToggleExpand}
+            className={cn(
+              "text-xs px-2 py-1 rounded transition-colors",
+              message.direction === 'outbound'
+                ? "text-blue-200 hover:text-white hover:bg-blue-500"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            )}
+          >
+            {isExpanded ? 'Less' : 'More'}
+          </button>
+        )}
       </div>
       
       {/* Message Content */}
       <div className="text-sm leading-relaxed">
         {isRichContent ? (
           <div 
-            dangerouslySetInnerHTML={{ __html: cleanedContent }}
+            dangerouslySetInnerHTML={{ __html: contentToShow }}
             className={cn(
               "email-content",
               message.direction === 'outbound' 
@@ -67,8 +96,18 @@ export const RichMessageDisplay = ({ message }: RichMessageDisplayProps) => {
             )}
           />
         ) : (
-          <div className="whitespace-pre-wrap">
-            {cleanedContent}
+          <div className="whitespace-pre-wrap break-words">
+            {contentToShow}
+          </div>
+        )}
+        
+        {/* Show "message truncated" indicator */}
+        {!isExpanded && isLongMessage && (
+          <div className={cn(
+            "text-xs mt-2 italic",
+            message.direction === 'outbound' ? "text-blue-200" : "text-gray-500"
+          )}>
+            Message truncated...
           </div>
         )}
       </div>
