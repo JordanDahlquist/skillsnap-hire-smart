@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
@@ -7,6 +6,7 @@ import { CandidateVideoTab } from "./tabs/CandidateVideoTab";
 import { CandidateResumeTab } from "./tabs/CandidateResumeTab";
 import { CandidateActivityTab } from "./tabs/CandidateActivityTab";
 import { CandidateEmailTab } from "./tabs/CandidateEmailTab";
+import { RejectionConfirmationDialog } from "@/components/ui/rejection-confirmation-dialog";
 import { Application, Job } from "@/types";
 
 interface CandidateDetailContentProps {
@@ -29,6 +29,7 @@ export const CandidateDetailContent = ({
   isUpdating = false
 }: CandidateDetailContentProps) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
 
   // Parse skills test responses
   const skillsResponses = Array.isArray(application.skills_test_responses) 
@@ -90,6 +91,15 @@ export const CandidateDetailContent = ({
   const hasVideoContent = skillsVideoResponses.length > 0 || hasInterviewVideos;
   const hasResume = !!(application.resume_file_path);
 
+  const handleReject = () => {
+    setShowRejectDialog(true);
+  };
+
+  const handleConfirmReject = (reason: string) => {
+    onReject?.();
+    setShowRejectDialog(false);
+  };
+
   return (
     <div className="relative">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -113,7 +123,7 @@ export const CandidateDetailContent = ({
             application={application}
             job={job}
             onApplicationUpdate={onApplicationUpdate}
-            onReject={onReject}
+            onReject={handleReject}
             onUnreject={onUnreject}
             onEmail={onEmail}
             isUpdating={isUpdating}
@@ -152,6 +162,15 @@ export const CandidateDetailContent = ({
           />
         </TabsContent>
       </Tabs>
+
+      {/* Rejection Confirmation Dialog */}
+      <RejectionConfirmationDialog
+        open={showRejectDialog}
+        onOpenChange={setShowRejectDialog}
+        candidateName={application.name}
+        isUpdating={isUpdating}
+        onConfirm={handleConfirmReject}
+      />
     </div>
   );
 };

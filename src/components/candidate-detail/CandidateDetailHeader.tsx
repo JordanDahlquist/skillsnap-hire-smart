@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import { renderAIRating } from "@/components/dashboard/utils/ratingUtils";
 import { StageSelector } from "@/components/dashboard/StageSelector";
 import { useApplicationActions } from "@/hooks/useApplicationActions";
 import { EmailComposerModal } from "@/components/dashboard/EmailComposerModal";
+import { RejectionConfirmationDialog } from "@/components/ui/rejection-confirmation-dialog";
 import { Application, Job } from "@/types";
 
 interface CandidateDetailHeaderProps {
@@ -41,6 +41,7 @@ export const CandidateDetailHeader = ({
 }: CandidateDetailHeaderProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showEmailComposer, setShowEmailComposer] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
   
   // Local state for immediate UI updates
   const [localApplication, setLocalApplication] = useState(application);
@@ -90,7 +91,12 @@ export const CandidateDetailHeader = ({
     }
   };
 
-  const handleReject = async () => {
+  const handleReject = () => {
+    if (isUpdating || propIsUpdating) return;
+    setShowRejectDialog(true);
+  };
+
+  const handleConfirmReject = async (reason: string) => {
     if (isUpdating || propIsUpdating) return;
     
     setLocalApplication(prev => ({
@@ -100,8 +106,9 @@ export const CandidateDetailHeader = ({
     
     setIsUpdating(true);
     try {
-      await rejectApplication(application.id, "Rejected from candidate detail page");
+      await rejectApplication(application.id, reason);
       propOnReject?.();
+      setShowRejectDialog(false);
     } catch (error) {
       setLocalApplication(application);
     } finally {
@@ -272,11 +279,11 @@ export const CandidateDetailHeader = ({
                 </Button>
               ) : (
                 <Button 
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
                   onClick={handleReject}
                   disabled={isUpdating || propIsUpdating}
-                  className="border-red-200 text-red-600 hover:bg-red-50 px-4 h-11"
+                  className="px-4 h-11"
                 >
                   <ThumbsDown className="w-4 h-4 mr-2" />
                   Reject
@@ -303,6 +310,15 @@ export const CandidateDetailHeader = ({
         onOpenChange={setShowEmailComposer}
         selectedApplications={[localApplication]}
         job={job}
+      />
+
+      {/* Rejection Confirmation Dialog */}
+      <RejectionConfirmationDialog
+        open={showRejectDialog}
+        onOpenChange={setShowRejectDialog}
+        candidateName={localApplication.name}
+        isUpdating={isUpdating || propIsUpdating || false}
+        onConfirm={handleConfirmReject}
       />
     </>
   );

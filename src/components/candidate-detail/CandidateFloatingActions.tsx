@@ -102,10 +102,10 @@ export const CandidateFloatingActions = ({
             ) : (
               <Button 
                 size="sm" 
-                variant="outline"
+                variant="destructive"
                 onClick={handleReject}
                 disabled={isUpdating}
-                className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
+                className="flex-1"
               >
                 <ThumbsDown className="w-4 h-4 mr-1" />
                 Reject
