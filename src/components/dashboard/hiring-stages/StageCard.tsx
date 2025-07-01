@@ -31,7 +31,7 @@ export const StageCard = ({
     <div className="flex items-center gap-2">
       <div
         onClick={() => onStageSelect(stageKey)}
-        className={`group relative glass-card cursor-pointer overflow-hidden flex-1 transition-all duration-300 ${
+        className={`group relative glass-card cursor-pointer overflow-hidden flex-1 transition-all duration-300 rounded-lg ${
           isSelected
             ? 'ring-2 ring-opacity-20 scale-105 shadow-lg'
             : 'hover:scale-102 hover:shadow-md'
