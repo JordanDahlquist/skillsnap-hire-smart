@@ -95,6 +95,7 @@ export const CandidateDetailContent = ({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="skills" disabled={!hasSkillsAssessment}>
             Skills {!hasSkillsAssessment && "(None)"}
           </TabsTrigger>
@@ -104,7 +105,6 @@ export const CandidateDetailContent = ({
           <TabsTrigger value="resume" disabled={!hasResume}>
             Resume {!hasResume && "(None)"}
           </TabsTrigger>
-          <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
@@ -117,6 +117,13 @@ export const CandidateDetailContent = ({
             onUnreject={onUnreject}
             onEmail={onEmail}
             isUpdating={isUpdating}
+          />
+        </TabsContent>
+
+        <TabsContent value="email" className="space-y-6">
+          <CandidateEmailTab 
+            application={application}
+            job={job}
           />
         </TabsContent>
 
@@ -136,13 +143,6 @@ export const CandidateDetailContent = ({
         <TabsContent value="resume" className="space-y-6">
           <CandidateResumeTab 
             application={application}
-          />
-        </TabsContent>
-
-        <TabsContent value="email" className="space-y-6">
-          <CandidateEmailTab 
-            application={application}
-            job={job}
           />
         </TabsContent>
 
