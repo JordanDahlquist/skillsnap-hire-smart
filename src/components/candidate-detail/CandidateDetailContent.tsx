@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
@@ -5,6 +6,7 @@ import { CandidateSkillsTab } from "./tabs/CandidateSkillsTab";
 import { CandidateVideoTab } from "./tabs/CandidateVideoTab";
 import { CandidateResumeTab } from "./tabs/CandidateResumeTab";
 import { CandidateActivityTab } from "./tabs/CandidateActivityTab";
+import { CandidateEmailTab } from "./tabs/CandidateEmailTab";
 import { Application, Job } from "@/types";
 
 interface CandidateDetailContentProps {
@@ -91,7 +93,7 @@ export const CandidateDetailContent = ({
   return (
     <div className="relative">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="skills" disabled={!hasSkillsAssessment}>
             Skills {!hasSkillsAssessment && "(None)"}
@@ -102,6 +104,7 @@ export const CandidateDetailContent = ({
           <TabsTrigger value="resume" disabled={!hasResume}>
             Resume {!hasResume && "(None)"}
           </TabsTrigger>
+          <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
@@ -133,6 +136,13 @@ export const CandidateDetailContent = ({
         <TabsContent value="resume" className="space-y-6">
           <CandidateResumeTab 
             application={application}
+          />
+        </TabsContent>
+
+        <TabsContent value="email" className="space-y-6">
+          <CandidateEmailTab 
+            application={application}
+            job={job}
           />
         </TabsContent>
 

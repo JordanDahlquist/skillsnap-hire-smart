@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -118,7 +117,7 @@ export const useInboxData = () => {
     }
   });
 
-  // Send reply mutation without attachment support
+  // Enhanced send reply mutation with better error handling
   const sendReplyMutation = useMutation({
     mutationFn: async ({ 
       threadId, 
