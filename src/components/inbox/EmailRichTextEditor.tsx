@@ -1,3 +1,4 @@
+
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,9 @@ export const EmailRichTextEditor = ({
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
   const [savedRange, setSavedRange] = useState<Range | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [lastValue, setLastValue] = useState('');
+  const isUserTypingRef = useRef(false);
 
   const handleCommand = useCallback((command: string, value?: string) => {
     if (disabled) return;
@@ -46,8 +50,21 @@ export const EmailRichTextEditor = ({
   const handleList = () => handleCommand('insertUnorderedList');
 
   const handleVariableClick = (variableName: string) => {
-    if (disabled) return;
-    onChange(value + ` ${variableName}`);
+    if (disabled || !editorRef.current) return;
+    
+    editorRef.current.focus();
+    const selection = window.getSelection();
+    if (selection) {
+      const range = selection.getRangeAt(0);
+      const textNode = document.createTextNode(` ${variableName}`);
+      range.insertNode(textNode);
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      
+      onChange(editorRef.current.innerHTML);
+    }
   };
 
   const saveSelection = () => {
@@ -139,11 +156,19 @@ export const EmailRichTextEditor = ({
     setSavedRange(null);
   };
 
-  const handleInput = () => {
+  const handleInput = useCallback(() => {
     if (editorRef.current && !disabled) {
-      onChange(editorRef.current.innerHTML);
+      isUserTypingRef.current = true;
+      const newValue = editorRef.current.innerHTML;
+      setLastValue(newValue);
+      onChange(newValue);
+      
+      // Reset the typing flag after a short delay
+      setTimeout(() => {
+        isUserTypingRef.current = false;
+      }, 100);
     }
-  };
+  }, [onChange, disabled]);
 
   const convertToHtml = (text: string) => {
     return text
@@ -163,12 +188,51 @@ export const EmailRichTextEditor = ({
     }
   };
 
+  // Only update innerHTML when value changes from outside (not from user typing)
   useEffect(() => {
-    if (editorRef.current && value) {
+    if (editorRef.current && value !== lastValue && !isUserTypingRef.current) {
+      const htmlContent = value.startsWith('<') ? value : convertToHtml(value);
+      
+      // Save cursor position if editor is focused
+      const selection = window.getSelection();
+      const isEditorFocused = document.activeElement === editorRef.current;
+      let cursorPosition = 0;
+      
+      if (isEditorFocused && selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        cursorPosition = range.startOffset;
+      }
+      
+      editorRef.current.innerHTML = htmlContent;
+      setLastValue(value);
+      
+      // Restore cursor position if editor was focused
+      if (isEditorFocused && selection) {
+        try {
+          const range = document.createRange();
+          const textNode = editorRef.current.firstChild;
+          if (textNode) {
+            range.setStart(textNode, Math.min(cursorPosition, textNode.textContent?.length || 0));
+            range.setEnd(textNode, Math.min(cursorPosition, textNode.textContent?.length || 0));
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        } catch (error) {
+          // Cursor restoration failed, but that's okay
+        }
+      }
+    }
+  }, [value, lastValue]);
+
+  // Initialize the editor content only once
+  useEffect(() => {
+    if (editorRef.current && !isInitialized && value) {
       const htmlContent = value.startsWith('<') ? value : convertToHtml(value);
       editorRef.current.innerHTML = htmlContent;
+      setLastValue(value);
+      setIsInitialized(true);
     }
-  }, [value]);
+  }, [value, isInitialized]);
 
   useEffect(() => {
     const styleElement = document.createElement('style');
@@ -291,6 +355,7 @@ export const EmailRichTextEditor = ({
               lineHeight: '1.4'
             }}
             data-placeholder={placeholder}
+            suppressContentEditableWarning={true}
           />
         </ScrollArea>
       </div>
