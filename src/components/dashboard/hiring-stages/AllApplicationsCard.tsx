@@ -22,19 +22,19 @@ export const AllApplicationsCard = ({
           : 'hover:scale-102 hover:shadow-md'
       }`}
     >
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-3">
+      <div className="p-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${
               selectedStage === null ? 'bg-primary' : 'bg-muted-foreground/60'
             } transition-colors duration-200`}></div>
-            <h3 className={`font-semibold text-sm ${
+            <h3 className={`font-semibold text-xs ${
               selectedStage === null ? 'text-primary' : 'text-foreground/80'
             } transition-colors duration-200`}>
               All Applications
             </h3>
           </div>
-          <Users className={`w-4 h-4 ${
+          <Users className={`w-3 h-3 ${
             selectedStage === null ? 'text-primary' : 'text-muted-foreground'
           } transition-colors duration-200`} />
         </div>
@@ -42,7 +42,7 @@ export const AllApplicationsCard = ({
         <div className="flex items-center justify-between">
           <Badge 
             variant={selectedStage === null ? "default" : "secondary"}
-            className={`text-lg font-bold px-3 py-1 transition-all duration-200 ${
+            className={`text-base font-bold px-2 py-0.5 transition-all duration-200 ${
               selectedStage === null 
                 ? 'bg-primary text-primary-foreground' 
                 : 'bg-secondary text-secondary-foreground'

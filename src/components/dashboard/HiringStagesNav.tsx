@@ -37,11 +37,11 @@ export const HiringStagesNav = ({
   }
 
   return (
-    <div className="p-6 py-[17px]">
+    <div className="p-4 py-3">
       <div 
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-auto-fit gap-4" 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-auto-fit gap-2" 
         style={{
-          gridTemplateColumns: `repeat(${stages.length + 1}, minmax(200px, 1fr))`
+          gridTemplateColumns: `repeat(${stages.length + 1}, minmax(150px, 1fr))`
         }}
       >
         {/* All Applications Card */}
