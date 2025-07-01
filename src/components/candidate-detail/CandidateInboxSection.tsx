@@ -1,12 +1,10 @@
-
-
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
 import { ConversationContainer } from '@/components/inbox/ConversationContainer';
 import { EmailRichTextEditor } from '@/components/inbox/EmailRichTextEditor';
 import { Button } from '@/components/ui/button';
-import { Send, Mail } from 'lucide-react';
+import { Send, Mail, User, Briefcase, AtSign, Building } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import type { Application, Job } from '@/types';
 
@@ -37,6 +35,30 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
     if (!candidateThread) return [];
     return messages.filter(message => message.thread_id === candidateThread.id);
   }, [messages, candidateThread]);
+
+  // Create variables for the email editor
+  const emailVariables = useMemo(() => [
+    {
+      name: '{candidateName}',
+      icon: User,
+      description: `Insert candidate name: ${application.name}`
+    },
+    {
+      name: '{jobTitle}',
+      icon: Briefcase,
+      description: `Insert job title: ${job.title}`
+    },
+    {
+      name: '{candidateEmail}',
+      icon: AtSign,
+      description: `Insert candidate email: ${application.email}`
+    },
+    {
+      name: '{companyName}',
+      icon: Building,
+      description: `Insert company name: ${job.company_name || 'Company'}`
+    }
+  ], [application.name, application.email, job.title, job.company_name]);
 
   const handleSendReply = async () => {
     if (!replyContent.trim() || !candidateThread) {
@@ -114,6 +136,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
               value={replyContent}
               onChange={setReplyContent}
               placeholder={`Send a message to ${application.name}...`}
+              variables={emailVariables}
             />
             
             <div className="flex justify-end">
@@ -133,4 +156,3 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
     </div>
   );
 };
-
