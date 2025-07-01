@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
@@ -70,7 +71,10 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-center h-64">
-            <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+            <div className="text-center">
+              <div className="w-6 h-6 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              <p className="text-sm text-muted-foreground">Loading messages...</p>
+            </div>
           </div>
         </CardContent>
       </Card>
