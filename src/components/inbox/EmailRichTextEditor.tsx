@@ -1,11 +1,9 @@
 
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bold, Italic, Link, List } from 'lucide-react';
+import { InlineLinkPopover } from './InlineLinkPopover';
 
 interface Variable {
   name: string;
@@ -29,9 +27,8 @@ export const EmailRichTextEditor = ({
   variables = []
 }: EmailRichTextEditorProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [showLinkDialog, setShowLinkDialog] = useState(false);
-  const [linkUrl, setLinkUrl] = useState('');
-  const [linkText, setLinkText] = useState('');
+  const [showLinkPopover, setShowLinkPopover] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
   const [savedRange, setSavedRange] = useState<Range | null>(null);
   const currentContentRef = useRef<string>('');
 
@@ -98,17 +95,17 @@ export const EmailRichTextEditor = ({
     if (selection && selection.rangeCount > 0) {
       const range = saveSelection();
       if (range && !range.collapsed) {
-        setLinkText(range.toString());
+        setSelectedText(range.toString());
       } else {
-        setLinkText('');
+        setSelectedText('');
       }
     }
     
-    setShowLinkDialog(true);
+    setShowLinkPopover(true);
   };
 
-  const insertLink = () => {
-    if (!linkUrl || !editorRef.current || disabled) return;
+  const handleInsertLink = (url: string, text?: string) => {
+    if (!url || !editorRef.current || disabled) return;
 
     editorRef.current.focus();
     restoreSelection();
@@ -118,8 +115,8 @@ export const EmailRichTextEditor = ({
       selection.removeAllRanges();
       selection.addRange(savedRange);
 
-      const finalLinkText = linkText || linkUrl;
-      const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${finalLinkText}</a>`;
+      const finalLinkText = text || selectedText || url;
+      const linkHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer">${finalLinkText}</a>`;
 
       if (savedRange.collapsed) {
         const linkElement = document.createElement('div');
@@ -153,9 +150,6 @@ export const EmailRichTextEditor = ({
       onChange(newContent);
     }
 
-    setShowLinkDialog(false);
-    setLinkUrl('');
-    setLinkText('');
     setSavedRange(null);
   };
 
@@ -173,16 +167,6 @@ export const EmailRichTextEditor = ({
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
       .replace(/\n/g, '<br>');
-  };
-
-  const handleDialogClose = () => {
-    setShowLinkDialog(false);
-    setLinkUrl('');
-    setLinkText('');
-    setSavedRange(null);
-    if (editorRef.current && !disabled) {
-      editorRef.current.focus();
-    }
   };
 
   // Only update innerHTML when content changes from outside (different thread/value)
@@ -252,17 +236,27 @@ export const EmailRichTextEditor = ({
           >
             <Italic className="w-3 h-3" />
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleLinkClick}
-            disabled={disabled}
-            className="h-6 w-6 p-0"
-            title="Add Link"
+          
+          {/* Link button with popover */}
+          <InlineLinkPopover
+            open={showLinkPopover}
+            onOpenChange={setShowLinkPopover}
+            onInsertLink={handleInsertLink}
+            selectedText={selectedText}
           >
-            <Link className="w-3 h-3" />
-          </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleLinkClick}
+              disabled={disabled}
+              className="h-6 w-6 p-0"
+              title="Add Link"
+            >
+              <Link className="w-3 h-3" />
+            </Button>
+          </InlineLinkPopover>
+
           <Button
             type="button"
             variant="ghost"
@@ -319,44 +313,6 @@ export const EmailRichTextEditor = ({
           />
         </ScrollArea>
       </div>
-
-      {/* Link Dialog */}
-      <Dialog open={showLinkDialog} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Link</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="linkText">Link Text</Label>
-              <Input
-                id="linkText"
-                value={linkText}
-                onChange={(e) => setLinkText(e.target.value)}
-                placeholder="Enter link text"
-              />
-            </div>
-            <div>
-              <Label htmlFor="linkUrl">URL</Label>
-              <Input
-                id="linkUrl"
-                value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
-                placeholder="https://example.com"
-                autoFocus
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleDialogClose}>
-              Cancel
-            </Button>
-            <Button onClick={insertLink} disabled={!linkUrl}>
-              Add Link
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
