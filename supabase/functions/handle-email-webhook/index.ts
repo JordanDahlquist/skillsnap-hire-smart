@@ -179,14 +179,14 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Enhanced duplicate detection
-    const contentHash = generateContentHash(emailData.text || emailData.html, emailData.from, emailData.subject);
-    
-    // Check for duplicates using multiple criteria
+    // Enhanced duplicate detection with better logging
+    console.log('Checking for duplicate messages...');
     const { data: existingMessage, error: duplicateCheckError } = await supabase
       .from('email_messages')
-      .select('id')
-      .or(`external_message_id.eq.${emailData.message_id},and(sender_email.eq.${emailData.from},subject.eq.${emailData.subject},created_at.gte.${new Date(Date.now() - 5 * 60 * 1000).toISOString()})`)
+      .select('id, sender_email, subject, created_at')
+      .eq('sender_email', emailData.from)
+      .eq('subject', emailData.subject)
+      .gte('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString()) // Within last 10 minutes
       .maybeSingle();
 
     if (duplicateCheckError) {
@@ -194,7 +194,11 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (existingMessage) {
-      console.log('Duplicate message detected, ignoring:', emailData.message_id);
+      console.log('Duplicate message detected, ignoring:', {
+        existingId: existingMessage.id,
+        existingCreatedAt: existingMessage.created_at,
+        newMessageId: emailData.message_id
+      });
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -337,7 +341,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Clean the email content before storing
     const cleanedContent = cleanEmailContent(emailData.text || emailData.html || '');
 
-    // Insert the new message
+    // Insert the new message - CRITICAL FIX: Mark as is_read: false for inbound messages
     console.log('Inserting new message for thread:', threadId);
     const { error: messageError } = await supabase
       .from('email_messages')
@@ -349,7 +353,7 @@ const handler = async (req: Request): Promise<Response> => {
         content: cleanedContent,
         direction: 'inbound',
         message_type: 'reply',
-        is_read: false,
+        is_read: false, // FIXED: Mark as unread for inbound messages
         external_message_id: emailData.message_id || null
       });
 
@@ -358,42 +362,38 @@ const handler = async (req: Request): Promise<Response> => {
       throw messageError;
     }
 
-    // Update thread with direct SQL increment (no RPC calls)
+    // Update thread with proper unread count increment - FIXED: Remove failing supabase.raw()
     console.log('Updating thread last message time and unread count');
+    
+    // First get the current unread count
+    const { data: currentThread, error: getCurrentError } = await supabase
+      .from('email_threads')
+      .select('unread_count')
+      .eq('id', threadId)
+      .single();
+
+    if (getCurrentError) {
+      console.error('Failed to get current thread:', getCurrentError);
+      throw getCurrentError;
+    }
+
+    const newUnreadCount = (currentThread?.unread_count || 0) + 1;
+    console.log('Incrementing unread count from', currentThread?.unread_count, 'to', newUnreadCount);
+
+    // Update with the new unread count
     const { error: updateError } = await supabase
       .from('email_threads')
       .update({
         last_message_at: new Date().toISOString(),
-        unread_count: supabase.raw('COALESCE(unread_count, 0) + 1')
+        unread_count: newUnreadCount
       })
       .eq('id', threadId);
 
-    // If raw SQL doesn't work, fall back to manual increment
     if (updateError) {
-      console.log('Raw SQL failed, using manual increment approach');
-      const { data: currentThread } = await supabase
-        .from('email_threads')
-        .select('unread_count')
-        .eq('id', threadId)
-        .maybeSingle();
-
-      const newUnreadCount = (currentThread?.unread_count || 0) + 1;
-
-      const { error: directUpdateError } = await supabase
-        .from('email_threads')
-        .update({
-          last_message_at: new Date().toISOString(),
-          unread_count: newUnreadCount
-        })
-        .eq('id', threadId);
-
-      if (directUpdateError) {
-        console.error('Failed to update thread:', directUpdateError);
-      } else {
-        console.log('Thread updated successfully with manual increment');
-      }
+      console.error('Failed to update thread:', updateError);
+      throw updateError;
     } else {
-      console.log('Thread updated successfully with raw SQL increment');
+      console.log('Thread updated successfully with unread count:', newUnreadCount);
     }
 
     console.log('Successfully processed incoming email for thread:', threadId);
@@ -402,6 +402,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         thread_id: threadId,
+        unread_count: newUnreadCount,
         message: 'Email processed successfully'
       }),
       {
