@@ -70,7 +70,7 @@ export const StageCard = ({
             </Badge>
             
             <div className="text-xs text-muted-foreground font-medium">
-              {count === 1 ? 'App' : 'Apps'}
+              {count === 1 ? 'Application' : 'Applications'}
             </div>
           </div>
         </div>
