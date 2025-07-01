@@ -57,6 +57,56 @@ interface IncomingEmail {
   message_id?: string;
 }
 
+// Simple content cleaning function for webhook use
+const cleanEmailContent = (content: string): string => {
+  if (!content) return '';
+
+  let cleanedContent = content;
+
+  // Remove common email headers and metadata
+  cleanedContent = cleanedContent.replace(/^(From|To|Subject|Date|Sent|Reply-To|Cc|Bcc):.*$/gm, '');
+  
+  // Remove "On [date] at [time], [sender] wrote:" patterns
+  cleanedContent = cleanedContent.replace(/On .+? at .+?, .+? wrote:/g, '');
+  cleanedContent = cleanedContent.replace(/On .+?, .+? wrote:/g, '');
+  cleanedContent = cleanedContent.replace(/\d{1,2}\/\d{1,2}\/\d{4}.*?wrote:/g, '');
+  
+  // Remove email signatures
+  cleanedContent = cleanedContent.replace(/--\s*\n[\s\S]*$/m, '');
+  cleanedContent = cleanedContent.replace(/Best regards?,?\s*\n[\s\S]*$/mi, '');
+  cleanedContent = cleanedContent.replace(/Sincerely,?\s*\n[\s\S]*$/mi, '');
+  cleanedContent = cleanedContent.replace(/Thanks?,?\s*\n[\s\S]*$/mi, '');
+  
+  // Remove Superhuman signatures
+  cleanedContent = cleanedContent.replace(/Sent via Superhuman.*$/mi, '');
+  cleanedContent = cleanedContent.replace(/https:\/\/sprh\.mn\/.*$/gm, '');
+  
+  // Remove mobile signatures
+  cleanedContent = cleanedContent.replace(/Sent from my iPhone.*$/mi, '');
+  cleanedContent = cleanedContent.replace(/Sent from my Android.*$/mi, '');
+  cleanedContent = cleanedContent.replace(/Get Outlook for.*$/mi, '');
+  
+  // Remove quoted text markers
+  cleanedContent = cleanedContent.replace(/^>\s?/gm, '');
+  cleanedContent = cleanedContent.replace(/^>+.*$/gm, '');
+  
+  // Remove forwarded message indicators
+  cleanedContent = cleanedContent.replace(/---------- Forwarded message ---------/g, '');
+  cleanedContent = cleanedContent.replace(/----- Original Message -----/g, '');
+  
+  // Remove excessive whitespace
+  cleanedContent = cleanedContent.replace(/\n\s*\n\s*\n+/g, '\n\n');
+  cleanedContent = cleanedContent.replace(/^\s+|\s+$/g, '');
+  
+  return cleanedContent.trim();
+};
+
+// Generate content hash for duplicate detection
+const generateContentHash = (content: string, from: string, subject: string): string => {
+  const normalized = `${from}-${subject}-${content.substring(0, 100)}`.toLowerCase().replace(/\s+/g, '');
+  return btoa(normalized).substring(0, 32);
+};
+
 const handler = async (req: Request): Promise<Response> => {
   console.log('=== Email Webhook Called ===');
   console.log('Request method:', req.method);
@@ -129,12 +179,19 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Check for duplicate messages first
+    // Enhanced duplicate detection
+    const contentHash = generateContentHash(emailData.text || emailData.html, emailData.from, emailData.subject);
+    
+    // Check for duplicates using multiple criteria
     const { data: existingMessage, error: duplicateCheckError } = await supabase
       .from('email_messages')
       .select('id')
-      .eq('external_message_id', emailData.message_id)
-      .single();
+      .or(`external_message_id.eq.${emailData.message_id},and(sender_email.eq.${emailData.from},subject.eq.${emailData.subject},created_at.gte.${new Date(Date.now() - 5 * 60 * 1000).toISOString()})`)
+      .maybeSingle();
+
+    if (duplicateCheckError) {
+      console.error('Error checking for duplicates:', duplicateCheckError);
+    }
 
     if (existingMessage) {
       console.log('Duplicate message detected, ignoring:', emailData.message_id);
@@ -157,7 +214,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('profiles')
       .select('id, user_id: id')
       .eq('unique_email', emailData.to)
-      .single();
+      .maybeSingle();
 
     if (profileError || !profileData) {
       console.error('No user found for email:', emailData.to, profileError);
@@ -176,19 +233,30 @@ const handler = async (req: Request): Promise<Response> => {
     const userId = profileData.id;
     console.log('Found user for email:', userId);
 
-    // Extract thread information from subject or references
     let threadId: string | null = null;
     
-    // Try to extract thread ID from subject (if it contains a thread identifier)
+    // Try to extract thread ID from subject
     const threadMatch = emailData.subject.match(/\[Thread:([^\]]+)\]/);
     if (threadMatch) {
       threadId = threadMatch[1];
       console.log('Found thread ID in subject:', threadId);
+      
+      // Verify the thread belongs to this user
+      const { data: threadData, error: threadError } = await supabase
+        .from('email_threads')
+        .select('user_id')
+        .eq('id', threadId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (threadError || !threadData) {
+        console.error('Thread not found or does not belong to user:', threadId, userId);
+        threadId = null;
+      }
     }
 
     // If no thread ID found, try to find existing thread by subject and participants
     if (!threadId) {
-      // Remove "Re:" prefixes and normalize subject
       const normalizedSubject = emailData.subject
         .replace(/^(Re:|RE:|Fwd:|FWD:)\s*/gi, '')
         .replace(/\[Thread:[^\]]+\]/g, '')
@@ -196,7 +264,6 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log('Searching for thread with normalized subject:', normalizedSubject);
 
-      // Find thread by subject and check if sender is a participant
       const { data: existingThreads, error: searchError } = await supabase
         .from('email_threads')
         .select('id, user_id, participants')
@@ -210,7 +277,6 @@ const handler = async (req: Request): Promise<Response> => {
       } else if (existingThreads && existingThreads.length > 0) {
         console.log(`Found ${existingThreads.length} potential matching threads`);
         
-        // Find a thread where the sender is a participant
         for (const thread of existingThreads) {
           const participants = Array.isArray(thread.participants) 
             ? thread.participants 
@@ -225,26 +291,12 @@ const handler = async (req: Request): Promise<Response> => {
           }
         }
       }
-    } else {
-      // Verify the thread belongs to this user
-      const { data: threadData, error: threadError } = await supabase
-        .from('email_threads')
-        .select('user_id')
-        .eq('id', threadId)
-        .eq('user_id', userId)
-        .single();
-
-      if (threadError || !threadData) {
-        console.error('Thread not found or does not belong to user:', threadId, userId);
-        threadId = null;
-      }
     }
 
     // If still no thread found, create a new one
     if (!threadId) {
       console.log('No existing thread found, creating new thread');
       
-      // Create new thread
       const { data: newThread, error: createError } = await supabase
         .from('email_threads')
         .insert({
@@ -282,6 +334,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Clean the email content before storing
+    const cleanedContent = cleanEmailContent(emailData.text || emailData.html || '');
+
     // Insert the new message
     console.log('Inserting new message for thread:', threadId);
     const { error: messageError } = await supabase
@@ -291,7 +346,7 @@ const handler = async (req: Request): Promise<Response> => {
         sender_email: emailData.from,
         recipient_email: emailData.to,
         subject: emailData.subject,
-        content: emailData.text || emailData.html,
+        content: cleanedContent,
         direction: 'inbound',
         message_type: 'reply',
         is_read: false,
@@ -303,23 +358,24 @@ const handler = async (req: Request): Promise<Response> => {
       throw messageError;
     }
 
-    // Update thread last message time and increment unread count using proper SQL
+    // Update thread with direct SQL increment (no RPC calls)
+    console.log('Updating thread last message time and unread count');
     const { error: updateError } = await supabase
       .from('email_threads')
       .update({
         last_message_at: new Date().toISOString(),
-        unread_count: supabase.rpc('increment_unread_count', { thread_id: threadId })
+        unread_count: supabase.raw('COALESCE(unread_count, 0) + 1')
       })
       .eq('id', threadId);
 
-    // If RPC doesn't work, use a direct update with a subquery
+    // If raw SQL doesn't work, fall back to manual increment
     if (updateError) {
-      console.log('RPC failed, using direct update approach');
+      console.log('Raw SQL failed, using manual increment approach');
       const { data: currentThread } = await supabase
         .from('email_threads')
         .select('unread_count')
         .eq('id', threadId)
-        .single();
+        .maybeSingle();
 
       const newUnreadCount = (currentThread?.unread_count || 0) + 1;
 
@@ -333,7 +389,11 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (directUpdateError) {
         console.error('Failed to update thread:', directUpdateError);
+      } else {
+        console.log('Thread updated successfully with manual increment');
       }
+    } else {
+      console.log('Thread updated successfully with raw SQL increment');
     }
 
     console.log('Successfully processed incoming email for thread:', threadId);

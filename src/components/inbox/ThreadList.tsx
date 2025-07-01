@@ -2,12 +2,15 @@
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { processTemplateVariables } from "@/utils/templateProcessor";
-import { extractMessagePreview } from "@/utils/emailContentCleaner";
+import { extractSenderName } from "@/utils/emailSenderUtils";
 import type { EmailThread } from "@/types/inbox";
 
+interface ProcessedThread extends EmailThread {
+  processedSubject: string;
+}
+
 interface ThreadListProps {
-  threads: EmailThread[];
+  threads: ProcessedThread[];
   selectedThreadId: string | null;
   onSelectThread: (threadId: string) => void;
   onMarkAsRead: (threadId: string) => void;
@@ -28,7 +31,7 @@ export const ThreadList = ({
     );
   }
 
-  const handleThreadClick = (thread: EmailThread) => {
+  const handleThreadClick = (thread: ProcessedThread) => {
     onSelectThread(thread.id);
     
     if (thread.unread_count > 0) {
@@ -39,8 +42,8 @@ export const ThreadList = ({
   return (
     <div className="divide-y divide-gray-200">
       {threads.map((thread) => {
-        // Process template variables in subject
-        const cleanSubject = processTemplateVariables(thread.subject);
+        // Use processed subject or fall back to original
+        const displaySubject = thread.processedSubject || thread.subject;
         
         // Get participant names (excluding current user's email)
         const participants = Array.isArray(thread.participants) 
@@ -52,12 +55,7 @@ export const ThreadList = ({
 
         const participantDisplay = participants.length > 0 
           ? participants.map(email => {
-              // Extract name from email if possible
-              const nameMatch = email.match(/^(.+?)\s*<.+>$/);
-              if (nameMatch) {
-                return nameMatch[1].replace(/['"]/g, '').trim();
-              }
-              return email.split('@')[0].replace(/[._-]/g, ' ');
+              return extractSenderName(email);
             }).join(', ')
           : 'No participants';
 
@@ -80,7 +78,7 @@ export const ThreadList = ({
                   ? "font-semibold text-gray-900" 
                   : "font-medium text-gray-700"
               )}>
-                {cleanSubject || 'No Subject'}
+                {displaySubject || 'No Subject'}
               </h3>
               {thread.unread_count > 0 && (
                 <Badge variant="destructive" className="text-xs flex-shrink-0 ml-2">
