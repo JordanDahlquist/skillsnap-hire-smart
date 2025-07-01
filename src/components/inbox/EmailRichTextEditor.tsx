@@ -1,4 +1,3 @@
-
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,6 +29,7 @@ export const EmailRichTextEditor = ({
   const [showLinkPopover, setShowLinkPopover] = useState(false);
   const [selectedText, setSelectedText] = useState('');
   const [savedRange, setSavedRange] = useState<Range | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
   const currentContentRef = useRef<string>('');
 
   const handleCommand = useCallback((command: string, commandValue?: string) => {
@@ -161,6 +161,14 @@ export const EmailRichTextEditor = ({
     }
   }, [onChange, disabled]);
 
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
+
   const convertToHtml = (text: string) => {
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -209,7 +217,7 @@ export const EmailRichTextEditor = ({
   }, []);
 
   return (
-    <div className="email-rich-text-editor h-full flex flex-col">
+    <div className="email-rich-text-editor h-full flex flex-col border rounded-lg overflow-hidden bg-white shadow-sm">
       {/* Compact Toolbar with Variables */}
       <div className="flex-shrink-0 border-b bg-gray-50/50 p-1">
         <div className="flex items-center gap-1">
@@ -293,20 +301,31 @@ export const EmailRichTextEditor = ({
         </div>
       </div>
 
-      {/* Editor Content with Internal Scrolling */}
+      {/* Enhanced Editor Content with Internal Scrolling */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full w-full">
           <div
             ref={editorRef}
             contentEditable={!disabled}
             onInput={handleInput}
-            className={`w-full p-2 min-h-full focus:outline-none text-xs ${
-              disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'bg-white'
-            }`}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            className={`
+              w-full p-4 min-h-full focus:outline-none text-sm cursor-text
+              transition-all duration-200 ease-in-out
+              ${disabled 
+                ? 'bg-gray-50 text-gray-500 cursor-not-allowed' 
+                : isFocused 
+                  ? 'bg-blue-50/30 border-blue-200' 
+                  : 'bg-gray-50/30 hover:bg-blue-50/20'
+              }
+              ${!value && !disabled ? 'hover:bg-blue-50/30' : ''}
+            `}
             style={{ 
               wordWrap: 'break-word', 
               whiteSpace: 'pre-wrap',
-              lineHeight: '1.4'
+              lineHeight: '1.5',
+              minHeight: '120px'
             }}
             data-placeholder={placeholder}
             suppressContentEditableWarning={true}
