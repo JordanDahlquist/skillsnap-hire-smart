@@ -77,68 +77,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // 3. Find and remove duplicate messages by external_message_id
-    console.log('Finding and removing duplicate messages...');
-    const { data: duplicateGroups, error: duplicateError } = await supabase
-      .from('email_messages')
-      .select('external_message_id, id, created_at')
-      .eq('direction', 'inbound')
-      .not('external_message_id', 'is', null)
-      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false });
-
-    if (duplicateError) {
-      console.error('Error finding duplicates:', duplicateError);
-    } else {
-      // Group messages by external_message_id
-      const messageGroups = new Map();
-      
-      for (const message of duplicateGroups || []) {
-        const key = message.external_message_id;
-        if (!messageGroups.has(key)) {
-          messageGroups.set(key, []);
-        }
-        messageGroups.get(key).push(message);
-      }
-
-      // Find groups with duplicates and remove older ones
-      let removedDuplicates = 0;
-      for (const [key, messages] of messageGroups) {
-        if (messages.length > 1) {
-          // Keep the latest message, remove the others
-          const sortedMessages = messages.sort((a: any, b: any) => 
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-          
-          const toRemove = sortedMessages.slice(1); // Remove all but the first (latest)
-          
-          for (const message of toRemove) {
-            const { error: deleteError } = await supabase
-              .from('email_messages')
-              .delete()
-              .eq('id', message.id);
-            
-            if (deleteError) {
-              console.error('Error deleting duplicate message:', deleteError);
-            } else {
-              removedDuplicates++;
-              console.log('Removed duplicate message:', message.id);
-            }
-          }
-        }
-      }
-      
-      console.log('Removed', removedDuplicates, 'duplicate messages');
-    }
-
     return new Response(
       JSON.stringify({ 
         success: true,
         message: 'Inbox cleanup completed',
         stats: {
           fixedMessages: fixedMessages?.length || 0,
-          updatedThreads,
-          removedDuplicates: 0 // This would be updated in the actual cleanup above
+          updatedThreads
         }
       }),
       {
