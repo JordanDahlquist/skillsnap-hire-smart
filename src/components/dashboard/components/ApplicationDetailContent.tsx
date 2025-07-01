@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,7 @@ export const ApplicationDetailContent = ({
   const interviewTranscripts = safeParseVideoTranscripts(application.interview_video_transcripts || []);
 
   const handleViewFullProfile = () => {
-    navigate(`/candidate/${application.id}`);
+    navigate(`/jobs/${jobId}/candidate/${application.id}`);
   };
 
   // Get transcript processing status display
