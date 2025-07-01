@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -159,11 +158,10 @@ export const ApplicationDetailContent = ({
               </Button>
             ) : (
               <Button 
-                variant="destructive"
                 size="sm"
                 onClick={onReject}
                 disabled={isUpdating}
-                className="h-9 px-4"
+                className="bg-red-600 hover:bg-red-700 text-white h-9 px-4"
               >
                 <ThumbsDown className="w-4 h-4 mr-2" />
                 Reject
