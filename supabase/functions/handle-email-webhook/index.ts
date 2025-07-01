@@ -105,6 +105,7 @@ const handler = async (req: Request): Promise<Response> => {
   console.log('=== Email Webhook Called ===');
   console.log('Request method:', req.method);
   console.log('Request URL:', req.url);
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
 
   if (req.method === "OPTIONS") {
     console.log('Handling CORS preflight request');
@@ -113,15 +114,17 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const rawBody = await req.text();
-    console.log('Raw webhook body received');
+    console.log('Raw webhook body received:', rawBody.substring(0, 500) + '...');
     
     let webhookData: MailerSendWebhook;
     
     try {
       webhookData = JSON.parse(rawBody);
       console.log('Parsed webhook data type:', webhookData.type);
+      console.log('Webhook data keys:', Object.keys(webhookData));
     } catch (parseError) {
       console.error('Failed to parse webhook body as JSON:', parseError);
+      console.log('Raw body that failed to parse:', rawBody);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -136,7 +139,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Check if this is an inbound message webhook
     if (webhookData.type !== 'inbound.message' || !webhookData.data) {
-      console.log('Not an inbound message webhook, ignoring');
+      console.log('Not an inbound message webhook, ignoring. Type:', webhookData.type);
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -148,6 +151,11 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     }
+
+    console.log('Processing inbound message webhook...');
+    console.log('From:', webhookData.data.from.email);
+    console.log('To:', webhookData.data.recipients.to.data[0]?.email || webhookData.data.recipients.rcptTo[0]?.email);
+    console.log('Subject:', webhookData.data.subject);
 
     // Extract email data from MailerSend's nested structure
     const emailData: IncomingEmail = {
@@ -389,6 +397,8 @@ const handler = async (req: Request): Promise<Response> => {
       throw messageError;
     }
 
+    console.log('Successfully inserted inbound message as UNREAD');
+
     // FIXED: Update thread with proper unread count increment
     console.log('Updating thread last message time and incrementing unread count');
     
@@ -430,7 +440,7 @@ const handler = async (req: Request): Promise<Response> => {
         success: true, 
         thread_id: threadId,
         unread_count: newUnreadCount,
-        message: 'Email processed successfully'
+        message: 'Email processed successfully and marked as UNREAD'
       }),
       {
         status: 200,
