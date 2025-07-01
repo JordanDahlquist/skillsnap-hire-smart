@@ -5,7 +5,7 @@ import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
 import { ConversationContainer } from '@/components/inbox/ConversationContainer';
 import { EmailRichTextEditor } from '@/components/inbox/EmailRichTextEditor';
 import { Button } from '@/components/ui/button';
-import { Send, RefreshCw } from 'lucide-react';
+import { Send, RefreshCw, Mail } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import type { Application, Job } from '@/types';
 
@@ -108,7 +108,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
           {/* Reply Section */}
           <div className="p-4 space-y-3">
             <EmailRichTextEditor
-              content={replyContent}
+              value={replyContent}
               onChange={setReplyContent}
               placeholder={`Send a message to ${application.name}...`}
             />
