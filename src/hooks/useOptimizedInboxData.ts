@@ -1,10 +1,11 @@
-
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useOptimizedAuth } from './useOptimizedAuth';
 import { updateExistingEmailThreads } from '@/utils/updateEmailThreads';
+import { useTabVisibility } from './useTabVisibility';
+import { useUserActivity } from './useUserActivity';
 import type { EmailThread, EmailMessage } from '@/types/inbox';
 
 export const useOptimizedInboxData = () => {
@@ -13,6 +14,25 @@ export const useOptimizedInboxData = () => {
   const queryClient = useQueryClient();
   const subscriptionRef = useRef<any>(null);
   const [threadsUpdated, setThreadsUpdated] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  const [isAutoRefreshEnabled, setIsAutoRefreshEnabled] = useState(true);
+
+  // Tab visibility and user activity detection
+  const isTabVisible = useTabVisibility();
+  const isUserActive = useUserActivity(30000); // 30 seconds of inactivity
+
+  // Calculate refresh interval based on tab visibility and user activity
+  const refreshInterval = useMemo(() => {
+    if (!isAutoRefreshEnabled) return false;
+    
+    // Don't auto-refresh if user is actively typing or interacting
+    if (isUserActive && isTabVisible) {
+      return false; // Pause during active interaction
+    }
+    
+    // Active tab: 2 minutes, Background tab: 10 minutes
+    return isTabVisible ? 2 * 60 * 1000 : 10 * 60 * 1000;
+  }, [isTabVisible, isUserActive, isAutoRefreshEnabled]);
 
   // Auto-update existing threads on first load
   useEffect(() => {
@@ -23,12 +43,13 @@ export const useOptimizedInboxData = () => {
     }
   }, [user?.id, threadsUpdated]);
 
-  // Fetch email threads with stable caching
+  // Fetch email threads with auto-refresh
   const { 
     data: threads = [], 
     isLoading: threadsLoading, 
     error: threadsError,
-    refetch: refetchThreads 
+    refetch: refetchThreads,
+    isFetching: isThreadsFetching
   } = useQuery({
     queryKey: ['email-threads', user?.id],
     queryFn: async () => {
@@ -43,18 +64,22 @@ export const useOptimizedInboxData = () => {
 
       if (error) throw error;
       console.log('Fetched threads:', data);
+      setLastRefreshTime(new Date());
       return data as EmailThread[];
     },
     enabled: !!user?.id,
     staleTime: 30000,
     gcTime: 5 * 60 * 1000,
+    refetchInterval: refreshInterval,
+    refetchIntervalInBackground: true,
   });
 
-  // Fetch all messages with optimized caching
+  // Fetch all messages with auto-refresh
   const { 
     data: messages = [], 
     isLoading: messagesLoading,
-    error: messagesError 
+    error: messagesError,
+    isFetching: isMessagesFetching
   } = useQuery({
     queryKey: ['email-messages', user?.id],
     queryFn: async () => {
@@ -85,6 +110,8 @@ export const useOptimizedInboxData = () => {
     enabled: !!user?.id,
     staleTime: 15000,
     gcTime: 5 * 60 * 1000,
+    refetchInterval: refreshInterval,
+    refetchIntervalInBackground: true,
   });
 
   // Memoize stable threads to prevent unnecessary re-renders
@@ -260,15 +287,16 @@ export const useOptimizedInboxData = () => {
     }
   });
 
-  // Debounced refresh function
+  // Enhanced refresh function
   const handleRefresh = useCallback(async () => {
-    console.log('Refreshing inbox data...');
+    console.log('Manually refreshing inbox data...');
     try {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['email-threads'] }),
         queryClient.invalidateQueries({ queryKey: ['email-messages'] })
       ]);
       await refetchThreads();
+      setLastRefreshTime(new Date());
       toast({
         title: "Inbox refreshed",
         description: "Your messages have been updated",
@@ -282,6 +310,17 @@ export const useOptimizedInboxData = () => {
       });
     }
   }, [queryClient, refetchThreads, toast]);
+
+  // Toggle auto-refresh
+  const toggleAutoRefresh = useCallback(() => {
+    setIsAutoRefreshEnabled(prev => !prev);
+    toast({
+      title: isAutoRefreshEnabled ? "Auto-refresh disabled" : "Auto-refresh enabled",
+      description: isAutoRefreshEnabled 
+        ? "Inbox will no longer refresh automatically" 
+        : "Inbox will refresh automatically every few minutes",
+    });
+  }, [isAutoRefreshEnabled, toast]);
 
   // Optimized real-time subscription with targeted updates
   useEffect(() => {
@@ -385,6 +424,8 @@ export const useOptimizedInboxData = () => {
     await sendReplyMutation.mutateAsync({ threadId, content });
   };
 
+  const isAutoRefreshing = (isThreadsFetching || isMessagesFetching) && isAutoRefreshEnabled;
+
   return {
     threads: stableThreads,
     messages: stableMessages,
@@ -392,6 +433,12 @@ export const useOptimizedInboxData = () => {
     error: threadsError || messagesError,
     refetchThreads: handleRefresh,
     markThreadAsRead: markAsReadMutation.mutate,
-    sendReply
+    sendReply,
+    // Auto-refresh related returns
+    isAutoRefreshEnabled,
+    toggleAutoRefresh,
+    lastRefreshTime,
+    isAutoRefreshing,
+    isTabVisible,
   };
 };

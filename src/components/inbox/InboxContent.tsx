@@ -1,11 +1,12 @@
 
 import { useState } from "react";
-import { Search, RefreshCw, Mail } from "lucide-react";
+import { Search, RefreshCw, Mail, Clock, Settings } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ThreadList } from "./ThreadList";
 import type { EmailThread } from "@/types/inbox";
 
@@ -15,6 +16,11 @@ interface InboxContentProps {
   onSelectThread: (threadId: string) => void;
   onMarkAsRead: (threadId: string) => void;
   onRefresh: () => void;
+  isAutoRefreshEnabled?: boolean;
+  toggleAutoRefresh?: () => void;
+  lastRefreshTime?: Date;
+  isAutoRefreshing?: boolean;
+  isTabVisible?: boolean;
 }
 
 export const InboxContent = ({
@@ -22,7 +28,12 @@ export const InboxContent = ({
   selectedThreadId,
   onSelectThread,
   onMarkAsRead,
-  onRefresh
+  onRefresh,
+  isAutoRefreshEnabled = false,
+  toggleAutoRefresh,
+  lastRefreshTime,
+  isAutoRefreshing = false,
+  isTabVisible = true
 }: InboxContentProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -35,9 +46,24 @@ export const InboxContent = ({
 
   const totalUnread = threads.reduce((sum, thread) => sum + thread.unread_count, 0);
 
+  const formatLastRefreshTime = (time: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / 60000);
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes === 1) return '1 minute ago';
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours === 1) return '1 hour ago';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    
+    return time.toLocaleString();
+  };
+
   return (
     <Card className="h-full flex flex-col">
-      {/* Fixed Header with Search - Always Visible */}
+      {/* Fixed Header with Search and Controls - Always Visible */}
       <CardHeader className="pb-3 flex-shrink-0 border-b bg-background">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -47,14 +73,71 @@ export const InboxContent = ({
               <Badge variant="destructive">{totalUnread}</Badge>
             )}
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRefresh}
-            className="h-8 w-8 p-0"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </Button>
+          
+          <div className="flex items-center gap-2">
+            {/* Auto-refresh status indicator */}
+            {isAutoRefreshEnabled && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className={`w-3 h-3 ${isAutoRefreshing ? 'animate-spin' : ''}`} />
+                      <span className={`w-2 h-2 rounded-full ${isTabVisible ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs">
+                      <div>Auto-refresh: {isAutoRefreshEnabled ? 'On' : 'Off'}</div>
+                      <div>Status: {isTabVisible ? 'Active (2 min)' : 'Background (10 min)'}</div>
+                      {lastRefreshTime && (
+                        <div>Last refresh: {formatLastRefreshTime(lastRefreshTime)}</div>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
+            {/* Auto-refresh toggle */}
+            {toggleAutoRefresh && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleAutoRefresh}
+                      className={`h-8 w-8 p-0 ${isAutoRefreshEnabled ? 'text-green-600' : 'text-muted-foreground'}`}
+                    >
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isAutoRefreshEnabled ? 'Disable auto-refresh' : 'Enable auto-refresh'}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
+            {/* Manual refresh button */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onRefresh}
+                    className="h-8 w-8 p-0"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Refresh inbox manually
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
         
         {/* Search Bar - Always Visible */}
@@ -67,6 +150,19 @@ export const InboxContent = ({
             className="pl-10"
           />
         </div>
+
+        {/* Status bar */}
+        {lastRefreshTime && (
+          <div className="text-xs text-muted-foreground flex items-center justify-between">
+            <span>Last updated: {formatLastRefreshTime(lastRefreshTime)}</span>
+            {isAutoRefreshing && (
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                Refreshing...
+              </span>
+            )}
+          </div>
+        )}
       </CardHeader>
 
       {/* Scrollable Content Area - Independent Scrolling */}

@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useOptimizedInboxData } from "@/hooks/useOptimizedInboxData";
@@ -20,7 +19,12 @@ export const InboxPage = () => {
     error, 
     refetchThreads, 
     markThreadAsRead,
-    sendReply
+    sendReply,
+    isAutoRefreshEnabled,
+    toggleAutoRefresh,
+    lastRefreshTime,
+    isAutoRefreshing,
+    isTabVisible
   } = useOptimizedInboxData();
 
   // Process email subjects with optimized caching
@@ -85,6 +89,11 @@ export const InboxPage = () => {
                   onSelectThread={setSelectedThreadId}
                   onMarkAsRead={markThreadAsRead}
                   onRefresh={refetchThreads}
+                  isAutoRefreshEnabled={isAutoRefreshEnabled}
+                  toggleAutoRefresh={toggleAutoRefresh}
+                  lastRefreshTime={lastRefreshTime}
+                  isAutoRefreshing={isAutoRefreshing}
+                  isTabVisible={isTabVisible}
                 />
               </div>
 
