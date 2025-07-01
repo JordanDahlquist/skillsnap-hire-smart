@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -76,23 +77,24 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // 3. Find and remove duplicate messages (keep the latest one)
+    // 3. Find and remove duplicate messages by external_message_id
     console.log('Finding and removing duplicate messages...');
     const { data: duplicateGroups, error: duplicateError } = await supabase
       .from('email_messages')
-      .select('sender_email, subject, thread_id, id, created_at')
+      .select('external_message_id, id, created_at')
       .eq('direction', 'inbound')
+      .not('external_message_id', 'is', null)
       .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false });
 
     if (duplicateError) {
       console.error('Error finding duplicates:', duplicateError);
     } else {
-      // Group messages by sender + subject + thread
+      // Group messages by external_message_id
       const messageGroups = new Map();
       
       for (const message of duplicateGroups || []) {
-        const key = `${message.sender_email}-${message.subject}-${message.thread_id}`;
+        const key = message.external_message_id;
         if (!messageGroups.has(key)) {
           messageGroups.set(key, []);
         }
@@ -136,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
         stats: {
           fixedMessages: fixedMessages?.length || 0,
           updatedThreads,
-          removedDuplicates: 0 // This would be set in the actual cleanup above
+          removedDuplicates: 0 // This would be updated in the actual cleanup above
         }
       }),
       {

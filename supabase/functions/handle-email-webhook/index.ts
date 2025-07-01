@@ -101,12 +101,6 @@ const cleanEmailContent = (content: string): string => {
   return cleanedContent.trim();
 };
 
-// Generate content hash for duplicate detection
-const generateContentHash = (content: string, from: string, subject: string): string => {
-  const normalized = `${from}-${subject}-${content.substring(0, 100)}`.toLowerCase().replace(/\s+/g, '');
-  return btoa(normalized).substring(0, 32);
-};
-
 const handler = async (req: Request): Promise<Response> => {
   console.log('=== Email Webhook Called ===');
   console.log('Request method:', req.method);
@@ -179,14 +173,47 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Enhanced duplicate detection with better logging
-    console.log('Checking for duplicate messages...');
+    // IMPROVED duplicate detection - check by external_message_id first
+    console.log('Checking for duplicate messages by external_message_id...');
+    if (emailData.message_id) {
+      const { data: existingByMessageId, error: messageIdError } = await supabase
+        .from('email_messages')
+        .select('id, sender_email, subject, created_at')
+        .eq('external_message_id', emailData.message_id)
+        .maybeSingle();
+
+      if (messageIdError) {
+        console.error('Error checking for duplicates by message_id:', messageIdError);
+      }
+
+      if (existingByMessageId) {
+        console.log('Duplicate message detected by external_message_id, ignoring:', {
+          existingId: existingByMessageId.id,
+          existingCreatedAt: existingByMessageId.created_at,
+          duplicateMessageId: emailData.message_id
+        });
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Duplicate message ignored (by external_message_id)',
+            message_id: emailData.message_id
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+    }
+
+    // Secondary duplicate check by sender, subject, and time window
+    console.log('Performing secondary duplicate check...');
     const { data: existingMessage, error: duplicateCheckError } = await supabase
       .from('email_messages')
       .select('id, sender_email, subject, created_at')
       .eq('sender_email', emailData.from)
       .eq('subject', emailData.subject)
-      .gte('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString()) // Within last 10 minutes
+      .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Within last 5 minutes
       .maybeSingle();
 
     if (duplicateCheckError) {
@@ -194,7 +221,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (existingMessage) {
-      console.log('Duplicate message detected, ignoring:', {
+      console.log('Duplicate message detected by sender/subject/time, ignoring:', {
         existingId: existingMessage.id,
         existingCreatedAt: existingMessage.created_at,
         newMessageId: emailData.message_id
@@ -202,7 +229,7 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'Duplicate message ignored',
+          message: 'Duplicate message ignored (by sender/subject/time)',
           message_id: emailData.message_id
         }),
         {
@@ -341,8 +368,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Clean the email content before storing
     const cleanedContent = cleanEmailContent(emailData.text || emailData.html || '');
 
-    // Insert the new message - CRITICAL FIX: Mark as is_read: false for inbound messages
-    console.log('Inserting new message for thread:', threadId);
+    // CRITICAL FIX: Insert the new message with is_read: false for inbound messages
+    console.log('Inserting new inbound message for thread:', threadId);
     const { error: messageError } = await supabase
       .from('email_messages')
       .insert({
@@ -353,7 +380,7 @@ const handler = async (req: Request): Promise<Response> => {
         content: cleanedContent,
         direction: 'inbound',
         message_type: 'reply',
-        is_read: false, // FIXED: Mark as unread for inbound messages
+        is_read: false, // CRITICAL: Mark as unread for inbound messages
         external_message_id: emailData.message_id || null
       });
 
@@ -362,10 +389,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw messageError;
     }
 
-    // Update thread with proper unread count increment - FIXED: Remove failing supabase.raw()
-    console.log('Updating thread last message time and unread count');
+    // FIXED: Update thread with proper unread count increment
+    console.log('Updating thread last message time and incrementing unread count');
     
-    // First get the current unread count
+    // Get the current unread count and increment it
     const { data: currentThread, error: getCurrentError } = await supabase
       .from('email_threads')
       .select('unread_count')
