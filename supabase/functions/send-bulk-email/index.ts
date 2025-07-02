@@ -53,27 +53,40 @@ const formatEmailContent = (content: string): string => {
   return plainText;
 };
 
-// Helper function to create HTML version with proper formatting
+// Enhanced function to create HTML version with proper bullet formatting
 const createHtmlContent = (content: string): string => {
   if (!content) return '';
   
-  // If content already contains HTML, use it as is with additional formatting
-  if (content.includes('<') && content.includes('>')) {
-    return content
-      .replace(/\n/g, '<br>')
-      .replace(/^-\s*(.+)$/gm, '• $1')
-      .replace(/<br>-\s*(.+)/g, '<br>• $1')
-      .replace(/^\*\s*(.+)$/gm, '• $1')
-      .replace(/<br>\*\s*(.+)/g, '<br>• $1');
-  }
+  let htmlContent = content;
   
-  // Convert plain text to HTML with proper formatting
-  let htmlContent = content
-    .replace(/\n/g, '<br>')
-    .replace(/^-\s*(.+)$/gm, '• $1')
-    .replace(/<br>-\s*(.+)/g, '<br>• $1')
-    .replace(/^\*\s*(.+)$/gm, '• $1')
-    .replace(/<br>\*\s*(.+)/g, '<br>• $1');
+  // Handle HTML div tags with bullets (from rich text editor)
+  // Convert <div>-bullet</div> to <div>• bullet</div>
+  htmlContent = htmlContent.replace(/<div>-\s*([^<]+)<\/div>/gi, '<div>• $1</div>');
+  htmlContent = htmlContent.replace(/<div>\*\s*([^<]+)<\/div>/gi, '<div>• $1</div>');
+  
+  // Handle HTML p tags with bullets
+  htmlContent = htmlContent.replace(/<p>-\s*([^<]+)<\/p>/gi, '<p>• $1</p>');
+  htmlContent = htmlContent.replace(/<p>\*\s*([^<]+)<\/p>/gi, '<p>• $1</p>');
+  
+  // Handle line breaks followed by bullets
+  htmlContent = htmlContent.replace(/<br\s*\/?>\s*-\s*([^<\n]+)/gi, '<br>• $1');
+  htmlContent = htmlContent.replace(/<br\s*\/?>\s*\*\s*([^<\n]+)/gi, '<br>• $1');
+  
+  // Handle plain text bullets at start of content or after line breaks
+  htmlContent = htmlContent.replace(/^-\s*(.+)$/gm, '• $1');
+  htmlContent = htmlContent.replace(/\n-\s*(.+)/g, '\n• $1');
+  htmlContent = htmlContent.replace(/^-([^\s])(.*)$/gm, '• $1$2'); // Handle -bullet without space
+  htmlContent = htmlContent.replace(/\n-([^\s])(.*)$/gm, '\n• $1$2'); // Handle -bullet without space after newline
+  
+  htmlContent = htmlContent.replace(/^\*\s*(.+)$/gm, '• $1');
+  htmlContent = htmlContent.replace(/\n\*\s*(.+)/g, '\n• $1');
+  htmlContent = htmlContent.replace(/^\*([^\s])(.*)$/gm, '• $1$2'); // Handle *bullet without space
+  htmlContent = htmlContent.replace(/\n\*([^\s])(.*)$/gm, '\n• $1$2'); // Handle *bullet without space after newline
+  
+  // Convert line breaks to HTML breaks if not already HTML
+  if (!htmlContent.includes('<') || htmlContent.includes('\n')) {
+    htmlContent = htmlContent.replace(/\n/g, '<br>');
+  }
   
   return htmlContent;
 };
@@ -117,7 +130,8 @@ const handler = async (req: Request): Promise<Response> => {
       count: applications.length, 
       subject, 
       reply_to_email,
-      create_threads
+      create_threads,
+      content_preview: content?.substring(0, 100) + '...'
     });
 
     const results = [];
@@ -205,8 +219,13 @@ const handler = async (req: Request): Promise<Response> => {
           }
         }
 
-        // Format content for email sending
+        // Format content for email sending with enhanced bullet processing
         const formattedHtmlContent = createHtmlContent(processedContent);
+        
+        console.log('Content processing debug:', {
+          original: processedContent?.substring(0, 200),
+          formatted: formattedHtmlContent?.substring(0, 200)
+        });
         
         // Now attempt to send email via MailerSend API
         const emailPayload = {
