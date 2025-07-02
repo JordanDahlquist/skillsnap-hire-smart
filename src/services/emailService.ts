@@ -27,7 +27,6 @@ export const emailService = {
     console.log('=== EMAIL SERVICE: Creating email thread ===');
     console.log('Thread data:', data);
     
-    // Process the subject to replace template variables
     const processedSubject = await processEmailSubject(
       data.subject,
       data.applicationId,
@@ -73,7 +72,6 @@ export const emailService = {
     const user = await supabase.auth.getUser();
     if (!user.data.user) throw new Error('User not authenticated');
 
-    // Process the subject to replace template variables
     const processedSubject = await processEmailSubject(
       data.subject,
       data.applicationId,
@@ -83,12 +81,12 @@ export const emailService = {
 
     console.log('Processed email subject:', processedSubject);
 
-    // Create thread if it doesn't exist
+    // Create thread if it doesn't exist - CRITICAL: Link to application_id
     if (!threadId) {
-      console.log('No thread ID provided, creating new thread');
+      console.log('No thread ID provided, creating new thread with application link');
       threadId = await this.createEmailThread({
         userId: user.data.user.id,
-        applicationId: data.applicationId,
+        applicationId: data.applicationId, // CRITICAL: This ensures thread is linked to candidate
         jobId: data.jobId,
         subject: processedSubject,
         participants: [data.userUniqueEmail, data.recipientEmail],
@@ -104,7 +102,7 @@ export const emailService = {
       sender_email: data.userUniqueEmail,
       recipient_email: data.recipientEmail,
       subject: processedSubject,
-      content: data.content, // Keep HTML formatting
+      content: data.content,
       direction: 'outbound',
       message_type: 'original',
       is_read: true
@@ -132,11 +130,12 @@ export const emailService = {
       }],
       job: { title: 'Email' },
       subject: `${processedSubject} [Thread:${threadId}]`, // CRITICAL: Add thread tracking
-      content: data.content, // Send HTML content to edge function
+      content: data.content,
       reply_to_email: data.userUniqueEmail,
       thread_id: threadId,
-      application_id: data.applicationId, // Add application_id for better tracking
-      job_id: data.jobId // Add job_id for better tracking
+      application_id: data.applicationId, // CRITICAL: Pass application_id
+      job_id: data.jobId,
+      create_threads: false // Don't create new thread, we already have one
     };
     
     console.log('Sending email via edge function with payload:', emailPayload);
@@ -160,7 +159,7 @@ export const emailService = {
       recipient_email: data.recipientEmail,
       recipient_name: data.recipientName,
       subject: processedSubject,
-      content: data.content, // Store HTML content
+      content: data.content,
       status: 'sent'
     };
     

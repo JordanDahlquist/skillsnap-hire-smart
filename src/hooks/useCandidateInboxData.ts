@@ -20,7 +20,7 @@ export const useCandidateInboxData = (applicationId: string) => {
     console.log('Target application ID:', applicationId);
     console.log('All threads:', allThreads);
     
-    // First, find threads directly linked by application_id
+    // First, find threads directly linked by application_id (most reliable)
     const directThreads = allThreads.filter(thread => {
       const matches = thread.application_id === applicationId;
       console.log('Direct thread match:', {
@@ -37,9 +37,8 @@ export const useCandidateInboxData = (applicationId: string) => {
       return directThreads;
     }
     
-    // If no direct threads, we might need to look up candidate email and match by participants
-    // This is a fallback for older threads that might not have application_id set
-    console.log('No direct threads found, checking for participant-based matches');
+    // If no direct threads, we still return empty array but log for debugging
+    console.log('No direct threads found - candidate may not have any email communication yet');
     return [];
   }, [allThreads, applicationId]);
 
@@ -48,6 +47,11 @@ export const useCandidateInboxData = (applicationId: string) => {
     const threadIds = candidateThreads.map(thread => thread.id);
     console.log('=== FILTERING CANDIDATE MESSAGES ===');
     console.log('Thread IDs to filter by:', threadIds);
+    
+    if (threadIds.length === 0) {
+      console.log('No threads to filter messages by');
+      return [];
+    }
     
     const filtered = allMessages.filter(message => {
       const matches = threadIds.includes(message.thread_id);

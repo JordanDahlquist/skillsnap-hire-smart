@@ -7,13 +7,13 @@ import { productionLogger } from "@/services/productionLoggerService";
 export const useOptimizedAuth = () => {
   const { user, session, loading: authLoading, isAuthenticated, signOut } = useAuthState();
   
-  // Start profile loading immediately when user is available, don't wait for auth to finish
+  // Always call the profile hook, but conditionally enable it
   const { 
     data: profile, 
     isLoading: profileLoading, 
     error: profileError, 
     refetch: refreshProfile 
-  } = useOptimizedProfile(user?.id);
+  } = useOptimizedProfile(user?.id, { enabled: !!user?.id });
 
   // Only consider auth loading, not profile loading for main loading state
   const loading = authLoading;

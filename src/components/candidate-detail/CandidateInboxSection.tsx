@@ -5,7 +5,7 @@ import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
 import { ConversationContainer } from '@/components/inbox/ConversationContainer';
 import { EmailRichTextEditor } from '@/components/inbox/EmailRichTextEditor';
 import { Button } from '@/components/ui/button';
-import { Send, Mail, User, Briefcase, AtSign, Building } from 'lucide-react';
+import { Send, Mail, User, Briefcase, AtSign, Building, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { emailService } from '@/services/emailService';
 import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
@@ -54,14 +54,14 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
   const [replyContent, setReplyContent] = React.useState('');
   const [isSending, setIsSending] = React.useState(false);
 
-  // Enhanced thread finding with detailed logging
+  // Enhanced thread finding with detailed logging and better matching
   const candidateThread = useMemo(() => {
     console.log('=== CANDIDATE THREAD MATCHING DEBUG ===');
     console.log('Looking for thread for application:', application.id);
     console.log('Candidate email:', application.email);
     console.log('All threads:', threads);
     
-    // First try to find by application_id
+    // First try to find by application_id (most reliable)
     let thread = threads.find(thread => {
       console.log('Checking thread by application_id:', {
         threadId: thread.id,
@@ -114,7 +114,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
     return filtered;
   }, [messages, candidateThread]);
 
-  // Create variables for the email editor - using format expected by send-bulk-email function
+  // Create variables for the email editor
   const emailVariables = useMemo(() => [
     {
       name: '{name}',
@@ -137,6 +137,11 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
       description: `Insert company name: ${job.company_name || 'Company'}`
     }
   ], [application.name, application.email, job.title, job.company_name]);
+
+  const handleRefresh = () => {
+    console.log('Manually refreshing candidate threads...');
+    refetchThreads();
+  };
 
   const handleSendReply = async () => {
     const textContent = extractTextFromHtml(replyContent);
@@ -172,7 +177,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
         
         threadId = await emailService.createEmailThread({
           userId: user.id,
-          applicationId: application.id,
+          applicationId: application.id, // CRITICAL: Link thread to application
           jobId: job.id,
           subject: `Regarding ${job.title} Application`,
           participants: [profile.unique_email, application.email],
@@ -232,7 +237,24 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
       {/* Messages Container */}
       <Card>
         <CardContent className="p-0">
-          <div className={`border-b ${candidateMessages.length > 0 ? 'h-96' : 'h-32'}`}>
+          <div className="border-b p-3 flex items-center justify-between bg-muted/20">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-moded-foreground" />
+              <span className="text-sm font-medium">
+                Email Conversation with {application.name}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isLoading}
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className={`${candidateMessages.length > 0 ? 'h-96' : 'h-32'}`}>
             {candidateMessages.length > 0 ? (
               <ConversationContainer 
                 messages={candidateMessages}
