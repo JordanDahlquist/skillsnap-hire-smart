@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -79,10 +78,10 @@ export const ApplicationDetailContent = ({
     <div className="glass-card-no-hover p-6 space-y-6">
       {/* Redesigned Sleek Header */}
       <div className="bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 rounded-xl p-4 -mx-2">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="space-y-3">
           
-          {/* Left: Candidate Info */}
-          <div className="flex-1 min-w-0 lg:max-w-none">
+          {/* Top: Candidate Name - Full Width */}
+          <div className="w-full">
             <h2 className="text-xl font-bold text-foreground mb-1 break-words">
               {application.name}
             </h2>
@@ -91,43 +90,46 @@ export const ApplicationDetailContent = ({
             </div>
           </div>
 
-          {/* Center: Status Badges */}
-          <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:flex-shrink-0">
-            <Badge className={getStatusColor(displayStatus)}>
-              {displayStatus}
-            </Badge>
-            {getTranscriptStatusDisplay()}
-          </div>
+          {/* Bottom: Status Badges and Action Buttons */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Left: Status Badges */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className={getStatusColor(displayStatus)}>
+                {displayStatus}
+              </Badge>
+              {getTranscriptStatusDisplay()}
+            </div>
 
-          {/* Right: Action Buttons */}
-          <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:flex-shrink-0">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleViewFullProfile}
-              className="h-9 px-3 border-border/50 hover:border-border"
-            >
-              <User className="w-4 h-4 mr-2" />
-              View Profile
-            </Button>
-            
-            {application.resume_file_path && (
-              <Button 
+            {/* Right: Action Buttons */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
                 size="sm"
                 variant="outline"
-                asChild 
+                onClick={handleViewFullProfile}
                 className="h-9 px-3 border-border/50 hover:border-border"
               >
-                <a 
-                  href={application.resume_file_path} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Resume
-                </a>
+                <User className="w-4 h-4 mr-2" />
+                View Profile
               </Button>
-            )}
+              
+              {application.resume_file_path && (
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  asChild 
+                  className="h-9 px-3 border-border/50 hover:border-border"
+                >
+                  <a 
+                    href={application.resume_file_path} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Resume
+                  </a>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
