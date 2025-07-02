@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,12 @@ import {
 } from "@/components/ui/breadcrumb";
 import { renderAIRating } from "@/components/dashboard/utils/ratingUtils";
 import { StageSelector } from "@/components/dashboard/StageSelector";
-import { useApplicationActions } from "@/hooks/useApplicationActions";
 import { EmailComposerModal } from "@/components/dashboard/EmailComposerModal";
 import { RejectionConfirmationDialog } from "@/components/ui/rejection-confirmation-dialog";
+import { useSimpleRejection } from "@/hooks/useSimpleRejection";
+import { useCandidateInboxData } from "@/hooks/useCandidateInboxData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Application, Job } from "@/types";
 
 interface CandidateDetailHeaderProps {
@@ -22,7 +26,6 @@ interface CandidateDetailHeaderProps {
   application: Application;
   onBackToDashboard: () => void;
   onApplicationUpdate: () => void;
-  // Export action handlers for use in child components
   onReject?: () => void;
   onUnreject?: () => void;
   onEmail?: () => void;
@@ -39,9 +42,9 @@ export const CandidateDetailHeader = ({
   onEmail: propOnEmail,
   isUpdating: propIsUpdating
 }: CandidateDetailHeaderProps) => {
-  const [isUpdating, setIsUpdating] = useState(false);
   const [showEmailComposer, setShowEmailComposer] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [isUpdatingRating, setIsUpdatingRating] = useState(false);
   
   // Local state for immediate UI updates
   const [localApplication, setLocalApplication] = useState(application);
@@ -51,13 +54,16 @@ export const CandidateDetailHeader = ({
     setLocalApplication(application);
   }, [application]);
   
-  const { 
-    updateApplicationRating, 
-    rejectApplication, 
-    unrejectApplication 
-  } = useApplicationActions(() => {
-    onApplicationUpdate();
-  });
+  // Get the sendReply function from candidate inbox data
+  const { sendReply } = useCandidateInboxData(application.id);
+  
+  // Use the simplified rejection hook
+  const { rejectWithEmail, unrejectApplication, isRejecting } = useSimpleRejection(
+    localApplication,
+    job,
+    sendReply,
+    onApplicationUpdate
+  );
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -70,8 +76,7 @@ export const CandidateDetailHeader = ({
   };
 
   const handleRating = async (rating: number) => {
-    // Prevent multiple rapid clicks
-    if (isUpdating || propIsUpdating) return;
+    if (isUpdatingRating || propIsUpdating || isRejecting) return;
     
     // Immediate UI update
     setLocalApplication(prev => ({
@@ -80,58 +85,74 @@ export const CandidateDetailHeader = ({
       status: 'reviewed'
     }));
     
-    setIsUpdating(true);
+    setIsUpdatingRating(true);
     try {
-      await updateApplicationRating(application.id, rating);
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          manual_rating: rating,
+          status: 'reviewed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', application.id);
+
+      if (error) throw error;
+
+      toast.success(`Rating updated to ${rating} star${rating !== 1 ? 's' : ''}`);
+      
+      setTimeout(() => {
+        onApplicationUpdate();
+      }, 100);
+      
     } catch (error) {
+      console.error('Failed to update rating:', error);
+      toast.error('Failed to update rating');
       // Revert local state on error
       setLocalApplication(application);
     } finally {
-      setIsUpdating(false);
+      setIsUpdatingRating(false);
     }
   };
 
   const handleReject = () => {
-    if (isUpdating || propIsUpdating) return;
+    if (isRejecting || propIsUpdating || isUpdatingRating) return;
     setShowRejectDialog(true);
   };
 
   const handleConfirmReject = async (reason: string) => {
-    if (isUpdating || propIsUpdating) return;
+    if (isRejecting || propIsUpdating || isUpdatingRating) return;
     
-    setLocalApplication(prev => ({
-      ...prev,
-      status: 'rejected'
-    }));
-    
-    setIsUpdating(true);
     try {
-      await rejectApplication(application.id, reason);
+      // Optimistic UI update
+      setLocalApplication(prev => ({
+        ...prev,
+        status: 'rejected'
+      }));
+      
+      await rejectWithEmail(reason);
       propOnReject?.();
       setShowRejectDialog(false);
     } catch (error) {
+      // Revert local state on error
       setLocalApplication(application);
-    } finally {
-      setIsUpdating(false);
     }
   };
 
   const handleUnreject = async () => {
-    if (isUpdating || propIsUpdating) return;
+    if (isRejecting || propIsUpdating || isUpdatingRating) return;
     
-    setLocalApplication(prev => ({
-      ...prev,
-      status: 'pending'
-    }));
-    
-    setIsUpdating(true);
     try {
-      await unrejectApplication(application.id);
+      // Optimistic UI update
+      setLocalApplication(prev => ({
+        ...prev,
+        status: 'pending'
+      }));
+      
+      await unrejectApplication();
       propOnUnreject?.();
     } catch (error) {
+      // Revert local state on error
       setLocalApplication(application);
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -140,13 +161,7 @@ export const CandidateDetailHeader = ({
     propOnEmail?.();
   };
 
-  // Export action handlers for child components
-  const actionHandlers = {
-    onReject: handleReject,
-    onUnreject: handleUnreject,
-    onEmail: handleEmail,
-    isUpdating: isUpdating || propIsUpdating || false
-  };
+  const isAnyUpdating = isUpdatingRating || propIsUpdating || isRejecting;
 
   return (
     <>
@@ -217,7 +232,7 @@ export const CandidateDetailHeader = ({
                     <button
                       key={rating}
                       onClick={() => handleRating(rating)}
-                      disabled={isUpdating || propIsUpdating}
+                      disabled={isAnyUpdating}
                       className="hover:scale-110 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Star 
@@ -260,7 +275,7 @@ export const CandidateDetailHeader = ({
                 onClick={handleEmail}
                 size="sm"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 h-11"
-                disabled={isUpdating || propIsUpdating}
+                disabled={isAnyUpdating}
               >
                 <Mail className="w-4 h-4 mr-2" />
                 Email
@@ -271,7 +286,7 @@ export const CandidateDetailHeader = ({
                   variant="outline"
                   size="sm"
                   onClick={handleUnreject}
-                  disabled={isUpdating || propIsUpdating}
+                  disabled={isAnyUpdating}
                   className="border-green-200 text-green-600 hover:bg-green-50 px-4 h-11"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
@@ -282,7 +297,7 @@ export const CandidateDetailHeader = ({
                   variant="destructive"
                   size="sm"
                   onClick={handleReject}
-                  disabled={isUpdating || propIsUpdating}
+                  disabled={isAnyUpdating}
                   className="px-4 h-11"
                 >
                   <ThumbsDown className="w-4 h-4 mr-2" />
@@ -293,11 +308,13 @@ export const CandidateDetailHeader = ({
           </div>
 
           {/* Loading State */}
-          {(isUpdating || propIsUpdating) && (
+          {isAnyUpdating && (
             <div className="pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-sm text-muted-foreground">Updating...</span>
+                <span className="text-sm text-muted-foreground">
+                  {isRejecting ? 'Rejecting...' : isUpdatingRating ? 'Updating rating...' : 'Updating...'}
+                </span>
               </div>
             </div>
           )}
@@ -317,12 +334,11 @@ export const CandidateDetailHeader = ({
         open={showRejectDialog}
         onOpenChange={setShowRejectDialog}
         candidateName={localApplication.name}
-        isUpdating={isUpdating || propIsUpdating || false}
+        isUpdating={isRejecting}
         onConfirm={handleConfirmReject}
       />
     </>
   );
 };
 
-// Export action handlers for use in parent component
 export { CandidateDetailHeader as default };
