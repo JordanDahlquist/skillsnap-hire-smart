@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { EmailComposerModal } from "./EmailComposerModal";
 import { ApplicationDetailContent } from "./components/ApplicationDetailContent";
@@ -6,6 +7,8 @@ import { ApplicationDetailFallback } from "./components/ApplicationDetailFallbac
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Application } from "@/types";
+import { useCandidateInboxData } from "@/hooks/useCandidateInboxData";
+import { useSimpleRejection } from "@/hooks/useSimpleRejection";
 
 interface JobForApplicationDetail {
   id: string;
@@ -38,6 +41,17 @@ export const ApplicationDetail = ({
   const [customReason, setCustomReason] = useState("");
   const [showEmailModal, setShowEmailModal] = useState(false);
   const { toast } = useToast();
+
+  // Get the sendReply function for email functionality
+  const { sendReply } = useCandidateInboxData(selectedApplication?.id || '');
+  
+  // Use the unified rejection system that sends emails
+  const { rejectWithEmail, unrejectApplication, isRejecting } = useSimpleRejection(
+    selectedApplication!,
+    job as any,
+    sendReply,
+    onApplicationUpdate
+  );
 
   const handleManualRating = async (rating: number) => {
     if (!selectedApplication || isUpdating) return;
@@ -103,79 +117,33 @@ export const ApplicationDetail = ({
   };
 
   const handleReject = () => {
-    if (!selectedApplication || isUpdating) return;
+    if (!selectedApplication || isUpdating || isRejecting) return;
     setShowRejectDialog(true);
   };
 
   const handleUnreject = async () => {
-    if (!selectedApplication || isUpdating) return;
+    if (!selectedApplication || isUpdating || isRejecting) return;
     
-    setIsUpdating(true);
     try {
-      // Determine the new status - if they had a manual rating, set to 'reviewed', otherwise 'pending'
-      const newStatus = selectedApplication.manual_rating ? 'reviewed' : 'pending';
-      
-      const { error } = await supabase
-        .from('applications')
-        .update({ 
-          status: newStatus,
-          rejection_reason: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedApplication.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Application unrejected",
-        description: `${selectedApplication.name}'s application has been restored to ${newStatus} status`,
-      });
-      
-      if (onApplicationUpdate) {
-        onApplicationUpdate();
-      }
+      await unrejectApplication();
     } catch (error) {
       console.error('Error unrejecting application:', error);
-      toast({
-        title: "Error",
-        description: "Failed to unreject application",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
     }
   };
 
   const handleConfirmRejection = async () => {
-    if (!selectedApplication || isUpdating || !selectedRejectionReason) return;
+    if (!selectedApplication || isUpdating || isRejecting || !selectedRejectionReason) return;
     
     const finalReason = selectedRejectionReason === "Other" ? customReason : selectedRejectionReason;
     
-    setIsUpdating(true);
     try {
-      const { error } = await supabase
-        .from('applications')
-        .update({ 
-          status: 'rejected',
-          rejection_reason: finalReason,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedApplication.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Application rejected",
-        description: `${selectedApplication.name}'s application has been rejected: ${finalReason}`,
-      });
+      // Use the unified rejection system that sends emails
+      await rejectWithEmail(finalReason);
       
       setShowRejectDialog(false);
       setSelectedRejectionReason("");
       setCustomReason("");
       
-      if (onApplicationUpdate) {
-        onApplicationUpdate();
-      }
     } catch (error) {
       console.error('Error rejecting application:', error);
       toast({
@@ -183,8 +151,6 @@ export const ApplicationDetail = ({
         description: "Failed to reject application",
         variant: "destructive",
       });
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -210,7 +176,7 @@ export const ApplicationDetail = ({
           getStatusColor={(status: string) => getStatusColor(status, selectedApplication.manual_rating)}
           getRatingStars={getRatingStars}
           getTimeAgo={getTimeAgo}
-          isUpdating={isUpdating}
+          isUpdating={isUpdating || isRejecting}
           onManualRating={handleManualRating}
           onReject={handleReject}
           onUnreject={handleUnreject}
@@ -232,7 +198,7 @@ export const ApplicationDetail = ({
           candidateName={selectedApplication.name}
           selectedReason={selectedRejectionReason}
           customReason={customReason}
-          isUpdating={isUpdating}
+          isUpdating={isRejecting}
           onReasonChange={setSelectedRejectionReason}
           onCustomReasonChange={setCustomReason}
           onConfirm={handleConfirmRejection}

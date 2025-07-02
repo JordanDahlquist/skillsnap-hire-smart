@@ -57,7 +57,7 @@ export const CandidateDetailHeader = ({
   // Get the sendReply function from candidate inbox data
   const { sendReply } = useCandidateInboxData(application.id);
   
-  // Use the simplified rejection hook
+  // Use the unified rejection system that sends emails
   const { rejectWithEmail, unrejectApplication, isRejecting } = useSimpleRejection(
     localApplication,
     job,
