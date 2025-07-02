@@ -5,13 +5,16 @@ import { Application } from "@/types";
 
 interface CandidateSkillsTabProps {
   application: Application;
-  skillsResponses: any[];
 }
 
 export const CandidateSkillsTab = ({ 
-  application, 
-  skillsResponses 
+  application
 }: CandidateSkillsTabProps) => {
+  // Extract skills responses from application data
+  const skillsResponses = Array.isArray(application.skills_test_responses) 
+    ? application.skills_test_responses 
+    : [];
+
   if (skillsResponses.length === 0) {
     return (
       <Card className="glass-card">
