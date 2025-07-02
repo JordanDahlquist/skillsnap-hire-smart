@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
@@ -22,6 +23,21 @@ const extractTextFromHtml = (html: string): string => {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
   return tempDiv.textContent || tempDiv.innerText || '';
+};
+
+// Helper function to process template variables in content
+const processTemplateVariables = (content: string, application: Application, job: Job): string => {
+  if (!content) return content;
+  
+  return content
+    .replace(/\{name\}/g, application.name)
+    .replace(/\{candidateName\}/g, application.name)
+    .replace(/\{position\}/g, job.title)
+    .replace(/\{jobTitle\}/g, job.title)
+    .replace(/\{email\}/g, application.email)
+    .replace(/\{candidateEmail\}/g, application.email)
+    .replace(/\{company\}/g, job.company_name || 'Company')
+    .replace(/\{companyName\}/g, job.company_name || 'Company');
 };
 
 export const CandidateInboxSection = ({ application, job }: CandidateInboxSectionProps) => {
@@ -126,7 +142,10 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
         await refetchThreads();
       }
 
-      await sendReply(threadId, replyContent);
+      // Process template variables in the content before sending
+      const processedContent = processTemplateVariables(replyContent, application, job);
+
+      await sendReply(threadId, processedContent);
       setReplyContent('');
       toast({
         title: "Message sent",
