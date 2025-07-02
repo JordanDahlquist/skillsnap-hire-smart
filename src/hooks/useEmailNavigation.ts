@@ -7,13 +7,13 @@ export const useEmailNavigation = () => {
 
   const navigateToEmailTab = (application: Application, jobId?: string) => {
     // Navigate to candidate detail page with email tab
-    const candidateUrl = `/candidate/${application.id}?tab=email`;
+    const candidateUrl = `/jobs/${jobId}/candidate/${application.id}?tab=email`;
     navigate(candidateUrl);
   };
 
   const navigateToEmailTabFromJob = (jobId: string, applicationId: string) => {
-    // Navigate to candidate detail page with email tab
-    const candidateUrl = `/candidate/${applicationId}?tab=email`;
+    // Navigate to candidate detail page from job context with email tab
+    const candidateUrl = `/jobs/${jobId}/candidate/${applicationId}?tab=email`;
     navigate(candidateUrl);
   };
 
