@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
@@ -83,7 +82,7 @@ export const WorkableStyleDocumentViewer = ({
           )}
           
           {hasError ? (
-            <div className="flex flex-col items-center justify-center h-96 bg-muted/50 text-center p-6">
+            <div className="flex flex-col items-center justify-center h-[700px] bg-muted/50 text-center p-6">
               <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">Preview not available</h3>
               <p className="text-sm text-muted-foreground mb-4">
@@ -105,7 +104,7 @@ export const WorkableStyleDocumentViewer = ({
           ) : (
             <iframe
               src={pdfViewerUrl}
-              className="w-full h-96 border-0"
+              className="w-full h-[700px] border-0"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
               title="Document Preview"
@@ -122,11 +121,11 @@ export const WorkableStyleDocumentViewer = ({
         <object
           data={documentUrl}
           type="application/pdf"
-          className="w-full h-96"
+          className="w-full h-[700px]"
           onLoad={handleIframeLoad}
           onError={handleIframeError}
         >
-          <div className="flex flex-col items-center justify-center h-96 bg-muted/50 text-center p-6">
+          <div className="flex flex-col items-center justify-center h-[700px] bg-muted/50 text-center p-6">
             <FileText className="w-12 h-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">Preview not available</h3>
             <p className="text-sm text-muted-foreground mb-4">
