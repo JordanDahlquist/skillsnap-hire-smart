@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 import { Application } from "@/types";
 import { constructResumeUrl } from "@/utils/resumeUploadUtils";
-import { EnhancedDocumentViewer } from "./EnhancedDocumentViewer";
+import { WorkableStyleDocumentViewer } from "./WorkableStyleDocumentViewer";
 
 interface CandidateResumeTabProps {
   application: Application;
@@ -48,7 +48,7 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EnhancedDocumentViewer 
+            <WorkableStyleDocumentViewer 
               documentUrl={resumeUrl}
               fileName="Resume"
               fileType={getFileType(application.resume_file_path)}
