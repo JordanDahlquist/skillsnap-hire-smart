@@ -12,19 +12,41 @@ interface RichMessageDisplayProps {
   onToggleExpand?: () => void;
 }
 
+// Helper function to format message content with bullet points and line breaks
+const formatMessageContent = (content: string): string => {
+  if (!content) return '';
+  
+  // First clean the content
+  let formatted = cleanEmailContent(content);
+  
+  // Convert line breaks to proper HTML breaks
+  formatted = formatted.replace(/\n/g, '<br>');
+  
+  // Convert dash bullets to proper bullet points
+  formatted = formatted.replace(/^-\s*(.+)$/gm, '• $1');
+  formatted = formatted.replace(/<br>-\s*(.+)/g, '<br>• $1');
+  
+  // Convert asterisk bullets to proper bullet points
+  formatted = formatted.replace(/^\*\s*(.+)$/gm, '• $1');
+  formatted = formatted.replace(/<br>\*\s*(.+)/g, '<br>• $1');
+  
+  return formatted;
+};
+
 export const RichMessageDisplay = ({ 
   message, 
   isExpanded = true, 
   onToggleExpand 
 }: RichMessageDisplayProps) => {
   const cleanedContent = cleanEmailContent(message.content);
-  const isRichContent = cleanedContent.includes('<') && cleanedContent.includes('&');
+  const formattedContent = formatMessageContent(message.content);
+  const isRichContent = formattedContent.includes('<') || formattedContent.includes('&');
   const senderName = extractSenderName(message.sender_email);
   const senderInitials = getSenderInitials(message.sender_email);
   const displayName = formatSenderForDisplay(message.sender_email);
   
   // For collapsed view, show preview
-  const contentToShow = isExpanded ? cleanedContent : extractMessagePreview(cleanedContent, 120);
+  const contentToShow = isExpanded ? formattedContent : extractMessagePreview(cleanedContent, 120);
   const isLongMessage = cleanedContent.length > 300;
 
   return (
@@ -96,9 +118,10 @@ export const RichMessageDisplay = ({
             )}
           />
         ) : (
-          <div className="whitespace-pre-wrap break-words">
-            {contentToShow}
-          </div>
+          <div 
+            dangerouslySetInnerHTML={{ __html: contentToShow }}
+            className="whitespace-pre-wrap break-words"
+          />
         )}
         
         {/* Show "message truncated" indicator */}
