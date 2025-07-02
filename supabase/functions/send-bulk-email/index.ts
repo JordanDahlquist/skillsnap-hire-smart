@@ -42,25 +42,41 @@ interface BulkEmailRequest {
   reply_to_email?: string;
   create_threads?: boolean;
   thread_id?: string;
+  application_id?: string;
+  job_id?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const requestStartTime = Date.now();
+  console.log('=== SEND-BULK-EMAIL EDGE FUNCTION STARTED ===');
+  console.log('Request received at:', new Date().toISOString());
+  console.log('Request method:', req.method);
+  
   if (req.method === "OPTIONS") {
+    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('Checking environment variables...');
     const mailersendApiKey = Deno.env.get("MAILERSEND_API_KEY");
     if (!mailersendApiKey) {
+      console.error('CRITICAL: MAILERSEND_API_KEY is not configured');
       throw new Error('MAILERSEND_API_KEY is not configured');
     }
+    console.log('MailerSend API key found:', mailersendApiKey ? 'Yes' : 'No');
 
     // Create Supabase client with service role key
+    console.log('Creating Supabase client...');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+    console.log('Supabase client created successfully');
 
+    console.log('Parsing request body...');
+    const requestBody: BulkEmailRequest = await req.json();
+    
     const { 
       user_id,
       applications, 
@@ -71,33 +87,67 @@ const handler = async (req: Request): Promise<Response> => {
       company_name,
       reply_to_email,
       create_threads = false,
-      thread_id
-    }: BulkEmailRequest = await req.json();
+      thread_id,
+      application_id,
+      job_id
+    } = requestBody;
+
+    console.log('Request payload parsed:', {
+      user_id,
+      applicationCount: applications?.length || 0,
+      jobTitle: job?.title,
+      subject,
+      contentLength: content?.length || 0,
+      template_id,
+      company_name,
+      reply_to_email,
+      create_threads,
+      thread_id,
+      application_id,
+      job_id
+    });
 
     if (!user_id) {
+      console.error('VALIDATION FAILED: User ID is required');
       throw new Error('User ID is required');
     }
 
-    console.log('Sending bulk emails via MailerSend:', { 
-      user_id,
-      count: applications.length, 
-      subject, 
-      reply_to_email,
-      create_threads,
-      content_preview: content?.substring(0, 100) + '...'
-    });
+    if (!applications || applications.length === 0) {
+      console.error('VALIDATION FAILED: No applications provided');
+      throw new Error('No applications provided');
+    }
+
+    console.log('Validation passed - processing emails for', applications.length, 'recipients');
 
     const results = [];
     const fromEmail = reply_to_email || 'hiring@atract.ai';
     const companyName = company_name || 'Our Company';
 
-    for (const application of applications) {
+    console.log('Email configuration:', {
+      fromEmail,
+      companyName,
+      createThreads: create_threads
+    });
+
+    for (let i = 0; i < applications.length; i++) {
+      const application = applications[i];
+      const applicationStartTime = Date.now();
+      
+      console.log(`\n=== PROCESSING APPLICATION ${i + 1}/${applications.length} ===`);
+      console.log('Application details:', {
+        email: application.email,
+        name: application.name
+      });
+
       let finalThreadId = thread_id;
       let messageStored = false;
 
       try {
         // Create email thread if requested and not provided
         if (create_threads && !finalThreadId) {
+          console.log('Creating new email thread...');
+          const threadCreationStart = Date.now();
+          
           finalThreadId = await createEmailThread(
             supabase,
             user_id,
@@ -105,9 +155,15 @@ const handler = async (req: Request): Promise<Response> => {
             [fromEmail, application.email],
             fromEmail
           );
+          
+          console.log('Thread created:', {
+            threadId: finalThreadId,
+            duration: Date.now() - threadCreationStart
+          });
         }
 
         // Process template variables
+        console.log('Processing template variables...');
         const processedSubject = processTemplateVariables(
           subject,
           application.name,
@@ -124,13 +180,24 @@ const handler = async (req: Request): Promise<Response> => {
           companyName
         );
 
+        console.log('Template variables processed:', {
+          originalSubject: subject,
+          processedSubject,
+          contentLength: processedContent?.length || 0
+        });
+
         // Add thread tracking to subject if we have a thread
         const finalSubject = finalThreadId 
           ? `${processedSubject} [Thread:${finalThreadId}]`
           : processedSubject;
 
+        console.log('Final email subject:', finalSubject);
+
         // Store message in database FIRST (before sending email)
         if (finalThreadId) {
+          console.log('Storing message in database...');
+          const messageStoreStart = Date.now();
+          
           await storeEmailMessage(
             supabase,
             finalThreadId,
@@ -139,18 +206,26 @@ const handler = async (req: Request): Promise<Response> => {
             finalSubject,
             processedContent
           );
+          
           messageStored = true;
+          console.log('Message stored successfully:', {
+            duration: Date.now() - messageStoreStart
+          });
+        } else {
+          console.log('No thread ID - skipping message storage');
         }
 
         // Format content for email sending with enhanced bullet processing
+        console.log('Formatting HTML content...');
         const formattedHtmlContent = createHtmlContent(processedContent);
         
-        console.log('Content processing debug:', {
-          original: processedContent?.substring(0, 200),
-          formatted: formattedHtmlContent?.substring(0, 200)
+        console.log('Content formatting completed:', {
+          originalLength: processedContent?.length || 0,
+          formattedLength: formattedHtmlContent?.length || 0
         });
         
         // Create email payload
+        console.log('Creating email payload for MailerSend...');
         const emailPayload = createEmailPayload(
           fromEmail,
           companyName,
@@ -160,10 +235,31 @@ const handler = async (req: Request): Promise<Response> => {
           formattedHtmlContent
         );
 
+        console.log('Email payload created:', {
+          from: emailPayload.from,
+          to: emailPayload.to,
+          subject: emailPayload.subject,
+          htmlLength: emailPayload.html?.length || 0
+        });
+
         // Send email via MailerSend
+        console.log('Sending email via MailerSend...');
+        const emailSendStart = Date.now();
+        
         const emailResult = await sendEmailViaMailerSend(emailPayload, mailersendApiKey);
+        
+        const emailSendDuration = Date.now() - emailSendStart;
+        console.log('MailerSend result:', {
+          success: emailResult.success,
+          duration: emailSendDuration,
+          error: emailResult.error,
+          messageId: emailResult.result?.message_id || emailResult.result?.id
+        });
 
         // Log the email attempt
+        console.log('Logging email attempt...');
+        const logStart = Date.now();
+        
         await logEmailAttempt(
           supabase,
           user_id,
@@ -175,39 +271,68 @@ const handler = async (req: Request): Promise<Response> => {
           template_id,
           emailResult.success ? 'sent' : 'failed'
         );
+        
+        console.log('Email attempt logged:', {
+          duration: Date.now() - logStart
+        });
 
-        results.push({
+        const applicationResult = {
           email: application.email,
           success: messageStored, // Success is based on message storage, not email sending
           thread_id: finalThreadId,
           message_id: emailResult.result?.message_id || emailResult.result?.id,
           email_sent: emailResult.success,
-          email_error: emailResult.error
-        });
+          email_error: emailResult.error,
+          processing_duration: Date.now() - applicationStartTime
+        };
+        
+        results.push(applicationResult);
+        
+        console.log(`Application ${i + 1} processed:`, applicationResult);
 
-      } catch (error) {
-        console.error(`Failed to process email for ${application.email}:`, error);
+      } catch (error: any) {
+        console.error(`FAILED to process application ${i + 1}:`, {
+          email: application.email,
+          error: error.message,
+          stack: error.stack,
+          duration: Date.now() - applicationStartTime
+        });
+        
         results.push({
           email: application.email,
           success: false,
-          error: error.message
+          error: error.message,
+          processing_duration: Date.now() - applicationStartTime
         });
       }
     }
 
     const successCount = results.filter(r => r.success).length;
-    console.log(`Bulk email completed: ${successCount}/${applications.length} processed successfully`);
+    const totalDuration = Date.now() - requestStartTime;
+    
+    console.log('=== BULK EMAIL PROCESSING COMPLETED ===');
+    console.log('Summary:', {
+      total: applications.length,
+      successful: successCount,
+      failed: applications.length - successCount,
+      totalDuration,
+      averageDuration: Math.round(totalDuration / applications.length)
+    });
 
+    const response = {
+      success: true,
+      results,
+      summary: {
+        total: applications.length,
+        processed: successCount,
+        failed: applications.length - successCount,
+        duration: totalDuration
+      }
+    };
+
+    console.log('Returning success response');
     return new Response(
-      JSON.stringify({
-        success: true,
-        results,
-        summary: {
-          total: applications.length,
-          processed: successCount,
-          failed: applications.length - successCount
-        }
-      }),
+      JSON.stringify(response),
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -215,12 +340,18 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error("Error in send-bulk-email function:", error);
+    const errorDuration = Date.now() - requestStartTime;
+    console.error("=== EDGE FUNCTION ERROR ===", {
+      error: error.message,
+      stack: error.stack,
+      duration: errorDuration
+    });
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message,
+        duration: errorDuration
       }),
       {
         status: 500,

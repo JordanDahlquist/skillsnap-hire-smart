@@ -41,10 +41,42 @@ export const useApplicationActions = (onUpdate?: () => void) => {
   };
 
   const rejectApplication = async (applicationId: string, reason?: string) => {
+    const startTime = Date.now();
+    
     try {
-      logger.debug('=== STARTING REJECTION PROCESS ===', { applicationId, reason });
+      logger.debug('=== STARTING ENHANCED REJECTION PROCESS ===', { 
+        applicationId, 
+        reason,
+        timestamp: new Date().toISOString(),
+        hasUser: !!user,
+        hasProfile: !!profile,
+        userUniqueEmail: profile?.unique_email
+      });
       
+      // Detailed authentication checks
+      if (!user?.id) {
+        logger.error('REJECTION FAILED: No authenticated user found');
+        toast.error('Authentication required to reject application');
+        return;
+      }
+
+      if (!profile?.unique_email) {
+        logger.error('REJECTION FAILED: No unique email found in profile', { 
+          profileExists: !!profile,
+          profileKeys: profile ? Object.keys(profile) : []
+        });
+        toast.error('Profile setup incomplete - cannot send rejection email');
+        return;
+      }
+
+      logger.debug('Authentication checks passed', {
+        userId: user.id,
+        userEmail: user.email,
+        profileUniqueEmail: profile.unique_email
+      });
+
       // Get application and job details for email
+      logger.debug('Fetching application details...');
       const { data: application, error: appError } = await supabase
         .from('applications')
         .select(`
@@ -60,18 +92,27 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         .single();
 
       if (appError || !application) {
-        logger.error('Failed to fetch application details', appError);
+        logger.error('Failed to fetch application details', { 
+          error: appError, 
+          applicationExists: !!application 
+        });
+        toast.error('Failed to load application details');
         throw appError || new Error('Application not found');
       }
 
-      logger.debug('Application details fetched', { 
+      logger.debug('Application details fetched successfully', { 
         applicationId, 
+        candidateName: application.name,
         candidateEmail: application.email,
         jobTitle: application.jobs.title,
-        companyName: application.jobs.company_name
+        companyName: application.jobs.company_name,
+        fetchDuration: Date.now() - startTime
       });
 
       // Update database status FIRST
+      logger.debug('Updating application status to rejected...');
+      const updateStartTime = Date.now();
+      
       const { error: updateError } = await supabase
         .from('applications')
         .update({ 
@@ -83,138 +124,190 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         .eq('id', applicationId);
 
       if (updateError) {
-        logger.error('Failed to update application status', updateError);
+        logger.error('Failed to update application status', { 
+          error: updateError,
+          applicationId 
+        });
+        toast.error('Failed to update application status');
         throw updateError;
       }
 
-      logger.debug('Application status updated to rejected');
+      logger.debug('Application status updated successfully', {
+        applicationId,
+        updateDuration: Date.now() - updateStartTime
+      });
 
-      // Send rejection email if user authentication is available
-      if (user?.id && profile?.unique_email) {
-        try {
-          logger.debug('Starting rejection email process', {
-            userUniqueEmail: profile.unique_email,
-            candidateEmail: application.email
-          });
+      // Enhanced email sending with detailed logging
+      logger.debug('=== STARTING EMAIL SENDING PROCESS ===', {
+        candidateEmail: application.email,
+        candidateName: application.name,
+        rejectionReason: reason || 'No reason provided',
+        userUniqueEmail: profile.unique_email
+      });
 
-          // Map rejection reasons to email templates
-          const getEmailSubject = (rejectionReason: string, jobTitle: string) => {
-            return `Update on your ${jobTitle} application`;
-          };
+      try {
+        const emailStartTime = Date.now();
+        
+        // Enhanced email templates with better fallback
+        const getEmailSubject = (rejectionReason: string, jobTitle: string) => {
+          const subject = `Update on your ${jobTitle} application`;
+          logger.debug('Generated email subject', { subject, rejectionReason, jobTitle });
+          return subject;
+        };
 
-          const getEmailContent = (rejectionReason: string) => {
-            const templates = {
-              'Insufficient Experience': `
-                <p>Dear {name},</p>
-                <p>Thank you for your interest in the {position} role at {company}. After careful consideration, we have decided to move forward with candidates who more closely match our current experience requirements.</p>
-                <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
-                <p>Best regards,<br>The {company} Team</p>
-              `,
-              'Skills Mismatch': `
-                <p>Dear {name},</p>
-                <p>Thank you for applying to the {position} position at {company}. While we were impressed with your background, we have decided to proceed with candidates whose skills more closely align with our specific requirements.</p>
-                <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
-                <p>Best regards,<br>The {company} Team</p>
-              `,
-              'Unsuccessful Assessment': `
-                <p>Dear {name},</p>
-                <p>Thank you for taking the time to complete our assessment for the {position} role at {company}. After reviewing your responses, we have decided to move forward with other candidates.</p>
-                <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
-                <p>Best regards,<br>The {company} Team</p>
-              `,
-              'Unsuccessful Interview': `
-                <p>Dear {name},</p>
-                <p>Thank you for interviewing for the {position} position at {company}. After careful consideration, we have decided to proceed with other candidates.</p>
-                <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
-                <p>Best regards,<br>The {company} Team</p>
-              `,
-              'Overqualified': `
-                <p>Dear {name},</p>
-                <p>Thank you for your interest in the {position} role at {company}. While your qualifications are impressive, we believe this role may not provide the challenge and growth opportunities you are seeking.</p>
-                <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
-                <p>Best regards,<br>The {company} Team</p>
-              `,
-              'Position Filled': `
-                <p>Dear {name},</p>
-                <p>Thank you for your interest in the {position} role at {company}. We have decided to move forward with another candidate for this position.</p>
-                <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
-                <p>Best regards,<br>The {company} Team</p>
-              `,
-              'Budget Constraints': `
-                <p>Dear {name},</p>
-                <p>Thank you for your interest in the {position} role at {company}. Unfortunately, we are unable to proceed due to budget constraints.</p>
-                <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
-                <p>Best regards,<br>The {company} Team</p>
-              `,
-              'Timeline Mismatch': `
-                <p>Dear {name},</p>
-                <p>Thank you for your interest in the {position} role at {company}. Unfortunately, our timeline requirements do not align with your availability.</p>
-                <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
-                <p>Best regards,<br>The {company} Team</p>
-              `
-            };
-            
-            return templates[rejectionReason as keyof typeof templates] || `
+        const getEmailContent = (rejectionReason: string) => {
+          const templates = {
+            'Insufficient Experience': `
               <p>Dear {name},</p>
-              <p>Thank you for your interest in the {position} role at {company}. After careful consideration, we have decided to move forward with other candidates.</p>
+              <p>Thank you for your interest in the {position} role at {company}. After careful consideration, we have decided to move forward with candidates who more closely match our current experience requirements.</p>
               <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
               <p>Best regards,<br>The {company} Team</p>
-            `;
+            `,
+            'Skills Mismatch': `
+              <p>Dear {name},</p>
+              <p>Thank you for applying to the {position} position at {company}. While we were impressed with your background, we have decided to proceed with candidates whose skills more closely align with our specific requirements.</p>
+              <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
+              <p>Best regards,<br>The {company} Team</p>
+            `,
+            'Unsuccessful Assessment': `
+              <p>Dear {name},</p>
+              <p>Thank you for taking the time to complete our assessment for the {position} role at {company}. After reviewing your responses, we have decided to move forward with other candidates.</p>
+              <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
+              <p>Best regards,<br>The {company} Team</p>
+            `,
+            'Unsuccessful Interview': `
+              <p>Dear {name},</p>
+              <p>Thank you for interviewing for the {position} position at {company}. After careful consideration, we have decided to proceed with other candidates.</p>
+              <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
+              <p>Best regards,<br>The {company} Team</p>
+            `,
+            'Overqualified': `
+              <p>Dear {name},</p>
+              <p>Thank you for your interest in the {position} role at {company}. While your qualifications are impressive, we believe this role may not provide the challenge and growth opportunities you are seeking.</p>
+              <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
+              <p>Best regards,<br>The {company} Team</p>
+            `,
+            'Position Filled': `
+              <p>Dear {name},</p>
+              <p>Thank you for your interest in the {position} role at {company}. We have decided to move forward with another candidate for this position.</p>
+              <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
+              <p>Best regards,<br>The {company} Team</p>
+            `,
+            'Budget Constraints': `
+              <p>Dear {name},</p>
+              <p>Thank you for your interest in the {position} role at {company}. Unfortunately, we are unable to proceed due to budget constraints.</p>
+              <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
+              <p>Best regards,<br>The {company} Team</p>
+            `,
+            'Timeline Mismatch': `
+              <p>Dear {name},</p>
+              <p>Thank you for your interest in the {position} role at {company}. Unfortunately, our timeline requirements do not align with your availability.</p>
+              <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
+              <p>Best regards,<br>The {company} Team</p>
+            `
           };
-
-          const emailSubject = getEmailSubject(reason || 'No reason provided', application.jobs.title);
-          const emailContent = getEmailContent(reason || 'No reason provided');
-
-          logger.debug('Sending rejection email via emailService', {
-            subject: emailSubject,
-            contentPreview: emailContent.substring(0, 100) + '...'
+          
+          const selectedTemplate = templates[rejectionReason as keyof typeof templates] || `
+            <p>Dear {name},</p>
+            <p>Thank you for your interest in the {position} role at {company}. After careful consideration, we have decided to move forward with other candidates.</p>
+            <p>We appreciate the time and effort you put into your application and wish you the best of luck in your job search.</p>
+            <p>Best regards,<br>The {company} Team</p>
+          `;
+          
+          logger.debug('Selected email template', { 
+            rejectionReason, 
+            templateFound: !!templates[rejectionReason as keyof typeof templates],
+            templatePreview: selectedTemplate.substring(0, 100) + '...'
           });
+          
+          return selectedTemplate;
+        };
 
-          await emailService.sendEmail({
-            recipientEmail: application.email,
-            recipientName: application.name,
-            subject: emailSubject,
-            content: emailContent,
-            applicationId: applicationId,
-            jobId: application.jobs.id,
-            userUniqueEmail: profile.unique_email
-          });
+        const emailSubject = getEmailSubject(reason || 'No reason provided', application.jobs.title);
+        const emailContent = getEmailContent(reason || 'No reason provided');
 
-          logger.debug('Rejection email sent successfully', { 
-            applicationId, 
-            recipientEmail: application.email 
-          });
-
-        } catch (emailError) {
-          logger.error('Failed to send rejection email', emailError);
-          // Don't throw here - we still want to show success for the database update
-          toast.error('Application rejected, but email failed to send');
-        }
-      } else {
-        logger.warn('Cannot send rejection email - user authentication missing', {
-          hasUser: !!user?.id,
-          hasProfile: !!profile,
-          hasUniqueEmail: !!profile?.unique_email
+        logger.debug('Email content prepared', {
+          subject: emailSubject,
+          contentLength: emailContent.length,
+          hasVariables: emailContent.includes('{name}')
         });
-      }
 
-      toast.success('Application rejected and candidate notified');
+        // Enhanced emailService call with detailed logging
+        logger.debug('Calling emailService.sendEmail with payload:', {
+          recipientEmail: application.email,
+          recipientName: application.name,
+          subject: emailSubject,
+          contentPreview: emailContent.substring(0, 200) + '...',
+          applicationId: applicationId,
+          jobId: application.jobs.id,
+          userUniqueEmail: profile.unique_email
+        });
+
+        await emailService.sendEmail({
+          recipientEmail: application.email,
+          recipientName: application.name,
+          subject: emailSubject,
+          content: emailContent,
+          applicationId: applicationId,
+          jobId: application.jobs.id,
+          userUniqueEmail: profile.unique_email
+        });
+
+        const emailDuration = Date.now() - emailStartTime;
+        logger.debug('Rejection email sent successfully', { 
+          applicationId, 
+          recipientEmail: application.email,
+          emailDuration,
+          totalDuration: Date.now() - startTime
+        });
+
+        toast.success('Application rejected and candidate notified via email');
+
+      } catch (emailError: any) {
+        logger.error('CRITICAL: Rejection email failed to send', {
+          error: emailError,
+          errorMessage: emailError?.message,
+          errorStack: emailError?.stack,
+          applicationId,
+          candidateEmail: application.email,
+          userUniqueEmail: profile.unique_email
+        });
+        
+        // Show specific error message to user
+        toast.error(`Application rejected, but email failed: ${emailError?.message || 'Unknown error'}`);
+      }
       
       setTimeout(() => {
         onUpdate?.();
       }, 100);
       
-      logger.debug('Rejection process completed successfully', { applicationId });
-    } catch (error) {
-      logger.error('Failed to reject application', error);
-      toast.error('Failed to reject application');
+      logger.debug('Rejection process completed', { 
+        applicationId,
+        totalDuration: Date.now() - startTime
+      });
+      
+    } catch (error: any) {
+      logger.error('FATAL: Rejection process failed completely', {
+        error,
+        errorMessage: error?.message,
+        errorStack: error?.stack,
+        applicationId,
+        reason,
+        totalDuration: Date.now() - startTime
+      });
+      toast.error(`Failed to reject application: ${error?.message || 'Unknown error'}`);
       throw error;
     }
   };
 
   const unrejectApplication = async (applicationId: string) => {
+    const startTime = Date.now();
+    
     try {
-      logger.debug('=== STARTING UNREJECT PROCESS ===', { applicationId });
+      logger.debug('=== STARTING UNREJECT PROCESS ===', { 
+        applicationId,
+        timestamp: new Date().toISOString()
+      });
       
       const { error } = await supabase
         .from('applications')
@@ -227,20 +320,34 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         .eq('id', applicationId);
 
       if (error) {
-        logger.error('Failed to unreject application', error);
+        logger.error('Failed to unreject application', { 
+          error, 
+          applicationId,
+          duration: Date.now() - startTime
+        });
+        toast.error(`Failed to unreject application: ${error.message}`);
         throw error;
       }
 
+      logger.debug('Application unrejected successfully', { 
+        applicationId,
+        duration: Date.now() - startTime
+      });
+      
       toast.success('Application unrejected successfully');
       
       setTimeout(() => {
         onUpdate?.();
       }, 100);
       
-      logger.debug('Application unrejected successfully', { applicationId });
-    } catch (error) {
-      logger.error('Failed to unreject application', error);
-      toast.error('Failed to unreject application');
+    } catch (error: any) {
+      logger.error('FATAL: Unreject process failed', {
+        error,
+        errorMessage: error?.message,
+        applicationId,
+        duration: Date.now() - startTime
+      });
+      toast.error(`Failed to unreject application: ${error?.message || 'Unknown error'}`);
       throw error;
     }
   };
