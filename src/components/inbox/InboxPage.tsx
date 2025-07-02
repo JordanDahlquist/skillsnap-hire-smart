@@ -1,12 +1,41 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
 import { Mail, Bug } from 'lucide-react';
 import { InboxContent } from './InboxContent';
 import { EmailDebugDashboard } from './EmailDebugDashboard';
+import { useOptimizedInboxData } from '@/hooks/useOptimizedInboxData';
 
 export const InboxPage = () => {
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  
+  const {
+    threads,
+    messages,
+    isLoading,
+    error,
+    refetchThreads,
+    markThreadAsRead,
+    sendReply,
+    isAutoRefreshEnabled,
+    toggleAutoRefresh,
+    lastRefreshTime,
+    isAutoRefreshing,
+    isTabVisible,
+  } = useOptimizedInboxData();
+
+  const handleSelectThread = (threadId: string) => {
+    setSelectedThreadId(threadId);
+  };
+
+  const handleMarkAsRead = (threadId: string) => {
+    markThreadAsRead(threadId);
+  };
+
+  const handleRefresh = () => {
+    refetchThreads();
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-7xl">
       <div className="mb-6">
@@ -29,7 +58,18 @@ export const InboxPage = () => {
         </TabsList>
 
         <TabsContent value="inbox">
-          <InboxContent />
+          <InboxContent
+            threads={threads}
+            selectedThreadId={selectedThreadId}
+            onSelectThread={handleSelectThread}
+            onMarkAsRead={handleMarkAsRead}
+            onRefresh={handleRefresh}
+            isAutoRefreshEnabled={isAutoRefreshEnabled}
+            toggleAutoRefresh={toggleAutoRefresh}
+            lastRefreshTime={lastRefreshTime}
+            isAutoRefreshing={isAutoRefreshing}
+            isTabVisible={isTabVisible}
+          />
         </TabsContent>
 
         <TabsContent value="debug">
