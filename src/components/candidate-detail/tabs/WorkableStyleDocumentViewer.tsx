@@ -1,6 +1,8 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface WorkableStyleDocumentViewerProps {
   documentUrl: string;
@@ -15,6 +17,8 @@ export const WorkableStyleDocumentViewer = ({
 }: WorkableStyleDocumentViewerProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { toast } = useToast();
 
   // Determine file type from URL or provided type
   const getFileType = () => {
@@ -37,6 +41,77 @@ export const WorkableStyleDocumentViewer = ({
 
   const openInNewTab = () => window.open(documentUrl, '_blank');
 
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    
+    try {
+      // Method 1: JavaScript blob download (most reliable)
+      const response = await fetch(documentUrl);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Set proper filename with extension
+      const fileExtension = documentType;
+      const downloadFileName = fileName.includes('.') 
+        ? fileName 
+        : `${fileName}.${fileExtension}`;
+      
+      link.download = downloadFileName;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Download started",
+        description: `${downloadFileName} is being downloaded.`,
+      });
+      
+    } catch (error) {
+      console.error('Download failed:', error);
+      
+      // Fallback 1: Try direct link download
+      try {
+        const link = document.createElement('a');
+        link.href = documentUrl;
+        link.download = fileName.includes('.') ? fileName : `${fileName}.${documentType}`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Download initiated",
+          description: "If download doesn't start, try opening in a new tab.",
+        });
+        
+      } catch (fallbackError) {
+        // Fallback 2: Open in new tab
+        console.error('Fallback download failed:', fallbackError);
+        window.open(documentUrl, '_blank');
+        
+        toast({
+          title: "Download not available",
+          description: "Document opened in new tab. You can download from there.",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const renderDocumentControls = () => (
     <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border">
       <div className="flex items-center gap-3">
@@ -55,11 +130,18 @@ export const WorkableStyleDocumentViewer = ({
           Open
         </Button>
         
-        <Button variant="outline" size="sm" asChild>
-          <a href={documentUrl} download>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleDownload}
+          disabled={isDownloading}
+        >
+          {isDownloading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
             <Download className="w-4 h-4" />
-            Download
-          </a>
+          )}
+          {isDownloading ? 'Downloading...' : 'Download'}
         </Button>
       </div>
     </div>
@@ -93,11 +175,17 @@ export const WorkableStyleDocumentViewer = ({
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Open in new tab
                 </Button>
-                <Button variant="outline" asChild>
-                  <a href={documentUrl} download>
+                <Button 
+                  variant="outline" 
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
                     <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </a>
+                  )}
+                  {isDownloading ? 'Downloading...' : 'Download'}
                 </Button>
               </div>
             </div>
@@ -136,11 +224,17 @@ export const WorkableStyleDocumentViewer = ({
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Open in new tab
               </Button>
-              <Button variant="outline" asChild>
-                <a href={documentUrl} download>
+              <Button 
+                variant="outline" 
+                onClick={handleDownload}
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
                   <Download className="w-4 h-4 mr-2" />
-                  Download
-                </a>
+                )}
+                {isDownloading ? 'Downloading...' : 'Download'}
               </Button>
             </div>
           </div>
