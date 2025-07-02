@@ -102,7 +102,7 @@ const cleanEmailContent = (content: string): string => {
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('=== EMAIL WEBHOOK HANDLER CALLED ===');
+  console.log('=== Email Webhook Called ===');
   console.log('Request method:', req.method);
   console.log('Request URL:', req.url);
   console.log('Request headers:', Object.fromEntries(req.headers.entries()));
@@ -114,27 +114,21 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const rawBody = await req.text();
-    console.log('=== RAW WEBHOOK BODY RECEIVED ===');
-    console.log('Body length:', rawBody.length);
-    console.log('Body preview:', rawBody.substring(0, 500) + '...');
+    console.log('Raw webhook body received:', rawBody.substring(0, 500) + '...');
     
     let webhookData: MailerSendWebhook;
     
     try {
       webhookData = JSON.parse(rawBody);
-      console.log('=== PARSED WEBHOOK DATA ===');
-      console.log('Webhook type:', webhookData.type);
-      console.log('Webhook keys:', Object.keys(webhookData));
-      console.log('Data keys:', webhookData.data ? Object.keys(webhookData.data) : 'No data');
+      console.log('Parsed webhook data type:', webhookData.type);
+      console.log('Webhook data keys:', Object.keys(webhookData));
     } catch (parseError) {
-      console.error('=== JSON PARSE ERROR ===');
-      console.error('Parse error:', parseError);
-      console.log('Raw body that failed to parse (first 1000 chars):', rawBody.substring(0, 1000));
+      console.error('Failed to parse webhook body as JSON:', parseError);
+      console.log('Raw body that failed to parse:', rawBody);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Invalid JSON payload',
-          debug: { rawBodyPreview: rawBody.substring(0, 200) }
+          error: 'Invalid JSON payload' 
         }),
         {
           status: 400,
@@ -145,14 +139,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Check if this is an inbound message webhook
     if (webhookData.type !== 'inbound.message' || !webhookData.data) {
-      console.log('=== NOT AN INBOUND MESSAGE ===');
-      console.log('Webhook type:', webhookData.type);
-      console.log('Has data:', !!webhookData.data);
+      console.log('Not an inbound message webhook, ignoring. Type:', webhookData.type);
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: `Webhook received but not an inbound message (type: ${webhookData.type})`,
-          debug: { type: webhookData.type, hasData: !!webhookData.data }
+          message: 'Webhook received but not an inbound message' 
         }),
         {
           status: 200,
@@ -161,13 +152,10 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log('=== PROCESSING INBOUND MESSAGE ===');
-    console.log('From email:', webhookData.data.from.email);
-    console.log('From name:', webhookData.data.from.name);
-    console.log('To emails:', webhookData.data.recipients.to.data.map(r => r.email));
+    console.log('Processing inbound message webhook...');
+    console.log('From:', webhookData.data.from.email);
+    console.log('To:', webhookData.data.recipients.to.data[0]?.email || webhookData.data.recipients.rcptTo[0]?.email);
     console.log('Subject:', webhookData.data.subject);
-    console.log('Message ID:', webhookData.data.id);
-    console.log('Headers:', Object.keys(webhookData.data.headers || {}));
 
     // Extract email data from MailerSend's nested structure
     const emailData: IncomingEmail = {
@@ -181,23 +169,21 @@ const handler = async (req: Request): Promise<Response> => {
       references: webhookData.data.headers?.['References']
     };
 
-    console.log('=== EXTRACTED EMAIL DATA ===');
-    console.log('From:', emailData.from);
-    console.log('To:', emailData.to);
-    console.log('Subject:', emailData.subject);
-    console.log('Message ID:', emailData.message_id);
-    console.log('Text length:', emailData.text?.length || 0);
-    console.log('HTML length:', emailData.html?.length || 0);
+    console.log('Extracted email data:', {
+      from: emailData.from,
+      to: emailData.to,
+      subject: emailData.subject,
+      messageId: emailData.message_id
+    });
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // ENHANCED duplicate detection - check by external_message_id first
-    console.log('=== DUPLICATE DETECTION ===');
+    // IMPROVED duplicate detection - check by external_message_id first
+    console.log('Checking for duplicate messages by external_message_id...');
     if (emailData.message_id) {
-      console.log('Checking for duplicates by message ID:', emailData.message_id);
       const { data: existingByMessageId, error: messageIdError } = await supabase
         .from('email_messages')
         .select('id, sender_email, subject, created_at')
@@ -209,14 +195,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       if (existingByMessageId) {
-        console.log('=== DUPLICATE DETECTED BY MESSAGE ID ===');
-        console.log('Existing message:', existingByMessageId);
+        console.log('Duplicate message detected by external_message_id, ignoring:', {
+          existingId: existingByMessageId.id,
+          existingCreatedAt: existingByMessageId.created_at,
+          duplicateMessageId: emailData.message_id
+        });
         return new Response(
           JSON.stringify({ 
             success: true, 
             message: 'Duplicate message ignored (by external_message_id)',
-            message_id: emailData.message_id,
-            debug: { existingMessageId: existingByMessageId.id }
+            message_id: emailData.message_id
           }),
           {
             status: 200,
@@ -237,18 +225,20 @@ const handler = async (req: Request): Promise<Response> => {
       .maybeSingle();
 
     if (duplicateCheckError) {
-      console.error('Error in secondary duplicate check:', duplicateCheckError);
+      console.error('Error checking for duplicates:', duplicateCheckError);
     }
 
     if (existingMessage) {
-      console.log('=== DUPLICATE DETECTED BY SENDER/SUBJECT/TIME ===');
-      console.log('Existing message:', existingMessage);
+      console.log('Duplicate message detected by sender/subject/time, ignoring:', {
+        existingId: existingMessage.id,
+        existingCreatedAt: existingMessage.created_at,
+        newMessageId: emailData.message_id
+      });
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'Duplicate message ignored (by sender/subject/time)',
-          message_id: emailData.message_id,
-          debug: { existingMessageId: existingMessage.id, timeWindow: '5 minutes' }
+          message_id: emailData.message_id
         }),
         {
           status: 200,
@@ -258,35 +248,19 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Find user by their unique email address
-    console.log('=== USER LOOKUP ===');
     console.log('Looking up user by unique email:', emailData.to);
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .select('id, user_id: id, full_name, unique_email')
+      .select('id, user_id: id')
       .eq('unique_email', emailData.to)
       .maybeSingle();
 
     if (profileError || !profileData) {
-      console.error('=== USER NOT FOUND ===');
-      console.error('Profile error:', profileError);
-      console.log('Email address searched:', emailData.to);
-      
-      // Log all unique emails for debugging
-      const { data: allProfiles } = await supabase
-        .from('profiles')
-        .select('unique_email')
-        .limit(10);
-      console.log('Available unique emails (sample):', allProfiles?.map(p => p.unique_email));
-      
+      console.error('No user found for email:', emailData.to, profileError);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          message: `No user found for email address: ${emailData.to}`,
-          debug: { 
-            searchedEmail: emailData.to,
-            profileError: profileError?.message,
-            availableEmailsSample: allProfiles?.map(p => p.unique_email).slice(0, 5)
-          }
+          message: `No user found for email address: ${emailData.to}` 
         }),
         {
           status: 200,
@@ -296,9 +270,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const userId = profileData.id;
-    console.log('=== USER FOUND ===');
-    console.log('User ID:', userId);
-    console.log('User name:', profileData.full_name);
+    console.log('Found user for email:', userId);
 
     let threadId: string | null = null;
     
@@ -309,50 +281,43 @@ const handler = async (req: Request): Promise<Response> => {
     const threadMatch = emailData.subject.match(/\[Thread:([^\]]+)\]/);
     if (threadMatch) {
       threadId = threadMatch[1];
-      console.log('=== THREAD ID FOUND IN SUBJECT ===');
-      console.log('Extracted thread ID:', threadId);
+      console.log('Found thread ID in subject:', threadId);
       
       // Verify the thread belongs to this user
       const { data: threadData, error: threadError } = await supabase
         .from('email_threads')
-        .select('user_id, application_id, job_id, subject')
+        .select('user_id, application_id, job_id')
         .eq('id', threadId)
         .eq('user_id', userId)
         .maybeSingle();
 
       if (threadError || !threadData) {
-        console.error('=== THREAD VERIFICATION FAILED ===');
-        console.error('Thread error:', threadError);
-        console.log('Thread ID:', threadId);
-        console.log('User ID:', userId);
+        console.error('Thread not found or does not belong to user:', threadId, userId);
         threadId = null;
       } else {
-        console.log('=== THREAD VERIFIED ===');
-        console.log('Thread data:', threadData);
+        console.log('Verified thread ownership:', threadData);
       }
     }
 
     // Strategy 2: If no thread ID found, look for candidate-specific threads
     if (!threadId) {
-      console.log('=== SEARCHING BY APPLICATION ===');
-      console.log('Searching for application by sender email:', emailData.from);
+      console.log('No thread ID in subject, searching for candidate-specific threads...');
       
       // Look for application record by sender email
       const { data: applicationData, error: appError } = await supabase
         .from('applications')
-        .select('id, job_id, name, jobs!inner(user_id, title)')
+        .select('id, job_id, jobs!inner(user_id)')
         .eq('email', emailData.from)
         .eq('jobs.user_id', userId)
         .maybeSingle();
 
       if (applicationData) {
-        console.log('=== APPLICATION FOUND ===');
-        console.log('Application:', applicationData);
+        console.log('Found application for sender:', applicationData);
         
         // Look for thread with this application_id
         const { data: appThread, error: appThreadError } = await supabase
           .from('email_threads')
-          .select('id, subject, participants, application_id')
+          .select('id, subject, participants')
           .eq('user_id', userId)
           .eq('application_id', applicationData.id)
           .order('created_at', { ascending: false })
@@ -360,32 +325,27 @@ const handler = async (req: Request): Promise<Response> => {
 
         if (appThread) {
           threadId = appThread.id;
-          console.log('=== THREAD FOUND BY APPLICATION ===');
-          console.log('Thread:', appThread);
+          console.log('Found thread by application_id:', threadId);
         } else {
-          console.log('=== NO THREAD FOR APPLICATION ===');
-          console.log('Application ID:', applicationData.id);
+          console.log('No thread found for application_id:', applicationData.id);
         }
       } else {
-        console.log('=== NO APPLICATION FOUND ===');
-        console.log('Sender email:', emailData.from);
-        console.log('Application error:', appError);
+        console.log('No application found for sender email:', emailData.from);
       }
     }
 
     // Strategy 3: If still no thread found, try to find existing thread by subject and participants
     if (!threadId) {
-      console.log('=== SEARCHING BY SUBJECT AND PARTICIPANTS ===');
       const normalizedSubject = emailData.subject
         .replace(/^(Re:|RE:|Fwd:|FWD:)\s*/gi, '')
         .replace(/\[Thread:[^\]]+\]/g, '')
         .trim();
 
-      console.log('Normalized subject:', normalizedSubject);
+      console.log('Searching for thread with normalized subject:', normalizedSubject);
 
       const { data: existingThreads, error: searchError } = await supabase
         .from('email_threads')
-        .select('id, user_id, participants, application_id, subject')
+        .select('id, user_id, participants, application_id')
         .eq('user_id', userId)
         .ilike('subject', `%${normalizedSubject}%`)
         .order('created_at', { ascending: false })
@@ -394,7 +354,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (searchError) {
         console.error('Error searching for threads:', searchError);
       } else if (existingThreads && existingThreads.length > 0) {
-        console.log(`=== FOUND ${existingThreads.length} POTENTIAL THREADS ===`);
+        console.log(`Found ${existingThreads.length} potential matching threads`);
         
         for (const thread of existingThreads) {
           const participants = Array.isArray(thread.participants) 
@@ -403,7 +363,6 @@ const handler = async (req: Request): Promise<Response> => {
           
           console.log('Checking thread:', {
             id: thread.id,
-            subject: thread.subject,
             participants: participants,
             applicationId: thread.application_id,
             senderEmail: emailData.from
@@ -411,28 +370,21 @@ const handler = async (req: Request): Promise<Response> => {
           
           if (participants.some(p => typeof p === 'string' && p.toLowerCase() === emailData.from.toLowerCase())) {
             threadId = thread.id;
-            console.log('=== THREAD FOUND BY PARTICIPANTS ===');
-            console.log('Selected thread:', thread.id);
+            console.log('Found matching thread by participants:', threadId);
             break;
           }
         }
-        
-        if (!threadId) {
-          console.log('=== NO MATCHING PARTICIPANTS FOUND ===');
-        }
-      } else {
-        console.log('=== NO THREADS FOUND BY SUBJECT ===');
       }
     }
 
     // If still no thread found, create a new one
     if (!threadId) {
-      console.log('=== CREATING NEW THREAD ===');
+      console.log('No existing thread found, creating new thread');
       
       // Check if this is from a known candidate
       const { data: candidateApp, error: candidateError } = await supabase
         .from('applications')
-        .select('id, job_id, name, jobs!inner(user_id, title)')
+        .select('id, job_id, jobs!inner(user_id)')
         .eq('email', emailData.from)
         .eq('jobs.user_id', userId)
         .maybeSingle();
@@ -451,11 +403,8 @@ const handler = async (req: Request): Promise<Response> => {
       if (candidateApp) {
         threadData.application_id = candidateApp.id;
         threadData.job_id = candidateApp.job_id;
-        console.log('=== LINKING TO CANDIDATE APPLICATION ===');
-        console.log('Application:', candidateApp);
+        console.log('Linking thread to application:', candidateApp.id);
       }
-      
-      console.log('Creating thread with data:', threadData);
       
       const { data: newThread, error: createError } = await supabase
         .from('email_threads')
@@ -464,28 +413,20 @@ const handler = async (req: Request): Promise<Response> => {
         .single();
 
       if (createError) {
-        console.error('=== THREAD CREATION FAILED ===');
-        console.error('Create error:', createError);
+        console.error('Failed to create new thread:', createError);
         throw createError;
       }
 
       threadId = newThread.id;
-      console.log('=== NEW THREAD CREATED ===');
-      console.log('Thread ID:', threadId);
+      console.log('Created new thread with application link:', threadId);
     }
 
     if (!threadId) {
-      console.error('=== CRITICAL ERROR: NO THREAD ID ===');
+      console.error('Could not determine thread for incoming email');
       return new Response(
         JSON.stringify({ 
           success: false, 
-          message: 'Could not determine thread for incoming email',
-          debug: {
-            subject: emailData.subject,
-            from: emailData.from,
-            to: emailData.to,
-            userId: userId
-          }
+          message: 'Could not determine thread for incoming email' 
         }),
         {
           status: 400,
@@ -496,41 +437,32 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Clean the email content before storing
     const cleanedContent = cleanEmailContent(emailData.text || emailData.html || '');
-    console.log('=== CONTENT CLEANING ===');
-    console.log('Original length:', (emailData.text || emailData.html || '').length);
-    console.log('Cleaned length:', cleanedContent.length);
-    console.log('Cleaned preview:', cleanedContent.substring(0, 200));
 
-    // Insert the new message with is_read: false for inbound messages
-    console.log('=== INSERTING MESSAGE ===');
-    const messageData = {
-      thread_id: threadId,
-      sender_email: emailData.from,
-      recipient_email: emailData.to,
-      subject: emailData.subject,
-      content: cleanedContent,
-      direction: 'inbound',
-      message_type: 'reply',
-      is_read: false, // CRITICAL: Mark as unread for inbound messages
-      external_message_id: emailData.message_id || null
-    };
-    
-    console.log('Message data:', messageData);
-    
+    // CRITICAL FIX: Insert the new message with is_read: false for inbound messages
+    console.log('Inserting new inbound message for thread:', threadId);
     const { error: messageError } = await supabase
       .from('email_messages')
-      .insert(messageData);
+      .insert({
+        thread_id: threadId,
+        sender_email: emailData.from,
+        recipient_email: emailData.to,
+        subject: emailData.subject,
+        content: cleanedContent,
+        direction: 'inbound',
+        message_type: 'reply',
+        is_read: false, // CRITICAL: Mark as unread for inbound messages
+        external_message_id: emailData.message_id || null
+      });
 
     if (messageError) {
-      console.error('=== MESSAGE INSERT FAILED ===');
-      console.error('Message error:', messageError);
+      console.error('Failed to insert message:', messageError);
       throw messageError;
     }
 
-    console.log('=== MESSAGE INSERTED SUCCESSFULLY ===');
+    console.log('Successfully inserted inbound message as UNREAD');
 
-    // Update thread with proper unread count increment
-    console.log('=== UPDATING THREAD ===');
+    // FIXED: Update thread with proper unread count increment
+    console.log('Updating thread last message time and incrementing unread count');
     
     // Get the current unread count and increment it
     const { data: currentThread, error: getCurrentError } = await supabase
@@ -545,10 +477,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const newUnreadCount = (currentThread?.unread_count || 0) + 1;
-    console.log('Updating unread count:', {
-      current: currentThread?.unread_count,
-      new: newUnreadCount
-    });
+    console.log('Incrementing unread count from', currentThread?.unread_count, 'to', newUnreadCount);
 
     // Update with the new unread count
     const { error: updateError } = await supabase
@@ -560,29 +489,20 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('id', threadId);
 
     if (updateError) {
-      console.error('=== THREAD UPDATE FAILED ===');
-      console.error('Update error:', updateError);
+      console.error('Failed to update thread:', updateError);
       throw updateError;
     } else {
-      console.log('=== THREAD UPDATED SUCCESSFULLY ===');
-      console.log('New unread count:', newUnreadCount);
+      console.log('Thread updated successfully with unread count:', newUnreadCount);
     }
 
-    console.log('=== EMAIL PROCESSING COMPLETED ===');
-    console.log('Thread ID:', threadId);
-    console.log('Unread count:', newUnreadCount);
+    console.log('Successfully processed incoming email for thread:', threadId);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         thread_id: threadId,
         unread_count: newUnreadCount,
-        message: 'Email processed successfully and marked as UNREAD',
-        debug: {
-          messageId: emailData.message_id,
-          cleanedContentLength: cleanedContent.length,
-          threadCreated: false // We'll track this better later
-        }
+        message: 'Email processed successfully and marked as UNREAD'
       }),
       {
         status: 200,
@@ -591,16 +511,13 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error("=== CRITICAL ERROR IN EMAIL WEBHOOK ===");
-    console.error("Error:", error);
-    console.error("Stack:", error.stack);
+    console.error("Error handling email webhook:", error);
     
     return new Response(
       JSON.stringify({ 
         success: false, 
         error: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString()
+        stack: error.stack
       }),
       {
         status: 500,
