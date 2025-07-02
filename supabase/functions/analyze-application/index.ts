@@ -185,7 +185,7 @@ Format your response as JSON:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4-1106-preview',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

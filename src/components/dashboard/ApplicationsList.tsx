@@ -3,6 +3,7 @@ import React, { memo, useMemo } from 'react';
 import { ApplicationsListHeader } from './ApplicationsListHeader';
 import { ApplicationItem } from './ApplicationItem';
 import { Application } from '@/types';
+import { calculateTopCandidates } from '@/utils/topCandidateUtils';
 
 interface ApplicationsListProps {
   applications: Application[];
@@ -47,6 +48,11 @@ export const ApplicationsList = memo(({
   sortOrder = 'desc',
   onSortChange,
 }: ApplicationsListProps) => {
+  // Calculate top candidates based on AI ratings
+  const topCandidateIds = useMemo(() => {
+    return calculateTopCandidates(applications);
+  }, [applications]);
+
   // Filter and sort applications based on search term and sort options
   const processedApplications = useMemo(() => {
     // First filter by search term
@@ -76,11 +82,35 @@ export const ApplicationsList = memo(({
             const ratingB = b.manual_rating || b.ai_rating || 0;
             comparison = ratingA - ratingB;
             break;
+          case 'ai_rating':
+            // Sort by AI rating specifically, with null values at the end
+            const aiRatingA = a.ai_rating || 0;
+            const aiRatingB = b.ai_rating || 0;
+            comparison = aiRatingA - aiRatingB;
+            break;
           default:
             comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         }
         
         return sortOrder === 'asc' ? comparison : -comparison;
+      });
+    } else {
+      // Default sorting: AI-rated candidates first (by AI rating desc), then by creation date desc
+      filtered = [...filtered].sort((a, b) => {
+        // Prioritize applications with AI ratings
+        const aHasAI = a.ai_rating !== null && a.ai_rating !== undefined;
+        const bHasAI = b.ai_rating !== null && b.ai_rating !== undefined;
+        
+        if (aHasAI && !bHasAI) return -1;
+        if (!aHasAI && bHasAI) return 1;
+        
+        if (aHasAI && bHasAI) {
+          // Both have AI ratings, sort by AI rating desc
+          return (b.ai_rating || 0) - (a.ai_rating || 0);
+        }
+        
+        // Neither has AI rating, sort by creation date desc
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
     }
 
@@ -139,6 +169,7 @@ export const ApplicationsList = memo(({
                 selectedApplications={selectedApplications}
                 onSelectApplications={onSelectApplications}
                 jobId={jobId}
+                isTopCandidate={topCandidateIds.has(application.id)}
               />
             ))
           )}

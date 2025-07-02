@@ -3,6 +3,7 @@ import React, { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { TopPickBadge } from '@/components/ui/top-pick-badge';
 import { Video } from 'lucide-react';
 import { logger } from '@/services/loggerService';
 import { renderManualRating, renderAIRating } from './utils/ratingUtils';
@@ -18,6 +19,7 @@ interface ApplicationItemProps {
   selectedApplications?: string[];
   onSelectApplications?: (ids: string[]) => void;
   jobId?: string;
+  isTopCandidate?: boolean;
 }
 
 // Helper function to check if application has video content
@@ -44,6 +46,7 @@ export const ApplicationItem = memo(({
   getStatusColor,
   selectedApplications = [],
   onSelectApplications,
+  isTopCandidate = false,
 }: ApplicationItemProps) => {
   const navigate = useNavigate();
 
@@ -102,11 +105,12 @@ export const ApplicationItem = memo(({
                 </div>
               </div>
               
-              {/* Status and Video badges */}
+              {/* Status, Top Pick, and Video badges */}
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <Badge className={`${getStatusColor(application.status, application.manual_rating)} text-xs px-1.5 py-0.5`}>
                   {displayStatus}
                 </Badge>
+                {isTopCandidate && <TopPickBadge />}
                 {hasVideo && (
                   <div className="flex items-center gap-1 px-1.5 py-0.5 text-xs bg-blue-500/10 text-blue-400 rounded-full">
                     <Video className="w-3 h-3" />
