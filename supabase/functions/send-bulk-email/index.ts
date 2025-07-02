@@ -30,6 +30,54 @@ interface BulkEmailRequest {
   thread_id?: string;
 }
 
+// Helper function to format content with proper bullet points and line breaks
+const formatEmailContent = (content: string): string => {
+  if (!content) return '';
+  
+  // Convert rich text to plain text for email while preserving structure
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = content;
+  let plainText = tempDiv.textContent || tempDiv.innerText || content;
+  
+  // Convert line breaks to proper format
+  plainText = plainText.replace(/\n/g, '\n');
+  
+  // Convert dash bullets to proper bullet points
+  plainText = plainText.replace(/^-\s*(.+)$/gm, '• $1');
+  plainText = plainText.replace(/\n-\s*(.+)/g, '\n• $1');
+  
+  // Convert asterisk bullets to proper bullet points
+  plainText = plainText.replace(/^\*\s*(.+)$/gm, '• $1');
+  plainText = plainText.replace(/\n\*\s*(.+)/g, '\n• $1');
+  
+  return plainText;
+};
+
+// Helper function to create HTML version with proper formatting
+const createHtmlContent = (content: string): string => {
+  if (!content) return '';
+  
+  // If content already contains HTML, use it as is with additional formatting
+  if (content.includes('<') && content.includes('>')) {
+    return content
+      .replace(/\n/g, '<br>')
+      .replace(/^-\s*(.+)$/gm, '• $1')
+      .replace(/<br>-\s*(.+)/g, '<br>• $1')
+      .replace(/^\*\s*(.+)$/gm, '• $1')
+      .replace(/<br>\*\s*(.+)/g, '<br>• $1');
+  }
+  
+  // Convert plain text to HTML with proper formatting
+  let htmlContent = content
+    .replace(/\n/g, '<br>')
+    .replace(/^-\s*(.+)$/gm, '• $1')
+    .replace(/<br>-\s*(.+)/g, '<br>• $1')
+    .replace(/^\*\s*(.+)$/gm, '• $1')
+    .replace(/<br>\*\s*(.+)/g, '<br>• $1');
+  
+  return htmlContent;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -109,15 +157,23 @@ const handler = async (req: Request): Promise<Response> => {
         // Process template variables
         const processedSubject = subject
           .replace(/{name}/g, application.name)
+          .replace(/{candidateName}/g, application.name)
           .replace(/{email}/g, application.email)
+          .replace(/{candidateEmail}/g, application.email)
           .replace(/{position}/g, job.title)
-          .replace(/{company}/g, companyName);
+          .replace(/{jobTitle}/g, job.title)
+          .replace(/{company}/g, companyName)
+          .replace(/{companyName}/g, companyName);
 
         const processedContent = content
           .replace(/{name}/g, application.name)
+          .replace(/{candidateName}/g, application.name)
           .replace(/{email}/g, application.email)
+          .replace(/{candidateEmail}/g, application.email)
           .replace(/{position}/g, job.title)
-          .replace(/{company}/g, companyName);
+          .replace(/{jobTitle}/g, job.title)
+          .replace(/{company}/g, companyName)
+          .replace(/{companyName}/g, companyName);
 
         // Add thread tracking to subject if we have a thread
         const finalSubject = finalThreadId 
@@ -134,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
               sender_email: fromEmail,
               recipient_email: application.email,
               subject: finalSubject,
-              content: processedContent,
+              content: processedContent, // Store original content
               direction: 'outbound',
               message_type: 'original',
               is_read: true
@@ -149,6 +205,9 @@ const handler = async (req: Request): Promise<Response> => {
           }
         }
 
+        // Format content for email sending
+        const formattedHtmlContent = createHtmlContent(processedContent);
+        
         // Now attempt to send email via MailerSend API
         const emailPayload = {
           from: {
@@ -162,7 +221,7 @@ const handler = async (req: Request): Promise<Response> => {
           subject: finalSubject,
           html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-              ${processedContent.replace(/\n/g, '<br>')}
+              ${formattedHtmlContent}
             </div>
           `,
           reply_to: {
@@ -221,7 +280,7 @@ const handler = async (req: Request): Promise<Response> => {
             recipient_email: application.email,
             recipient_name: application.name,
             subject: finalSubject,
-            content: processedContent,
+            content: processedContent, // Store original content
             template_id: template_id || null,
             status: emailSendError ? 'failed' : 'sent',
             sent_at: new Date().toISOString()

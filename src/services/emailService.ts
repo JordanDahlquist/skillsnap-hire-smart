@@ -79,12 +79,7 @@ export const emailService = {
       });
     }
 
-    // Convert rich text to plain text for email
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = data.content;
-    const plainTextContent = tempDiv.textContent || tempDiv.innerText || data.content;
-
-    // Store the outbound message
+    // Store the outbound message with HTML formatting preserved
     const { error: messageError } = await supabase
       .from('email_messages')
       .insert({
@@ -92,7 +87,7 @@ export const emailService = {
         sender_email: data.userUniqueEmail,
         recipient_email: data.recipientEmail,
         subject: processedSubject,
-        content: data.content,
+        content: data.content, // Keep HTML formatting
         direction: 'outbound',
         message_type: 'original',
         is_read: true
@@ -101,6 +96,7 @@ export const emailService = {
     if (messageError) throw messageError;
 
     // Send the actual email via existing edge function with thread tracking
+    // The edge function will handle the HTML to plain text conversion and bullet formatting
     const { error: emailError } = await supabase.functions.invoke('send-bulk-email', {
       body: {
         user_id: user.data.user.id,
@@ -110,7 +106,7 @@ export const emailService = {
         }],
         job: { title: 'Email' },
         subject: `${processedSubject} [Thread:${threadId}]`,
-        content: plainTextContent,
+        content: data.content, // Send HTML content to edge function
         reply_to_email: data.userUniqueEmail,
         thread_id: threadId
       }
@@ -118,7 +114,7 @@ export const emailService = {
 
     if (emailError) throw emailError;
 
-    // Log the email
+    // Log the email with HTML content for consistency
     const { error: logError } = await supabase
       .from('email_logs')
       .insert({
@@ -128,7 +124,7 @@ export const emailService = {
         recipient_email: data.recipientEmail,
         recipient_name: data.recipientName,
         subject: processedSubject,
-        content: plainTextContent,
+        content: data.content, // Store HTML content
         status: 'sent'
       });
 
