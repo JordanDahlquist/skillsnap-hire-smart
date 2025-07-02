@@ -1,115 +1,41 @@
-import { useState, useMemo } from "react";
-import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
-import { useOptimizedInboxData } from "@/hooks/useOptimizedInboxData";
-import { UnifiedHeader } from "@/components/UnifiedHeader";
-import { InboxContent } from "./InboxContent";
-import { ThreadDetail } from "./ThreadDetail";
-import { InboxSkeleton } from "./InboxSkeleton";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { FixedHeightLayout } from "@/components/layout/FixedHeightLayout";
-import { useOptimizedEmailSubjects } from "@/hooks/useOptimizedEmailSubjects";
+
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Mail, Bug } from 'lucide-react';
+import { InboxContent } from './InboxContent';
+import { EmailDebugDashboard } from './EmailDebugDashboard';
 
 export const InboxPage = () => {
-  const { user } = useOptimizedAuth();
-  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
-  const { 
-    threads, 
-    messages, 
-    isLoading, 
-    error, 
-    refetchThreads, 
-    markThreadAsRead,
-    sendReply,
-    isAutoRefreshEnabled,
-    toggleAutoRefresh,
-    lastRefreshTime,
-    isAutoRefreshing,
-    isTabVisible
-  } = useOptimizedInboxData();
-
-  // Process email subjects with optimized caching
-  const { processedThreads, isProcessing } = useOptimizedEmailSubjects(threads);
-
-  // Memoize filtered messages to prevent unnecessary recalculations
-  const threadMessages = useMemo(() => {
-    return selectedThreadId 
-      ? messages.filter(msg => msg.thread_id === selectedThreadId)
-      : [];
-  }, [messages, selectedThreadId]);
-
-  // Memoize selected thread to prevent unnecessary recalculations
-  const selectedThread = useMemo(() => {
-    return selectedThreadId 
-      ? processedThreads.find(thread => thread.id === selectedThreadId) || null
-      : null;
-  }, [processedThreads, selectedThreadId]);
-
-  if (isLoading || isProcessing) {
-    return <InboxSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Inbox</h1>
-          <p className="text-gray-600 mb-4">Failed to load your messages.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/jobs" },
-    { label: "Inbox", isCurrentPage: true },
-  ];
-
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-background flex flex-col">
-        <UnifiedHeader 
-          breadcrumbs={breadcrumbs}
-          showCreateButton={false}
-        />
-
-        <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
-          <FixedHeightLayout>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-              {/* Thread List - Independent Scrolling */}
-              <div className="lg:col-span-1 h-full min-h-0">
-                <InboxContent
-                  threads={processedThreads}
-                  selectedThreadId={selectedThreadId}
-                  onSelectThread={setSelectedThreadId}
-                  onMarkAsRead={markThreadAsRead}
-                  onRefresh={refetchThreads}
-                  isAutoRefreshEnabled={isAutoRefreshEnabled}
-                  toggleAutoRefresh={toggleAutoRefresh}
-                  lastRefreshTime={lastRefreshTime}
-                  isAutoRefreshing={isAutoRefreshing}
-                  isTabVisible={isTabVisible}
-                />
-              </div>
-
-              {/* Thread Detail - Independent Scrolling */}
-              <div className="lg:col-span-2 h-full min-h-0">
-                <ThreadDetail
-                  thread={selectedThread}
-                  messages={threadMessages}
-                  onSendReply={sendReply}
-                  onMarkAsRead={markThreadAsRead}
-                />
-              </div>
-            </div>
-          </FixedHeightLayout>
-        </div>
+    <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Inbox</h1>
+        <p className="text-muted-foreground">
+          Send and receive emails with your candidates
+        </p>
       </div>
-    </ErrorBoundary>
+
+      <Tabs defaultValue="inbox" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsTrigger value="inbox" className="flex items-center gap-2">
+            <Mail className="w-4 h-4" />
+            Inbox
+          </TabsTrigger>
+          <TabsTrigger value="debug" className="flex items-center gap-2">
+            <Bug className="w-4 h-4" />
+            Debug
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="inbox">
+          <InboxContent />
+        </TabsContent>
+
+        <TabsContent value="debug">
+          <EmailDebugDashboard />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
