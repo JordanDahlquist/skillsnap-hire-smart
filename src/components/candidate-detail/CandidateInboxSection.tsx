@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
@@ -63,25 +62,25 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
     return messages.filter(message => message.thread_id === candidateThread.id);
   }, [messages, candidateThread]);
 
-  // Create variables for the email editor
+  // Create variables for the email editor - using format expected by send-bulk-email function
   const emailVariables = useMemo(() => [
     {
-      name: '{candidateName}',
+      name: '{name}',
       icon: User,
       description: `Insert candidate name: ${application.name}`
     },
     {
-      name: '{jobTitle}',
+      name: '{position}',
       icon: Briefcase,
       description: `Insert job title: ${job.title}`
     },
     {
-      name: '{candidateEmail}',
+      name: '{email}',
       icon: AtSign,
       description: `Insert candidate email: ${application.email}`
     },
     {
-      name: '{companyName}',
+      name: '{company}',
       icon: Building,
       description: `Insert company name: ${job.company_name || 'Company'}`
     }
