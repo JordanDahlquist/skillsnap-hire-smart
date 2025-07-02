@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCandidateInboxData } from '@/hooks/useCandidateInboxData';
@@ -12,6 +13,15 @@ interface CandidateInboxSectionProps {
   application: Application;
   job: Job;
 }
+
+// Helper function to extract plain text from HTML content
+const extractTextFromHtml = (html: string): string => {
+  if (!html || typeof html !== 'string') return '';
+  
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || '';
+};
 
 export const CandidateInboxSection = ({ application, job }: CandidateInboxSectionProps) => {
   const { toast } = useToast();
@@ -61,7 +71,8 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
   ], [application.name, application.email, job.title, job.company_name]);
 
   const handleSendReply = async () => {
-    if (!replyContent.trim() || !candidateThread) {
+    const textContent = extractTextFromHtml(replyContent);
+    if (!textContent.trim() || !candidateThread) {
       toast({
         title: "Error",
         description: "Please enter a message before sending",
@@ -88,6 +99,9 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
       setIsSending(false);
     }
   };
+
+  // Check if there's actual text content in the rich text editor
+  const hasTextContent = extractTextFromHtml(replyContent).trim().length > 0;
 
   if (isLoading) {
     return (
@@ -142,7 +156,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
             <div className="flex justify-end">
               <Button
                 onClick={handleSendReply}
-                disabled={isSending || !replyContent.trim()}
+                disabled={isSending || !hasTextContent}
                 size="sm"
                 variant="solid"
               >
