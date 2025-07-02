@@ -121,11 +121,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     const results = [];
     const fromEmail = reply_to_email || 'hiring@atract.ai';
-    const companyName = company_name || 'Our Company';
+    
+    // Use proper company name with fallback
+    const finalCompanyName = company_name || 'Your Company';
+    console.log('Using company name for branding:', finalCompanyName);
 
     console.log('Email configuration:', {
       fromEmail,
-      companyName,
+      companyName: finalCompanyName,
       createThreads: create_threads
     });
 
@@ -169,7 +172,7 @@ const handler = async (req: Request): Promise<Response> => {
           application.name,
           application.email,
           job.title,
-          companyName
+          finalCompanyName
         );
 
         const processedContent = processTemplateVariables(
@@ -177,21 +180,19 @@ const handler = async (req: Request): Promise<Response> => {
           application.name,
           application.email,
           job.title,
-          companyName
+          finalCompanyName
         );
 
         console.log('Template variables processed:', {
           originalSubject: subject,
           processedSubject,
-          contentLength: processedContent?.length || 0
+          contentLength: processedContent?.length || 0,
+          companyName: finalCompanyName
         });
 
-        // Add thread tracking to subject if we have a thread
-        const finalSubject = finalThreadId 
-          ? `${processedSubject} [Thread:${finalThreadId}]`
-          : processedSubject;
-
-        console.log('Final email subject:', finalSubject);
+        // Clean subject line - NO thread ID for recipient
+        const cleanSubject = processedSubject;
+        console.log('Clean subject line for recipient:', cleanSubject);
 
         // Store message in database FIRST (before sending email)
         if (finalThreadId) {
@@ -203,7 +204,7 @@ const handler = async (req: Request): Promise<Response> => {
             finalThreadId,
             fromEmail,
             application.email,
-            finalSubject,
+            cleanSubject,
             processedContent
           );
           
@@ -224,14 +225,14 @@ const handler = async (req: Request): Promise<Response> => {
           formattedLength: formattedHtmlContent?.length || 0
         });
         
-        // Create email payload
+        // Create email payload with proper company branding
         console.log('Creating email payload for MailerSend...');
         const emailPayload = createEmailPayload(
           fromEmail,
-          companyName,
+          finalCompanyName, // Use proper company name
           application.email,
           application.name,
-          finalSubject,
+          cleanSubject, // Clean subject without thread ID
           formattedHtmlContent
         );
 
@@ -266,7 +267,7 @@ const handler = async (req: Request): Promise<Response> => {
           finalThreadId,
           application.email,
           application.name,
-          finalSubject,
+          cleanSubject,
           processedContent,
           template_id,
           emailResult.success ? 'sent' : 'failed'
@@ -278,7 +279,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         const applicationResult = {
           email: application.email,
-          success: messageStored, // Success is based on message storage, not email sending
+          success: messageStored,
           thread_id: finalThreadId,
           message_id: emailResult.result?.message_id || emailResult.result?.id,
           email_sent: emailResult.success,

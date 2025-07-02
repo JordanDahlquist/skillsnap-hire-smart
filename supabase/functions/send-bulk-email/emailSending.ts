@@ -1,5 +1,5 @@
 
-// Email sending utilities
+// Enhanced email sending utilities with proper company branding
 
 interface EmailPayload {
   from: { email: string; name: string };
@@ -60,10 +60,13 @@ export const createEmailPayload = (
   subject: string,
   htmlContent: string
 ): EmailPayload => {
+  // Clean up company name for professional display
+  const cleanCompanyName = companyName === 'Your Company' ? 'Hiring Team' : companyName;
+  
   return {
     from: {
       email: fromEmail,
-      name: companyName
+      name: cleanCompanyName
     },
     to: [{
       email: recipientEmail,
@@ -71,13 +74,16 @@ export const createEmailPayload = (
     }],
     subject: subject,
     html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
         ${htmlContent}
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e9ecef; font-size: 12px; color: #6c757d; text-align: center;">
+          <p style="margin: 0;">This email was sent by ${cleanCompanyName}</p>
+        </div>
       </div>
     `,
     reply_to: {
       email: fromEmail,
-      name: companyName
+      name: cleanCompanyName
     }
   };
 };

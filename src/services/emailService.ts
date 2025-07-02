@@ -124,6 +124,27 @@ export const emailService = {
         userEmail: user.data.user.email
       });
 
+      // Get user profile for company branding
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('company_name')
+        .eq('id', user.data.user.id)
+        .single();
+
+      // Get job data for company name
+      let jobCompanyName = '';
+      if (data.jobId) {
+        const { data: job } = await supabase
+          .from('jobs')
+          .select('company_name')
+          .eq('id', data.jobId)
+          .single();
+        jobCompanyName = job?.company_name || '';
+      }
+
+      // Use proper company name hierarchy
+      const companyName = jobCompanyName || profile?.company_name || 'Your Company';
+      
       const processedSubject = await processEmailSubject(
         data.subject,
         data.applicationId,
@@ -133,7 +154,8 @@ export const emailService = {
 
       console.log('Email subject processed:', {
         original: data.subject,
-        processed: processedSubject
+        processed: processedSubject,
+        companyName
       });
 
       // Create thread if it doesn't exist - CRITICAL: Link to application_id
@@ -143,7 +165,7 @@ export const emailService = {
         
         threadId = await this.createEmailThread({
           userId: user.data.user.id,
-          applicationId: data.applicationId, // CRITICAL: This ensures thread is linked to candidate
+          applicationId: data.applicationId,
           jobId: data.jobId,
           subject: processedSubject,
           participants: [data.userUniqueEmail, data.recipientEmail],
@@ -197,7 +219,7 @@ export const emailService = {
         duration: Date.now() - messageStoreStart
       });
 
-      // Send the actual email via existing edge function with thread tracking
+      // Send the actual email via existing edge function with clean subject (no thread ID)
       const emailPayload = {
         user_id: user.data.user.id,
         applications: [{
@@ -205,13 +227,14 @@ export const emailService = {
           name: data.recipientName
         }],
         job: { title: 'Email' },
-        subject: `${processedSubject} [Thread:${threadId}]`, // CRITICAL: Add thread tracking
+        subject: processedSubject, // Clean subject line for recipient
         content: data.content,
         reply_to_email: data.userUniqueEmail,
         thread_id: threadId,
-        application_id: data.applicationId, // CRITICAL: Pass application_id
+        application_id: data.applicationId,
         job_id: data.jobId,
-        create_threads: false // Don't create new thread, we already have one
+        company_name: companyName, // Pass company name for proper branding
+        create_threads: false
       };
       
       console.log('Prepared email payload for edge function:', {
@@ -223,6 +246,7 @@ export const emailService = {
         threadId: emailPayload.thread_id,
         applicationId: emailPayload.application_id,
         jobId: emailPayload.job_id,
+        companyName: emailPayload.company_name,
         createThreads: emailPayload.create_threads
       });
 
