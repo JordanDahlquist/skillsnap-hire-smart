@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -78,11 +79,11 @@ export const ApplicationDetailContent = ({
     <div className="glass-card-no-hover p-6 space-y-6">
       {/* Redesigned Sleek Header */}
       <div className="bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 rounded-xl p-4 -mx-2">
-        <div className="flex items-center justify-between gap-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           
           {/* Left: Candidate Info */}
-          <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-foreground truncate mb-1">
+          <div className="flex-1 min-w-0 lg:max-w-none">
+            <h2 className="text-xl font-bold text-foreground mb-1 break-words">
               {application.name}
             </h2>
             <div className="text-sm text-muted-foreground">
@@ -91,7 +92,7 @@ export const ApplicationDetailContent = ({
           </div>
 
           {/* Center: Status Badges */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:flex-shrink-0">
             <Badge className={getStatusColor(displayStatus)}>
               {displayStatus}
             </Badge>
@@ -99,7 +100,7 @@ export const ApplicationDetailContent = ({
           </div>
 
           {/* Right: Action Buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap lg:flex-shrink-0">
             <Button
               size="sm"
               variant="outline"
@@ -133,8 +134,8 @@ export const ApplicationDetailContent = ({
 
       {/* Prominent Action Bar */}
       <div className="bg-muted/20 border border-border rounded-lg p-4 -m-2 mb-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
             <StageSelector
               jobId={jobId}
