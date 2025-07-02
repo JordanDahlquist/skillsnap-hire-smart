@@ -54,19 +54,49 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
   const [replyContent, setReplyContent] = React.useState('');
   const [isSending, setIsSending] = React.useState(false);
 
-  // Find the thread for this candidate - try by application_id first, then by participant email
+  // Enhanced thread finding with detailed logging
   const candidateThread = useMemo(() => {
+    console.log('=== CANDIDATE THREAD MATCHING DEBUG ===');
+    console.log('Looking for thread for application:', application.id);
+    console.log('Candidate email:', application.email);
+    console.log('All threads:', threads);
+    
     // First try to find by application_id
-    let thread = threads.find(thread => thread.application_id === application.id);
+    let thread = threads.find(thread => {
+      console.log('Checking thread by application_id:', {
+        threadId: thread.id,
+        threadApplicationId: thread.application_id,
+        targetApplicationId: application.id,
+        matches: thread.application_id === application.id
+      });
+      return thread.application_id === application.id;
+    });
+    
+    if (thread) {
+      console.log('Found thread by application_id:', thread.id);
+      return thread;
+    }
     
     // If no thread found by application_id, try to find by participant email
-    if (!thread) {
-      thread = threads.find(thread => {
-        const participants = Array.isArray(thread.participants) ? thread.participants : [];
-        return participants.some(participant => 
-          typeof participant === 'string' && participant === application.email
-        );
+    thread = threads.find(thread => {
+      const participants = Array.isArray(thread.participants) ? thread.participants : [];
+      console.log('Checking thread by participant email:', {
+        threadId: thread.id,
+        participants: participants,
+        candidateEmail: application.email,
+        hasCandidate: participants.some(participant => 
+          typeof participant === 'string' && participant.toLowerCase() === application.email.toLowerCase()
+        )
       });
+      return participants.some(participant => 
+        typeof participant === 'string' && participant.toLowerCase() === application.email.toLowerCase()
+      );
+    });
+    
+    if (thread) {
+      console.log('Found thread by participant email:', thread.id);
+    } else {
+      console.log('No thread found for candidate:', application.email);
     }
     
     return thread;
@@ -74,8 +104,14 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
 
   // Filter messages for this candidate's thread
   const candidateMessages = useMemo(() => {
-    if (!candidateThread) return [];
-    return messages.filter(message => message.thread_id === candidateThread.id);
+    if (!candidateThread) {
+      console.log('No candidate thread, no messages to show');
+      return [];
+    }
+    
+    const filtered = messages.filter(message => message.thread_id === candidateThread.id);
+    console.log('Filtered messages for thread', candidateThread.id, ':', filtered);
+    return filtered;
   }, [messages, candidateThread]);
 
   // Create variables for the email editor - using format expected by send-bulk-email function
@@ -126,9 +162,14 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
     try {
       let threadId = candidateThread?.id;
       
-      // If no thread exists, create one
+      // If no thread exists, create one with detailed logging
       if (!threadId) {
-        console.log('No thread found, creating new thread for candidate:', application.email);
+        console.log('=== CREATING NEW THREAD FOR CANDIDATE ===');
+        console.log('Application ID:', application.id);
+        console.log('Job ID:', job.id);
+        console.log('Candidate email:', application.email);
+        console.log('User unique email:', profile.unique_email);
+        
         threadId = await emailService.createEmailThread({
           userId: user.id,
           applicationId: application.id,
@@ -138,12 +179,17 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
           userUniqueEmail: profile.unique_email
         });
         
+        console.log('Created new thread:', threadId);
+        
         // Refresh threads to get the new thread
         await refetchThreads();
+      } else {
+        console.log('Using existing thread:', threadId);
       }
 
       // Process template variables in the content before sending
       const processedContent = processTemplateVariables(replyContent, application, job);
+      console.log('Sending reply with processed content:', processedContent.substring(0, 100) + '...');
 
       await sendReply(threadId, processedContent);
       setReplyContent('');

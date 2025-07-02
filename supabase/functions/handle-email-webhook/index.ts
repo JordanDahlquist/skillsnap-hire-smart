@@ -274,7 +274,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     let threadId: string | null = null;
     
-    // Try to extract thread ID from subject
+    // ENHANCED THREAD MATCHING - Try multiple strategies
+    console.log('=== ENHANCED THREAD MATCHING ===');
+    
+    // Strategy 1: Extract thread ID from subject
     const threadMatch = emailData.subject.match(/\[Thread:([^\]]+)\]/);
     if (threadMatch) {
       threadId = threadMatch[1];
@@ -283,7 +286,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Verify the thread belongs to this user
       const { data: threadData, error: threadError } = await supabase
         .from('email_threads')
-        .select('user_id')
+        .select('user_id, application_id, job_id')
         .eq('id', threadId)
         .eq('user_id', userId)
         .maybeSingle();
@@ -291,10 +294,47 @@ const handler = async (req: Request): Promise<Response> => {
       if (threadError || !threadData) {
         console.error('Thread not found or does not belong to user:', threadId, userId);
         threadId = null;
+      } else {
+        console.log('Verified thread ownership:', threadData);
       }
     }
 
-    // If no thread ID found, try to find existing thread by subject and participants
+    // Strategy 2: If no thread ID found, look for candidate-specific threads
+    if (!threadId) {
+      console.log('No thread ID in subject, searching for candidate-specific threads...');
+      
+      // Look for application record by sender email
+      const { data: applicationData, error: appError } = await supabase
+        .from('applications')
+        .select('id, job_id, jobs!inner(user_id)')
+        .eq('email', emailData.from)
+        .eq('jobs.user_id', userId)
+        .maybeSingle();
+
+      if (applicationData) {
+        console.log('Found application for sender:', applicationData);
+        
+        // Look for thread with this application_id
+        const { data: appThread, error: appThreadError } = await supabase
+          .from('email_threads')
+          .select('id, subject, participants')
+          .eq('user_id', userId)
+          .eq('application_id', applicationData.id)
+          .order('created_at', { ascending: false })
+          .maybeSingle();
+
+        if (appThread) {
+          threadId = appThread.id;
+          console.log('Found thread by application_id:', threadId);
+        } else {
+          console.log('No thread found for application_id:', applicationData.id);
+        }
+      } else {
+        console.log('No application found for sender email:', emailData.from);
+      }
+    }
+
+    // Strategy 3: If still no thread found, try to find existing thread by subject and participants
     if (!threadId) {
       const normalizedSubject = emailData.subject
         .replace(/^(Re:|RE:|Fwd:|FWD:)\s*/gi, '')
@@ -305,7 +345,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       const { data: existingThreads, error: searchError } = await supabase
         .from('email_threads')
-        .select('id, user_id, participants')
+        .select('id, user_id, participants, application_id')
         .eq('user_id', userId)
         .ilike('subject', `%${normalizedSubject}%`)
         .order('created_at', { ascending: false })
@@ -321,9 +361,14 @@ const handler = async (req: Request): Promise<Response> => {
             ? thread.participants 
             : [];
           
-          console.log('Checking thread:', thread.id, 'participants:', participants);
+          console.log('Checking thread:', {
+            id: thread.id,
+            participants: participants,
+            applicationId: thread.application_id,
+            senderEmail: emailData.from
+          });
           
-          if (participants.includes(emailData.from)) {
+          if (participants.some(p => typeof p === 'string' && p.toLowerCase() === emailData.from.toLowerCase())) {
             threadId = thread.id;
             console.log('Found matching thread by participants:', threadId);
             break;
@@ -336,17 +381,34 @@ const handler = async (req: Request): Promise<Response> => {
     if (!threadId) {
       console.log('No existing thread found, creating new thread');
       
+      // Check if this is from a known candidate
+      const { data: candidateApp, error: candidateError } = await supabase
+        .from('applications')
+        .select('id, job_id, jobs!inner(user_id)')
+        .eq('email', emailData.from)
+        .eq('jobs.user_id', userId)
+        .maybeSingle();
+
+      const threadData: any = {
+        user_id: userId,
+        subject: emailData.subject,
+        participants: [emailData.from, emailData.to],
+        reply_to_email: emailData.to,
+        last_message_at: new Date().toISOString(),
+        unread_count: 1,
+        status: 'active'
+      };
+
+      // If this is from a known candidate, link to application
+      if (candidateApp) {
+        threadData.application_id = candidateApp.id;
+        threadData.job_id = candidateApp.job_id;
+        console.log('Linking thread to application:', candidateApp.id);
+      }
+      
       const { data: newThread, error: createError } = await supabase
         .from('email_threads')
-        .insert({
-          user_id: userId,
-          subject: emailData.subject,
-          participants: [emailData.from, emailData.to],
-          reply_to_email: emailData.to,
-          last_message_at: new Date().toISOString(),
-          unread_count: 1,
-          status: 'active'
-        })
+        .insert(threadData)
         .select('id')
         .single();
 
@@ -356,7 +418,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       threadId = newThread.id;
-      console.log('Created new thread:', threadId);
+      console.log('Created new thread with application link:', threadId);
     }
 
     if (!threadId) {
