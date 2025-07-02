@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
@@ -107,7 +108,7 @@ export const CandidateDetailContent = ({
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="skills" disabled={!hasSkillsAssessment}>
-            Skills {!hasSkillsAssessment && "(None)"}
+            Assessment {!hasSkillsAssessment && "(None)"}
           </TabsTrigger>
           <TabsTrigger value="video" disabled={!hasVideoContent}>
             Video {!hasVideoContent && "(None)"}
