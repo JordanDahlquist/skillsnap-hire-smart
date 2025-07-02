@@ -1,177 +1,83 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
+import { CandidateResumeTab } from "./tabs/CandidateResumeTab";
 import { CandidateSkillsTab } from "./tabs/CandidateSkillsTab";
 import { CandidateVideoTab } from "./tabs/CandidateVideoTab";
-import { CandidateResumeTab } from "./tabs/CandidateResumeTab";
+import { CandidateDocumentsTab } from "./tabs/CandidateDocumentsTab";
 import { CandidateActivityTab } from "./tabs/CandidateActivityTab";
 import { CandidateEmailTab } from "./tabs/CandidateEmailTab";
-import { RejectionConfirmationDialog } from "@/components/ui/rejection-confirmation-dialog";
-import { Application, Job } from "@/types";
+import type { Application, Job } from "@/types";
 
 interface CandidateDetailContentProps {
   application: Application;
   job: Job;
   onApplicationUpdate: () => void;
-  onReject?: () => void;
-  onUnreject?: () => void;
-  onEmail?: () => void;
-  isUpdating?: boolean;
+  initialTab?: string;
 }
 
 export const CandidateDetailContent = ({ 
   application, 
   job, 
   onApplicationUpdate,
-  onReject,
-  onUnreject,
-  onEmail,
-  isUpdating = false
+  initialTab = 'overview'
 }: CandidateDetailContentProps) => {
-  const [activeTab, setActiveTab] = useState("overview");
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState(initialTab);
 
-  // Parse skills test responses
-  const skillsResponses = Array.isArray(application.skills_test_responses) 
-    ? application.skills_test_responses 
-    : [];
-
-  // Check for video content in skills responses
-  const skillsVideoResponses = skillsResponses.filter((response: any) => 
-    response.answerType === 'video' && response.videoUrl
-  );
-
-  // Check for video content in interview responses (both new and legacy fields)
-  let hasInterviewVideos = false;
-
-  // Check new interview_video_responses field
-  if (application.interview_video_responses) {
-    try {
-      let interviewResponses = [];
-      if (Array.isArray(application.interview_video_responses)) {
-        interviewResponses = application.interview_video_responses;
-      } else if (typeof application.interview_video_responses === 'string') {
-        interviewResponses = JSON.parse(application.interview_video_responses);
-      }
-      
-      const interviewVideoResponses = interviewResponses.filter((response: any) => 
-        response.answerType === 'video' && response.videoUrl
-      );
-      
-      if (interviewVideoResponses.length > 0) {
-        hasInterviewVideos = true;
-      }
-    } catch (error) {
-      // Continue to check legacy field
-    }
-  }
-
-  // Check legacy interview_video_url field if no videos found in new field
-  if (!hasInterviewVideos && application.interview_video_url) {
-    try {
-      // Try to parse as JSON array first
-      const parsed = JSON.parse(application.interview_video_url);
-      if (Array.isArray(parsed)) {
-        const videoResponses = parsed.filter((response: any) => 
-          response.answerType === 'video' && response.videoUrl
-        );
-        hasInterviewVideos = videoResponses.length > 0;
-      }
-    } catch (error) {
-      // If not valid JSON, treat as single video URL
-      if (application.interview_video_url.startsWith('http') || 
-          application.interview_video_url.startsWith('blob:') ||
-          application.interview_video_url.includes('supabase')) {
-        hasInterviewVideos = true;
-      }
-    }
-  }
-
-  const hasSkillsAssessment = skillsResponses.length > 0;
-  const hasVideoContent = skillsVideoResponses.length > 0 || hasInterviewVideos;
-  const hasResume = !!(application.resume_file_path);
-
-  const handleReject = () => {
-    setShowRejectDialog(true);
-  };
-
-  const handleConfirmReject = (reason: string) => {
-    onReject?.();
-    setShowRejectDialog(false);
-  };
+  // Update active tab when initialTab changes (from URL)
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   return (
-    <div className="relative">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
+    <div className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-7 mb-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="resume">Resume</TabsTrigger>
+          <TabsTrigger value="skills">Skills</TabsTrigger>
+          <TabsTrigger value="video">Video</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
-          <TabsTrigger value="skills" disabled={!hasSkillsAssessment}>
-            Assessment {!hasSkillsAssessment && "(None)"}
-          </TabsTrigger>
-          <TabsTrigger value="video" disabled={!hasVideoContent}>
-            Video {!hasVideoContent && "(None)"}
-          </TabsTrigger>
-          <TabsTrigger value="resume" disabled={!hasResume}>
-            Resume {!hasResume && "(None)"}
-          </TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="mt-0">
           <CandidateOverviewTab 
-            application={application}
+            application={application} 
             job={job}
             onApplicationUpdate={onApplicationUpdate}
-            onReject={handleReject}
-            onUnreject={onUnreject}
-            onEmail={onEmail}
-            isUpdating={isUpdating}
           />
         </TabsContent>
 
-        <TabsContent value="email" className="space-y-6">
+        <TabsContent value="resume" className="mt-0">
+          <CandidateResumeTab application={application} />
+        </TabsContent>
+
+        <TabsContent value="skills" className="mt-0">
+          <CandidateSkillsTab application={application} />
+        </TabsContent>
+
+        <TabsContent value="video" className="mt-0">
+          <CandidateVideoTab application={application} />
+        </TabsContent>
+
+        <TabsContent value="documents" className="mt-0">
+          <CandidateDocumentsTab application={application} />
+        </TabsContent>
+
+        <TabsContent value="email" className="mt-0">
           <CandidateEmailTab 
-            application={application}
+            application={application} 
             job={job}
           />
         </TabsContent>
 
-        <TabsContent value="skills" className="space-y-6">
-          <CandidateSkillsTab 
-            application={application}
-            skillsResponses={skillsResponses}
-          />
-        </TabsContent>
-
-        <TabsContent value="video" className="space-y-6">
-          <CandidateVideoTab 
-            application={application}
-          />
-        </TabsContent>
-
-        <TabsContent value="resume" className="space-y-6">
-          <CandidateResumeTab 
-            application={application}
-          />
-        </TabsContent>
-
-        <TabsContent value="activity" className="space-y-6">
-          <CandidateActivityTab 
-            application={application}
-          />
+        <TabsContent value="activity" className="mt-0">
+          <CandidateActivityTab application={application} />
         </TabsContent>
       </Tabs>
-
-      {/* Rejection Confirmation Dialog */}
-      <RejectionConfirmationDialog
-        open={showRejectDialog}
-        onOpenChange={setShowRejectDialog}
-        candidateName={application.name}
-        isUpdating={isUpdating}
-        onConfirm={handleConfirmReject}
-      />
     </div>
   );
 };

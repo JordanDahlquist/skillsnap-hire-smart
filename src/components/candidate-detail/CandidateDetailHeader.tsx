@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,10 +12,10 @@ import {
 } from "@/components/ui/breadcrumb";
 import { renderAIRating } from "@/components/dashboard/utils/ratingUtils";
 import { StageSelector } from "@/components/dashboard/StageSelector";
-import { EmailComposerModal } from "@/components/dashboard/EmailComposerModal";
 import { RejectionConfirmationDialog } from "@/components/ui/rejection-confirmation-dialog";
 import { useSimpleRejection } from "@/hooks/useSimpleRejection";
 import { useCandidateInboxData } from "@/hooks/useCandidateInboxData";
+import { useEmailNavigation } from "@/hooks/useEmailNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Application, Job } from "@/types";
@@ -42,9 +41,9 @@ export const CandidateDetailHeader = ({
   onEmail: propOnEmail,
   isUpdating: propIsUpdating
 }: CandidateDetailHeaderProps) => {
-  const [showEmailComposer, setShowEmailComposer] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [isUpdatingRating, setIsUpdatingRating] = useState(false);
+  const { navigateToEmailTab } = useEmailNavigation();
   
   // Local state for immediate UI updates
   const [localApplication, setLocalApplication] = useState(application);
@@ -157,7 +156,8 @@ export const CandidateDetailHeader = ({
   };
 
   const handleEmail = () => {
-    setShowEmailComposer(true);
+    // Navigate to email tab instead of showing modal
+    navigateToEmailTab(localApplication, job.id);
     propOnEmail?.();
   };
 
@@ -320,14 +320,6 @@ export const CandidateDetailHeader = ({
           )}
         </div>
       </div>
-
-      {/* Email Composer Modal */}
-      <EmailComposerModal
-        open={showEmailComposer}
-        onOpenChange={setShowEmailComposer}
-        selectedApplications={[localApplication]}
-        job={job}
-      />
 
       {/* Rejection Confirmation Dialog */}
       <RejectionConfirmationDialog

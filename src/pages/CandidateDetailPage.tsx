@@ -1,5 +1,4 @@
-
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useOptimizedJob } from "@/hooks/useOptimizedJobs";
 import { useOptimizedApplications } from "@/hooks/useOptimizedApplications";
@@ -16,10 +15,14 @@ import { logger } from "@/services/loggerService";
 
 export const CandidateDetailPage = () => {
   const { applicationId } = useParams<{ applicationId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useOptimizedAuth();
   const { currentImage, nextImage, isTransitioning, showSecondary } = useRotatingBackground();
   const { currentTheme } = useThemeContext();
+
+  // Get the tab parameter from URL
+  const initialTab = searchParams.get('tab') || 'overview';
 
   // First, get the specific application
   const {
@@ -124,6 +127,7 @@ export const CandidateDetailPage = () => {
               application={selectedApplication}
               job={job}
               onApplicationUpdate={handleApplicationUpdate}
+              initialTab={initialTab}
             />
           </div>
 
@@ -276,6 +280,7 @@ export const CandidateDetailPage = () => {
             application={selectedApplication}
             job={job}
             onApplicationUpdate={handleApplicationUpdate}
+            initialTab={initialTab}
           />
         </div>
 

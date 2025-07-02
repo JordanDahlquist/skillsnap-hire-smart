@@ -6,6 +6,7 @@ import { ApplicationRejectionDialog } from "./components/ApplicationRejectionDia
 import { ApplicationDetailFallback } from "./components/ApplicationDetailFallback";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useEmailNavigation } from "@/hooks/useEmailNavigation";
 import { Application } from "@/types";
 import { useCandidateInboxData } from "@/hooks/useCandidateInboxData";
 import { useSimpleRejection } from "@/hooks/useSimpleRejection";
@@ -24,6 +25,9 @@ interface ApplicationDetailProps {
   getRatingStars: (rating: number | null) => JSX.Element[];
   getTimeAgo: (dateString: string) => string;
   onApplicationUpdate?: () => void;
+  selectedApplications?: Application[];
+  showBulkEmailModal?: boolean;
+  onBulkEmailModalChange?: (show: boolean) => void;
 }
 
 export const ApplicationDetail = ({ 
@@ -33,14 +37,17 @@ export const ApplicationDetail = ({
   getStatusColor,
   getRatingStars,
   getTimeAgo,
-  onApplicationUpdate 
+  onApplicationUpdate,
+  selectedApplications = [],
+  showBulkEmailModal = false,
+  onBulkEmailModalChange
 }: ApplicationDetailProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
   const [customReason, setCustomReason] = useState("");
-  const [showEmailModal, setShowEmailModal] = useState(false);
   const { toast } = useToast();
+  const { navigateToEmailTabFromJob } = useEmailNavigation();
 
   // Get the sendReply function for email functionality
   const { sendReply } = useCandidateInboxData(selectedApplication?.id || '');
@@ -168,6 +175,13 @@ export const ApplicationDetail = ({
     }
   };
 
+  const handleEmail = () => {
+    if (selectedApplication) {
+      // Navigate to candidate's email tab instead of showing modal
+      navigateToEmailTabFromJob(job.id, selectedApplication.id);
+    }
+  };
+
   if (selectedApplication) {
     return (
       <>
@@ -180,17 +194,20 @@ export const ApplicationDetail = ({
           onManualRating={handleManualRating}
           onReject={handleReject}
           onUnreject={handleUnreject}
-          onEmail={() => setShowEmailModal(true)}
+          onEmail={handleEmail}
           jobId={job.id}
           onStageChange={handleStageChange}
         />
 
-        <EmailComposerModal
-          open={showEmailModal}
-          onOpenChange={setShowEmailModal}
-          selectedApplications={[selectedApplication]}
-          job={job as any}
-        />
+        {/* Only show bulk email modal if there are multiple selected applications */}
+        {showBulkEmailModal && selectedApplications.length > 1 && (
+          <EmailComposerModal
+            open={showBulkEmailModal}
+            onOpenChange={onBulkEmailModalChange || (() => {})}
+            selectedApplications={selectedApplications}
+            job={job as any}
+          />
+        )}
 
         <ApplicationRejectionDialog
           open={showRejectDialog}

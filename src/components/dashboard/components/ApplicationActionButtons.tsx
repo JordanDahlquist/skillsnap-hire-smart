@@ -2,13 +2,14 @@
 import { Button } from "@/components/ui/button";
 import { ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { StageSelector } from "../StageSelector";
+import { useEmailNavigation } from "@/hooks/useEmailNavigation";
 
 interface ApplicationActionButtonsProps {
   status: string;
   isUpdating: boolean;
   onReject: () => void;
   onUnreject: () => void;
-  onEmail: () => void;
+  onEmail?: () => void;
   jobId: string;
   applicationId: string;
   currentStage: string | null;
@@ -26,6 +27,17 @@ export const ApplicationActionButtons = ({
   currentStage,
   onStageChange
 }: ApplicationActionButtonsProps) => {
+  const { navigateToEmailTabFromJob } = useEmailNavigation();
+
+  const handleEmail = () => {
+    if (onEmail) {
+      onEmail();
+    } else {
+      // Default behavior: navigate to email tab
+      navigateToEmailTabFromJob(jobId, applicationId);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2">
       {/* Action Buttons Row */}
@@ -55,7 +67,7 @@ export const ApplicationActionButtons = ({
         )}
         <Button 
           size="sm" 
-          onClick={onEmail}
+          onClick={handleEmail}
           className="bg-blue-600 hover:bg-blue-700 flex-1"
         >
           <Mail className="w-4 h-4 mr-1.5" />
