@@ -7,6 +7,8 @@ import { EmailRichTextEditor } from '@/components/inbox/EmailRichTextEditor';
 import { Button } from '@/components/ui/button';
 import { Send, Mail, User, Briefcase, AtSign, Building } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { emailService } from '@/services/emailService';
+import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
 import type { Application, Job } from '@/types';
 
 interface CandidateInboxSectionProps {
@@ -25,20 +27,35 @@ const extractTextFromHtml = (html: string): string => {
 
 export const CandidateInboxSection = ({ application, job }: CandidateInboxSectionProps) => {
   const { toast } = useToast();
+  const { user, profile } = useOptimizedAuth();
   const {
     messages,
     threads,
     isLoading,
-    sendReply
+    sendReply,
+    refetchThreads
   } = useCandidateInboxData(application.id);
 
   const [replyContent, setReplyContent] = React.useState('');
   const [isSending, setIsSending] = React.useState(false);
 
-  // Find the thread for this candidate
+  // Find the thread for this candidate - try by application_id first, then by participant email
   const candidateThread = useMemo(() => {
-    return threads.find(thread => thread.application_id === application.id);
-  }, [threads, application.id]);
+    // First try to find by application_id
+    let thread = threads.find(thread => thread.application_id === application.id);
+    
+    // If no thread found by application_id, try to find by participant email
+    if (!thread) {
+      thread = threads.find(thread => {
+        const participants = Array.isArray(thread.participants) ? thread.participants : [];
+        return participants.some(participant => 
+          typeof participant === 'string' && participant === application.email
+        );
+      });
+    }
+    
+    return thread;
+  }, [threads, application.id, application.email]);
 
   // Filter messages for this candidate's thread
   const candidateMessages = useMemo(() => {
@@ -72,7 +89,7 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
 
   const handleSendReply = async () => {
     const textContent = extractTextFromHtml(replyContent);
-    if (!textContent.trim() || !candidateThread) {
+    if (!textContent.trim()) {
       toast({
         title: "Error",
         description: "Please enter a message before sending",
@@ -81,15 +98,43 @@ export const CandidateInboxSection = ({ application, job }: CandidateInboxSectio
       return;
     }
 
+    if (!user || !profile?.unique_email) {
+      toast({
+        title: "Error",
+        description: "User authentication required",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSending(true);
     try {
-      await sendReply(candidateThread.id, replyContent);
+      let threadId = candidateThread?.id;
+      
+      // If no thread exists, create one
+      if (!threadId) {
+        console.log('No thread found, creating new thread for candidate:', application.email);
+        threadId = await emailService.createEmailThread({
+          userId: user.id,
+          applicationId: application.id,
+          jobId: job.id,
+          subject: `Regarding ${job.title} Application`,
+          participants: [profile.unique_email, application.email],
+          userUniqueEmail: profile.unique_email
+        });
+        
+        // Refresh threads to get the new thread
+        await refetchThreads();
+      }
+
+      await sendReply(threadId, replyContent);
       setReplyContent('');
       toast({
         title: "Message sent",
         description: "Your message has been sent successfully",
       });
     } catch (error) {
+      console.error('Failed to send message:', error);
       toast({
         title: "Error",
         description: "Failed to send message",
