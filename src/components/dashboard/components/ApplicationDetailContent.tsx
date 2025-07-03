@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,10 +49,12 @@ export const ApplicationDetailContent = ({
   const interviewTranscripts = safeParseVideoTranscripts(application.interview_video_transcripts || []);
 
   const handleViewFullProfile = () => {
+    console.log('Navigating to full profile:', `/jobs/${jobId}/candidate/${application.id}`);
     navigate(`/jobs/${jobId}/candidate/${application.id}`);
   };
 
   const handleViewResume = () => {
+    console.log('Navigating to resume tab:', `/jobs/${jobId}/candidate/${application.id}?tab=resume`);
     navigate(`/jobs/${jobId}/candidate/${application.id}?tab=resume`);
   };
 
