@@ -25,7 +25,7 @@ export const ScoutVideoCharacter = () => {
         <iframe
           key={videoKey}
           ref={iframeRef}
-          src="https://player.vimeo.com/video/1098642733?autoplay=1&loop=0&muted=1&controls=0&title=0&byline=0&portrait=0&background=1"
+          src="https://player.vimeo.com/video/1098645553?autoplay=1&loop=0&muted=1&controls=0&title=0&byline=0&portrait=0&background=1"
           title="Scout AI Character"
           className="w-full h-full"
           allow="autoplay; encrypted-media"
