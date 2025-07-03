@@ -20,6 +20,7 @@ export const StageSelector = ({
   const { stages, updateApplicationStage, isUpdating } = useHiringStages(jobId);
 
   const handleStageChange = (newStage: string) => {
+    console.log('StageSelector change initiated:', { applicationId, newStage, currentStage });
     updateApplicationStage({ applicationId, stage: newStage });
     onStageChange?.(applicationId, newStage);
   };
@@ -76,25 +77,36 @@ export const StageSelector = ({
           focus:ring-offset-2
           transition-all duration-200
         `}
+        title="Change pipeline stage (automatically updates status)"
       >
         <SelectValue placeholder={getCurrentStageName()} />
       </SelectTrigger>
       <SelectContent className="bg-popover/95 backdrop-blur-md border border-border shadow-md z-50">
-        {stages.map((stage) => (
-          <SelectItem 
-            key={stage.id} 
-            value={getStageKey(stage.name)}
-            className="hover:bg-accent hover:text-accent-foreground cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <div 
-                className="w-2 h-2 rounded-full" 
-                style={{ backgroundColor: stage.color }}
-              />
-              {stage.name}
-            </div>
-          </SelectItem>
-        ))}
+        {stages.map((stage) => {
+          const stageKey = getStageKey(stage.name);
+          const isRejectedStage = stage.name.toLowerCase() === 'rejected';
+          
+          return (
+            <SelectItem 
+              key={stage.id} 
+              value={stageKey}
+              className={`hover:bg-accent hover:text-accent-foreground cursor-pointer ${
+                isRejectedStage ? 'text-red-600' : ''
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-2 h-2 rounded-full" 
+                  style={{ backgroundColor: stage.color }}
+                />
+                {stage.name}
+                {isRejectedStage && (
+                  <span className="text-xs opacity-70">(sets status to rejected)</span>
+                )}
+              </div>
+            </SelectItem>
+          );
+        })}
       </SelectContent>
     </Select>
   );

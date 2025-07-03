@@ -38,6 +38,11 @@ export const ApplicationActionButtons = ({
     }
   };
 
+  const handleStageChangeWithLogging = (appId: string, newStage: string) => {
+    console.log('Stage change from ApplicationActionButtons:', { appId, newStage });
+    onStageChange?.(appId, newStage);
+  };
+
   return (
     <div className="flex flex-col gap-2">
       {/* Action Buttons Row */}
@@ -49,6 +54,7 @@ export const ApplicationActionButtons = ({
             onClick={onUnreject}
             disabled={isUpdating}
             className="border-green-200 text-green-600 hover:bg-green-50 flex-1"
+            title="Move candidate back to pending status and clear rejection"
           >
             <RotateCcw className="w-4 h-4 mr-1.5" />
             Unreject
@@ -60,6 +66,7 @@ export const ApplicationActionButtons = ({
             onClick={onReject}
             disabled={isUpdating}
             className="border-red-200 text-red-600 hover:bg-red-50 flex-1"
+            title="Reject candidate and move to rejected stage"
           >
             <ThumbsDown className="w-4 h-4 mr-1.5" />
             Reject
@@ -80,7 +87,7 @@ export const ApplicationActionButtons = ({
         jobId={jobId}
         currentStage={currentStage}
         applicationId={applicationId}
-        onStageChange={onStageChange}
+        onStageChange={handleStageChangeWithLogging}
         size="sm"
       />
     </div>

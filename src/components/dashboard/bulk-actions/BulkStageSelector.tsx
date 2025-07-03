@@ -22,6 +22,11 @@ export const BulkStageSelector = ({ jobId, onStageChange, disabled }: BulkStageS
   const activeStages = stages.filter(stage => stage.name.toLowerCase() !== 'rejected');
   const rejectedStage = stages.find(stage => stage.name.toLowerCase() === 'rejected');
 
+  const handleStageChange = (stageKey: string) => {
+    console.log('Bulk stage change initiated:', stageKey);
+    onStageChange(stageKey);
+  };
+
   return (
     <>
       <DropdownMenuItem disabled className="font-medium text-xs text-gray-500 uppercase tracking-wide">
@@ -30,7 +35,7 @@ export const BulkStageSelector = ({ jobId, onStageChange, disabled }: BulkStageS
       {activeStages.map((stage) => (
         <DropdownMenuItem
           key={stage.id}
-          onClick={() => onStageChange(getStageKey(stage.name))}
+          onClick={() => handleStageChange(getStageKey(stage.name))}
           disabled={disabled}
         >
           <div className="flex items-center gap-2">
@@ -49,7 +54,7 @@ export const BulkStageSelector = ({ jobId, onStageChange, disabled }: BulkStageS
           <DropdownMenuItem disabled className="h-px bg-border my-1" />
           <DropdownMenuItem
             key={rejectedStage.id}
-            onClick={() => onStageChange(getStageKey(rejectedStage.name))}
+            onClick={() => handleStageChange(getStageKey(rejectedStage.name))}
             disabled={disabled}
             className="text-red-600"
           >
