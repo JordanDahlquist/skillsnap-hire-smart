@@ -4,20 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 export const ScoutVideoCharacter = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isVisible, setIsVisible] = useState(true);
+  const [videoKey, setVideoKey] = useState(0);
 
   useEffect(() => {
     // Set up interval to restart the video every 15 seconds
     const interval = setInterval(() => {
-      if (iframeRef.current) {
-        // Reload the iframe to restart the video
-        const currentSrc = iframeRef.current.src;
-        iframeRef.current.src = '';
-        setTimeout(() => {
-          if (iframeRef.current) {
-            iframeRef.current.src = currentSrc;
-          }
-        }, 100);
-      }
+      // Instead of clearing the src, we force a re-render with a new key
+      // This avoids the black screen issue
+      setVideoKey(prev => prev + 1);
     }, 15000); // 15 seconds
 
     return () => clearInterval(interval);
@@ -27,12 +21,13 @@ export const ScoutVideoCharacter = () => {
 
   return (
     <div className="flex justify-center mb-4">
-      <div className="relative w-20 h-20 rounded-full overflow-hidden shadow-lg border-2 border-white/20">
+      <div className="relative w-32 h-24 shadow-lg border-2 border-white/20 rounded-lg overflow-hidden">
         <iframe
+          key={videoKey}
           ref={iframeRef}
-          src="https://www.youtube.com/embed/LKpzePb6vHs?autoplay=1&loop=1&mute=1&controls=0&showinfo=0&rel=0&disablekb=1&fs=0&modestbranding=1&playsinline=1&start=0&end=10"
+          src="https://player.vimeo.com/video/1098642733?autoplay=1&loop=0&muted=1&controls=0&title=0&byline=0&portrait=0&background=1"
           title="Scout AI Character"
-          className="w-full h-full scale-150 -translate-y-2"
+          className="w-full h-full"
           allow="autoplay; encrypted-media"
           allowFullScreen={false}
           style={{
