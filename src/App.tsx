@@ -68,6 +68,7 @@ function App() {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/simple-signup" element={<SimpleSignUp />} />
               <Route path="/confirm" element={<ConfirmEmail />} />
+              <Route path="/confirm-email" element={<ConfirmEmail />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/jobs" element={<AuthGuard><OptimizedJobsPage /></AuthGuard>} />
               <Route path="/jobs/:jobId" element={<AuthGuard><DashboardPage /></AuthGuard>} />
