@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -62,7 +61,7 @@ export const useHiringStages = (jobId: string | undefined) => {
       // First, get the current application data to determine appropriate status
       const { data: currentApp, error: fetchError } = await supabase
         .from('applications')
-        .select('manual_rating, status, rejection_reason')
+        .select('manual_rating, status, rejection_reason, pipeline_stage')
         .eq('id', applicationId)
         .single();
       
@@ -78,8 +77,13 @@ export const useHiringStages = (jobId: string | undefined) => {
         updated_at: new Date().toISOString()
       };
       
-      // Clear rejection reason if moving away from rejected status
-      if (currentApp?.status === 'rejected' && newStatus !== 'rejected') {
+      // Handle stage-specific logic
+      if (stage === 'rejected') {
+        // When moving to rejected, store the current stage as previous
+        updateData.previous_pipeline_stage = currentApp?.pipeline_stage;
+      } else if (currentApp?.status === 'rejected' && newStatus !== 'rejected') {
+        // When moving away from rejected, clear the previous stage tracking and rejection reason
+        updateData.previous_pipeline_stage = null;
         updateData.rejection_reason = null;
       }
       
@@ -87,6 +91,7 @@ export const useHiringStages = (jobId: string | undefined) => {
         applicationId,
         stage,
         newStatus,
+        previousStage: updateData.previous_pipeline_stage,
         clearingRejection: currentApp?.status === 'rejected' && newStatus !== 'rejected'
       });
       
@@ -119,35 +124,39 @@ export const useHiringStages = (jobId: string | undefined) => {
       // Get current application data for all applications
       const { data: currentApps, error: fetchError } = await supabase
         .from('applications')
-        .select('id, manual_rating, status')
+        .select('id, manual_rating, status, pipeline_stage')
         .in('id', applicationIds);
       
       if (fetchError) throw fetchError;
       
-      // Update each application with appropriate status
+      // Update each application with appropriate status and stage tracking
       const updates = currentApps?.map(app => {
         const newStatus = getStatusFromStage(stage, app.manual_rating);
-        return {
+        const updateData: any = {
           id: app.id,
           pipeline_stage: stage,
           status: newStatus,
-          // Clear rejection reason if moving away from rejected status
-          rejection_reason: app.status === 'rejected' && newStatus !== 'rejected' ? null : undefined,
           updated_at: new Date().toISOString()
         };
+
+        // Handle stage-specific logic
+        if (stage === 'rejected') {
+          updateData.previous_pipeline_stage = app.pipeline_stage;
+        } else if (app.status === 'rejected' && newStatus !== 'rejected') {
+          updateData.previous_pipeline_stage = null;
+          updateData.rejection_reason = null;
+        }
+
+        return updateData;
       }) || [];
       
       // Perform bulk update
       for (const update of updates) {
-        const { rejection_reason, ...updateData } = update;
-        const finalUpdate = rejection_reason === null 
-          ? { ...updateData, rejection_reason: null }
-          : updateData;
-          
+        const { id, ...updateData } = update;
         const { error } = await supabase
           .from('applications')
-          .update(finalUpdate)
-          .eq('id', update.id);
+          .update(updateData)
+          .eq('id', id);
         
         if (error) throw error;
       }

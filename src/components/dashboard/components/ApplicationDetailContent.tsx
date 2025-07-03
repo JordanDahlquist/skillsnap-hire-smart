@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,6 +80,13 @@ export const ApplicationDetailContent = ({
     }
   };
 
+  // Get unreject preview text
+  const getUnrejectPreview = () => {
+    const restoreStage = application.previous_pipeline_stage || 'applied';
+    const stageDisplayName = restoreStage.charAt(0).toUpperCase() + restoreStage.slice(1).replace('_', ' ');
+    return `Unreject (→ ${stageDisplayName})`;
+  };
+
   return (
     <div className="glass-card-no-hover p-6 space-y-6">
       {/* Redesigned Sleek Header */}
@@ -156,9 +162,10 @@ export const ApplicationDetailContent = ({
                 onClick={onUnreject}
                 disabled={isUpdating}
                 className="border-green-200 text-green-600 hover:bg-green-50 h-9 px-4"
+                title={`Will restore to ${application.previous_pipeline_stage || 'applied'} stage`}
               >
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Unreject
+                {getUnrejectPreview()}
               </Button>
             ) : (
               <Button 
@@ -368,6 +375,11 @@ export const ApplicationDetailContent = ({
           <h3 className="text-lg font-semibold text-foreground">Rejection Reason</h3>
           <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
             <p className="text-foreground">{application.rejection_reason}</p>
+            {application.previous_pipeline_stage && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Was previously in {application.previous_pipeline_stage} stage
+              </p>
+            )}
           </div>
         </div>
       )}
