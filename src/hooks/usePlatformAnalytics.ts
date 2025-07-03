@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { logger } from '@/services/loggerService';
 
 interface PlatformAnalytics {
   totalUsers: number;
@@ -15,61 +17,108 @@ interface PlatformAnalytics {
 }
 
 export const usePlatformAnalytics = () => {
+  const { user } = useAuth();
   const [analytics, setAnalytics] = useState<PlatformAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
+      if (!user?.id) {
+        setAnalytics(null);
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        // Use Promise.allSettled to handle potential errors gracefully
-        const results = await Promise.allSettled([
-          supabase.from('profiles').select('*', { count: 'exact', head: true }),
-          supabase.from('jobs').select('*', { count: 'exact', head: true }),
-          supabase.from('applications').select('*', { count: 'exact', head: true }),
-          supabase.from('profiles').select('created_at').gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
-          supabase.from('jobs').select('created_at').gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
-          supabase.from('applications').select('created_at').gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
-          supabase.from('subscriptions').select('status')
+        setIsLoading(true);
+        setError(null);
+
+        logger.info('Fetching user-specific analytics');
+
+        // For regular users, show only their own data
+        const [
+          { data: userJobs, error: jobsError },
+          { data: userApplications, error: applicationsError },
+          { data: userSubscription, error: subscriptionError }
+        ] = await Promise.all([
+          supabase
+            .from('jobs')
+            .select('id, created_at')
+            .eq('user_id', user.id),
+          supabase
+            .from('applications')
+            .select('id, created_at')
+            .in('job_id', 
+              await supabase
+                .from('jobs')
+                .select('id')
+                .eq('user_id', user.id)
+                .then(({ data }) => data?.map(j => j.id) || [])
+            ),
+          supabase
+            .from('subscriptions')
+            .select('status')
+            .eq('user_id', user.id)
+            .single()
         ]);
 
-        // Extract data with fallbacks
-        const totalUsers = results[0].status === 'fulfilled' ? results[0].value.count || 0 : 0;
-        const totalJobs = results[1].status === 'fulfilled' ? results[1].value.count || 0 : 0;
-        const totalApplications = results[2].status === 'fulfilled' ? results[2].value.count || 0 : 0;
-        const recentUsers = results[3].status === 'fulfilled' ? results[3].value.data || [] : [];
-        const recentJobs = results[4].status === 'fulfilled' ? results[4].value.data || [] : [];
-        const recentApplications = results[5].status === 'fulfilled' ? results[5].value.data || [] : [];
-        const subscriptions = results[6].status === 'fulfilled' ? results[6].value.data || [] : [];
+        if (jobsError) {
+          logger.error('Error fetching user jobs:', jobsError);
+        }
 
-        const usersLast7Days = recentUsers?.filter(user => 
-          new Date(user.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        ).length || 0;
+        if (applicationsError) {
+          logger.error('Error fetching user applications:', applicationsError);
+        }
 
-        const activeSubscriptions = subscriptions?.filter(sub => sub.status === 'active').length || 0;
-        const trialSubscriptions = subscriptions?.filter(sub => sub.status === 'trial').length || 0;
+        if (subscriptionError) {
+          logger.error('Error fetching user subscription:', subscriptionError);
+        }
 
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        const jobsLast30Days = (userJobs || []).filter(
+          job => new Date(job.created_at) >= thirtyDaysAgo
+        ).length;
+
+        const applicationsLast30Days = (userApplications || []).filter(
+          app => new Date(app.created_at) >= thirtyDaysAgo
+        ).length;
+
+        // For regular users, analytics show their personal stats
         setAnalytics({
-          totalUsers,
-          usersLast30Days: recentUsers?.length || 0,
-          usersLast7Days,
-          totalJobs,
-          jobsLast30Days: recentJobs?.length || 0,
-          totalApplications,
-          applicationsLast30Days: recentApplications?.length || 0,
-          activeSubscriptions,
-          trialSubscriptions
+          totalUsers: 1, // Just the current user
+          usersLast30Days: 0, // Not applicable for single user
+          usersLast7Days: 0, // Not applicable for single user
+          totalJobs: (userJobs || []).length,
+          jobsLast30Days,
+          totalApplications: (userApplications || []).length,
+          applicationsLast30Days,
+          activeSubscriptions: userSubscription?.status === 'active' ? 1 : 0,
+          trialSubscriptions: userSubscription?.status === 'trial' ? 1 : 0
         });
-      } catch (err) {
-        console.error('Error fetching analytics:', err);
-        setError('Failed to fetch analytics');
+
+        logger.info('User analytics fetched successfully');
+
+      } catch (err: any) {
+        logger.error('Failed to fetch user analytics:', err);
+        setError(err.message || 'Failed to fetch analytics');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchAnalytics();
-  }, []);
+  }, [user?.id]);
 
-  return { analytics, isLoading, error, refetch: () => window.location.reload() };
+  const refetch = () => {
+    setIsLoading(true);
+    setError(null);
+    // Simple refetch by reloading
+    window.location.reload();
+  };
+
+  return { analytics, isLoading, error, refetch };
 };
