@@ -51,15 +51,28 @@ const ConfirmEmail = () => {
     
     setIsResending(true);
     try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/confirm-email`,
+      console.log('Attempting to resend confirmation email to:', email);
+      
+      // Generate confirmation URL (same as what would be used in signup)
+      const confirmationUrl = `${window.location.origin}/confirm-email?email=${encodeURIComponent(email)}${name ? `&name=${encodeURIComponent(name)}` : ''}`;
+      
+      console.log('Generated confirmation URL:', confirmationUrl);
+      
+      // Call our custom edge function instead of Supabase's built-in resend
+      const { data, error } = await supabase.functions.invoke('send-confirmation-email', {
+        body: {
+          email: email,
+          name: name || email.split('@')[0], // Use email prefix if no name provided
+          confirmationUrl: confirmationUrl
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to send confirmation email');
+      }
+
+      console.log('Edge function response:', data);
 
       toast({
         title: "Email sent!",
@@ -69,6 +82,7 @@ const ConfirmEmail = () => {
       setCountdown(60);
       setCanResend(false);
     } catch (error: any) {
+      console.error('Error resending confirmation email:', error);
       toast({
         title: "Failed to resend email",
         description: error.message || "Please try again later.",
