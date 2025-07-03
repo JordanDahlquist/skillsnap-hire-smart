@@ -29,9 +29,9 @@ export const ChatMessageList = ({
   onSendMessage
 }: ChatMessageListProps) => {
   return (
-    <div className="h-full overflow-hidden" style={{ backgroundColor: '#f2eeeb' }}>
+    <div className="h-full overflow-hidden bg-white">
       <ScrollArea className="h-full" ref={scrollAreaRef}>
-        <div className="min-h-full" ref={messagesContainerRef} style={{ backgroundColor: '#f2eeeb' }}>
+        <div className="min-h-full bg-white" ref={messagesContainerRef}>
           {messages.length === 0 && !isLoading && onSendMessage && (
             <ConversationStarterBubbles onSendMessage={onSendMessage} />
           )}
