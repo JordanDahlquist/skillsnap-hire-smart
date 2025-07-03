@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Users } from "lucide-react";
 
@@ -16,7 +15,7 @@ export const AllApplicationsCard = ({
   return (
     <div
       onClick={() => onStageSelect(null)}
-      className={`group relative glass-card-no-hover cursor-pointer overflow-hidden transition-all duration-300 ${
+      className={`group relative glass-card-no-hover cursor-pointer overflow-hidden transition-all duration-300 rounded-lg ${
         selectedStage === null
           ? 'border-primary ring-2 ring-primary/20 scale-105 shadow-lg'
           : 'hover:scale-102 hover:shadow-md'
