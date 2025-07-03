@@ -49,7 +49,7 @@ export const StageSelector = ({
     return 'applied';
   };
 
-  // Get the display name for the current stage
+  // Get the display name for the current stage (clean, without parenthetical text)
   const getCurrentStageName = () => {
     const stageKey = getCurrentStageKey();
     const stage = stages.find(s => getStageKey(s.name) === stageKey);
@@ -79,7 +79,9 @@ export const StageSelector = ({
         `}
         title="Change pipeline stage (automatically updates status)"
       >
-        <SelectValue placeholder={getCurrentStageName()} />
+        <SelectValue>
+          {getCurrentStageName()}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent className="bg-popover/95 backdrop-blur-md border border-border shadow-md z-50">
         {stages.map((stage) => {
