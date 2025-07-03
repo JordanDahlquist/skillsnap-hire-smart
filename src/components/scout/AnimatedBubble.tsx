@@ -23,59 +23,44 @@ export const AnimatedBubble = ({
     setIsClicked(true);
     setTimeout(() => {
       onClick();
-    }, 200);
+    }, 150);
   };
 
   const sizeClasses = {
-    sm: 'px-4 py-2 text-sm',
-    md: 'px-6 py-3 text-base',
-    lg: 'px-8 py-4 text-lg'
+    sm: 'h-8 px-3 text-xs',
+    md: 'h-10 px-4 text-sm',
+    lg: 'h-12 px-6 text-base'
   };
-
-  const floatDelays = [
-    '',
-    'style={{ animationDelay: "1s" }}',
-    'style={{ animationDelay: "2s" }}',
-    'style={{ animationDelay: "3s" }}',
-    'style={{ animationDelay: "4s" }}'
-  ];
 
   return (
     <div
-      className={`
-        bubble-entrance bubble-delay-${Math.min(delay, 5)}
-        opacity-0
-      `}
-      style={{ animationFillMode: 'forwards' }}
+      className="animate-fade-in opacity-0"
+      style={{ 
+        animationDelay: `${delay * 0.1}s`,
+        animationFillMode: 'forwards'
+      }}
     >
       <Button
         variant="outline"
         className={`
           ${sizeClasses[size]}
-          bubble-float bubble-pulse
-          bg-white/90 backdrop-blur-sm
-          border-blue-200 hover:border-blue-400
+          transition-all duration-200
+          hover:scale-105 hover:shadow-md
+          ${isClicked ? 'scale-95' : ''}
+          bg-white/80 backdrop-blur-sm
+          border-gray-200 hover:border-blue-300
           text-gray-700 hover:text-blue-700
-          shadow-lg hover:shadow-xl
-          transition-all duration-300
-          hover:scale-105 hover:bg-blue-50/90
-          cursor-pointer relative overflow-hidden
-          ${isClicked ? 'bubble-click' : ''}
+          shadow-sm hover:shadow-lg
+          font-medium
         `}
         onClick={handleClick}
-        style={{ 
-          animationDelay: `${delay * 1.5}s`
-        }}
       >
         {icon && (
           <span className="mr-2 text-blue-600">
             {icon}
           </span>
         )}
-        <span className="font-medium">{text}</span>
-        
-        {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/20 to-purple-50/20 pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300" />
+        {text}
       </Button>
     </div>
   );

@@ -60,7 +60,7 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
     setIsVisible(false);
     setTimeout(() => {
       onSendMessage(message);
-    }, 300);
+    }, 200);
   };
 
   const getContextualStarters = () => {
@@ -70,51 +70,52 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
     if (jobsData.length > 0) {
       const topJob = jobsData[0];
       starters.push({
-        text: `Show me top candidates for ${topJob.title}`,
+        text: `Top candidates for ${topJob.title}`,
         icon: <Star className="w-4 h-4" />,
-        message: `Show me the top candidates for ${topJob.title}`
+        message: `Show me the top candidates for ${topJob.title}`,
+        size: 'md' as const
       });
 
       if (jobsData.length > 1) {
         starters.push({
-          text: `Compare candidates across my active jobs`,
+          text: `Compare candidates across jobs`,
           icon: <Users className="w-4 h-4" />,
-          message: `Compare the best candidates across all my active job postings`
+          message: `Compare the best candidates across all my active job postings`,
+          size: 'md' as const
         });
       }
     }
 
-    // Generic but useful starters
-    const genericStarters = [
+    // Core helpful starters
+    const coreStarters = [
       {
-        text: "Give me a hiring pipeline summary",
+        text: "Pipeline summary",
         icon: <BarChart3 className="w-4 h-4" />,
-        message: "Give me a comprehensive summary of my current hiring pipeline with key metrics and insights"
+        message: "Give me a comprehensive summary of my current hiring pipeline with key metrics and insights",
+        size: 'sm' as const
       },
       {
-        text: "Which candidates need my review?",
+        text: "Candidates needing review",
         icon: <Clock className="w-4 h-4" />,
-        message: "Show me all candidates that are pending review and need my attention"
+        message: "Show me all candidates that are pending review and need my attention",
+        size: 'sm' as const
       },
       {
-        text: "Find candidates with specific skills",
+        text: "Find specific skills",
         icon: <Search className="w-4 h-4" />,
-        message: "Help me find candidates with specific technical skills or experience"
+        message: "Help me find candidates with specific technical skills or experience",
+        size: 'sm' as const
       },
       {
-        text: "Suggest hiring improvements",
+        text: "Hiring improvements",
         icon: <TrendingUp className="w-4 h-4" />,
-        message: "Analyze my hiring process and suggest improvements to attract better candidates"
-      },
-      {
-        text: "Quick wins for this week",
-        icon: <Zap className="w-4 h-4" />,
-        message: "What are the quick wins I can achieve in my hiring process this week?"
+        message: "Analyze my hiring process and suggest improvements to attract better candidates",
+        size: 'sm' as const
       }
     ];
 
-    // Combine and limit to 5-6 total
-    const allStarters = [...starters, ...genericStarters].slice(0, 6);
+    // Combine and limit
+    const allStarters = [...starters, ...coreStarters].slice(0, 8);
     return allStarters;
   };
 
@@ -125,33 +126,35 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
   const starters = getContextualStarters();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
+    <div className="flex flex-col h-full justify-center px-6 py-8">
       {/* Header */}
-      <div className="text-center mb-8 animate-fade-in">
-        <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-3">
           Hi there! 👋 I'm Scout AI
-        </h3>
-        <p className="text-gray-600 max-w-md">
-          Your intelligent hiring assistant. Click any bubble below to get started, or ask me anything about your candidates and jobs.
+        </h2>
+        <p className="text-gray-600 max-w-lg mx-auto leading-relaxed">
+          Your intelligent hiring assistant. Click any suggestion below to get started, or ask me anything about your candidates and jobs.
         </p>
       </div>
 
-      {/* Bubbles Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
-        {starters.map((starter, index) => (
-          <AnimatedBubble
-            key={index}
-            text={starter.text}
-            delay={index + 1}
-            onClick={() => handleBubbleClick(starter.message)}
-            icon={starter.icon}
-            size={index < 2 ? 'md' : 'sm'}
-          />
-        ))}
+      {/* Starter Buttons */}
+      <div className="max-w-4xl mx-auto w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+          {starters.map((starter, index) => (
+            <AnimatedBubble
+              key={index}
+              text={starter.text}
+              delay={index + 1}
+              onClick={() => handleBubbleClick(starter.message)}
+              icon={starter.icon}
+              size={starter.size}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Subtle hint */}
-      <div className="mt-8 text-center animate-fade-in" style={{ animationDelay: '2s' }}>
+      {/* Bottom hint */}
+      <div className="text-center">
         <p className="text-sm text-gray-500">
           Or type your own question below ↓
         </p>
