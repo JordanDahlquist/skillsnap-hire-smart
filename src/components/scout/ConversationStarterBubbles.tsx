@@ -66,24 +66,22 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
   const getContextualStarters = () => {
     const starters = [];
 
-    // Dynamic job-specific starters
-    if (jobsData.length > 0) {
-      const topJob = jobsData[0];
+    // First starter - always the same generic question
+    starters.push({
+      text: "Help me find the best candidate option for a specific role.",
+      icon: <Star className="w-4 h-4" />,
+      message: "Help me find the best candidate option for a specific role. I'd like to identify top candidates based on their qualifications and fit.",
+      size: 'md' as const
+    });
+
+    // Dynamic job-specific starters if user has multiple jobs
+    if (jobsData.length > 1) {
       starters.push({
-        text: `Who are the top candidates for ${topJob.title} that I should interview?`,
-        icon: <Star className="w-4 h-4" />,
-        message: `Show me the top candidates for ${topJob.title} that I should prioritize for interviews`,
+        text: `Can you help me compare candidates across all my active job postings?`,
+        icon: <Users className="w-4 h-4" />,
+        message: `Compare the best candidates across all my active job postings and help me identify the strongest ones`,
         size: 'md' as const
       });
-
-      if (jobsData.length > 1) {
-        starters.push({
-          text: `Can you help me compare candidates across all my active job postings?`,
-          icon: <Users className="w-4 h-4" />,
-          message: `Compare the best candidates across all my active job postings and help me identify the strongest ones`,
-          size: 'md' as const
-        });
-      }
     }
 
     // Core helpful starters with natural questions
