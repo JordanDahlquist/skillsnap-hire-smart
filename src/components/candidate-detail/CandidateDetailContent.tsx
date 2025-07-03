@@ -5,7 +5,6 @@ import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
 import { CandidateResumeTab } from "./tabs/CandidateResumeTab";
 import { CandidateSkillsTab } from "./tabs/CandidateSkillsTab";
 import { CandidateVideoTab } from "./tabs/CandidateVideoTab";
-import { CandidateDocumentsTab } from "./tabs/CandidateDocumentsTab";
 import { CandidateActivityTab } from "./tabs/CandidateActivityTab";
 import { CandidateEmailTab } from "./tabs/CandidateEmailTab";
 import type { Application, Job } from "@/types";
@@ -33,13 +32,12 @@ export const CandidateDetailContent = ({
   return (
     <div className="w-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-7 mb-6">
+        <TabsList className="grid w-full grid-cols-6 mb-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="resume">Resume</TabsTrigger>
-          <TabsTrigger value="skills">Skills</TabsTrigger>
-          <TabsTrigger value="video">Video</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
+          <TabsTrigger value="resume">Resume</TabsTrigger>
+          <TabsTrigger value="skills">Assessment</TabsTrigger>
+          <TabsTrigger value="video">Video</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
@@ -48,6 +46,13 @@ export const CandidateDetailContent = ({
             application={application} 
             job={job}
             onApplicationUpdate={onApplicationUpdate}
+          />
+        </TabsContent>
+
+        <TabsContent value="email" className="mt-0">
+          <CandidateEmailTab 
+            application={application} 
+            job={job}
           />
         </TabsContent>
 
@@ -61,17 +66,6 @@ export const CandidateDetailContent = ({
 
         <TabsContent value="video" className="mt-0">
           <CandidateVideoTab application={application} />
-        </TabsContent>
-
-        <TabsContent value="documents" className="mt-0">
-          <CandidateDocumentsTab application={application} />
-        </TabsContent>
-
-        <TabsContent value="email" className="mt-0">
-          <CandidateEmailTab 
-            application={application} 
-            job={job}
-          />
         </TabsContent>
 
         <TabsContent value="activity" className="mt-0">
