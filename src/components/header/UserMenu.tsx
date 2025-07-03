@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -72,6 +73,11 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
   };
 
   const themeOptions = ['white', 'black', 'light', 'dark', 'system'];
+
+  const handleSignOut = () => {
+    // Call the sign out function which will handle redirect to home page
+    onSignOut();
+  };
 
   return (
     <DropdownMenu>
@@ -165,7 +171,7 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
             <DropdownMenuSeparator />
           </>
         )}
-        <DropdownMenuItem onClick={onSignOut}>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out
         </DropdownMenuItem>

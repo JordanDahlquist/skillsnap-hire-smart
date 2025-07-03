@@ -15,24 +15,31 @@ export const useAuthState = () => {
   const initializingRef = useRef(false);
   const initializedRef = useRef(false);
 
-  // Memoized sign out function
+  // Memoized sign out function with enhanced redirect logic
   const signOut = useCallback(async () => {
     const startTime = Date.now();
     try {
-      await authService.signOut();
+      // Clear local auth state immediately
       setSession(null);
       setUser(null);
       
-      productionLogger.info('User signed out successfully', {
+      await authService.signOut();
+      
+      productionLogger.info('User signed out successfully and redirected to home', {
         component: 'useAuthState',
         action: 'SIGN_OUT'
       });
     } catch (error) {
-      productionLogger.error('Sign out failed', {
+      productionLogger.error('Sign out failed, forcing redirect to home', {
         component: 'useAuthState',
         action: 'SIGN_OUT',
         metadata: { error }
       });
+      
+      // Fallback redirect if auth service fails
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     } finally {
       if (environment.enablePerformanceMonitoring) {
         productionLogger.performance('signOut', Date.now() - startTime);
@@ -63,6 +70,21 @@ export const useAuthState = () => {
         
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Handle sign out event specifically
+        if (event === 'SIGNED_OUT') {
+          productionLogger.info('User signed out via auth state change', {
+            component: 'useAuthState',
+            action: 'SIGNED_OUT_EVENT'
+          });
+          
+          // Ensure redirect to home page on sign out
+          setTimeout(() => {
+            if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+              window.location.href = '/';
+            }
+          }, 100);
+        }
         
         // Set loading to false after first auth state change
         if (initializingRef.current) {

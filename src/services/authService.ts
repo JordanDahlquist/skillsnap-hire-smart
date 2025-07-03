@@ -15,16 +15,27 @@ export const authService = {
       const { error } = await supabase.auth.signOut();
       if (error) {
         logger.error('Supabase sign out error:', error);
-        // Continue with forced reload even if Supabase signOut fails
+        // Continue with forced redirect even if Supabase signOut fails
       }
       
-      logger.info('Sign out completed, forcing page reload');
-      // Force page reload for clean state
-      window.location.href = '/';
+      logger.info('Sign out completed, redirecting to home page');
+      
+      // Clear any navigation state that might interfere
+      if (typeof window !== 'undefined') {
+        // Use history.replaceState to clear navigation history
+        window.history.replaceState(null, '', '/');
+        
+        // Small delay to ensure clean state before redirect
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
+      }
     } catch (error) {
       logger.error('Error during sign out:', error);
-      // Force reload even if signOut fails completely
-      window.location.href = '/';
+      // Force redirect to home page even if signOut fails completely
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     }
   },
 
