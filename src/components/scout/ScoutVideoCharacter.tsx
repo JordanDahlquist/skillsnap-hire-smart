@@ -21,7 +21,7 @@ export const ScoutVideoCharacter = () => {
 
   return (
     <div className="flex justify-center mb-4">
-      <div className="relative w-32 h-24 border-2 border-white/20 rounded-lg overflow-hidden">
+      <div className="relative w-32 h-24 rounded-lg overflow-hidden">
         <iframe
           key={videoKey}
           ref={iframeRef}
