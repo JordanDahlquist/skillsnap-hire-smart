@@ -54,7 +54,12 @@ export const CandidateDetailPage = () => {
   };
 
   const handleNavigateToCandidate = (newApplicationId: string) => {
-    navigate(`/candidate/${newApplicationId}`);
+    if (jobId) {
+      // Preserve the current tab when navigating
+      const currentTab = searchParams.get('tab');
+      const tabParam = currentTab ? `?tab=${currentTab}` : '';
+      navigate(`/jobs/${jobId}/candidate/${newApplicationId}${tabParam}`);
+    }
   };
 
   const handleBackToDashboard = () => {
