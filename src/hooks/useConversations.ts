@@ -38,25 +38,34 @@ export const useConversations = () => {
         if (!existing) {
           // Determine title: use AI-generated title if available, otherwise use first user message
           let title = 'New Conversation';
+          let lastMessage = 'Start a conversation...';
+          
           if (msg.title) {
             title = msg.title;
-          } else if (!msg.is_ai_response && msg.message_content) {
+          } else if (!msg.is_ai_response && msg.message_content && msg.message_content !== 'New conversation started') {
             title = msg.message_content.substring(0, 50) + (msg.message_content.length > 50 ? '...' : '');
+          }
+          
+          // Set last message, but show placeholder for empty conversations
+          if (msg.message_content !== 'New conversation started') {
+            lastMessage = msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : '');
           }
             
           conversationMap.set(msg.conversation_id, {
             id: msg.conversation_id,
             title,
-            lastMessage: msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : ''),
+            lastMessage,
             lastMessageAt: new Date(msg.created_at),
-            messageCount: 1
+            messageCount: msg.message_content === 'New conversation started' ? 0 : 1
           });
         } else {
           // Update existing conversation
-          existing.messageCount += 1;
-          if (new Date(msg.created_at) > existing.lastMessageAt) {
-            existing.lastMessage = msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : '');
-            existing.lastMessageAt = new Date(msg.created_at);
+          if (msg.message_content !== 'New conversation started') {
+            existing.messageCount += 1;
+            if (new Date(msg.created_at) > existing.lastMessageAt) {
+              existing.lastMessage = msg.message_content.substring(0, 100) + (msg.message_content.length > 100 ? '...' : '');
+              existing.lastMessageAt = new Date(msg.created_at);
+            }
           }
           // Use AI-generated title if available, otherwise keep original title
           if (msg.title && !existing.title.includes('New Conversation')) {

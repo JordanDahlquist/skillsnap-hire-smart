@@ -15,10 +15,8 @@ const Scout = () => {
   const handleNewConversation = async () => {
     const newId = await startNewConversation();
     if (newId) {
-      // Only reload conversations after successful creation
-      setTimeout(() => {
-        loadConversations();
-      }, 100);
+      // Immediate reload to show the new conversation
+      await loadConversations();
     }
   };
 
