@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatedBubble } from './AnimatedBubble';
+import { ScoutVideoCharacter } from './ScoutVideoCharacter';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -131,6 +132,9 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
 
   return (
     <div className="flex flex-col h-full justify-center px-6 py-8">
+      {/* Animated Character */}
+      <ScoutVideoCharacter />
+      
       {/* Header */}
       <div className="text-center mb-8">
         <h2 className="text-2xl font-semibold text-gray-900 mb-3">
