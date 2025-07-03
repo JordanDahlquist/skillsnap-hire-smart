@@ -56,6 +56,13 @@ export const StageSelector = ({
     return stage ? stage.name : "Applied";
   };
 
+  // Get the color for the current stage
+  const getCurrentStageColor = () => {
+    const stageKey = getCurrentStageKey();
+    const stage = stages.find(s => getStageKey(s.name) === stageKey);
+    return stage ? stage.color : "#6b7280"; // Default gray color
+  };
+
   return (
     <Select
       value={getCurrentStageKey()}
@@ -80,7 +87,13 @@ export const StageSelector = ({
         title="Change pipeline stage (automatically updates status)"
       >
         <SelectValue>
-          {getCurrentStageName()}
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-2 h-2 rounded-full flex-shrink-0" 
+              style={{ backgroundColor: getCurrentStageColor() }}
+            />
+            {getCurrentStageName()}
+          </div>
         </SelectValue>
       </SelectTrigger>
       <SelectContent className="bg-popover/95 backdrop-blur-md border border-border shadow-md z-50">
