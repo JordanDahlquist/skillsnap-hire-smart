@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -294,11 +295,12 @@ export const CandidateDetailHeader = ({
                 </Button>
               ) : (
                 <Button 
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
                   onClick={handleReject}
                   disabled={isAnyUpdating}
-                  className="px-4 h-11"
+                  className="border-red-200 text-red-600 hover:bg-red-50 px-4 h-11"
+                  title="Reject candidate and move to rejected stage"
                 >
                   <ThumbsDown className="w-4 h-4 mr-2" />
                   Reject
