@@ -97,7 +97,7 @@ export const detectJobIds = (message: string, jobs: any[]): string[] => {
     }
   });
   
-  // Enhanced job title detection with partial matching
+  // **ENHANCED: More aggressive job title detection with better partial matching**
   const messageLower = message.toLowerCase();
   
   jobs.forEach(job => {
@@ -109,30 +109,68 @@ export const detectJobIds = (message: string, jobs: any[]): string[] => {
       return;
     }
     
-    // Partial word matching - split by common delimiters
-    const messageWords = messageLower.split(/[\s\-_.,;:!?()[\]{}'"]+/).filter(w => w.length > 2);
-    const titleWords = titleLower.split(/[\s\-_.,;:!?()[\]{}'"]+/).filter(w => w.length > 2);
+    // **NEW: More flexible word-by-word matching**
+    const messageWords = messageLower.split(/[\s\-_.,;:!?()[\]{}'"]+/).filter(w => w.length > 1);
+    const titleWords = titleLower.split(/[\s\-_.,;:!?()[\]{}'"]+/).filter(w => w.length > 1);
     
-    // Check if any significant words from the message match title words
-    const matchingWords = messageWords.filter(word => 
-      titleWords.some(titleWord => 
-        titleWord.includes(word) || word.includes(titleWord)
-      )
-    );
+    // Check if significant portions of the title are mentioned
+    let matchingWords = 0;
+    let totalTitleWords = titleWords.length;
     
-    // If we have multiple matching words or one very specific match, include the job
-    if (matchingWords.length >= 2 || 
-        (matchingWords.length === 1 && matchingWords[0].length >= 4)) {
+    titleWords.forEach(titleWord => {
+      messageWords.forEach(messageWord => {
+        // Exact word match or one contains the other (for partial matches)
+        if (titleWord === messageWord || 
+            (titleWord.length >= 3 && messageWord.length >= 3 && 
+             (titleWord.includes(messageWord) || messageWord.includes(titleWord)))) {
+          matchingWords++;
+        }
+      });
+    });
+    
+    // If we match most of the title words, include the job
+    const matchRatio = matchingWords / totalTitleWords;
+    if (matchRatio >= 0.6 || (matchingWords >= 2 && titleWords.length <= 3)) {
       detectedIds.add(job.id);
+      return;
     }
     
-    // Special handling for compound words and abbreviations
+    // **NEW: Special handling for compound terms and common abbreviations**
     const cleanMessage = messageLower.replace(/[^a-z0-9]/g, '');
     const cleanTitle = titleLower.replace(/[^a-z0-9]/g, '');
     
-    if (cleanMessage.includes(cleanTitle) || cleanTitle.includes(cleanMessage)) {
+    // Check for substring matches in cleaned versions
+    if ((cleanMessage.length >= 4 && cleanTitle.includes(cleanMessage)) ||
+        (cleanTitle.length >= 4 && cleanMessage.includes(cleanTitle))) {
       detectedIds.add(job.id);
     }
+    
+    // **NEW: Handle common variations and partial matches**
+    // For example: "monkey test" should match "Monkey Test", "QA" should match "Quality Assurance", etc.
+    const variations = [
+      { pattern: /\bmonkey\s*test\b/i, matches: ['monkey test', 'monkeytest'] },
+      { pattern: /\bqa\b/i, matches: ['quality assurance', 'quality analyst'] },
+      { pattern: /\bdev\b/i, matches: ['developer', 'development'] },
+      { pattern: /\bfrontend\b/i, matches: ['front-end', 'front end'] },
+      { pattern: /\bbackend\b/i, matches: ['back-end', 'back end'] },
+      { pattern: /\bfullstack\b/i, matches: ['full-stack', 'full stack'] }
+    ];
+    
+    variations.forEach(variation => {
+      if (variation.pattern.test(messageLower)) {
+        variation.matches.forEach(match => {
+          if (titleLower.includes(match)) {
+            detectedIds.add(job.id);
+          }
+        });
+      }
+    });
+  });
+  
+  console.log('Job detection results:', {
+    message: messageLower,
+    detectedJobIds: Array.from(detectedIds),
+    jobTitles: jobs.filter(job => detectedIds.has(job.id)).map(job => job.title)
   });
   
   return Array.from(detectedIds);

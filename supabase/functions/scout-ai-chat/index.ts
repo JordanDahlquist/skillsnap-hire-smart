@@ -75,8 +75,12 @@ serve(async (req) => {
     const allApplications = jobs?.flatMap(job => job.applications || []) || []
     const candidateProfiles = createCandidateProfiles(allApplications)
 
-    // Build system prompt with comprehensive context
-    const systemPrompt = buildSystemPrompt(profile, jobs, candidateProfiles)
+    // **NEW: Detect jobs mentioned in user's message**
+    const userMentionedJobIds = detectJobIds(message, jobs || [])
+    console.log('Jobs detected in user message:', userMentionedJobIds)
+
+    // Build system prompt with comprehensive context, highlighting user-mentioned jobs
+    const systemPrompt = buildSystemPrompt(profile, jobs, candidateProfiles, userMentionedJobIds)
 
     // Prepare OpenAI messages
     const messages = [
@@ -86,15 +90,21 @@ serve(async (req) => {
     ]
 
     console.log('Calling OpenAI with comprehensive candidate data:', candidateProfiles.length, 'candidates')
+    if (userMentionedJobIds.length > 0) {
+      console.log('User mentioned specific jobs:', userMentionedJobIds)
+    }
 
     // Call OpenAI
     const aiMessage = await callOpenAI(messages, openaiApiKey)
 
     console.log('AI response received:', aiMessage.substring(0, 100))
 
-    // Detect mentioned candidates and jobs
-    const jobIds = detectJobIds(aiMessage, jobs || [])
+    // Detect mentioned candidates and jobs in AI response
+    const aiMentionedJobIds = detectJobIds(aiMessage, jobs || [])
     const applicationIds = detectMentionedCandidates(aiMessage, allApplications)
+
+    // Combine user-mentioned and AI-mentioned jobs for card display
+    const allRelevantJobIds = [...new Set([...userMentionedJobIds, ...aiMentionedJobIds])]
 
     // Store conversation messages
     await storeConversationMessages(
@@ -103,7 +113,7 @@ serve(async (req) => {
       conversation_id,
       message,
       aiMessage,
-      jobIds,
+      allRelevantJobIds,
       applicationIds
     )
 
@@ -111,11 +121,11 @@ serve(async (req) => {
     const currentMessageCount = conversationHistory.length + 2 // +2 for user message and AI response
     await triggerTitleGeneration(supabase, conversation_id, currentMessageCount)
 
-    // Get card data for response
+    // Get card data for response - include both user and AI mentioned jobs
     const { jobCards, candidateCards } = await getCardData(
       supabase,
       user.id,
-      jobIds,
+      allRelevantJobIds,
       applicationIds
     )
 
@@ -123,7 +133,9 @@ serve(async (req) => {
       candidateProfiles: candidateProfiles.length,
       jobCards: jobCards.length, 
       candidateCards: candidateCards.length,
-      detectedCandidates: applicationIds.length
+      detectedCandidates: applicationIds.length,
+      userMentionedJobs: userMentionedJobIds.length,
+      aiMentionedJobs: aiMentionedJobIds.length
     })
 
     return new Response(

@@ -30,7 +30,8 @@ export const createJobContext = (jobs: any[]): JobContext[] => {
 export const buildSystemPrompt = (
   profile: any,
   jobs: any[],
-  candidateProfiles: CandidateProfile[]
+  candidateProfiles: CandidateProfile[],
+  userMentionedJobIds: string[] = []
 ): string => {
   const totalJobs = jobs?.length || 0;
   const activeJobs = jobs?.filter(job => job.status === 'active').length || 0;
@@ -51,6 +52,32 @@ export const buildSystemPrompt = (
   // Create a comprehensive job list for better matching
   const jobList = jobContext.map(job => `• ${job.title} (ID: ${job.id}) - ${job.status} - ${job.application_count} applications`).join('\n');
 
+  // **NEW: Identify user-mentioned jobs for focused context**
+  const userMentionedJobs = userMentionedJobIds.length > 0 
+    ? jobs?.filter(job => userMentionedJobIds.includes(job.id)) || []
+    : [];
+
+  let userContextSection = '';
+  if (userMentionedJobs.length > 0) {
+    userContextSection = `
+
+**IMPORTANT - USER IS ASKING ABOUT THESE SPECIFIC JOBS:**
+${userMentionedJobs.map(job => `
+• ${job.title} (ID: ${job.id})
+  - Status: ${job.status}
+  - Type: ${job.role_type} | ${job.employment_type}
+  - Experience Level: ${job.experience_level}
+  - Required Skills: ${job.required_skills}
+  - Applications: ${job.applications?.length || 0}
+  - Description: ${job.description ? job.description.substring(0, 300) + '...' : 'No description'}
+  
+  **CANDIDATES FOR THIS JOB:**
+${job.applications?.slice(0, 10).map(app => `    - ${app.name} (${app.status}, Rating: ${app.manual_rating || app.ai_rating || 'unrated'})`).join('\n') || '    - No applications yet'}
+`).join('\n')}
+
+Please focus your response on these specific jobs and their candidates. The user is specifically interested in these roles.`;
+  }
+
   return `You are Scout, an AI hiring assistant for ${profile?.full_name || 'the user'} at ${profile?.company_name || 'their company'}. You help analyze candidates, make hiring recommendations, and optimize the recruitment process.
 
 CURRENT HIRING CONTEXT:
@@ -59,6 +86,7 @@ CURRENT HIRING CONTEXT:
 - Pending reviews: ${pendingApplications}
 - Reviewed applications: ${reviewedApplications}
 - Top-rated candidates: ${topRatedCandidates.length}
+${userContextSection}
 
 ALL AVAILABLE JOBS (${totalJobs} total):
 ${jobList}
@@ -105,6 +133,7 @@ JOB IDENTIFICATION GUIDELINES:
 - Examples: "monkey test" should match "Monkey Test", "test" should show all jobs with "test" in the title
 - Always confirm which specific job the user is referring to if multiple matches are found
 - You have access to ALL ${totalJobs} jobs, not just recent ones
+- Pay special attention to jobs the user specifically mentions in their message
 
 CONVERSATION GUIDELINES:
 - Speak naturally about candidates using their names (e.g., "Sarah Johnson shows great potential")
@@ -113,6 +142,7 @@ CONVERSATION GUIDELINES:
 - Focus on actionable insights and clear recommendations
 - Be conversational and personable while remaining professional
 - When users mention job titles by name, actively search through ALL available jobs
+- If a user mentions a specific job, prioritize information about that job and its candidates
 
 IMPORTANT CARD DISPLAY RULES:
 - Whenever you mention a specific candidate by name in a substantive way (analyzing them, comparing them, recommending them), their card will be displayed
@@ -128,6 +158,7 @@ IMPORTANT INSTRUCTIONS:
 - If asked about top candidates, rank them by fit and explain your reasoning
 - Always ground your recommendations in the actual candidate data provided
 - You have complete access to ALL ${totalJobs} jobs and can help with any of them
+- When users mention specific jobs, focus your response on those jobs and their candidates
 
 Be conversational, insightful, and proactive. Ask follow-up questions to better understand hiring needs. Provide specific, actionable advice based on the comprehensive candidate data available.`;
 };
