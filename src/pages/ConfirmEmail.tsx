@@ -82,9 +82,9 @@ const ConfirmEmail = () => {
   // Show loading state while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007af6] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Checking confirmation status...</p>
         </div>
       </div>
@@ -94,27 +94,27 @@ const ConfirmEmail = () => {
   // If user is authenticated, show success message while redirecting
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Email Confirmed!</h1>
           <p className="text-gray-600 mb-4">Redirecting to your dashboard...</p>
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#007af6] mx-auto"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4 bg-white">
         <div className="w-full max-w-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg border border-gray-200">
                 <img 
                   src="/lovable-uploads/fcccb8be-0469-47e0-abd3-15729af8467e.png" 
                   alt="Atract"
@@ -130,8 +130,8 @@ const ConfirmEmail = () => {
             </p>
           </div>
 
-          <Card className="shadow-xl border-0">
-            <CardContent className="p-8">
+          <Card className="shadow-xl border border-gray-200 bg-white">
+            <CardContent className="p-8 bg-white">
               {/* Email Icon and Status */}
               <div className="text-center mb-8">
                 <div className="relative inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
@@ -144,12 +144,12 @@ const ConfirmEmail = () => {
                   Confirmation Email Sent
                 </h2>
                 <p className="text-gray-600">
-                  We've sent a confirmation email to <strong>{email}</strong>
+                  We've sent a confirmation email to <strong className="text-gray-900">{email}</strong>
                 </p>
               </div>
 
               {/* Instructions */}
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
+              <div className="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-100">
                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
                   Next Steps:
@@ -157,21 +157,21 @@ const ConfirmEmail = () => {
                 <ol className="space-y-2 text-gray-600">
                   <li className="flex items-start">
                     <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">1</span>
-                    Check your email inbox (and spam folder)
+                    <span className="text-gray-700">Check your email inbox (and spam folder)</span>
                   </li>
                   <li className="flex items-start">
                     <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">2</span>
-                    Click the "Confirm Email Address" button in the email
+                    <span className="text-gray-700">Click the "Confirm Email Address" button in the email</span>
                   </li>
                   <li className="flex items-start">
                     <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">3</span>
-                    You'll be automatically redirected to your dashboard
+                    <span className="text-gray-700">You'll be automatically redirected to your dashboard</span>
                   </li>
                 </ol>
               </div>
 
               {/* Resend Email Section */}
-              <div className="text-center border-t pt-6">
+              <div className="text-center border-t border-gray-200 pt-6">
                 <p className="text-gray-600 mb-4">
                   Didn't receive the email?
                 </p>
@@ -180,13 +180,13 @@ const ConfirmEmail = () => {
                   <Button
                     onClick={handleResendEmail}
                     disabled={isResending}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {isResending ? "Sending..." : "Resend Confirmation Email"}
                   </Button>
                 ) : (
                   <div className="text-center">
-                    <Button disabled className="bg-gray-300">
+                    <Button disabled className="bg-gray-300 text-gray-500">
                       Resend available in {countdown}s
                     </Button>
                     <p className="text-sm text-gray-500 mt-2">
@@ -197,19 +197,19 @@ const ConfirmEmail = () => {
               </div>
 
               {/* Help Text */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
                 <h4 className="font-medium text-blue-900 mb-2">Having trouble?</h4>
                 <ul className="text-sm text-blue-700 space-y-1">
                   <li>• Check your spam or junk folder</li>
-                  <li>• Make sure {email} is correct</li>
+                  <li>• Make sure <span className="font-medium">{email}</span> is correct</li>
                   <li>• Add noreply@atract.ai to your contacts</li>
                   <li>• Try a different browser if the link doesn't work</li>
                 </ul>
               </div>
 
               {/* Back to Sign In */}
-              <div className="text-center mt-8 pt-6 border-t">
-                <Button variant="outline" asChild>
+              <div className="text-center mt-8 pt-6 border-t border-gray-200">
+                <Button variant="outline" asChild className="border-gray-300 text-gray-700 hover:bg-gray-50">
                   <Link to="/auth">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Sign In
