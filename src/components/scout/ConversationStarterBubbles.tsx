@@ -70,52 +70,58 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
     if (jobsData.length > 0) {
       const topJob = jobsData[0];
       starters.push({
-        text: `Top candidates for ${topJob.title}`,
+        text: `Who are the top candidates for ${topJob.title} that I should interview?`,
         icon: <Star className="w-4 h-4" />,
-        message: `Show me the top candidates for ${topJob.title}`,
+        message: `Show me the top candidates for ${topJob.title} that I should prioritize for interviews`,
         size: 'md' as const
       });
 
       if (jobsData.length > 1) {
         starters.push({
-          text: `Compare candidates across jobs`,
+          text: `Can you help me compare candidates across all my active job postings?`,
           icon: <Users className="w-4 h-4" />,
-          message: `Compare the best candidates across all my active job postings`,
+          message: `Compare the best candidates across all my active job postings and help me identify the strongest ones`,
           size: 'md' as const
         });
       }
     }
 
-    // Core helpful starters
+    // Core helpful starters with natural questions
     const coreStarters = [
       {
-        text: "Pipeline summary",
+        text: "What's the current status of my hiring pipeline?",
         icon: <BarChart3 className="w-4 h-4" />,
         message: "Give me a comprehensive summary of my current hiring pipeline with key metrics and insights",
-        size: 'sm' as const
+        size: 'md' as const
       },
       {
-        text: "Candidates needing review",
+        text: "Which candidates have been waiting for my review the longest?",
         icon: <Clock className="w-4 h-4" />,
-        message: "Show me all candidates that are pending review and need my attention",
-        size: 'sm' as const
+        message: "Show me all candidates that are pending review and need my attention, prioritized by how long they've been waiting",
+        size: 'md' as const
       },
       {
-        text: "Find specific skills",
+        text: "Can you help me find candidates with specific technical skills?",
         icon: <Search className="w-4 h-4" />,
-        message: "Help me find candidates with specific technical skills or experience",
-        size: 'sm' as const
+        message: "Help me find candidates with specific technical skills or experience from my current applicant pool",
+        size: 'md' as const
       },
       {
-        text: "Hiring improvements",
+        text: "What improvements can I make to attract better candidates?",
         icon: <TrendingUp className="w-4 h-4" />,
-        message: "Analyze my hiring process and suggest improvements to attract better candidates",
-        size: 'sm' as const
+        message: "Analyze my hiring process and job postings, then suggest improvements to attract higher quality candidates",
+        size: 'md' as const
+      },
+      {
+        text: "Who are my most promising candidates that I should fast-track?",
+        icon: <Zap className="w-4 h-4" />,
+        message: "Identify the most promising candidates across all my jobs who should be fast-tracked through the hiring process",
+        size: 'md' as const
       }
     ];
 
     // Combine and limit
-    const allStarters = [...starters, ...coreStarters].slice(0, 8);
+    const allStarters = [...starters, ...coreStarters].slice(0, 6);
     return allStarters;
   };
 
@@ -133,13 +139,13 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
           Hi there! 👋 I'm Scout AI
         </h2>
         <p className="text-gray-600 max-w-lg mx-auto leading-relaxed">
-          Your intelligent hiring assistant. Click any suggestion below to get started, or ask me anything about your candidates and jobs.
+          Your intelligent hiring assistant. Click any question below to get started, or ask me anything about your candidates and jobs.
         </p>
       </div>
 
-      {/* Starter Buttons */}
-      <div className="max-w-4xl mx-auto w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+      {/* Starter Questions - Vertical Layout */}
+      <div className="max-w-2xl mx-auto w-full">
+        <div className="flex flex-col space-y-3 mb-8">
           {starters.map((starter, index) => (
             <AnimatedBubble
               key={index}

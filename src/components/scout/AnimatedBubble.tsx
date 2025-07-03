@@ -27,14 +27,14 @@ export const AnimatedBubble = ({
   };
 
   const sizeClasses = {
-    sm: 'h-8 px-3 text-xs',
-    md: 'h-10 px-4 text-sm',
-    lg: 'h-12 px-6 text-base'
+    sm: 'h-auto min-h-[2.5rem] px-4 py-3 text-sm',
+    md: 'h-auto min-h-[3rem] px-5 py-4 text-sm',
+    lg: 'h-auto min-h-[3.5rem] px-6 py-5 text-base'
   };
 
   return (
     <div
-      className="animate-fade-in opacity-0"
+      className="animate-fade-in opacity-0 w-full"
       style={{ 
         animationDelay: `${delay * 0.1}s`,
         animationFillMode: 'forwards'
@@ -44,23 +44,30 @@ export const AnimatedBubble = ({
         variant="outline"
         className={`
           ${sizeClasses[size]}
+          w-full
           transition-all duration-200
-          hover:scale-105 hover:shadow-md
-          ${isClicked ? 'scale-95' : ''}
+          hover:scale-[1.02] hover:shadow-md
+          ${isClicked ? 'scale-[0.98]' : ''}
           bg-white/80 backdrop-blur-sm
           border-gray-200 hover:border-blue-300
           text-gray-700 hover:text-blue-700
           shadow-sm hover:shadow-lg
           font-medium
+          text-left
+          justify-start
+          whitespace-normal
+          leading-relaxed
         `}
         onClick={handleClick}
       >
         {icon && (
-          <span className="mr-2 text-blue-600">
+          <span className="mr-3 text-blue-600 flex-shrink-0">
             {icon}
           </span>
         )}
-        {text}
+        <span className="flex-1">
+          {text}
+        </span>
       </Button>
     </div>
   );
