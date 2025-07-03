@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -162,6 +161,12 @@ export const CandidateDetailHeader = ({
     propOnEmail?.();
   };
 
+  const handleStageChange = (applicationId: string, newStage: string) => {
+    console.log('Stage changed in header:', { applicationId, newStage });
+    // Trigger application update to refresh all data
+    onApplicationUpdate();
+  };
+
   const isAnyUpdating = isUpdatingRating || propIsUpdating || isRejecting;
 
   return (
@@ -269,6 +274,7 @@ export const CandidateDetailHeader = ({
                 jobId={job.id}
                 currentStage={localApplication.pipeline_stage || 'applied'}
                 applicationId={localApplication.id}
+                onStageChange={handleStageChange}
                 size="default"
               />
               

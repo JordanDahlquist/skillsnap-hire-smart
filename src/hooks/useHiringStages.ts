@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -101,12 +102,17 @@ export const useHiringStages = (jobId: string | undefined) => {
         .eq('id', applicationId);
       
       if (error) throw error;
+      
+      return { applicationId, stage };
     },
-    onSuccess: (_, { stage }) => {
+    onSuccess: (data) => {
+      // Invalidate both the applications list and the specific application
       queryClient.invalidateQueries({ queryKey: ['applications'] });
+      queryClient.invalidateQueries({ queryKey: ['application', data.applicationId] });
+      
       toast({
         title: "Stage Updated",
-        description: `Application moved to ${stage} stage with updated status`,
+        description: `Application moved to ${data.stage} stage with updated status`,
       });
     },
     onError: (error) => {
@@ -160,12 +166,19 @@ export const useHiringStages = (jobId: string | undefined) => {
         
         if (error) throw error;
       }
+      
+      return { applicationIds, stage };
     },
-    onSuccess: (_, { applicationIds, stage }) => {
+    onSuccess: (data) => {
+      // Invalidate applications list and individual application queries
       queryClient.invalidateQueries({ queryKey: ['applications'] });
+      data.applicationIds.forEach(applicationId => {
+        queryClient.invalidateQueries({ queryKey: ['application', applicationId] });
+      });
+      
       toast({
         title: "Stages Updated",
-        description: `${applicationIds.length} applications moved to ${stage} stage with updated status`,
+        description: `${data.applicationIds.length} applications moved to ${data.stage} stage with updated status`,
       });
     },
     onError: (error) => {
