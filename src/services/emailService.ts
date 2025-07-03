@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { processEmailSubject } from "@/utils/emailTemplateUtils";
 
@@ -328,6 +327,126 @@ export const emailService = {
         totalDuration: Date.now() - startTime
       });
       throw error;
+    }
+  },
+
+  async archiveThread(threadId: string): Promise<void> {
+    console.log('Archiving thread:', threadId);
+    
+    const { error } = await supabase
+      .from('email_threads')
+      .update({ 
+        status: 'archived',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', threadId);
+
+    if (error) {
+      console.error('Failed to archive thread:', error);
+      throw error;
+    }
+  },
+
+  async unarchiveThread(threadId: string): Promise<void> {
+    console.log('Unarchiving thread:', threadId);
+    
+    const { error } = await supabase
+      .from('email_threads')
+      .update({ 
+        status: 'active',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', threadId);
+
+    if (error) {
+      console.error('Failed to unarchive thread:', error);
+      throw error;
+    }
+  },
+
+  async deleteThreadPermanently(threadId: string): Promise<void> {
+    console.log('Permanently deleting thread:', threadId);
+    
+    // First delete all messages in the thread
+    const { error: messagesError } = await supabase
+      .from('email_messages')
+      .delete()
+      .eq('thread_id', threadId);
+
+    if (messagesError) {
+      console.error('Failed to delete messages:', messagesError);
+      throw messagesError;
+    }
+
+    // Then delete the thread
+    const { error: threadError } = await supabase
+      .from('email_threads')
+      .delete()
+      .eq('id', threadId);
+
+    if (threadError) {
+      console.error('Failed to delete thread:', threadError);
+      throw threadError;
+    }
+  },
+
+  async bulkArchiveThreads(threadIds: string[]): Promise<void> {
+    console.log('Bulk archiving threads:', threadIds);
+    
+    const { error } = await supabase
+      .from('email_threads')
+      .update({ 
+        status: 'archived',
+        updated_at: new Date().toISOString()
+      })
+      .in('id', threadIds);
+
+    if (error) {
+      console.error('Failed to bulk archive threads:', error);
+      throw error;
+    }
+  },
+
+  async bulkUnarchiveThreads(threadIds: string[]): Promise<void> {
+    console.log('Bulk unarchiving threads:', threadIds);
+    
+    const { error } = await supabase
+      .from('email_threads')
+      .update({ 
+        status: 'active',
+        updated_at: new Date().toISOString()
+      })
+      .in('id', threadIds);
+
+    if (error) {
+      console.error('Failed to bulk unarchive threads:', error);
+      throw error;
+    }
+  },
+
+  async bulkDeleteThreadsPermanently(threadIds: string[]): Promise<void> {
+    console.log('Bulk permanently deleting threads:', threadIds);
+    
+    // First delete all messages in these threads
+    const { error: messagesError } = await supabase
+      .from('email_messages')
+      .delete()
+      .in('thread_id', threadIds);
+
+    if (messagesError) {
+      console.error('Failed to bulk delete messages:', messagesError);
+      throw messagesError;
+    }
+
+    // Then delete the threads
+    const { error: threadsError } = await supabase
+      .from('email_threads')
+      .delete()
+      .in('id', threadIds);
+
+    if (threadsError) {
+      console.error('Failed to bulk delete threads:', threadsError);
+      throw threadsError;
     }
   }
 };

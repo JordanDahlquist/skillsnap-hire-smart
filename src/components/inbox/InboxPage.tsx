@@ -1,6 +1,9 @@
+
 import { useState, useMemo } from "react";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useOptimizedInboxData } from "@/hooks/useOptimizedInboxData";
+import { useInboxFilters } from "@/hooks/useInboxFilters";
+import { useThreadSelection } from "@/hooks/useThreadSelection";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { InboxContent } from "./InboxContent";
 import { ThreadDetail } from "./ThreadDetail";
@@ -12,6 +15,15 @@ import { useOptimizedEmailSubjects } from "@/hooks/useOptimizedEmailSubjects";
 export const InboxPage = () => {
   const { user } = useOptimizedAuth();
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  const { currentFilter, setFilter } = useInboxFilters();
+  const { 
+    selectedThreadIds, 
+    toggleThread, 
+    clearSelection, 
+    isSelected,
+    hasSelection 
+  } = useThreadSelection();
+  
   const { 
     threads, 
     messages, 
@@ -20,12 +32,18 @@ export const InboxPage = () => {
     refetchThreads, 
     markThreadAsRead,
     sendReply,
+    archiveThread,
+    unarchiveThread,
+    deleteThread,
+    bulkArchiveThreads,
+    bulkUnarchiveThreads,
+    bulkDeleteThreads,
     isAutoRefreshEnabled,
     toggleAutoRefresh,
     lastRefreshTime,
     isAutoRefreshing,
     isTabVisible
-  } = useOptimizedInboxData();
+  } = useOptimizedInboxData(currentFilter);
 
   // Process email subjects with optimized caching
   const { processedThreads, isProcessing } = useOptimizedEmailSubjects(threads);
@@ -42,6 +60,20 @@ export const InboxPage = () => {
     return selectedThreadId 
       ? processedThreads.find(thread => thread.id === selectedThreadId) || null
       : null;
+  }, [processedThreads, selectedThreadId]);
+
+  // Clear selection when filter changes
+  useMemo(() => {
+    if (hasSelection) {
+      clearSelection();
+    }
+  }, [currentFilter]);
+
+  // Clear thread selection if the selected thread is no longer visible
+  useMemo(() => {
+    if (selectedThreadId && !processedThreads.find(t => t.id === selectedThreadId)) {
+      setSelectedThreadId(null);
+    }
   }, [processedThreads, selectedThreadId]);
 
   if (isLoading || isProcessing) {
@@ -89,6 +121,17 @@ export const InboxPage = () => {
                   onSelectThread={setSelectedThreadId}
                   onMarkAsRead={markThreadAsRead}
                   onRefresh={refetchThreads}
+                  currentFilter={currentFilter}
+                  onFilterChange={setFilter}
+                  onArchiveThread={archiveThread}
+                  onUnarchiveThread={unarchiveThread}
+                  onDeleteThread={deleteThread}
+                  onBulkArchive={bulkArchiveThreads}
+                  onBulkUnarchive={bulkUnarchiveThreads}
+                  onBulkDelete={bulkDeleteThreads}
+                  selectedThreadIds={selectedThreadIds}
+                  onToggleThreadSelection={toggleThread}
+                  onClearSelection={clearSelection}
                   isAutoRefreshEnabled={isAutoRefreshEnabled}
                   toggleAutoRefresh={toggleAutoRefresh}
                   lastRefreshTime={lastRefreshTime}
@@ -104,6 +147,9 @@ export const InboxPage = () => {
                   messages={threadMessages}
                   onSendReply={sendReply}
                   onMarkAsRead={markThreadAsRead}
+                  onArchiveThread={archiveThread}
+                  onUnarchiveThread={unarchiveThread}
+                  onDeleteThread={deleteThread}
                 />
               </div>
             </div>

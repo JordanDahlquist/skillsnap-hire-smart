@@ -6,10 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ThreadList } from "./ThreadList";
+import { BulkActionsToolbar } from "./BulkActionsToolbar";
+import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 import { useOptimizedEmailSubjects } from "@/hooks/useOptimizedEmailSubjects";
 import type { EmailThread } from "@/types/inbox";
+import type { InboxFilter } from "@/hooks/useInboxFilters";
 
 interface InboxContentProps {
   threads: EmailThread[];
@@ -17,6 +21,21 @@ interface InboxContentProps {
   onSelectThread: (threadId: string) => void;
   onMarkAsRead: (threadId: string) => void;
   onRefresh: () => void;
+  // Filter props
+  currentFilter: InboxFilter;
+  onFilterChange: (filter: InboxFilter) => void;
+  // Thread operations
+  onArchiveThread: (threadId: string) => void;
+  onUnarchiveThread: (threadId: string) => void;
+  onDeleteThread: (threadId: string) => void;
+  onBulkArchive: (threadIds: string[]) => void;
+  onBulkUnarchive: (threadIds: string[]) => void;
+  onBulkDelete: (threadIds: string[]) => void;
+  // Selection
+  selectedThreadIds: string[];
+  onToggleThreadSelection: (threadId: string) => void;
+  onClearSelection: () => void;
+  // Auto-refresh props
   isAutoRefreshEnabled?: boolean;
   toggleAutoRefresh?: () => void;
   lastRefreshTime?: Date;
@@ -30,6 +49,17 @@ export const InboxContent = ({
   onSelectThread,
   onMarkAsRead,
   onRefresh,
+  currentFilter,
+  onFilterChange,
+  onArchiveThread,
+  onUnarchiveThread,
+  onDeleteThread,
+  onBulkArchive,
+  onBulkUnarchive,
+  onBulkDelete,
+  selectedThreadIds,
+  onToggleThreadSelection,
+  onClearSelection,
   isAutoRefreshEnabled = false,
   toggleAutoRefresh,
   lastRefreshTime,
@@ -37,6 +67,8 @@ export const InboxContent = ({
   isTabVisible = true
 }: InboxContentProps) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [threadsToDelete, setThreadsToDelete] = useState<string[]>([]);
 
   // Process email subjects for template variables
   const { processedThreads } = useOptimizedEmailSubjects(threads);
@@ -48,7 +80,11 @@ export const InboxContent = ({
     )
   );
 
-  const totalUnread = threads.reduce((sum, thread) => sum + thread.unread_count, 0);
+  // Calculate thread counts
+  const activeTotalUnread = threads.filter(t => t.status === 'active').reduce((sum, thread) => sum + thread.unread_count, 0);
+  const activeCount = threads.filter(t => t.status === 'active').length;
+  const archivedCount = threads.filter(t => t.status === 'archived').length;
+  const totalCount = threads.length;
 
   const formatLastRefreshTime = (time: Date) => {
     const now = new Date();
@@ -65,16 +101,36 @@ export const InboxContent = ({
     return time.toLocaleString();
   };
 
+  const handleDeleteConfirm = () => {
+    if (threadsToDelete.length === 1) {
+      onDeleteThread(threadsToDelete[0]);
+    } else {
+      onBulkDelete(threadsToDelete);
+    }
+    onClearSelection();
+    setThreadsToDelete([]);
+  };
+
+  const handleSingleDelete = (threadId: string) => {
+    setThreadsToDelete([threadId]);
+    setDeleteModalOpen(true);
+  };
+
+  const handleBulkDeleteSelected = () => {
+    setThreadsToDelete(selectedThreadIds);
+    setDeleteModalOpen(true);
+  };
+
   return (
     <Card className="h-full flex flex-col">
-      {/* Fixed Header with Search and Controls - Always Visible */}
+      {/* Fixed Header with Tabs and Controls */}
       <CardHeader className="pb-3 flex-shrink-0 border-b bg-background">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <CardTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5" />
             Inbox
-            {totalUnread > 0 && (
-              <Badge variant="destructive">{totalUnread}</Badge>
+            {currentFilter === 'active' && activeTotalUnread > 0 && (
+              <Badge variant="destructive">{activeTotalUnread}</Badge>
             )}
           </CardTitle>
           
@@ -144,7 +200,37 @@ export const InboxContent = ({
           </div>
         </div>
         
-        {/* Search Bar - Always Visible */}
+        {/* Filter Tabs */}
+        <Tabs value={currentFilter} onValueChange={(value) => onFilterChange(value as InboxFilter)}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              Active
+              {activeCount > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {activeCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="archived" className="flex items-center gap-2">
+              Archived
+              {archivedCount > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {archivedCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              All
+              {totalCount > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {totalCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
@@ -169,17 +255,42 @@ export const InboxContent = ({
         )}
       </CardHeader>
 
-      {/* Scrollable Content Area - Independent Scrolling */}
+      {/* Scrollable Content Area */}
       <CardContent className="flex-1 min-h-0 p-0">
+        <div className="p-4">
+          {/* Bulk Actions Toolbar */}
+          <BulkActionsToolbar
+            selectedCount={selectedThreadIds.length}
+            currentFilter={currentFilter}
+            onArchiveSelected={() => onBulkArchive(selectedThreadIds)}
+            onUnarchiveSelected={() => onBulkUnarchive(selectedThreadIds)}
+            onDeleteSelected={handleBulkDeleteSelected}
+            onClearSelection={onClearSelection}
+          />
+        </div>
+
         <ScrollArea className="h-full">
           <ThreadList
             threads={filteredThreads}
             selectedThreadId={selectedThreadId}
             onSelectThread={onSelectThread}
             onMarkAsRead={onMarkAsRead}
+            selectedThreadIds={selectedThreadIds}
+            onToggleThreadSelection={onToggleThreadSelection}
+            onArchiveThread={onArchiveThread}
+            onUnarchiveThread={onUnarchiveThread}
+            onDeleteThread={handleSingleDelete}
           />
         </ScrollArea>
       </CardContent>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        onConfirm={handleDeleteConfirm}
+        threadCount={threadsToDelete.length}
+      />
     </Card>
   );
 };

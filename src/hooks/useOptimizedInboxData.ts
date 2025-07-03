@@ -7,8 +7,10 @@ import { updateExistingEmailThreads } from '@/utils/updateEmailThreads';
 import { useTabVisibility } from './useTabVisibility';
 import { useUserActivity } from './useUserActivity';
 import type { EmailThread, EmailMessage } from '@/types/inbox';
+import { emailService } from '@/services/emailService';
+import type { InboxFilter } from './useInboxFilters';
 
-export const useOptimizedInboxData = () => {
+export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => {
   const { user, profile } = useOptimizedAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -43,24 +45,34 @@ export const useOptimizedInboxData = () => {
     }
   }, [user?.id, threadsUpdated]);
 
-  // Fetch email threads with auto-refresh
+  // Fetch email threads with auto-refresh and filtering
   const { 
-    data: threads = [], 
+    data: allThreads = [], 
     isLoading: threadsLoading, 
     error: threadsError,
     refetch: refetchThreads,
     isFetching: isThreadsFetching
   } = useQuery({
-    queryKey: ['email-threads', user?.id],
+    queryKey: ['email-threads', user?.id, currentFilter],
     queryFn: async () => {
       if (!user?.id) return [];
       
-      console.log('Fetching email threads for user:', user.id);
-      const { data, error } = await supabase
+      console.log('Fetching email threads for user:', user.id, 'filter:', currentFilter);
+      
+      let query = supabase
         .from('email_threads')
         .select('*')
-        .eq('user_id', user.id)
-        .order('last_message_at', { ascending: false });
+        .eq('user_id', user.id);
+
+      // Apply filter
+      if (currentFilter === 'active') {
+        query = query.eq('status', 'active');
+      } else if (currentFilter === 'archived') {
+        query = query.eq('status', 'archived');
+      }
+      // 'all' filter doesn't add any status condition
+
+      const { data, error } = await query.order('last_message_at', { ascending: false });
 
       if (error) throw error;
       console.log('Fetched threads:', data);
@@ -73,6 +85,9 @@ export const useOptimizedInboxData = () => {
     refetchInterval: refreshInterval,
     refetchIntervalInBackground: true,
   });
+
+  // Filter threads based on current filter for local state
+  const threads = useMemo(() => allThreads, [allThreads]);
 
   // Fetch all messages with auto-refresh
   const { 
@@ -287,6 +302,176 @@ export const useOptimizedInboxData = () => {
     }
   });
 
+  // Archive thread mutation
+  const archiveThreadMutation = useMutation({
+    mutationFn: async (threadId: string) => {
+      await emailService.archiveThread(threadId);
+      return threadId;
+    },
+    onSuccess: (threadId) => {
+      queryClient.setQueryData(['email-threads', user?.id, 'active'], (oldThreads: EmailThread[] | undefined) => {
+        if (!oldThreads) return oldThreads;
+        return oldThreads.filter(thread => thread.id !== threadId);
+      });
+
+      queryClient.setQueryData(['email-threads', user?.id, 'archived'], (oldThreads: EmailThread[] | undefined) => {
+        const archivedThread = allThreads.find(t => t.id === threadId);
+        if (!archivedThread || !oldThreads) return oldThreads || [];
+        return [...oldThreads, { ...archivedThread, status: 'archived' as const }];
+      });
+
+      toast({
+        title: "Thread archived",
+        description: "The conversation has been archived successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to archive thread:', error);
+      toast({
+        title: "Error",
+        description: "Failed to archive thread",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Unarchive thread mutation
+  const unarchiveThreadMutation = useMutation({
+    mutationFn: async (threadId: string) => {
+      await emailService.unarchiveThread(threadId);
+      return threadId;
+    },
+    onSuccess: (threadId) => {
+      queryClient.setQueryData(['email-threads', user?.id, 'archived'], (oldThreads: EmailThread[] | undefined) => {
+        if (!oldThreads) return oldThreads;
+        return oldThreads.filter(thread => thread.id !== threadId);
+      });
+
+      queryClient.setQueryData(['email-threads', user?.id, 'active'], (oldThreads: EmailThread[] | undefined) => {
+        const unarchivedThread = allThreads.find(t => t.id === threadId);
+        if (!unarchivedThread || !oldThreads) return oldThreads || [];
+        return [...oldThreads, { ...unarchivedThread, status: 'active' as const }];
+      });
+
+      toast({
+        title: "Thread unarchived",
+        description: "The conversation has been moved back to active",
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to unarchive thread:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unarchive thread",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Delete thread mutation
+  const deleteThreadMutation = useMutation({
+    mutationFn: async (threadId: string) => {
+      await emailService.deleteThreadPermanently(threadId);
+      return threadId;
+    },
+    onSuccess: (threadId) => {
+      // Remove from all cached queries
+      ['active', 'archived', 'all'].forEach(filter => {
+        queryClient.setQueryData(['email-threads', user?.id, filter], (oldThreads: EmailThread[] | undefined) => {
+          if (!oldThreads) return oldThreads;
+          return oldThreads.filter(thread => thread.id !== threadId);
+        });
+      });
+
+      // Remove associated messages
+      queryClient.setQueryData(['email-messages', user?.id], (oldMessages: EmailMessage[] | undefined) => {
+        if (!oldMessages) return oldMessages;
+        return oldMessages.filter(message => message.thread_id !== threadId);
+      });
+
+      toast({
+        title: "Thread deleted",
+        description: "The conversation has been permanently deleted",
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to delete thread:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete thread",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Bulk operations mutations
+  const bulkArchiveMutation = useMutation({
+    mutationFn: async (threadIds: string[]) => {
+      await emailService.bulkArchiveThreads(threadIds);
+      return threadIds;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['email-threads'] });
+      toast({
+        title: "Threads archived",
+        description: "Selected conversations have been archived",
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to bulk archive threads:', error);
+      toast({
+        title: "Error",
+        description: "Failed to archive selected threads",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const bulkUnarchiveMutation = useMutation({
+    mutationFn: async (threadIds: string[]) => {
+      await emailService.bulkUnarchiveThreads(threadIds);
+      return threadIds;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['email-threads'] });
+      toast({
+        title: "Threads unarchived",
+        description: "Selected conversations have been moved to active",
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to bulk unarchive threads:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unarchive selected threads",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (threadIds: string[]) => {
+      await emailService.bulkDeleteThreadsPermanently(threadIds);
+      return threadIds;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['email-threads'] });
+      queryClient.invalidateQueries({ queryKey: ['email-messages'] });
+      toast({
+        title: "Threads deleted",
+        description: "Selected conversations have been permanently deleted",
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to bulk delete threads:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete selected threads",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Enhanced refresh function
   const handleRefresh = useCallback(async () => {
     console.log('Manually refreshing inbox data...');
@@ -427,13 +612,21 @@ export const useOptimizedInboxData = () => {
   const isAutoRefreshing = (isThreadsFetching || isMessagesFetching) && isAutoRefreshEnabled;
 
   return {
-    threads: stableThreads,
+    threads,
     messages: stableMessages,
     isLoading: threadsLoading || messagesLoading,
     error: threadsError || messagesError,
     refetchThreads: handleRefresh,
     markThreadAsRead: markAsReadMutation.mutate,
     sendReply,
+    // Archive operations
+    archiveThread: archiveThreadMutation.mutate,
+    unarchiveThread: unarchiveThreadMutation.mutate,
+    deleteThread: deleteThreadMutation.mutate,
+    // Bulk operations
+    bulkArchiveThreads: bulkArchiveMutation.mutate,
+    bulkUnarchiveThreads: bulkUnarchiveMutation.mutate,
+    bulkDeleteThreads: bulkDeleteMutation.mutate,
     // Auto-refresh related returns
     isAutoRefreshEnabled,
     toggleAutoRefresh,

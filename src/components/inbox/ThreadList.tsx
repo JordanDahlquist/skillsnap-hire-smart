@@ -1,8 +1,11 @@
 
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { extractSenderName } from "@/utils/emailSenderUtils";
+import { ThreadActionsMenu } from "./ThreadActionsMenu";
+import { Archive } from "lucide-react";
 import type { EmailThread } from "@/types/inbox";
 
 interface ProcessedThread extends EmailThread {
@@ -14,13 +17,25 @@ interface ThreadListProps {
   selectedThreadId: string | null;
   onSelectThread: (threadId: string) => void;
   onMarkAsRead: (threadId: string) => void;
+  // Selection props
+  selectedThreadIds?: string[];
+  onToggleThreadSelection?: (threadId: string) => void;
+  // Archive operations
+  onArchiveThread?: (threadId: string) => void;
+  onUnarchiveThread?: (threadId: string) => void;
+  onDeleteThread?: (threadId: string) => void;
 }
 
 export const ThreadList = ({
   threads,
   selectedThreadId,
   onSelectThread,
-  onMarkAsRead
+  onMarkAsRead,
+  selectedThreadIds = [],
+  onToggleThreadSelection,
+  onArchiveThread,
+  onUnarchiveThread,
+  onDeleteThread
 }: ThreadListProps) => {
   if (threads.length === 0) {
     return (
@@ -31,7 +46,12 @@ export const ThreadList = ({
     );
   }
 
-  const handleThreadClick = (thread: ProcessedThread) => {
+  const handleThreadClick = (thread: ProcessedThread, event: React.MouseEvent) => {
+    // Don't select thread if clicking on checkbox
+    if ((event.target as HTMLElement).closest('[data-checkbox]')) {
+      return;
+    }
+    
     onSelectThread(thread.id);
     
     if (thread.unread_count > 0) {
@@ -39,13 +59,15 @@ export const ThreadList = ({
     }
   };
 
+  const showSelection = onToggleThreadSelection && (selectedThreadIds.length > 0 || threads.some(t => selectedThreadIds.includes(t.id)));
+
   return (
     <div className="divide-y divide-gray-200">
       {threads.map((thread) => {
-        // Use processed subject or fall back to original
         const displaySubject = thread.processedSubject || thread.subject;
+        const isArchived = thread.status === 'archived';
+        const isSelected = selectedThreadIds.includes(thread.id);
         
-        // Get participant names (excluding current user's email)
         const participants = Array.isArray(thread.participants) 
           ? thread.participants.filter(p => 
               typeof p === 'string' && 
@@ -59,42 +81,80 @@ export const ThreadList = ({
             }).join(', ')
           : 'No participants';
 
-        return (
+        const threadContent = (
           <div
-            key={thread.id}
-            onClick={() => handleThreadClick(thread)}
+            onClick={(e) => handleThreadClick(thread, e)}
             className={cn(
-              "p-4 cursor-pointer hover:bg-gray-50 transition-colors border-l-4",
+              "p-4 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 flex items-center gap-3",
               selectedThreadId === thread.id 
                 ? "bg-blue-50 border-l-blue-500" 
                 : "border-l-transparent",
-              thread.unread_count > 0 && "bg-blue-25"
+              thread.unread_count > 0 && "bg-blue-25",
+              isArchived && "opacity-60",
+              isSelected && "bg-blue-100"
             )}
           >
-            <div className="flex items-start justify-between mb-2">
-              <h3 className={cn(
-                "text-sm truncate flex-1 mr-2 leading-tight",
-                thread.unread_count > 0 
-                  ? "font-semibold text-gray-900" 
-                  : "font-medium text-gray-700"
-              )}>
-                {displaySubject || 'No Subject'}
-              </h3>
-              {thread.unread_count > 0 && (
-                <Badge variant="destructive" className="text-xs flex-shrink-0 ml-2">
-                  {thread.unread_count}
-                </Badge>
-              )}
-            </div>
+            {showSelection && onToggleThreadSelection && (
+              <div data-checkbox onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={() => onToggleThreadSelection(thread.id)}
+                />
+              </div>
+            )}
             
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <span className="truncate flex-1 mr-2 font-medium">
-                {participantDisplay}
-              </span>
-              <span className="whitespace-nowrap flex-shrink-0">
-                {formatDistanceToNow(new Date(thread.last_message_at), { addSuffix: true })}
-              </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <h3 className={cn(
+                    "text-sm truncate flex-1 mr-2 leading-tight",
+                    thread.unread_count > 0 
+                      ? "font-semibold text-gray-900" 
+                      : "font-medium text-gray-700"
+                  )}>
+                    {displaySubject || 'No Subject'}
+                  </h3>
+                  {isArchived && (
+                    <Archive className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  )}
+                </div>
+                {thread.unread_count > 0 && (
+                  <Badge variant="destructive" className="text-xs flex-shrink-0 ml-2">
+                    {thread.unread_count}
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span className="truncate flex-1 mr-2 font-medium">
+                  {participantDisplay}
+                </span>
+                <span className="whitespace-nowrap flex-shrink-0">
+                  {formatDistanceToNow(new Date(thread.last_message_at), { addSuffix: true })}
+                </span>
+              </div>
             </div>
+          </div>
+        );
+
+        // Wrap with context menu if actions are provided
+        if (onArchiveThread && onUnarchiveThread && onDeleteThread) {
+          return (
+            <ThreadActionsMenu
+              key={thread.id}
+              thread={thread}
+              onArchive={onArchiveThread}
+              onUnarchive={onUnarchiveThread}
+              onDelete={onDeleteThread}
+            >
+              {threadContent}
+            </ThreadActionsMenu>
+          );
+        }
+
+        return (
+          <div key={thread.id}>
+            {threadContent}
           </div>
         );
       })}
