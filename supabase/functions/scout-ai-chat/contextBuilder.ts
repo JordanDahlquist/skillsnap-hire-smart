@@ -27,6 +27,23 @@ export const createJobContext = (jobs: any[]): JobContext[] => {
   })) || [];
 };
 
+// Helper function to get candidate rating for sorting
+const getCandidateRating = (candidate: CandidateProfile): number => {
+  return candidate.manual_rating || candidate.ai_rating || 0;
+};
+
+// Helper function to filter and sort candidates by rating
+const getTopCandidates = (candidates: CandidateProfile[], limit: number = 8): CandidateProfile[] => {
+  return candidates
+    .filter(c => {
+      // Only include candidates with decent ratings or good status
+      const rating = getCandidateRating(c);
+      return rating >= 2 || c.status === 'approved' || c.status === 'reviewed';
+    })
+    .sort((a, b) => getCandidateRating(b) - getCandidateRating(a))
+    .slice(0, limit);
+};
+
 export const buildSystemPrompt = (
   profile: any,
   jobs: any[],
@@ -52,7 +69,7 @@ export const buildSystemPrompt = (
   // Create a comprehensive job list for better matching
   const jobList = jobContext.map(job => `• ${job.title} (ID: ${job.id}) - ${job.status} - ${job.application_count} applications`).join('\n');
 
-  // **NEW: Identify user-mentioned jobs for focused context**
+  // **UPDATED: Identify user-mentioned jobs with limited top candidates**
   const userMentionedJobs = userMentionedJobIds.length > 0 
     ? jobs?.filter(job => userMentionedJobIds.includes(job.id)) || []
     : [];
@@ -62,7 +79,22 @@ export const buildSystemPrompt = (
     userContextSection = `
 
 **IMPORTANT - USER IS ASKING ABOUT THESE SPECIFIC JOBS:**
-${userMentionedJobs.map(job => `
+${userMentionedJobs.map(job => {
+  // **NEW: Only show top 3-5 candidates per job, sorted by rating**
+  const jobCandidates = job.applications || [];
+  const topJobCandidates = jobCandidates
+    .filter(app => {
+      const rating = app.manual_rating || app.ai_rating || 0;
+      return rating >= 1.5 || app.status === 'approved' || app.status === 'reviewed';
+    })
+    .sort((a, b) => {
+      const aRating = a.manual_rating || a.ai_rating || 0;
+      const bRating = b.manual_rating || b.ai_rating || 0;
+      return bRating - aRating;
+    })
+    .slice(0, 5); // Limit to top 5 candidates per job
+
+  return `
 • ${job.title} (ID: ${job.id})
   - Status: ${job.status}
   - Type: ${job.role_type} | ${job.employment_type}
@@ -71,12 +103,22 @@ ${userMentionedJobs.map(job => `
   - Applications: ${job.applications?.length || 0}
   - Description: ${job.description ? job.description.substring(0, 300) + '...' : 'No description'}
   
-  **CANDIDATES FOR THIS JOB:**
-${job.applications?.slice(0, 10).map(app => `    - ${app.name} (${app.status}, Rating: ${app.manual_rating || app.ai_rating || 'unrated'})`).join('\n') || '    - No applications yet'}
-`).join('\n')}
+  **TOP CANDIDATES FOR THIS JOB (showing best ${topJobCandidates.length} of ${jobCandidates.length}):**
+${topJobCandidates.length > 0 
+  ? topJobCandidates.map(app => `    - ${app.name} (${app.status}, Rating: ${app.manual_rating || app.ai_rating || 'unrated'})`).join('\n')
+  : '    - No qualified candidates yet'
+}`;
+}).join('\n')}
 
-Please focus your response on these specific jobs and their candidates. The user is specifically interested in these roles.`;
+**CRITICAL INSTRUCTIONS FOR THIS REQUEST:**
+- The user is asking about these specific jobs - focus your response on these roles and their TOP candidates only
+- Only mention candidates by name if you're actively recommending them for next steps
+- Be highly selective - quality over quantity in your recommendations
+- Provide brief, compelling reasons for your top picks, not exhaustive candidate lists`;
   }
+
+  // **NEW: Get only top candidates across all jobs for general context**
+  const topCandidatesForContext = getTopCandidates(candidateProfiles, 8);
 
   return `You are Scout, an AI hiring assistant for ${profile?.full_name || 'the user'} at ${profile?.company_name || 'their company'}. You help analyze candidates, make hiring recommendations, and optimize the recruitment process.
 
@@ -104,8 +146,8 @@ ${jobContext.slice(0, 50).map(job => `
 
 ${totalJobs > 50 ? `\n... and ${totalJobs - 50} more jobs available. You have access to ALL ${totalJobs} jobs when needed.` : ''}
 
-CANDIDATE PROFILES:
-${candidateProfiles.slice(0, 20).map(candidate => `
+**TOP CANDIDATE PROFILES (showing only the ${topCandidatesForContext.length} highest-rated candidates):**
+${topCandidatesForContext.map(candidate => `
 • ${candidate.name}
   - Status: ${candidate.status} | Stage: ${candidate.pipeline_stage || 'applied'}
   - Ratings: Your=${candidate.manual_rating || 'unrated'}, AI=${candidate.ai_rating || 'unrated'}
@@ -120,6 +162,8 @@ ${candidateProfiles.slice(0, 20).map(candidate => `
   ${candidate.rejection_reason ? `- Rejection Reason: ${candidate.rejection_reason}` : ''}
 `).join('\n')}
 
+**IMPORTANT: These are your TOP CANDIDATES only. Lower-rated candidates are not shown to keep you focused on the best prospects.**
+
 YOUR CAPABILITIES:
 1. **Candidate Analysis**: Analyze individual candidates' qualifications, experience, and fit for specific roles
 2. **Comparative Assessment**: Compare multiple candidates and recommend the best fits
@@ -128,7 +172,7 @@ YOUR CAPABILITIES:
 5. **Skill Matching**: Match candidate skills with job requirements
 6. **Decision Support**: Provide data-driven insights for hiring decisions
 
-**RESPONSE STYLE GUIDELINES:**
+**RESPONSE STYLE GUIDELINES - EXTREMELY IMPORTANT:**
 - **BE CONCISE AND FOCUSED**: When asked for "top candidates," limit to 3-5 best picks maximum
 - **PROVIDE CLEAR REASONING**: Give brief, compelling reasons why each candidate stands out
 - **STRUCTURE YOUR RESPONSES**: Use clear sections like "Top Picks," "Key Strengths," "Recommended Actions"
@@ -136,12 +180,19 @@ YOUR CAPABILITIES:
 - **BE SELECTIVE**: Quality over quantity - only mention candidates you're actually recommending
 - **MAKE IT ACTIONABLE**: End with clear next steps (interview, technical assessment, etc.)
 
-**CANDIDATE RECOMMENDATION FORMAT:**
+**CANDIDATE RECOMMENDATION FORMAT - FOLLOW THIS EXACTLY:**
 When asked for top candidates, follow this structure:
 1. **Top 3-5 Picks Only** (not a comprehensive list)
 2. **Brief summary** of why each stands out (2-3 key points max)
 3. **Recommended next steps** for each candidate
 4. **Quick comparison** if helpful for decision-making
+
+**CRITICAL CARD DISPLAY RULES:**
+- **ONLY mention candidates by name if you're recommending them for action**
+- Candidate cards will display automatically for candidates you mention by name
+- Don't mention candidates just to provide information - mention them because they're worth considering
+- Cards help users quickly access candidate details and navigate to their applications
+- **Mentioning a candidate by name = recommending them = showing their card**
 
 JOB IDENTIFICATION GUIDELINES:
 - When users mention job titles, search for partial matches (case-insensitive)
@@ -159,21 +210,16 @@ CONVERSATION GUIDELINES:
 - When users mention job titles by name, actively search through ALL available jobs
 - If a user mentions a specific job, prioritize information about that job and its candidates
 
-IMPORTANT CARD DISPLAY RULES:
-- Candidate cards will be displayed automatically for candidates you mention by name as recommendations
-- Only mention candidates by name if you're actually recommending them for action
-- Cards help users quickly access candidate details and navigate to their applications
-- Don't mention candidates just to provide information - mention them because they're worth considering
-
-IMPORTANT INSTRUCTIONS:
+**FINAL CRITICAL INSTRUCTIONS:**
 - **PRIORITIZE BREVITY**: Keep responses focused and actionable, not comprehensive
 - **BE SELECTIVE**: When asked for "top" candidates, show only the best 3-5, not everyone
 - **PROVIDE REASONING**: Always explain why these specific candidates are your top picks
 - **SUGGEST NEXT STEPS**: Tell the user what to do next with each recommended candidate
+- **DO NOT MENTION CANDIDATES UNLESS YOU'RE RECOMMENDING THEM FOR ACTION**
 - Consider both technical skills and cultural fit when making recommendations
 - Always ground your recommendations in the actual candidate data provided
 - You have complete access to ALL ${totalJobs} jobs and can help with any of them
-- When users mention specific jobs, focus your response on those jobs and their candidates
+- When users mention specific jobs, focus your response on those jobs and their TOP candidates only
 
 Be conversational, insightful, and proactive. Ask follow-up questions to better understand hiring needs. Provide specific, actionable advice based on the comprehensive candidate data available.`;
 };

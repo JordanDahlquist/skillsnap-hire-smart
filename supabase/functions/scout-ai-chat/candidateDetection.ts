@@ -180,56 +180,73 @@ export const detectJobIds = (message: string, jobs: any[]): string[] => {
 export const detectMentionedCandidates = (message: string, applications: any[]): string[] => {
   const mentionedIds: string[] = [];
   
-  // **ENHANCED: More precise candidate detection for recommendations**
-  // Look for recommendation context keywords along with names
-  const recommendationKeywords = [
+  // **UPDATED: Much stricter candidate detection - only for clear recommendations**
+  const strongRecommendationKeywords = [
     'recommend', 'suggest', 'top pick', 'best candidate', 'hire', 'interview',
-    'strong candidate', 'good fit', 'consider', 'next steps', 'move forward',
-    'standout', 'impressive', 'excellent', 'outstanding', 'qualified'
+    'move forward', 'next steps', 'standout', 'excellent choice', 'strong pick',
+    'my recommendation', 'i recommend', 'you should', 'consider hiring',
+    'schedule interview', 'bring in for', 'worth interviewing'
   ];
   
   const messageLower = message.toLowerCase();
-  const hasRecommendationContext = recommendationKeywords.some(keyword => 
+  
+  // Only proceed if there are clear recommendation signals
+  const hasStrongRecommendationContext = strongRecommendationKeywords.some(keyword => 
     messageLower.includes(keyword)
   );
   
+  if (!hasStrongRecommendationContext) {
+    return []; // Don't show cards for casual mentions
+  }
+  
   applications.forEach(app => {
-    // Check for name mentions (first name, last name, or full name)
     const nameParts = app.name.toLowerCase().split(' ');
     
-    // Full name match
+    // **NEW: More sophisticated name detection in recommendation context**
+    const checkNameInRecommendationContext = (name: string) => {
+      const nameIndex = messageLower.indexOf(name);
+      if (nameIndex === -1) return false;
+      
+      // Get text around the name mention (50 chars before and after)
+      const contextStart = Math.max(0, nameIndex - 50);
+      const contextEnd = Math.min(messageLower.length, nameIndex + name.length + 50);
+      const surroundingContext = messageLower.substring(contextStart, contextEnd);
+      
+      // Check if the name is mentioned in a clear recommendation context
+      const recommendationPatterns = [
+        /recommend.*\b\w+/,
+        /\b\w+.*is.*(?:excellent|strong|good|top|best)/,
+        /\b\w+.*(?:stands out|impressive|qualified)/,
+        /(?:hire|interview|consider).*\b\w+/,
+        /\b\w+.*(?:next steps|move forward)/,
+        /top.*pick.*\b\w+/,
+        /\b\w+.*(?:would be|is a).*(?:good|great|excellent)/
+      ];
+      
+      return recommendationPatterns.some(pattern => pattern.test(surroundingContext));
+    };
+    
+    // Full name check in recommendation context
     if (messageLower.includes(app.name.toLowerCase())) {
-      // Only include if it's in a recommendation context or explicitly mentioned as a candidate
-      if (hasRecommendationContext || 
-          messageLower.includes('candidate') || 
-          messageLower.includes('applicant') ||
-          messageLower.includes(app.name.toLowerCase() + ' is') ||
-          messageLower.includes(app.name.toLowerCase() + ' has') ||
-          messageLower.includes(app.name.toLowerCase() + ' would')) {
+      if (checkNameInRecommendationContext(app.name.toLowerCase())) {
         mentionedIds.push(app.id);
         return;
       }
     }
     
-    // Individual name parts (first name, last name) - but be more selective
+    // **NEW: Check individual name parts but ONLY in very strong recommendation context**
     nameParts.forEach(namePart => {
       if (namePart.length >= 3 && messageLower.includes(namePart)) {
-        // Only include if it's clearly in a recommendation context
-        if (hasRecommendationContext) {
-          const nameIndex = messageLower.indexOf(namePart);
-          const surroundingText = messageLower.substring(
-            Math.max(0, nameIndex - 50), 
-            Math.min(messageLower.length, nameIndex + namePart.length + 50)
-          );
-          
-          // Check if the name is mentioned in a candidate/recommendation context
-          if (surroundingText.includes('candidate') || 
-              surroundingText.includes('recommend') ||
-              surroundingText.includes('suggest') ||
-              surroundingText.includes('hire') ||
-              surroundingText.includes('interview')) {
-            mentionedIds.push(app.id);
-          }
+        // Only for very explicit recommendations with the specific name
+        const explicitRecommendationPatterns = [
+          new RegExp(`(?:recommend|suggest|hire).*${namePart}`, 'i'),
+          new RegExp(`${namePart}.*(?:is my top|is the best|is excellent)`, 'i'),
+          new RegExp(`(?:top pick|best candidate).*${namePart}`, 'i'),
+          new RegExp(`${namePart}.*(?:should be|worth).*(?:hired|interviewed)`, 'i')
+        ];
+        
+        if (explicitRecommendationPatterns.some(pattern => pattern.test(messageLower))) {
+          mentionedIds.push(app.id);
         }
       }
     });
@@ -240,6 +257,14 @@ export const detectMentionedCandidates = (message: string, applications: any[]):
     }
   });
   
-  // Remove duplicates
-  return [...new Set(mentionedIds)];
+  console.log('Candidate detection results:', {
+    message: messageLower.substring(0, 100) + '...',
+    hasStrongRecommendationContext,
+    detectedCandidateIds: mentionedIds,
+    candidateNames: applications.filter(app => mentionedIds.includes(app.id)).map(app => app.name)
+  });
+  
+  // Remove duplicates and limit to prevent card overload
+  const uniqueIds = [...new Set(mentionedIds)];
+  return uniqueIds.slice(0, 5); // Max 5 candidate cards at once
 };
