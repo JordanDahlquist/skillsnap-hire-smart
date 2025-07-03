@@ -21,7 +21,7 @@ export const ScoutVideoCharacter = () => {
 
   return (
     <div className="flex justify-center mb-4">
-      <div className="relative w-32 h-24 shadow-lg border-2 border-white/20 rounded-lg overflow-hidden">
+      <div className="relative w-32 h-24 border-2 border-white/20 rounded-lg overflow-hidden">
         <iframe
           key={videoKey}
           ref={iframeRef}
@@ -38,7 +38,7 @@ export const ScoutVideoCharacter = () => {
           onError={() => setIsVisible(false)}
         />
         {/* Fallback overlay in case video doesn't load */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center opacity-0">
           <div className="w-6 h-6 bg-white rounded-full animate-pulse" />
         </div>
       </div>
