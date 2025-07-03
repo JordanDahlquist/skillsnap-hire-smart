@@ -6,13 +6,12 @@ interface MainChatAreaProps {
   onConversationChange?: (conversationId: string) => void;
 }
 
-export const MainChatArea = ({ conversationId, onConversationChange }: MainChatAreaProps) => {
+export const MainChatArea = ({ conversationId }: MainChatAreaProps) => {
   return (
     <div className="flex flex-col h-full">
       <ScoutChat
         conversationId={conversationId}
         onConversationUpdate={() => {}}
-        onConversationChange={onConversationChange}
       />
     </div>
   );
