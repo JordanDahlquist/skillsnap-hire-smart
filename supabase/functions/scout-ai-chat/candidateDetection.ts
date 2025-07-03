@@ -1,3 +1,4 @@
+
 export interface CandidateProfile {
   id: string;
   name: string;
@@ -179,29 +180,66 @@ export const detectJobIds = (message: string, jobs: any[]): string[] => {
 export const detectMentionedCandidates = (message: string, applications: any[]): string[] => {
   const mentionedIds: string[] = [];
   
+  // **ENHANCED: More precise candidate detection for recommendations**
+  // Look for recommendation context keywords along with names
+  const recommendationKeywords = [
+    'recommend', 'suggest', 'top pick', 'best candidate', 'hire', 'interview',
+    'strong candidate', 'good fit', 'consider', 'next steps', 'move forward',
+    'standout', 'impressive', 'excellent', 'outstanding', 'qualified'
+  ];
+  
+  const messageLower = message.toLowerCase();
+  const hasRecommendationContext = recommendationKeywords.some(keyword => 
+    messageLower.includes(keyword)
+  );
+  
   applications.forEach(app => {
     // Check for name mentions (first name, last name, or full name)
     const nameParts = app.name.toLowerCase().split(' ');
-    const messageLower = message.toLowerCase();
     
     // Full name match
     if (messageLower.includes(app.name.toLowerCase())) {
-      mentionedIds.push(app.id);
-      return;
+      // Only include if it's in a recommendation context or explicitly mentioned as a candidate
+      if (hasRecommendationContext || 
+          messageLower.includes('candidate') || 
+          messageLower.includes('applicant') ||
+          messageLower.includes(app.name.toLowerCase() + ' is') ||
+          messageLower.includes(app.name.toLowerCase() + ' has') ||
+          messageLower.includes(app.name.toLowerCase() + ' would')) {
+        mentionedIds.push(app.id);
+        return;
+      }
     }
     
-    // Individual name parts (first name, last name)
+    // Individual name parts (first name, last name) - but be more selective
     nameParts.forEach(namePart => {
       if (namePart.length >= 3 && messageLower.includes(namePart)) {
-        mentionedIds.push(app.id);
+        // Only include if it's clearly in a recommendation context
+        if (hasRecommendationContext) {
+          const nameIndex = messageLower.indexOf(namePart);
+          const surroundingText = messageLower.substring(
+            Math.max(0, nameIndex - 50), 
+            Math.min(messageLower.length, nameIndex + namePart.length + 50)
+          );
+          
+          // Check if the name is mentioned in a candidate/recommendation context
+          if (surroundingText.includes('candidate') || 
+              surroundingText.includes('recommend') ||
+              surroundingText.includes('suggest') ||
+              surroundingText.includes('hire') ||
+              surroundingText.includes('interview')) {
+            mentionedIds.push(app.id);
+          }
+        }
       }
     });
     
-    // Email mentions
+    // Email mentions (always include as these are very specific)
     if (messageLower.includes(app.email.toLowerCase())) {
       mentionedIds.push(app.id);
     }
   });
   
-  return mentionedIds;
+  // Remove duplicates
+  return [...new Set(mentionedIds)];
 };
