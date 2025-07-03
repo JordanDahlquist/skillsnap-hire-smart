@@ -131,7 +131,7 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
   const starters = getContextualStarters();
 
   return (
-    <div className="flex flex-col h-full justify-center px-6 py-8">
+    <div className="flex flex-col h-full justify-center px-6 py-8" style={{ backgroundColor: '#f2eeeb' }}>
       {/* Animated Character */}
       <ScoutVideoCharacter />
       
