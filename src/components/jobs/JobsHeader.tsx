@@ -31,9 +31,8 @@ export const JobsHeader = ({ userDisplayName, onCreateJob }: JobsHeaderProps) =>
           <div className="flex-shrink-0 relative">
             <Button 
               onClick={onCreateJob}
-              variant="glass-premium"
               size="lg"
-              className="glass-button-premium text-lg font-semibold px-10 py-5 relative z-10"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold px-10 py-5"
             >
               <Plus className="w-6 h-6 mr-3" />
               Create New Job

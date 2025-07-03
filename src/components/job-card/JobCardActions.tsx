@@ -40,7 +40,7 @@ export const JobCardActions = ({
             View Public
           </a>
         </Button>
-        <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700">
+        <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700 text-white">
           <Link to={`/jobs/${jobId}`}>
             <BarChart3 className="w-4 h-4 mr-2" />
             Manage
