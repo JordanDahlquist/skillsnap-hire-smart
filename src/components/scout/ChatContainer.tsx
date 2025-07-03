@@ -34,6 +34,7 @@ export const ChatContainer = ({
           isLoading={isLoading}
           scrollAreaRef={scrollAreaRef}
           messagesContainerRef={messagesContainerRef}
+          onSendMessage={onSendMessage}
         />
       </div>
       

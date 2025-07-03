@@ -2,6 +2,7 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot } from 'lucide-react';
 import { ScoutMessage } from './ScoutMessage';
+import { ConversationStarterBubbles } from './ConversationStarterBubbles';
 
 interface Message {
   id: string;
@@ -17,30 +18,22 @@ interface ChatMessageListProps {
   isLoading: boolean;
   scrollAreaRef: React.RefObject<HTMLDivElement>;
   messagesContainerRef: React.RefObject<HTMLDivElement>;
+  onSendMessage?: (message: string) => void;
 }
 
 export const ChatMessageList = ({ 
   messages, 
   isLoading, 
   scrollAreaRef, 
-  messagesContainerRef 
+  messagesContainerRef,
+  onSendMessage
 }: ChatMessageListProps) => {
   return (
     <div className="h-full overflow-hidden">
       <ScrollArea className="h-full" ref={scrollAreaRef}>
         <div className="px-4 py-4 space-y-4 min-h-full" ref={messagesContainerRef}>
-          {messages.length === 0 && !isLoading && (
-            <div className="flex items-center justify-center h-full text-center">
-              <div className="max-w-md">
-                <Bot className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Welcome to Scout AI
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Your intelligent hiring assistant is ready to help. Ask me anything about your hiring pipeline, candidates, or recruitment strategies.
-                </p>
-              </div>
-            </div>
+          {messages.length === 0 && !isLoading && onSendMessage && (
+            <ConversationStarterBubbles onSendMessage={onSendMessage} />
           )}
           
           {messages.map((message) => (
