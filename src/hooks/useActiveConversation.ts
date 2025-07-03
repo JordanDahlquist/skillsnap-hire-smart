@@ -1,11 +1,13 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useActiveConversation = () => {
   const { user } = useAuth();
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const creatingRef = useRef(false);
 
   // Load active conversation from localStorage on mount
   useEffect(() => {
@@ -26,12 +28,15 @@ export const useActiveConversation = () => {
   };
 
   const startNewConversation = async () => {
-    if (!user) return null;
+    if (!user || isCreating || creatingRef.current) return null;
+    
+    setIsCreating(true);
+    creatingRef.current = true;
     
     const newId = crypto.randomUUID();
     
     try {
-      // Immediately create a placeholder conversation in the database
+      // Create a minimal placeholder conversation in the database
       const { error } = await supabase
         .from('scout_conversations')
         .insert({
@@ -52,12 +57,16 @@ export const useActiveConversation = () => {
     } catch (error) {
       console.error('Failed to start new conversation:', error);
       return null;
+    } finally {
+      setIsCreating(false);
+      creatingRef.current = false;
     }
   };
 
   return {
     activeConversationId,
     setActiveConversation,
-    startNewConversation
+    startNewConversation,
+    isCreating
   };
 };

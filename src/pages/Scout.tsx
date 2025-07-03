@@ -15,13 +15,11 @@ const Scout = () => {
   const handleNewConversation = async () => {
     const newId = await startNewConversation();
     if (newId) {
-      loadConversations();
+      // Only reload conversations after successful creation
+      setTimeout(() => {
+        loadConversations();
+      }, 100);
     }
-  };
-
-  const handleConversationChange = (conversationId: string) => {
-    setActiveConversation(conversationId);
-    loadConversations();
   };
 
   return (
@@ -32,7 +30,6 @@ const Scout = () => {
           activeConversationId={activeConversationId}
           onConversationSelect={handleConversationSelect}
           onNewConversation={handleNewConversation}
-          onConversationChange={handleConversationChange}
         />
       </div>
     </div>

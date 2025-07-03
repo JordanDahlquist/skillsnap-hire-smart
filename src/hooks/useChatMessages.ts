@@ -63,55 +63,16 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId);
-
-  // Update current conversation ID when prop changes
-  useEffect(() => {
-    setCurrentConversationId(conversationId);
-  }, [conversationId]);
-
-  const createNewConversation = async (): Promise<string | null> => {
-    if (!user) return null;
-    
-    try {
-      const newId = crypto.randomUUID();
-      
-      const { error } = await supabase
-        .from('scout_conversations')
-        .insert({
-          user_id: user.id,
-          conversation_id: newId,
-          message_content: 'New conversation started',
-          message_type: 'text',
-          is_ai_response: false
-        });
-
-      if (error) throw error;
-
-      setCurrentConversationId(newId);
-      onConversationUpdate?.();
-      
-      return newId;
-    } catch (error) {
-      logger.error('Failed to create new conversation', { error });
-      toast({
-        title: "Error",
-        description: "Failed to create new conversation. Please try again.",
-        variant: "destructive"
-      });
-      return null;
-    }
-  };
 
   const loadMessages = async () => {
-    if (!currentConversationId || !user) return;
+    if (!conversationId || !user) return;
 
     try {
       const { data, error } = await supabase
         .from('scout_conversations')
         .select('*')
         .eq('user_id', user.id)
-        .eq('conversation_id', currentConversationId)
+        .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -160,10 +121,10 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
   };
 
   const sendMessage = async (content: string) => {
-    if (!user || !content.trim()) {
+    if (!user || !content.trim() || !conversationId) {
       toast({
         title: "Error",
-        description: "Please enter a message before sending.",
+        description: "Please enter a message and ensure you have an active conversation.",
         variant: "destructive"
       });
       return;
@@ -172,16 +133,6 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
     setIsLoading(true);
     
     try {
-      let activeConversationId = currentConversationId;
-      
-      // Create a new conversation if none exists
-      if (!activeConversationId) {
-        activeConversationId = await createNewConversation();
-        if (!activeConversationId) {
-          throw new Error('Failed to create conversation');
-        }
-      }
-
       // Add user message immediately to UI
       const userMessage: Message = {
         id: crypto.randomUUID(),
@@ -194,7 +145,7 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
       const response = await supabase.functions.invoke('scout-ai-chat', {
         body: {
           message: content,
-          conversation_id: activeConversationId
+          conversation_id: conversationId
         }
       });
 
@@ -247,12 +198,11 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
 
   useEffect(() => {
     loadMessages();
-  }, [currentConversationId, user]);
+  }, [conversationId, user]);
 
   return {
     messages,
     isLoading,
-    sendMessage,
-    conversationId: currentConversationId
+    sendMessage
   };
 };
