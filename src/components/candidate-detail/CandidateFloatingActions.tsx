@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,24 +27,40 @@ export const CandidateFloatingActions = ({
 
   const handleRating = async (rating: number) => {
     setIsUpdating(true);
-    await updateApplicationRating(application.id, rating);
-    setIsUpdating(false);
+    try {
+      // Check if clicking the same rating - if so, deselect it
+      const newRating = application.manual_rating === rating ? null : rating;
+      await updateApplicationRating(application.id, newRating);
+    } catch (error) {
+      console.error('Failed to update rating:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleReject = async () => {
     setIsUpdating(true);
-    await rejectApplication(application.id, "Rejected from candidate detail page");
-    setIsUpdating(false);
+    try {
+      await rejectApplication(application.id, "Rejected from candidate detail page");
+    } catch (error) {
+      console.error('Failed to reject application:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleUnreject = async () => {
     setIsUpdating(true);
-    await unrejectApplication(application.id);
-    setIsUpdating(false);
+    try {
+      await unrejectApplication(application.id);
+    } catch (error) {
+      console.error('Failed to unreject application:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleEmail = () => {
-    // Open email composer - could be implemented as a modal
     console.log("Open email composer for", application.email);
   };
 
@@ -53,7 +68,6 @@ export const CandidateFloatingActions = ({
     <div className="fixed bottom-6 right-6 z-50">
       <Card className="glass-card p-4 shadow-lg border border-border/50">
         <div className="space-y-3">
-          {/* Rating */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground">Rate:</span>
             <div className="flex gap-1">
@@ -62,7 +76,7 @@ export const CandidateFloatingActions = ({
                   key={rating}
                   onClick={() => handleRating(rating)}
                   disabled={isUpdating}
-                  className="p-1 hover:bg-muted rounded transition-colors"
+                  className="p-1 hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Star 
                     className={`w-4 h-4 ${
@@ -76,7 +90,6 @@ export const CandidateFloatingActions = ({
             </div>
           </div>
 
-          {/* Stage Selector */}
           <div className="min-w-0">
             <StageSelector
               jobId={job.id}
@@ -86,7 +99,6 @@ export const CandidateFloatingActions = ({
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-2">
             {application.status === 'rejected' ? (
               <Button 

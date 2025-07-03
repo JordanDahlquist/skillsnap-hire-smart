@@ -45,18 +45,14 @@ export const CandidateDetailHeader = ({
   const [isUpdatingRating, setIsUpdatingRating] = useState(false);
   const { navigateToEmailTab } = useEmailNavigation();
   
-  // Local state for immediate UI updates
   const [localApplication, setLocalApplication] = useState(application);
   
-  // Update local state when application prop changes
   useEffect(() => {
     setLocalApplication(application);
   }, [application]);
   
-  // Get the sendReply function from candidate inbox data
   const { sendReply } = useCandidateInboxData(application.id);
   
-  // Use the unified rejection system that sends emails
   const { rejectWithEmail, unrejectApplication, isRejecting } = useSimpleRejection(
     localApplication,
     job,
@@ -77,27 +73,42 @@ export const CandidateDetailHeader = ({
   const handleRating = async (rating: number) => {
     if (isUpdatingRating || propIsUpdating || isRejecting) return;
     
+    // Check if clicking the same rating - if so, deselect it
+    const newRating = localApplication.manual_rating === rating ? null : rating;
+    
     // Immediate UI update
     setLocalApplication(prev => ({
       ...prev,
-      manual_rating: rating,
-      status: 'reviewed'
+      manual_rating: newRating,
+      status: newRating === null ? 'pending' : 'reviewed'
     }));
     
     setIsUpdatingRating(true);
     try {
+      const updateData = newRating === null 
+        ? {
+            manual_rating: null,
+            status: 'pending',
+            updated_at: new Date().toISOString()
+          }
+        : {
+            manual_rating: newRating,
+            status: 'reviewed',
+            updated_at: new Date().toISOString()
+          };
+
       const { error } = await supabase
         .from('applications')
-        .update({ 
-          manual_rating: rating,
-          status: 'reviewed',
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', application.id);
 
       if (error) throw error;
 
-      toast.success(`Rating updated to ${rating} star${rating !== 1 ? 's' : ''}`);
+      const successMessage = newRating === null 
+        ? 'Rating cleared' 
+        : `Rating updated to ${newRating} star${newRating !== 1 ? 's' : ''}`;
+      
+      toast.success(successMessage);
       
       setTimeout(() => {
         onApplicationUpdate();
@@ -106,7 +117,6 @@ export const CandidateDetailHeader = ({
     } catch (error) {
       console.error('Failed to update rating:', error);
       toast.error('Failed to update rating');
-      // Revert local state on error
       setLocalApplication(application);
     } finally {
       setIsUpdatingRating(false);
@@ -122,7 +132,6 @@ export const CandidateDetailHeader = ({
     if (isRejecting || propIsUpdating || isUpdatingRating) return;
     
     try {
-      // Optimistic UI update
       setLocalApplication(prev => ({
         ...prev,
         status: 'rejected'
@@ -132,7 +141,6 @@ export const CandidateDetailHeader = ({
       propOnReject?.();
       setShowRejectDialog(false);
     } catch (error) {
-      // Revert local state on error
       setLocalApplication(application);
     }
   };
@@ -141,7 +149,6 @@ export const CandidateDetailHeader = ({
     if (isRejecting || propIsUpdating || isUpdatingRating) return;
     
     try {
-      // Optimistic UI update
       setLocalApplication(prev => ({
         ...prev,
         status: 'pending'
@@ -150,20 +157,17 @@ export const CandidateDetailHeader = ({
       await unrejectApplication();
       propOnUnreject?.();
     } catch (error) {
-      // Revert local state on error
       setLocalApplication(application);
     }
   };
 
   const handleEmail = () => {
-    // Navigate to email tab instead of showing modal
     navigateToEmailTab(localApplication, job.id);
     propOnEmail?.();
   };
 
   const handleStageChange = (applicationId: string, newStage: string) => {
     console.log('Stage changed in header:', { applicationId, newStage });
-    // Trigger application update to refresh all data
     onApplicationUpdate();
   };
 
@@ -174,7 +178,6 @@ export const CandidateDetailHeader = ({
       <div className="border-b border-border/20 bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Breadcrumb Navigation */}
           <div className="py-2 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
@@ -208,10 +211,8 @@ export const CandidateDetailHeader = ({
             </div>
           </div>
 
-          {/* Main Header Content */}
           <div className="py-4 flex items-center gap-8">
             
-            {/* Left: Candidate Information */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start gap-4">
                 <div className="min-w-0 flex-1">
@@ -227,10 +228,8 @@ export const CandidateDetailHeader = ({
               </div>
             </div>
 
-            {/* Center: Ratings Section */}
             <div className="flex items-center gap-8 flex-shrink-0">
               
-              {/* Manual Rating - Enhanced Prominence */}
               <div className="flex items-center gap-3 bg-muted/20 px-4 py-3 rounded-lg border border-border/30">
                 <span className="text-base font-semibold text-foreground">Your Rating</span>
                 <div className="flex gap-1">
@@ -256,7 +255,6 @@ export const CandidateDetailHeader = ({
                 </span>
               </div>
 
-              {/* AI Rating - Standard Styling */}
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium text-muted-foreground">AI Rating</span>
                 <div className="flex gap-1">
@@ -268,7 +266,6 @@ export const CandidateDetailHeader = ({
               </div>
             </div>
 
-            {/* Right: Actions */}
             <div className="flex items-center gap-3 flex-shrink-0">
               <StageSelector
                 jobId={job.id}
@@ -315,7 +312,6 @@ export const CandidateDetailHeader = ({
             </div>
           </div>
 
-          {/* Loading State */}
           {isAnyUpdating && (
             <div className="pb-3">
               <div className="flex items-center gap-2">
@@ -329,7 +325,6 @@ export const CandidateDetailHeader = ({
         </div>
       </div>
 
-      {/* Rejection Confirmation Dialog */}
       <RejectionConfirmationDialog
         open={showRejectDialog}
         onOpenChange={setShowRejectDialog}

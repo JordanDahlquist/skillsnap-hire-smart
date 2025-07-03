@@ -24,17 +24,16 @@ interface ApplicationsListHeaderProps {
   onSelectApplications?: (ids: string[]) => void;
   applications: Array<{
     id: string;
+    manual_rating?: number | null;
   }>;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
-  // Bulk action props
   onSendEmail?: () => void;
-  onSetRating?: (rating: number) => void;
+  onSetRating?: (rating: number | null) => void;
   onMoveToStage?: (stage: string) => void;
   onReject?: () => void;
   jobId?: string;
   isLoading?: boolean;
-  // New sorting props
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSortChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
@@ -69,7 +68,7 @@ export const ApplicationsListHeader = memo(({
   const [currentSortIndex, setCurrentSortIndex] = useState(() => {
     const currentKey = `${sortBy}-${sortOrder}`;
     const index = SORT_OPTIONS.findIndex(option => option.key === currentKey);
-    return index >= 0 ? index : 2; // Default to "Newest First"
+    return index >= 0 ? index : 2;
   });
 
   const handleSelectAll = useCallback((checked: boolean) => {
@@ -123,6 +122,16 @@ export const ApplicationsListHeader = memo(({
     }
   }, [currentSortIndex]);
 
+  const handleRatingClick = useCallback((rating: number) => {
+    if (!onSetRating) return;
+    
+    const selectedApps = applications.filter(app => selectedApplications.includes(app.id));
+    const allHaveRating = selectedApps.length > 0 && selectedApps.every(app => app.manual_rating === rating);
+    
+    const newRating = allHaveRating ? null : rating;
+    onSetRating(newRating);
+  }, [onSetRating, applications, selectedApplications]);
+
   const isAllSelected = applicationsCount > 0 && selectedApplications.length === applicationsCount;
   const isSomeSelected = selectedApplications.length > 0 && selectedApplications.length < applicationsCount;
   const hasSelection = selectedApplications.length > 0;
@@ -130,25 +139,21 @@ export const ApplicationsListHeader = memo(({
   return (
     <TooltipProvider>
       <div className="p-4 border-b border-border glass-card-no-hover">
-        {/* Applications Title */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-semibold text-foreground">
             Applications ({applicationsCount})
           </h2>
         </div>
 
-        {/* Search Bar */}
         {onSearchChange && (
           <div className="mb-3">
             <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
           </div>
         )}
 
-        {/* Bulk Actions Row (when items selected) */}
         {hasSelection && onSelectApplications && (
           <div className="mb-2">
             <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-              {/* Email Button */}
               <Button 
                 size="sm"
                 onClick={onSendEmail}
@@ -159,17 +164,16 @@ export const ApplicationsListHeader = memo(({
                 Email
               </Button>
 
-              {/* Rating Buttons Group */}
               <div className="flex items-center gap-0.5 flex-shrink-0">
                 {[1, 2, 3].map((rating) => (
                   <Button
                     key={rating}
                     size="sm"
                     variant="outline"
-                    onClick={() => onSetRating?.(rating)}
+                    onClick={() => handleRatingClick(rating)}
                     disabled={isLoading}
                     className="gap-1 hover:bg-accent hover:border-accent-foreground/20 border-border h-7 px-2 min-w-[2.5rem]"
-                    title={`Set ${rating} star rating`}
+                    title={`Set ${rating} star rating (click again to clear)`}
                   >
                     <span className="text-xs font-medium">{rating}</span>
                     <Star className="w-3 h-3 text-blue-500 fill-current" />
@@ -177,7 +181,6 @@ export const ApplicationsListHeader = memo(({
                 ))}
               </div>
 
-              {/* Stage Dropdown */}
               {jobId && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -201,7 +204,6 @@ export const ApplicationsListHeader = memo(({
                 </DropdownMenu>
               )}
 
-              {/* Reject Button */}
               <Button 
                 size="sm"
                 variant="destructive"
@@ -216,11 +218,9 @@ export const ApplicationsListHeader = memo(({
           </div>
         )}
 
-        {/* Selection Controls Row */}
         {onSelectApplications && (
           <div className="flex items-center justify-between">
             {!hasSelection ? (
-              // Select All Checkbox (when no selection)
               <div className="flex items-center gap-2">
                 <Checkbox 
                   checked={isAllSelected} 
@@ -232,7 +232,6 @@ export const ApplicationsListHeader = memo(({
                 </span>
               </div>
             ) : (
-              // Selection Count and Clear (when items selected)
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="text-xs font-medium px-2 py-0.5">
                   {selectedApplications.length} selected
@@ -248,7 +247,6 @@ export const ApplicationsListHeader = memo(({
               </div>
             )}
 
-            {/* Compact Sort Button with tooltip */}
             {onSortChange && (
               <Tooltip>
                 <TooltipTrigger asChild>

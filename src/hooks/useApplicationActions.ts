@@ -4,17 +4,26 @@ import { toast } from "sonner";
 import { logger } from "@/services/loggerService";
 
 export const useApplicationActions = (onUpdate?: () => void) => {
-  const updateApplicationRating = async (applicationId: string, rating: number) => {
+  const updateApplicationRating = async (applicationId: string, rating: number | null) => {
     try {
       logger.debug('Updating application rating', { applicationId, rating });
       
+      // If rating is null, we're clearing the rating
+      const updateData = rating === null 
+        ? { 
+            manual_rating: null,
+            status: 'pending',
+            updated_at: new Date().toISOString()
+          }
+        : {
+            manual_rating: rating,
+            status: 'reviewed',
+            updated_at: new Date().toISOString()
+          };
+
       const { error } = await supabase
         .from('applications')
-        .update({ 
-          manual_rating: rating,
-          status: 'reviewed',
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', applicationId);
 
       if (error) {
@@ -22,7 +31,11 @@ export const useApplicationActions = (onUpdate?: () => void) => {
         throw error;
       }
 
-      toast.success(`Rating updated to ${rating} star${rating !== 1 ? 's' : ''}`);
+      const successMessage = rating === null 
+        ? 'Rating cleared' 
+        : `Rating updated to ${rating} star${rating !== 1 ? 's' : ''}`;
+      
+      toast.success(successMessage);
       
       setTimeout(() => {
         onUpdate?.();

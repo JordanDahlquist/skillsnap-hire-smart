@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Star, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Star, ChevronDown, X } from 'lucide-react';
 
 interface BulkRatingSelectorProps {
-  onRatingChange: (rating: number) => void;
+  onRatingChange: (rating: number | null) => void;
   disabled?: boolean;
 }
 
@@ -41,6 +41,16 @@ export const BulkRatingSelector = ({ onRatingChange, disabled }: BulkRatingSelec
             </div>
           </DropdownMenuItem>
         ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => onRatingChange(null)}
+          className="text-muted-foreground"
+        >
+          <div className="flex items-center gap-2">
+            <X className="w-3 h-3" />
+            <span>Clear Rating</span>
+          </div>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

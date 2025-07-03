@@ -1,20 +1,28 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logger } from "@/services/loggerService";
 
 export const useSmartApplicationActions = (onUpdate?: () => void) => {
-  const updateApplicationRating = async (applicationId: string, rating: number) => {
+  const updateApplicationRating = async (applicationId: string, rating: number | null) => {
     try {
       logger.debug('Updating application rating', { applicationId, rating });
       
+      // If rating is null, we're clearing the rating
+      const updateData = rating === null 
+        ? { 
+            manual_rating: null,
+            status: 'pending',
+            updated_at: new Date().toISOString()
+          }
+        : {
+            manual_rating: rating,
+            status: 'reviewed',
+            updated_at: new Date().toISOString()
+          };
+
       const { error } = await supabase
         .from('applications')
-        .update({ 
-          manual_rating: rating,
-          status: 'reviewed',
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', applicationId);
 
       if (error) {
@@ -22,7 +30,11 @@ export const useSmartApplicationActions = (onUpdate?: () => void) => {
         throw error;
       }
 
-      toast.success(`Rating updated to ${rating} star${rating !== 1 ? 's' : ''}`);
+      const successMessage = rating === null 
+        ? 'Rating cleared' 
+        : `Rating updated to ${rating} star${rating !== 1 ? 's' : ''}`;
+      
+      toast.success(successMessage);
       
       setTimeout(() => {
         onUpdate?.();
@@ -46,7 +58,7 @@ export const useSmartApplicationActions = (onUpdate?: () => void) => {
         .update({ 
           status: 'rejected',
           pipeline_stage: 'rejected',
-          previous_pipeline_stage: currentStage, // Track where they were before rejection
+          previous_pipeline_stage: currentStage,
           rejection_reason: reason || 'No reason provided',
           updated_at: new Date().toISOString()
         })
@@ -77,10 +89,8 @@ export const useSmartApplicationActions = (onUpdate?: () => void) => {
     try {
       logger.debug('Smart unreject application', { applicationId, previousStage, manualRating });
       
-      // Determine the best stage to restore to
       const restoreStage = previousStage || 'applied';
       
-      // Determine appropriate status based on restore stage and manual rating
       let newStatus = 'pending';
       if (restoreStage === 'applied') {
         newStatus = 'pending';
@@ -95,7 +105,7 @@ export const useSmartApplicationActions = (onUpdate?: () => void) => {
         .update({ 
           status: newStatus,
           pipeline_stage: restoreStage,
-          previous_pipeline_stage: null, // Clear the tracking
+          previous_pipeline_stage: null,
           rejection_reason: null,
           updated_at: new Date().toISOString()
         })
@@ -108,7 +118,6 @@ export const useSmartApplicationActions = (onUpdate?: () => void) => {
 
       logger.debug('Application unrejected successfully', { applicationId, restoreStage });
       
-      // More informative success message
       const stageDisplayName = restoreStage.charAt(0).toUpperCase() + restoreStage.slice(1).replace('_', ' ');
       toast.success(`Application unrejected and moved to ${stageDisplayName} stage`);
       

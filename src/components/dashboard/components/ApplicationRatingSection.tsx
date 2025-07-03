@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 interface ApplicationRatingSectionProps {
   manualRating: number | null;
   aiRating: number | null;
-  onManualRating: (rating: number) => void;
+  onManualRating: (rating: number | null) => void;
   isUpdating: boolean;
 }
 
@@ -14,7 +14,6 @@ export const ApplicationRatingSection = ({
   onManualRating,
   isUpdating
 }: ApplicationRatingSectionProps) => {
-  // Normalize AI rating to 1-3 scale
   const normalizeAIRating = (rating: number | null): number | null => {
     if (!rating) return null;
     return Math.max(1, Math.min(3, Math.round(rating)));
@@ -22,6 +21,12 @@ export const ApplicationRatingSection = ({
 
   const normalizedAIRating = normalizeAIRating(aiRating);
   const hasManualRating = manualRating && manualRating > 0;
+
+  const handleRatingClick = (rating: number) => {
+    // Check if clicking the same rating - if so, deselect it
+    const newRating = manualRating === rating ? null : rating;
+    onManualRating(newRating);
+  };
 
   const renderCompactRating = (rating: number | null, isClickable: boolean = false, color: string = "blue") => {
     return (
@@ -34,7 +39,7 @@ export const ApplicationRatingSection = ({
             return (
               <button
                 key={i}
-                onClick={() => onManualRating(starValue)}
+                onClick={() => handleRatingClick(starValue)}
                 disabled={isUpdating}
                 className={`transition-all duration-200 hover:scale-110 disabled:opacity-50 ${
                   isActive ? `text-${color}-500` : !hasManualRating 
@@ -62,9 +67,7 @@ export const ApplicationRatingSection = ({
 
   return (
     <div className="glass-card-no-hover p-3 border border-border">
-      {/* Enhanced layout with prominent manual rating */}
       <div className="flex items-center justify-between gap-4">
-        {/* Manual Rating - More Prominent */}
         <div className={`flex items-center gap-2 min-w-0 flex-1 p-2 rounded-lg transition-all ${
           !hasManualRating ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
         }`}>
@@ -81,10 +84,8 @@ export const ApplicationRatingSection = ({
           </span>
         </div>
 
-        {/* Divider */}
         <div className="w-px h-8 bg-border shrink-0"></div>
 
-        {/* AI Rating */}
         <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
           <span className="text-sm font-medium text-muted-foreground shrink-0">AI:</span>
           {renderCompactRating(normalizedAIRating, false, "purple")}
