@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Job, Application } from "@/types";
@@ -26,31 +25,33 @@ export const useDashboardHeaderActions = (
       const { MESSAGES, AI_REFRESH } = DASHBOARD_ACTION_CONSTANTS;
       
       toast({
-        title: MESSAGES.AI_REFRESH_START,
-        description: `Analyzing ${applications.length} applications... This can take ${AI_REFRESH.TIMEOUT_RANGE}.`,
+        title: "AI Re-ranking Started",
+        description: `Re-analyzing all ${applications.length} applications to update rankings. This may take ${AI_REFRESH.TIMEOUT_RANGE}.`,
       });
+
+      console.log(`Starting AI re-ranking for ${applications.length} applications`);
 
       const { successCount, errorCount } = await AIAnalysisService.processBatch(applications, job);
 
       // Show completion message
       if (successCount > 0) {
         toast({
-          title: MESSAGES.AI_REFRESH_SUCCESS,
-          description: `Successfully analyzed ${successCount} applications${errorCount > 0 ? `, ${errorCount} failed` : ''}`,
+          title: "AI Re-ranking Complete",
+          description: `Successfully re-analyzed ${successCount} applications${errorCount > 0 ? `, ${errorCount} failed` : ''}. Rankings have been updated.`,
         });
-        onJobUpdate(); // Refresh the data
+        onJobUpdate(); // Refresh the data to show new rankings
       } else {
         toast({
-          title: MESSAGES.AI_REFRESH_FAILED,
-          description: "Unable to refresh AI rankings. Please try again.",
+          title: "AI Re-ranking Failed",
+          description: `Unable to re-analyze applications. ${errorCount > 0 ? `${errorCount} applications failed.` : ''} Please try again.`,
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('AI refresh failed:', error);
       toast({
-        title: DASHBOARD_ACTION_CONSTANTS.MESSAGES.AI_REFRESH_FAILED,
-        description: "An error occurred while refreshing AI rankings",
+        title: "AI Re-ranking Failed",
+        description: `An error occurred during re-analysis: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
