@@ -45,7 +45,7 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
     }
   }, [user?.id, threadsUpdated]);
 
-  // Fetch email threads with auto-refresh and filtering
+  // Fetch ALL email threads (no filtering at database level)
   const { 
     data: allThreads = [], 
     isLoading: threadsLoading, 
@@ -53,29 +53,20 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
     refetch: refetchThreads,
     isFetching: isThreadsFetching
   } = useQuery({
-    queryKey: ['email-threads', user?.id, currentFilter],
+    queryKey: ['email-threads', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       
-      console.log('Fetching email threads for user:', user.id, 'filter:', currentFilter);
+      console.log('Fetching all email threads for user:', user.id);
       
-      let query = supabase
+      const { data, error } = await supabase
         .from('email_threads')
         .select('*')
-        .eq('user_id', user.id);
-
-      // Apply filter
-      if (currentFilter === 'active') {
-        query = query.eq('status', 'active');
-      } else if (currentFilter === 'archived') {
-        query = query.eq('status', 'archived');
-      }
-      // 'all' filter doesn't add any status condition
-
-      const { data, error } = await query.order('last_message_at', { ascending: false });
+        .eq('user_id', user.id)
+        .order('last_message_at', { ascending: false });
 
       if (error) throw error;
-      console.log('Fetched threads:', data);
+      console.log('Fetched all threads:', data);
       setLastRefreshTime(new Date());
       return data as EmailThread[];
     },
@@ -86,8 +77,38 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
     refetchIntervalInBackground: true,
   });
 
-  // Filter threads based on current filter for local state
-  const threads = useMemo(() => allThreads, [allThreads]);
+  // Calculate thread counts and filter threads for display
+  const { threads, threadCounts } = useMemo(() => {
+    const activeThreads = allThreads.filter(t => t.status === 'active');
+    const archivedThreads = allThreads.filter(t => t.status === 'archived');
+    
+    const counts = {
+      active: activeThreads.length,
+      archived: archivedThreads.length,
+      all: allThreads.length,
+      activeUnread: activeThreads.reduce((sum, thread) => sum + thread.unread_count, 0)
+    };
+
+    // Filter threads based on current filter
+    let filteredThreads: EmailThread[];
+    switch (currentFilter) {
+      case 'active':
+        filteredThreads = activeThreads;
+        break;
+      case 'archived':
+        filteredThreads = archivedThreads;
+        break;
+      case 'all':
+      default:
+        filteredThreads = allThreads;
+        break;
+    }
+
+    return {
+      threads: filteredThreads,
+      threadCounts: counts
+    };
+  }, [allThreads, currentFilter]);
 
   // Fetch all messages with auto-refresh
   const { 
@@ -309,15 +330,13 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
       return threadId;
     },
     onSuccess: (threadId) => {
-      queryClient.setQueryData(['email-threads', user?.id, 'active'], (oldThreads: EmailThread[] | undefined) => {
+      queryClient.setQueryData(['email-threads', user?.id], (oldThreads: EmailThread[] | undefined) => {
         if (!oldThreads) return oldThreads;
-        return oldThreads.filter(thread => thread.id !== threadId);
-      });
-
-      queryClient.setQueryData(['email-threads', user?.id, 'archived'], (oldThreads: EmailThread[] | undefined) => {
-        const archivedThread = allThreads.find(t => t.id === threadId);
-        if (!archivedThread || !oldThreads) return oldThreads || [];
-        return [...oldThreads, { ...archivedThread, status: 'archived' as const }];
+        return oldThreads.map(thread => 
+          thread.id === threadId 
+            ? { ...thread, status: 'archived' as const }
+            : thread
+        );
       });
 
       toast({
@@ -342,15 +361,13 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
       return threadId;
     },
     onSuccess: (threadId) => {
-      queryClient.setQueryData(['email-threads', user?.id, 'archived'], (oldThreads: EmailThread[] | undefined) => {
+      queryClient.setQueryData(['email-threads', user?.id], (oldThreads: EmailThread[] | undefined) => {
         if (!oldThreads) return oldThreads;
-        return oldThreads.filter(thread => thread.id !== threadId);
-      });
-
-      queryClient.setQueryData(['email-threads', user?.id, 'active'], (oldThreads: EmailThread[] | undefined) => {
-        const unarchivedThread = allThreads.find(t => t.id === threadId);
-        if (!unarchivedThread || !oldThreads) return oldThreads || [];
-        return [...oldThreads, { ...unarchivedThread, status: 'active' as const }];
+        return oldThreads.map(thread => 
+          thread.id === threadId 
+            ? { ...thread, status: 'active' as const }
+            : thread
+        );
       });
 
       toast({
@@ -375,12 +392,10 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
       return threadId;
     },
     onSuccess: (threadId) => {
-      // Remove from all cached queries
-      ['active', 'archived', 'all'].forEach(filter => {
-        queryClient.setQueryData(['email-threads', user?.id, filter], (oldThreads: EmailThread[] | undefined) => {
-          if (!oldThreads) return oldThreads;
-          return oldThreads.filter(thread => thread.id !== threadId);
-        });
+      // Remove from cached data
+      queryClient.setQueryData(['email-threads', user?.id], (oldThreads: EmailThread[] | undefined) => {
+        if (!oldThreads) return oldThreads;
+        return oldThreads.filter(thread => thread.id !== threadId);
       });
 
       // Remove associated messages
@@ -558,7 +573,7 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
             console.log('New email message detected:', payload);
             const newMessage = payload.new as EmailMessage;
             
-            const belongsToUser = stableThreads.some(thread => thread.id === newMessage.thread_id);
+            const belongsToUser = allThreads.some(thread => thread.id === newMessage.thread_id);
             
             if (belongsToUser) {
               queryClient.setQueryData(['email-messages', user?.id], (oldMessages: EmailMessage[] | undefined) => {
@@ -591,7 +606,7 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
     } catch (error) {
       console.error('Error setting up optimized inbox subscription:', error);
     }
-  }, [user?.id, queryClient, toast, stableThreads]);
+  }, [user?.id, queryClient, toast, allThreads]);
 
   // Cleanup subscription on unmount
   useEffect(() => {
@@ -614,6 +629,7 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
   return {
     threads,
     messages: stableMessages,
+    threadCounts,
     isLoading: threadsLoading || messagesLoading,
     error: threadsError || messagesError,
     refetchThreads: handleRefresh,

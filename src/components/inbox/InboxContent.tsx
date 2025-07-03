@@ -15,6 +15,13 @@ import { useOptimizedEmailSubjects } from "@/hooks/useOptimizedEmailSubjects";
 import type { EmailThread } from "@/types/inbox";
 import type { InboxFilter } from "@/hooks/useInboxFilters";
 
+interface ThreadCounts {
+  active: number;
+  archived: number;
+  all: number;
+  activeUnread: number;
+}
+
 interface InboxContentProps {
   threads: EmailThread[];
   selectedThreadId: string | null;
@@ -41,6 +48,8 @@ interface InboxContentProps {
   lastRefreshTime?: Date;
   isAutoRefreshing?: boolean;
   isTabVisible?: boolean;
+  // Thread counts
+  threadCounts: ThreadCounts;
 }
 
 export const InboxContent = ({
@@ -64,7 +73,8 @@ export const InboxContent = ({
   toggleAutoRefresh,
   lastRefreshTime,
   isAutoRefreshing = false,
-  isTabVisible = true
+  isTabVisible = true,
+  threadCounts
 }: InboxContentProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -79,12 +89,6 @@ export const InboxContent = ({
       typeof p === 'string' ? p.toLowerCase().includes(searchTerm.toLowerCase()) : false
     )
   );
-
-  // Calculate thread counts
-  const activeTotalUnread = threads.filter(t => t.status === 'active').reduce((sum, thread) => sum + thread.unread_count, 0);
-  const activeCount = threads.filter(t => t.status === 'active').length;
-  const archivedCount = threads.filter(t => t.status === 'archived').length;
-  const totalCount = threads.length;
 
   const formatLastRefreshTime = (time: Date) => {
     const now = new Date();
@@ -129,8 +133,8 @@ export const InboxContent = ({
           <CardTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5" />
             Inbox
-            {currentFilter === 'active' && activeTotalUnread > 0 && (
-              <Badge variant="destructive">{activeTotalUnread}</Badge>
+            {currentFilter === 'active' && threadCounts.activeUnread > 0 && (
+              <Badge variant="destructive">{threadCounts.activeUnread}</Badge>
             )}
           </CardTitle>
           
@@ -205,25 +209,25 @@ export const InboxContent = ({
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="active" className="flex items-center gap-2">
               Active
-              {activeCount > 0 && (
+              {threadCounts.active > 0 && (
                 <Badge variant="secondary" className="text-xs">
-                  {activeCount}
+                  {threadCounts.active}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="archived" className="flex items-center gap-2">
               Archived
-              {archivedCount > 0 && (
+              {threadCounts.archived > 0 && (
                 <Badge variant="secondary" className="text-xs">
-                  {archivedCount}
+                  {threadCounts.archived}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="all" className="flex items-center gap-2">
               All
-              {totalCount > 0 && (
+              {threadCounts.all > 0 && (
                 <Badge variant="secondary" className="text-xs">
-                  {totalCount}
+                  {threadCounts.all}
                 </Badge>
               )}
             </TabsTrigger>

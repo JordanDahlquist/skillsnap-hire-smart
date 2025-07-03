@@ -27,6 +27,7 @@ export const InboxPage = () => {
   const { 
     threads, 
     messages, 
+    threadCounts, // Use the new threadCounts from the hook
     isLoading, 
     error, 
     refetchThreads, 
@@ -137,6 +138,7 @@ export const InboxPage = () => {
                   lastRefreshTime={lastRefreshTime}
                   isAutoRefreshing={isAutoRefreshing}
                   isTabVisible={isTabVisible}
+                  threadCounts={threadCounts} // Pass the counts to InboxContent
                 />
               </div>
 
