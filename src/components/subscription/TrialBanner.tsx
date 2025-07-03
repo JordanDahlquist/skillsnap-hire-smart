@@ -11,10 +11,8 @@ export const TrialBanner = () => {
   const [dismissed, setDismissed] = useState(false);
   const navigate = useNavigate();
 
-  // Don't show if user has active subscription or trial is not active or banner is dismissed
-  if (!isTrialActive || hasActiveAccess === false || dismissed || !subscription) {
-    return null;
-  }
+  // Don't show banner for new signups - hide it completely
+  return null;
 
   const handleUpgrade = () => {
     navigate('/pricing');
