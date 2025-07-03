@@ -51,6 +51,10 @@ export const ApplicationDetailContent = ({
     navigate(`/jobs/${jobId}/candidate/${application.id}`);
   };
 
+  const handleViewResume = () => {
+    navigate(`/jobs/${jobId}/candidate/${application.id}?tab=resume`);
+  };
+
   // Get transcript processing status display
   const getTranscriptStatusDisplay = () => {
     const status = application.transcript_processing_status;
@@ -116,17 +120,11 @@ export const ApplicationDetailContent = ({
                 <Button 
                   size="sm"
                   variant="outline"
-                  asChild 
+                  onClick={handleViewResume}
                   className="h-9 px-3 border-border/50 hover:border-border"
                 >
-                  <a 
-                    href={application.resume_file_path} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Resume
-                  </a>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Resume
                 </Button>
               )}
             </div>
