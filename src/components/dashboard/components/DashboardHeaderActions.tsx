@@ -80,6 +80,7 @@ export const DashboardHeaderActions = ({
           currentStatus={job.status}
           onStatusChange={handleStatusChange}
           disabled={isUpdating}
+          size="sm"
         />
 
         <Tooltip delayDuration={500}>
