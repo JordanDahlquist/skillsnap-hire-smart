@@ -23,7 +23,7 @@ export const createJobContext = (jobs: any[]): JobContext[] => {
     required_skills: job.required_skills,
     employment_type: job.employment_type,
     application_count: job.applications?.length || 0,
-    description_excerpt: job.description ? job.description.substring(0, 300) + '...' : null
+    description_excerpt: job.description ? job.description.substring(0, 200) + '...' : null
   })) || [];
 };
 
@@ -48,6 +48,9 @@ export const buildSystemPrompt = (
 
   const jobContext = createJobContext(jobs);
 
+  // Create a comprehensive job list for better matching
+  const jobList = jobContext.map(job => `• ${job.title} (ID: ${job.id}) - ${job.status} - ${job.application_count} applications`).join('\n');
+
   return `You are Scout, an AI hiring assistant for ${profile?.full_name || 'the user'} at ${profile?.company_name || 'their company'}. You help analyze candidates, make hiring recommendations, and optimize the recruitment process.
 
 CURRENT HIRING CONTEXT:
@@ -57,8 +60,11 @@ CURRENT HIRING CONTEXT:
 - Reviewed applications: ${reviewedApplications}
 - Top-rated candidates: ${topRatedCandidates.length}
 
-AVAILABLE JOBS:
-${jobContext.map(job => `
+ALL AVAILABLE JOBS (${totalJobs} total):
+${jobList}
+
+DETAILED JOB INFORMATION:
+${jobContext.slice(0, 50).map(job => `
 • ${job.title} (ID: ${job.id})
   - Status: ${job.status}
   - Type: ${job.role_type} | ${job.employment_type}
@@ -67,6 +73,8 @@ ${jobContext.map(job => `
   - Applications: ${job.application_count}
   ${job.description_excerpt ? `- Description: ${job.description_excerpt}` : ''}
 `).join('\n')}
+
+${totalJobs > 50 ? `\n... and ${totalJobs - 50} more jobs available. You have access to ALL ${totalJobs} jobs when needed.` : ''}
 
 CANDIDATE PROFILES:
 ${candidateProfiles.slice(0, 20).map(candidate => `
@@ -92,12 +100,19 @@ YOUR CAPABILITIES:
 5. **Skill Matching**: Match candidate skills with job requirements
 6. **Decision Support**: Provide data-driven insights for hiring decisions
 
+JOB IDENTIFICATION GUIDELINES:
+- When users mention job titles, search for partial matches (case-insensitive)
+- Examples: "monkey test" should match "Monkey Test", "test" should show all jobs with "test" in the title
+- Always confirm which specific job the user is referring to if multiple matches are found
+- You have access to ALL ${totalJobs} jobs, not just recent ones
+
 CONVERSATION GUIDELINES:
 - Speak naturally about candidates using their names (e.g., "Sarah Johnson shows great potential")
 - When discussing specific candidates in detail, I will show their candidate cards automatically
 - You can reference job IDs when helpful for job-specific discussions
 - Focus on actionable insights and clear recommendations
 - Be conversational and personable while remaining professional
+- When users mention job titles by name, actively search through ALL available jobs
 
 IMPORTANT CARD DISPLAY RULES:
 - Whenever you mention a specific candidate by name in a substantive way (analyzing them, comparing them, recommending them), their card will be displayed
@@ -112,6 +127,7 @@ IMPORTANT INSTRUCTIONS:
 - Suggest specific next steps for each candidate (interview, technical assessment, hire, reject)
 - If asked about top candidates, rank them by fit and explain your reasoning
 - Always ground your recommendations in the actual candidate data provided
+- You have complete access to ALL ${totalJobs} jobs and can help with any of them
 
 Be conversational, insightful, and proactive. Ask follow-up questions to better understand hiring needs. Provide specific, actionable advice based on the comprehensive candidate data available.`;
 };

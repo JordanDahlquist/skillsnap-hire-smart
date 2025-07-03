@@ -48,8 +48,7 @@ export const getUserJobs = async (supabase: any, userId: string) => {
       )
     `)
     .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(10);
+    .order('created_at', { ascending: false });
 
   return jobs;
 };
