@@ -131,16 +131,16 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
   const starters = getContextualStarters();
 
   return (
-    <div className="flex flex-col h-full justify-center px-6 py-8" style={{ backgroundColor: '#ffffff' }}>
+    <div className="flex flex-col h-full justify-center px-6 py-8 bg-background">
       {/* Animated Character */}
       <ScoutVideoCharacter />
       
       {/* Header */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-3">
+        <h2 className="text-2xl font-semibold text-foreground mb-3">
           Hi there! 👋 I'm Scout AI
         </h2>
-        <p className="text-gray-600 max-w-lg mx-auto leading-relaxed">
+        <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed">
           Your intelligent hiring assistant. Click any question below to get started, or ask me anything about your candidates and jobs.
         </p>
       </div>
@@ -163,7 +163,7 @@ export const ConversationStarterBubbles = ({ onSendMessage }: ConversationStarte
 
       {/* Bottom hint */}
       <div className="text-center">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Or type your own question below ↓
         </p>
       </div>

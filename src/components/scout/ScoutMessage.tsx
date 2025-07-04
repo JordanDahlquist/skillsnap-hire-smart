@@ -34,7 +34,7 @@ export const ScoutMessage = ({ message }: ScoutMessageProps) => {
   return (
     <div className={`flex gap-3 ${message.isAi ? 'flex-row' : 'flex-row-reverse'}`}>
       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-        message.isAi ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+        message.isAi ? 'bg-blue-100 text-blue-600' : 'bg-muted text-muted-foreground'
       }`}>
         {message.isAi ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
       </div>
@@ -42,7 +42,7 @@ export const ScoutMessage = ({ message }: ScoutMessageProps) => {
       <div className={`flex-1 max-w-[80%] ${message.isAi ? 'text-left' : 'text-right'}`}>
         <div className={`inline-block p-3 rounded-lg ${
           message.isAi 
-            ? 'bg-white border border-gray-200 text-gray-900' 
+            ? 'bg-card border border-border text-foreground' 
             : 'bg-blue-600 text-white'
         }`}>
           {message.isAi ? (
@@ -74,7 +74,7 @@ export const ScoutMessage = ({ message }: ScoutMessageProps) => {
         )}
         
         <p className={`text-xs mt-1 ${
-          message.isAi ? 'text-gray-500' : 'text-blue-200'
+          message.isAi ? 'text-muted-foreground' : 'text-blue-200'
         }`}>
           {formatTime(message.timestamp)}
         </p>
