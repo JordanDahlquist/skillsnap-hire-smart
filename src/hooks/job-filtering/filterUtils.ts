@@ -42,6 +42,7 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
     const matchesCountry = filters.country === "all" || job.country === filters.country;
     const matchesState = filters.state === "all" || job.state === filters.state;
     const matchesDuration = filters.duration === "all" || job.duration === filters.duration;
+    const matchesStatus = filters.status.includes("all") || filters.status.includes(job.status);
     
     // More flexible budget matching
     const jobBudget = parseBudget(job.budget, jobEmploymentType);
@@ -53,7 +54,7 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
     
     return matchesSearch && matchesEmploymentType && matchesLocationType && 
            matchesExperienceLevel && matchesCountry && 
-           matchesState && matchesDuration && matchesBudget;
+           matchesState && matchesDuration && matchesBudget && matchesStatus;
   });
 
   console.log(`Initial filtered results: ${filtered.length} out of ${jobs.length} jobs`);
@@ -63,6 +64,7 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
     filters.employmentType !== "all" || !filters.locationType.includes("all") || 
     filters.experienceLevel !== "all" || filters.country !== "all" || 
     filters.state !== "all" || filters.duration !== "all" ||
+    !filters.status.includes("all") ||
     filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000
   )) {
     console.log('Too few results, applying fallback with relaxed filters');
@@ -76,9 +78,10 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
       const matchesExperienceLevel = filters.experienceLevel === "all" || job.experience_level === filters.experienceLevel;
       const matchesCountry = filters.country === "all" || job.country === filters.country;
       const matchesState = filters.state === "all" || job.state === filters.state;
+      const matchesStatus = filters.status.includes("all") || filters.status.includes(job.status);
       
       return matchesSearch && matchesEmploymentType && matchesLocationType && 
-             matchesExperienceLevel && matchesCountry && matchesState;
+             matchesExperienceLevel && matchesCountry && matchesState && matchesStatus;
     });
 
     if (relaxedFiltered.length > filtered.length) {

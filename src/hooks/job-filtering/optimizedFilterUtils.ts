@@ -28,7 +28,7 @@ export const applyJobFiltersOptimized = (
       return false;
     }
 
-    // Location type filter (now supports arrays)
+    // Location type filter (supports arrays)
     if (filters.locationType && !filters.locationType.includes("all")) {
       if (!job.location_type || !filters.locationType.includes(job.location_type)) {
         return false;
@@ -55,9 +55,11 @@ export const applyJobFiltersOptimized = (
       return false;
     }
 
-    // Status filter
-    if (filters.status !== "all" && job.status !== filters.status) {
-      return false;
+    // Status filter (now supports arrays)
+    if (filters.status && !filters.status.includes("all")) {
+      if (!job.status || !filters.status.includes(job.status)) {
+        return false;
+      }
     }
 
     // Budget range filter

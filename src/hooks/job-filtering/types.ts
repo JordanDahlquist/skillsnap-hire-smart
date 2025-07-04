@@ -1,4 +1,3 @@
-
 export interface JobFilters {
   employmentType: string;
   locationType: string[];
@@ -7,7 +6,7 @@ export interface JobFilters {
   state: string;
   budgetRange: number[];
   duration: string;
-  status: string;
+  status: string[];
 }
 
 export const defaultFilters: JobFilters = {
@@ -18,7 +17,7 @@ export const defaultFilters: JobFilters = {
   state: "all",
   budgetRange: [0, 200000],
   duration: "all",
-  status: "all"
+  status: ["all"]
 };
 
 export interface AvailableOptions {

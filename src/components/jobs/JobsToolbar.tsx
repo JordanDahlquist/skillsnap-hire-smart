@@ -4,8 +4,8 @@ import { JobManagementToolbar } from "@/components/JobManagementToolbar";
 interface JobsToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  statusFilter: string;
-  onStatusFilterChange: (status: string) => void;
+  statusFilter: string[];
+  onStatusFilterChange: (status: string[]) => void;
   workTypeFilter: string[];
   onWorkTypeFilterChange: (workType: string[]) => void;
   sortBy: string;

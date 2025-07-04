@@ -1,4 +1,3 @@
-
 import { useMemo, useCallback, useState } from "react";
 import { JobFilters, defaultFilters } from "./job-filtering/types";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
@@ -53,17 +52,6 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     
     let filtered = applyJobFiltersOptimized(jobs, debouncedSearchTerm, filters);
     
-    // Apply status filter
-    if (filters.status !== "all") {
-      console.log('Applying status filter:', filters.status);
-      filtered = filtered.filter(job => {
-        const matches = job.status === filters.status;
-        console.log(`Job ${job.id} status: ${job.status}, filter: ${filters.status}, matches: ${matches}`);
-        return matches;
-      });
-      console.log('After status filter:', filtered.length);
-    }
-    
     const sortedJobs = sortJobs(filtered, sortBy, sortOrder);
     console.log('Final filtered jobs count:', sortedJobs.length);
     return sortedJobs;
@@ -77,7 +65,7 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     if (filters.country !== "all") count++;
     if (filters.state !== "all") count++;
     if (filters.duration !== "all") count++;
-    if (filters.status !== "all") count++;
+    if (filters.status && !filters.status.includes("all") && filters.status.length > 0) count++;
     if (filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000) count++;
     return count;
   }, [filters]);
