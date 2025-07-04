@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Sun, Moon, Circle, Monitor, Shield, HelpCircle } from "lucide-react";
+import { Settings, Plus, LogOut, Loader2, LayoutDashboard, Circle, Monitor, Shield, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useThemeContext } from "@/contexts/ThemeContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -40,10 +40,6 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
 
   const getThemeIcon = (themeOption: string) => {
     switch (themeOption) {
-      case 'light':
-        return <Sun className="w-4 h-4" />;
-      case 'dark':
-        return <Moon className="w-4 h-4" />;
       case 'white':
         return <Circle className="w-4 h-4" />;
       case 'black':
@@ -51,16 +47,12 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
       case 'system':
         return <Monitor className="w-4 h-4" />;
       default:
-        return <Sun className="w-4 h-4" />;
+        return <Circle className="w-4 h-4" />;
     }
   };
 
   const getThemeLabel = (themeOption: string) => {
     switch (themeOption) {
-      case 'light':
-        return 'Day Nature';
-      case 'dark':
-        return 'Night Nature';
       case 'white':
         return 'White';
       case 'black':
@@ -68,11 +60,11 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
       case 'system':
         return 'System';
       default:
-        return 'Day Nature';
+        return 'White';
     }
   };
 
-  const themeOptions = ['white', 'black', 'light', 'dark', 'system'];
+  const themeOptions = ['white', 'black', 'system'];
 
   const handleSignOut = () => {
     // Call the sign out function which will handle redirect to home page

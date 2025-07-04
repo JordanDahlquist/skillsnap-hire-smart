@@ -1,24 +1,36 @@
 
 import { useState, useEffect } from 'react';
 
-type Theme = 'light' | 'dark' | 'white' | 'black' | 'system';
+type Theme = 'white' | 'black' | 'system';
 
 export const useTheme = () => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Check localStorage first, fallback to system preference
-    const stored = localStorage.getItem('theme') as Theme;
-    return stored || 'system';
+    // Check localStorage and migrate old themes
+    const stored = localStorage.getItem('theme') as Theme | 'light' | 'dark';
+    
+    // Migrate old themes
+    if (stored === 'light') {
+      return 'white';
+    } else if (stored === 'dark') {
+      return 'black';
+    } else if (stored === 'white' || stored === 'black' || stored === 'system') {
+      return stored;
+    }
+    
+    // Default to white
+    return 'white';
   });
 
-  const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(() => {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const [systemTheme, setSystemTheme] = useState<'white' | 'black'>(() => {
+    // System theme now maps to white/black instead of light/dark
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'black' : 'white';
   });
 
   // Listen for system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
-      setSystemTheme(e.matches ? 'dark' : 'light');
+      setSystemTheme(e.matches ? 'black' : 'white');
     };
 
     mediaQuery.addEventListener('change', handleChange);
@@ -38,14 +50,12 @@ export const useTheme = () => {
     }
     
     // Apply appropriate theme class
-    if (effectiveTheme === 'dark') {
-      root.classList.add('dark');
+    if (effectiveTheme === 'black') {
+      root.classList.add('black');
     } else if (effectiveTheme === 'white') {
       root.classList.add('white');
-    } else if (effectiveTheme === 'black') {
-      root.classList.add('black');
     }
-    // 'light' doesn't need a class - it's the default
+    // Default is white, no class needed
   }, [theme, systemTheme]);
 
   // Persist theme preference
@@ -55,19 +65,16 @@ export const useTheme = () => {
 
   const toggleTheme = () => {
     setTheme(prev => {
-      // Cycle through all theme options: light -> dark -> white -> black -> light
+      // Cycle through: white -> black -> system -> white
       switch (prev) {
-        case 'light':
-        case 'system':
-          return 'dark';
-        case 'dark':
-          return 'white';
         case 'white':
           return 'black';
         case 'black':
-          return 'light';
+          return 'system';
+        case 'system':
+          return 'white';
         default:
-          return 'light';
+          return 'white';
       }
     });
   };
@@ -86,6 +93,6 @@ export const useTheme = () => {
     currentTheme,
     setTheme,
     toggleTheme,
-    isDark: currentTheme === 'dark' || currentTheme === 'black'
+    isDark: currentTheme === 'black'
   };
 };

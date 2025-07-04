@@ -62,63 +62,7 @@
     --attention-color: 38 92% 50%;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 79% 46%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --info: 210 79% 46%;
-    --info-foreground: 0 0% 100%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 210 79% 46%;
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* App-specific semantic colors for dark mode */
-    --brand-primary: 210 79% 46%;
-    --brand-secondary: 217.2 32.6% 17.5%;
-    --status-active: 142 76% 36%;
-    --status-pending: 38 92% 50%;
-    --status-inactive: 215 20.2% 65.1%;
-    --attention-color: 38 92% 50%;
-  }
-
-  /* White theme - same as light but with pure white background */
+  /* White theme - same as default but explicit */
   .white {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -242,40 +186,15 @@
 
   body {
     @apply bg-background text-foreground;
-    background-image: 
-      radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.08) 0%, transparent 50%),
-      linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #f8fafc 75%, #f1f5f9 100%);
-    background-size: 800px 800px, 600px 600px, 900px 900px, 100% 100%;
-    background-attachment: fixed;
   }
 
-  /* Dark mode will use rotating backgrounds instead of fixed background */
-  .dark body {
-    background-image: none;
-    background: linear-gradient(135deg, 
-      rgba(147, 51, 234, 0.15) 0%, 
-      rgba(168, 85, 247, 0.12) 25%, 
-      rgba(139, 92, 246, 0.15) 50%, 
-      rgba(124, 58, 237, 0.12) 75%, 
-      rgba(109, 40, 217, 0.15) 100%);
-  }
-
-  /* White theme - pure white background with no patterns */
+  /* White theme - pure white background */
   .white body {
-    background-image: none;
     background: #ffffff;
   }
 
-  /* Black theme - enhanced with subtle gradient for depth */
+  /* Black theme - pure black background */
   .black body {
-    background-image: none;
-    background: linear-gradient(135deg, 
-      rgba(0, 0, 0, 1) 0%, 
-      rgba(10, 10, 10, 1) 25%, 
-      rgba(5, 5, 5, 1) 50%, 
-      rgba(8, 8, 8, 1) 75%, 
-      rgba(0, 0, 0, 1) 100%);
+    background: #000000;
   }
 }
