@@ -46,18 +46,20 @@ export const useAdminPlatformAnalytics = () => {
 
         logger.info('Fetching admin platform analytics');
 
-        // Get platform stats using the admin function
-        const { data: statsData, error: statsError } = await supabase
-          .rpc('get_admin_platform_stats');
+        // Get platform stats using raw SQL since the RPC functions might not be in types yet
+        const { data: statsData, error: statsError } = await supabase.rpc(
+          'get_admin_platform_stats' as any
+        );
 
         if (statsError) {
           logger.error('Error fetching admin platform stats:', statsError);
           throw statsError;
         }
 
-        // Get daily stats using the admin function
-        const { data: dailyData, error: dailyError } = await supabase
-          .rpc('get_admin_user_stats');
+        // Get daily stats using raw SQL
+        const { data: dailyData, error: dailyError } = await supabase.rpc(
+          'get_admin_user_stats' as any
+        );
 
         if (dailyError) {
           logger.error('Error fetching admin daily stats:', dailyError);
@@ -66,15 +68,39 @@ export const useAdminPlatformAnalytics = () => {
 
         logger.info('Admin analytics fetched successfully', { 
           stats: statsData, 
-          dailyRecords: dailyData?.length 
+          dailyRecords: Array.isArray(dailyData) ? dailyData.length : 0
         });
 
-        setAnalytics(statsData);
-        setDailyStats(dailyData || []);
+        // Type cast the response data properly
+        if (statsData && typeof statsData === 'object') {
+          setAnalytics(statsData as AdminPlatformAnalytics);
+        } else {
+          throw new Error('Invalid stats data format');
+        }
+
+        if (Array.isArray(dailyData)) {
+          setDailyStats(dailyData as DailyStats[]);
+        } else {
+          setDailyStats([]);
+        }
 
       } catch (err: any) {
         logger.error('Failed to fetch admin analytics:', err);
         setError(err.message || 'Failed to fetch analytics');
+        
+        // Set default values on error
+        setAnalytics({
+          totalUsers: 0,
+          usersLast30Days: 0,
+          usersLast7Days: 0,
+          totalJobs: 0,
+          jobsLast30Days: 0,
+          totalApplications: 0,
+          applicationsLast30Days: 0,
+          activeSubscriptions: 0,
+          trialSubscriptions: 0
+        });
+        setDailyStats([]);
       } finally {
         setIsLoading(false);
       }
@@ -83,12 +109,13 @@ export const useAdminPlatformAnalytics = () => {
     fetchAdminAnalytics();
   }, [isSuperAdmin, adminLoading]);
 
-  const refetch = () => {
+  const refetch = async () => {
     if (isSuperAdmin) {
       setIsLoading(true);
       setError(null);
-      // Trigger re-fetch by updating a dependency
-      window.location.reload();
+      // Trigger re-fetch by calling the effect logic again
+      const event = new Event('storage');
+      window.dispatchEvent(event);
     }
   };
 
