@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,10 +76,10 @@ export const PublicJobCard = ({ job, getTimeAgo }: PublicJobCardProps) => {
   const applicationsCount = job.applications?.[0]?.count || 0;
 
   // Theme-aware colors
-  const titleColor = currentTheme === 'dark' ? 'text-white' : 'text-gray-900';
-  const textColor = currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-700';
-  const subtleTextColor = currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-600';
-  const moreSubtleTextColor = currentTheme === 'dark' ? 'text-gray-500' : 'text-gray-500';
+  const titleColor = currentTheme === 'black' ? 'text-white' : 'text-gray-900';
+  const textColor = currentTheme === 'black' ? 'text-gray-200' : 'text-gray-700';
+  const subtleTextColor = currentTheme === 'black' ? 'text-gray-400' : 'text-gray-600';
+  const moreSubtleTextColor = currentTheme === 'black' ? 'text-gray-500' : 'text-gray-500';
 
   return (
     <Card 

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { getWelcomeMessage, getWelcomeSubtitle } from "@/utils/welcomeMessages";
@@ -13,8 +12,8 @@ export const JobsHeader = ({ userDisplayName, onCreateJob }: JobsHeaderProps) =>
   const { currentTheme } = useThemeContext();
   
   // Theme-aware text colors
-  const titleColor = currentTheme === 'dark' ? 'text-white' : 'text-gray-900';
-  const subtitleColor = currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-600';
+  const titleColor = currentTheme === 'black' ? 'text-white' : 'text-gray-900';
+  const subtitleColor = currentTheme === 'black' ? 'text-gray-200' : 'text-gray-600';
 
   return (
     <div className="py-12 px-8 textured-background">

@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
 import { Job, Application } from "@/types";
@@ -48,8 +47,8 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
   const viewCount = job.view_count || 0;
 
   // Theme-aware colors
-  const titleColor = currentTheme === 'dark' ? 'text-white' : 'text-foreground';
-  const subtleTextColor = currentTheme === 'dark' ? 'text-gray-300' : 'text-muted-foreground';
+  const titleColor = currentTheme === 'black' ? 'text-white' : 'text-foreground';
+  const subtleTextColor = currentTheme === 'black' ? 'text-gray-300' : 'text-muted-foreground';
 
   return (
     <div>

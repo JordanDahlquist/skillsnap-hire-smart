@@ -19,7 +19,7 @@ export const ToolbarStats = memo(({
   const { currentTheme } = useThemeContext();
   
   // Theme-aware colors
-  const textColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-white' : 'text-black';
+  const textColor = currentTheme === 'black' ? 'text-white' : 'text-black';
   
   return (
     <div className={`flex gap-4 items-center text-sm ${textColor}`}>
@@ -28,7 +28,7 @@ export const ToolbarStats = memo(({
         <Badge 
           variant="outline" 
           className={
-            currentTheme === 'dark' || currentTheme === 'black' 
+            currentTheme === 'black' 
               ? "bg-blue-900/50 text-blue-300 border-blue-700" 
               : "bg-blue-50 text-blue-600"
           }
@@ -39,7 +39,7 @@ export const ToolbarStats = memo(({
       {needsAttentionFilter && (
         <Badge 
           className={
-            currentTheme === 'dark' || currentTheme === 'black' 
+            currentTheme === 'black' 
               ? "bg-orange-900/50 text-orange-300" 
               : "bg-orange-100 text-orange-600"
           }

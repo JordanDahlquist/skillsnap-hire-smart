@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { useApplications } from "@/hooks/useApplications";
@@ -23,8 +22,8 @@ export const Dashboard = () => {
   const isLoading = applicationsLoading || jobsLoading;
 
   // Theme-aware colors
-  const titleColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-white' : 'text-gray-900';
-  const subtitleColor = currentTheme === 'dark' || currentTheme === 'black' ? 'text-gray-200' : 'text-gray-600';
+  const titleColor = currentTheme === 'black' ? 'text-white' : 'text-gray-900';
+  const subtitleColor = currentTheme === 'black' ? 'text-gray-200' : 'text-gray-600';
 
   // Handle selectedApplicationId from navigation state (from Scout) or session storage (from new tab)
   useEffect(() => {

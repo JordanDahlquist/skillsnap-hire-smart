@@ -1,4 +1,3 @@
-
 import { memo, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,10 +76,10 @@ export const JobsContent = memo(({
   const { currentTheme } = useThemeContext();
   
   // Theme-aware text colors
-  const titleColor = currentTheme === 'dark' ? 'text-white' : 'text-gray-900';
-  const textColor = currentTheme === 'dark' ? 'text-gray-200' : 'text-gray-600';
-  const subtleTextColor = currentTheme === 'dark' ? 'text-gray-300' : 'text-gray-500';
-  const labelTextColor = currentTheme === 'dark' ? 'text-white' : 'text-gray-700';
+  const titleColor = currentTheme === 'black' ? 'text-white' : 'text-gray-900';
+  const textColor = currentTheme === 'black' ? 'text-gray-200' : 'text-gray-600';
+  const subtleTextColor = currentTheme === 'black' ? 'text-gray-300' : 'text-gray-500';
+  const labelTextColor = currentTheme === 'black' ? 'text-white' : 'text-gray-700';
 
   const handleSelectAll = useCallback((checked: boolean) => {
     onSelectAll(checked, filteredJobs);
