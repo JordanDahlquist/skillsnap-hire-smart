@@ -1,3 +1,4 @@
+
 import { JobFilters } from "./types";
 import { matchesSearchTerm } from "./jobMatching";
 
@@ -36,7 +37,7 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
     
     // Flexible filter checks
     const matchesEmploymentType = filters.employmentType === "all" || jobEmploymentType === filters.employmentType;
-    const matchesLocationType = filters.locationType === "all" || job.location_type === filters.locationType;
+    const matchesLocationType = filters.locationType.includes("all") || filters.locationType.includes(job.location_type);
     const matchesExperienceLevel = filters.experienceLevel === "all" || job.experience_level === filters.experienceLevel;
     const matchesCountry = filters.country === "all" || job.country === filters.country;
     const matchesState = filters.state === "all" || job.state === filters.state;
@@ -59,7 +60,7 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
   
   // Enhanced fallback logic - if too few results, progressively relax filters
   if (filtered.length < 5 && searchTerm && (
-    filters.employmentType !== "all" || filters.locationType !== "all" || 
+    filters.employmentType !== "all" || !filters.locationType.includes("all") || 
     filters.experienceLevel !== "all" || filters.country !== "all" || 
     filters.state !== "all" || filters.duration !== "all" ||
     filters.budgetRange[0] > 0 || filters.budgetRange[1] < 200000
@@ -71,7 +72,7 @@ export const applyJobFilters = (jobs: any[], searchTerm: string, filters: JobFil
       const matchesSearch = matchesSearchTerm(job, searchTerm);
       const jobEmploymentType = job.employment_type || job.role_type;
       const matchesEmploymentType = filters.employmentType === "all" || jobEmploymentType === filters.employmentType;
-      const matchesLocationType = filters.locationType === "all" || job.location_type === filters.locationType;
+      const matchesLocationType = filters.locationType.includes("all") || filters.locationType.includes(job.location_type);
       const matchesExperienceLevel = filters.experienceLevel === "all" || job.experience_level === filters.experienceLevel;
       const matchesCountry = filters.country === "all" || job.country === filters.country;
       const matchesState = filters.state === "all" || job.state === filters.state;
