@@ -25,7 +25,7 @@ export const MultiSelectDropdown = ({
   onSelectionChange,
   placeholder = "Select options",
   icon = <MapPin className="w-4 h-4" />,
-  className = "w-28"
+  className = "w-32"
 }: MultiSelectDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -39,7 +39,7 @@ export const MultiSelectDropdown = ({
       return option?.label || placeholder;
     }
     
-    return `${selectedValues.length} Sel`;
+    return `${selectedValues.length} Selected`;
   };
 
   const handleToggleOption = (value: string) => {
@@ -72,11 +72,11 @@ export const MultiSelectDropdown = ({
           variant="outline"
           className={`${className} justify-between bg-card/80 border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl backdrop-blur-sm hover:bg-card/90 hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]`}
         >
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             {icon}
-            <span className="text-xs truncate">{getDisplayValue()}</span>
+            <span className="text-sm">{getDisplayValue()}</span>
           </div>
-          <ChevronDown className="w-3.5 h-3.5 opacity-50 flex-shrink-0" />
+          <ChevronDown className="w-4 h-4 opacity-50 flex-shrink-0" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-0 bg-background/95 backdrop-blur-sm border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl z-50">
