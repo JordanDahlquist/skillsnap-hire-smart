@@ -40,7 +40,7 @@ export const CandidateActivityTab = ({ application }: CandidateActivityTabProps)
 
   return (
     <div className="space-y-6">
-      <Card className="glass-card">
+      <Card className="bg-card border border-border">
         <CardHeader>
           <CardTitle className="text-left">Application Timeline</CardTitle>
           <p className="text-sm text-muted-foreground text-left">
