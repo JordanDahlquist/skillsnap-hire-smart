@@ -16,6 +16,8 @@ export interface AdminUser {
   created_at: string;
   industry: string | null;
   role: string;
+  phone: string | null;
+  default_location: string | null;
 }
 
 export interface AdminAuditLog {
