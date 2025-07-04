@@ -33,11 +33,11 @@ export const FilterDropdowns = ({
   return (
     <>
       <Select value={statusFilter || 'all'} onValueChange={onStatusFilterChange}>
-        <SelectTrigger className="w-32 bg-card/80 border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl backdrop-blur-sm hover:bg-card/90 hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]">
+        <SelectTrigger className="w-32 bg-card border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl hover:bg-card hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]">
           <Filter className="w-4 h-4 mr-1 text-foreground" />
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
-        <SelectContent className="backdrop-blur-sm bg-background/95 border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl">
+        <SelectContent className="bg-background border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl">
           {statusOptions.map((status) => (
             <SelectItem 
               key={status.value} 
@@ -51,11 +51,11 @@ export const FilterDropdowns = ({
       </Select>
 
       <Select value={workTypeFilter || 'all'} onValueChange={onWorkTypeFilterChange}>
-        <SelectTrigger className="w-32 bg-card/80 border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl backdrop-blur-sm hover:bg-card/90 hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]">
+        <SelectTrigger className="w-32 bg-card border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl hover:bg-card hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]">
           <MapPin className="w-4 h-4 mr-1 text-foreground" />
           <SelectValue placeholder="All Types" />
         </SelectTrigger>
-        <SelectContent className="backdrop-blur-sm bg-background/95 border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl">
+        <SelectContent className="bg-background border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl">
           {workTypeOptions.map((type) => (
             <SelectItem 
               key={type.value} 
