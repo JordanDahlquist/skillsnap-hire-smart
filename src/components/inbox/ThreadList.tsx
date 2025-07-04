@@ -39,7 +39,7 @@ export const ThreadList = ({
 }: ThreadListProps) => {
   if (threads.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500 p-4">
+      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground p-4">
         <p className="text-lg font-medium">No messages found</p>
         <p className="text-sm">Try adjusting your search or check back later</p>
       </div>
@@ -62,7 +62,7 @@ export const ThreadList = ({
   const showSelection = onToggleThreadSelection && (selectedThreadIds.length > 0 || threads.some(t => selectedThreadIds.includes(t.id)));
 
   return (
-    <div className="divide-y divide-gray-200">
+    <div className="divide-y divide-border">
       {threads.map((thread) => {
         const displaySubject = thread.processedSubject || thread.subject;
         const isArchived = thread.status === 'archived';
@@ -85,13 +85,13 @@ export const ThreadList = ({
           <div
             onClick={(e) => handleThreadClick(thread, e)}
             className={cn(
-              "p-4 cursor-pointer hover:bg-gray-50 transition-colors border-l-4 flex items-center gap-3",
+              "p-4 cursor-pointer hover:bg-muted/50 transition-colors border-l-4 flex items-center gap-3",
               selectedThreadId === thread.id 
-                ? "bg-blue-50 border-l-blue-500" 
+                ? "bg-accent border-l-primary" 
                 : "border-l-transparent",
-              thread.unread_count > 0 && "bg-blue-25",
+              thread.unread_count > 0 && "bg-accent/30",
               isArchived && "opacity-60",
-              isSelected && "bg-blue-100"
+              isSelected && "bg-accent/80"
             )}
           >
             {showSelection && onToggleThreadSelection && (
@@ -109,13 +109,13 @@ export const ThreadList = ({
                   <h3 className={cn(
                     "text-sm truncate flex-1 mr-2 leading-tight",
                     thread.unread_count > 0 
-                      ? "font-semibold text-gray-900" 
-                      : "font-medium text-gray-700"
+                      ? "font-semibold text-foreground" 
+                      : "font-medium text-muted-foreground"
                   )}>
                     {displaySubject || 'No Subject'}
                   </h3>
                   {isArchived && (
-                    <Archive className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <Archive className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   )}
                 </div>
                 {thread.unread_count > 0 && (
@@ -125,7 +125,7 @@ export const ThreadList = ({
                 )}
               </div>
               
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span className="truncate flex-1 mr-2 font-medium">
                   {participantDisplay}
                 </span>
