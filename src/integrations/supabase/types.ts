@@ -757,6 +757,19 @@ export type Database = {
         Args: { user_id: string; full_name: string; email: string }
         Returns: string
       }
+      get_admin_platform_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_admin_user_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          period: string
+          user_count: number
+          job_count: number
+          application_count: number
+        }[]
+      }
       get_all_user_roles: {
         Args: Record<PropertyKey, never>
         Returns: {

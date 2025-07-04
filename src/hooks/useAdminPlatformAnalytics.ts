@@ -46,9 +46,9 @@ export const useAdminPlatformAnalytics = () => {
 
         logger.info('Fetching admin platform analytics');
 
-        // Get platform stats using raw SQL since the RPC functions might not be in types yet
+        // Get platform stats using the admin function
         const { data: statsData, error: statsError } = await supabase.rpc(
-          'get_admin_platform_stats' as any
+          'get_admin_platform_stats'
         );
 
         if (statsError) {
@@ -56,9 +56,9 @@ export const useAdminPlatformAnalytics = () => {
           throw statsError;
         }
 
-        // Get daily stats using raw SQL
+        // Get daily stats using the admin function
         const { data: dailyData, error: dailyError } = await supabase.rpc(
-          'get_admin_user_stats' as any
+          'get_admin_user_stats'
         );
 
         if (dailyError) {
