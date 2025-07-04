@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search, RefreshCw, Mail, Clock, Settings } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,9 +10,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ThreadList } from "./ThreadList";
 import { BulkActionsToolbar } from "./BulkActionsToolbar";
 import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
-import { useOptimizedEmailSubjects } from "@/hooks/useOptimizedEmailSubjects";
 import type { EmailThread } from "@/types/inbox";
 import type { InboxFilter } from "@/hooks/useInboxFilters";
+
+interface ProcessedThread extends EmailThread {
+  processedSubject: string;
+}
 
 interface ThreadCounts {
   active: number;
@@ -23,7 +25,7 @@ interface ThreadCounts {
 }
 
 interface InboxContentProps {
-  threads: EmailThread[];
+  threads: ProcessedThread[]; // Already processed threads from InboxPage
   selectedThreadId: string | null;
   onSelectThread: (threadId: string) => void;
   onMarkAsRead: (threadId: string) => void;
@@ -53,7 +55,7 @@ interface InboxContentProps {
 }
 
 export const InboxContent = ({
-  threads,
+  threads, // These are already processed threads from InboxPage
   selectedThreadId,
   onSelectThread,
   onMarkAsRead,
@@ -80,10 +82,8 @@ export const InboxContent = ({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [threadsToDelete, setThreadsToDelete] = useState<string[]>([]);
 
-  // Process email subjects for template variables
-  const { processedThreads } = useOptimizedEmailSubjects(threads);
-
-  const filteredThreads = processedThreads.filter(thread =>
+  // Use the already processed threads directly - no need to process again
+  const filteredThreads = threads.filter(thread =>
     thread.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
     thread.participants.some(p => 
       typeof p === 'string' ? p.toLowerCase().includes(searchTerm.toLowerCase()) : false
