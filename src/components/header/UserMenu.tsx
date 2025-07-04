@@ -87,11 +87,11 @@ export const UserMenu = ({ user, profile, profileLoading, onSignOut, onCreateRol
             </AvatarFallback>
           </Avatar>
           <div className="hidden sm:block text-left">
-            <p className="text-sm font-medium flex items-center gap-1 text-gray-900">
+            <p className="text-sm font-medium flex items-center gap-1 text-foreground">
               {getUserDisplayName()}
               {profileLoading && <Loader2 className="w-3 h-3 animate-spin opacity-50" />}
             </p>
-            <p className="text-xs text-gray-500">{getDisplayEmail()}</p>
+            <p className="text-xs text-muted-foreground">{getDisplayEmail()}</p>
           </div>
         </Button>
       </DropdownMenuTrigger>

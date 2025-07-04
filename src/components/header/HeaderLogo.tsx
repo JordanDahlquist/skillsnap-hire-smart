@@ -16,7 +16,7 @@ export const HeaderLogo = () => {
           className="w-6 h-6 transition-transform duration-300 group-hover:rotate-180" 
         />
       </div>
-      <span className="text-xl font-bold text-gray-900 transition-colors">
+      <span className="text-xl font-bold text-foreground transition-colors">
         Atract
       </span>
     </Link>
