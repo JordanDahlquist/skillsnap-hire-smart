@@ -19,8 +19,8 @@ interface JobManagementToolbarProps {
   onRefresh: () => void;
   locationFilter?: string;
   onLocationFilterChange?: (location: string) => void;
-  workTypeFilter?: string;
-  onWorkTypeFilterChange?: (workType: string) => void;
+  workTypeFilter?: string[];
+  onWorkTypeFilterChange?: (workType: string[]) => void;
   needsAttentionFilter?: boolean;
   activeFiltersCount?: number;
 }
@@ -38,7 +38,7 @@ export const JobManagementToolbar = ({
   selectedJobs,
   onBulkAction,
   onRefresh,
-  workTypeFilter = 'all',
+  workTypeFilter = ['all'],
   onWorkTypeFilterChange = () => {},
   needsAttentionFilter = false,
   activeFiltersCount = 0

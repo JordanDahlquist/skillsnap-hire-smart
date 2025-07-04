@@ -1,6 +1,7 @@
+
 export interface JobFilters {
   employmentType: string;
-  locationType: string;
+  locationType: string[];
   experienceLevel: string;
   country: string;
   state: string;
@@ -11,7 +12,7 @@ export interface JobFilters {
 
 export const defaultFilters: JobFilters = {
   employmentType: "all",
-  locationType: "all",
+  locationType: ["all"],
   experienceLevel: "all",
   country: "all",
   state: "all",
@@ -33,7 +34,7 @@ export interface AvailableOptions {
 export const sanitizeFilters = (filters: Partial<JobFilters>): JobFilters => {
   return {
     employmentType: filters.employmentType || defaultFilters.employmentType,
-    locationType: filters.locationType || defaultFilters.locationType,
+    locationType: Array.isArray(filters.locationType) ? filters.locationType : defaultFilters.locationType,
     experienceLevel: filters.experienceLevel || defaultFilters.experienceLevel,
     country: filters.country || defaultFilters.country,
     state: filters.state || defaultFilters.state,
@@ -48,8 +49,8 @@ export const sanitizeFilters = (filters: Partial<JobFilters>): JobFilters => {
 // Helper function to validate sort values
 export const validateSortBy = (sortBy: string): string => {
   const validSortOptions = [
+    'created_at',
     'updated_at',
-    'created_at', 
     'needs_attention',
     'applications_desc',
     'applications_asc',
@@ -58,5 +59,5 @@ export const validateSortBy = (sortBy: string): string => {
     'budget'
   ];
   
-  return validSortOptions.includes(sortBy) ? sortBy : 'updated_at';
+  return validSortOptions.includes(sortBy) ? sortBy : 'created_at';
 };

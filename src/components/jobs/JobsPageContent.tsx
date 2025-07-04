@@ -91,7 +91,7 @@ export const JobsPageContent = memo(({
         onSearchChange={onSearchChange}
         statusFilter={filters.status}
         onStatusFilterChange={(value) => setFilters({ ...filters, status: value })}
-        workTypeFilter={filters.locationType}
+        workTypeFilter={filters.locationType || ['all']}
         onWorkTypeFilterChange={(value) => setFilters({ ...filters, locationType: value })}
         sortBy={sortBy}
         onSortChange={setSortBy}

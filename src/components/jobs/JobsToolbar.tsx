@@ -6,8 +6,8 @@ interface JobsToolbarProps {
   onSearchChange: (value: string) => void;
   statusFilter: string;
   onStatusFilterChange: (status: string) => void;
-  workTypeFilter: string;
-  onWorkTypeFilterChange: (workType: string) => void;
+  workTypeFilter: string[];
+  onWorkTypeFilterChange: (workType: string[]) => void;
   sortBy: string;
   onSortChange: (sort: string) => void;
   sortOrder?: "asc" | "desc";

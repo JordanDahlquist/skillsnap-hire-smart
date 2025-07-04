@@ -28,9 +28,11 @@ export const applyJobFiltersOptimized = (
       return false;
     }
 
-    // Location type filter
-    if (filters.locationType !== "all" && job.location_type !== filters.locationType) {
-      return false;
+    // Location type filter (now supports arrays)
+    if (filters.locationType && !filters.locationType.includes("all")) {
+      if (!job.location_type || !filters.locationType.includes(job.location_type)) {
+        return false;
+      }
     }
 
     // Experience level filter
@@ -99,13 +101,13 @@ export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc")
     let bValue: any;
 
     switch (sortBy) {
-      case 'updated_at':
-        aValue = new Date(a.updated_at || 0);
-        bValue = new Date(b.updated_at || 0);
-        break;
       case 'created_at':
         aValue = new Date(a.created_at || 0);
         bValue = new Date(b.created_at || 0);
+        break;
+      case 'updated_at':
+        aValue = new Date(a.updated_at || 0);
+        bValue = new Date(b.updated_at || 0);
         break;
       case 'title':
         aValue = a.title?.toLowerCase() || '';
@@ -126,8 +128,8 @@ export const sortJobs = (jobs: Job[], sortBy: string, sortOrder: "asc" | "desc")
         bValue = b.applicationStatusCounts?.pending || 0;
         break;
       default:
-        aValue = new Date(a.updated_at || 0);
-        bValue = new Date(b.updated_at || 0);
+        aValue = new Date(a.created_at || 0);
+        bValue = new Date(b.created_at || 0);
     }
 
     if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;

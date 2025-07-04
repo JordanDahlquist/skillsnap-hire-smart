@@ -15,7 +15,7 @@ interface UseJobsDataProps {
 export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<JobFilters>(defaultFilters);
-  const [sortBy, setSortBy] = useState("updated_at");
+  const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // Debounce search to prevent excessive filtering
@@ -45,6 +45,7 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
     console.log('Filtering jobs:', { 
       totalJobs: jobs.length, 
       statusFilter: filters.status,
+      locationTypeFilter: filters.locationType,
       searchTerm: debouncedSearchTerm,
       sortBy,
       sortOrder
@@ -70,7 +71,7 @@ export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataPro
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (filters.locationType !== "all") count++;
+    if (filters.locationType && !filters.locationType.includes("all") && filters.locationType.length > 0) count++;
     if (filters.experienceLevel !== "all") count++;
     if (filters.employmentType !== "all") count++;
     if (filters.country !== "all") count++;
