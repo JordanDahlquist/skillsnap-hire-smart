@@ -48,13 +48,13 @@ export const JobManagementToolbar = ({
       <div className="max-w-7xl mx-auto px-8">
         {/* Search and filters row */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-          {/* Search bar gets its own expanding container */}
-          <div className="flex-1 min-w-0">
+          {/* Search bar with reduced width */}
+          <div className="w-full sm:w-80 flex-shrink-0">
             <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
           </div>
           
-          {/* Filters in a separate container that doesn't shrink */}
-          <div className="flex-shrink-0">
+          {/* Filters with more space */}
+          <div className="flex-1 flex justify-center">
             <div className="flex gap-3 items-center">
               <FilterDropdowns 
                 statusFilter={statusFilter} 

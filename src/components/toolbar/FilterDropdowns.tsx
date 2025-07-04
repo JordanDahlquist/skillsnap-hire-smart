@@ -40,7 +40,7 @@ export const FilterDropdowns = ({
         onSelectionChange={onStatusFilterChange}
         placeholder="Status"
         icon={<Filter className="w-4 h-4" />}
-        className="w-24"
+        className="w-32"
       />
 
       <MultiSelectDropdown
@@ -48,7 +48,7 @@ export const FilterDropdowns = ({
         selectedValues={workTypeFilter || ['all']}
         onSelectionChange={onWorkTypeFilterChange}
         placeholder="Types"
-        className="w-24"
+        className="w-32"
       />
     </>
   );
