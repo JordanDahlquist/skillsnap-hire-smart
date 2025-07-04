@@ -89,17 +89,17 @@ export const ApplicationDetailContent = ({
   };
 
   return (
-    <div className="bg-black border border-gray-800 rounded-lg p-6 space-y-6">
+    <div className="bg-card border border-border rounded-lg p-6 space-y-6">
       {/* Redesigned Sleek Header */}
-      <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/30 border border-gray-700/50 rounded-xl p-4 -mx-2">
+      <div className="bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 rounded-xl p-4 -mx-2">
         <div className="space-y-3">
           
           {/* Top: Candidate Name - Full Width */}
           <div className="w-full">
-            <h2 className="text-xl font-bold text-white mb-1 break-words">
+            <h2 className="text-xl font-bold text-foreground mb-1 break-words">
               {application.name}
             </h2>
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-muted-foreground">
               <span className="whitespace-nowrap">Applied {getTimeAgo(application.created_at)}</span>
             </div>
           </div>
@@ -120,7 +120,7 @@ export const ApplicationDetailContent = ({
                 size="sm"
                 variant="outline"
                 onClick={handleViewFullProfile}
-                className="h-9 px-3 border-gray-600 hover:border-gray-500 bg-gray-800 hover:bg-gray-700 text-white"
+                className="h-9 px-3 border-border/50 hover:border-border"
               >
                 <User className="w-4 h-4 mr-2" />
                 View Profile
@@ -131,7 +131,7 @@ export const ApplicationDetailContent = ({
                   size="sm"
                   variant="outline"
                   onClick={handleViewResume}
-                  className="h-9 px-3 border-gray-600 hover:border-gray-500 bg-gray-800 hover:bg-gray-700 text-white"
+                  className="h-9 px-3 border-border/50 hover:border-border"
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Resume
@@ -143,10 +143,10 @@ export const ApplicationDetailContent = ({
       </div>
 
       {/* Prominent Action Bar */}
-      <div className="bg-gray-900/40 border border-gray-700 rounded-lg p-4 -m-2 mb-4">
+      <div className="bg-muted/20 border border-border rounded-lg p-4 -m-2 mb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+            <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
             <StageSelector
               jobId={jobId}
               currentStage={pipelineStage}
@@ -204,15 +204,15 @@ export const ApplicationDetailContent = ({
       {application.ai_summary && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-white">AI Analysis</h3>
+            <h3 className="text-lg font-semibold text-foreground">AI Analysis</h3>
             {(skillsTranscripts.length > 0 || interviewTranscripts.length > 0) && (
               <Badge variant="outline" className="text-green-600">Enhanced with Video Analysis</Badge>
             )}
           </div>
-          <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-            <p className="text-gray-200">{application.ai_summary}</p>
+          <div className="p-4 bg-muted/30 rounded-lg border border-border">
+            <p className="text-foreground">{application.ai_summary}</p>
             {application.transcript_last_processed_at && (
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Analysis includes video transcripts processed {getTimeAgo(application.transcript_last_processed_at)}
               </p>
             )}
@@ -222,32 +222,32 @@ export const ApplicationDetailContent = ({
 
       {/* Contact Information */}
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-white">Contact Information</h3>
+        <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-400">Email</label>
-            <p className="text-gray-200">{application.email}</p>
+            <label className="text-sm font-medium text-muted-foreground">Email</label>
+            <p className="text-foreground">{application.email}</p>
           </div>
           {application.phone && (
             <div>
-              <label className="text-sm font-medium text-gray-400">Phone</label>
-              <p className="text-gray-200">{application.phone}</p>
+              <label className="text-sm font-medium text-muted-foreground">Phone</label>
+              <p className="text-foreground">{application.phone}</p>
             </div>
           )}
           {application.location && (
             <div>
-              <label className="text-sm font-medium text-gray-400">Location</label>
-              <p className="text-gray-200">{application.location}</p>
+              <label className="text-sm font-medium text-muted-foreground">Location</label>
+              <p className="text-foreground">{application.location}</p>
             </div>
           )}
           {application.portfolio_url && (
             <div>
-              <label className="text-sm font-medium text-gray-400 block mb-1">Portfolio</label>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">Portfolio</label>
               <a 
                 href={application.portfolio_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:underline"
+                className="text-blue-600 hover:underline"
               >
                 View Portfolio
               </a>
@@ -255,12 +255,12 @@ export const ApplicationDetailContent = ({
           )}
           {application.linkedin_url && (
             <div>
-              <label className="text-sm font-medium text-gray-400 block mb-1">LinkedIn</label>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">LinkedIn</label>
               <a 
                 href={application.linkedin_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:underline"
+                className="text-blue-600 hover:underline"
               >
                 View Profile
               </a>
@@ -268,12 +268,12 @@ export const ApplicationDetailContent = ({
           )}
           {application.github_url && (
             <div>
-              <label className="text-sm font-medium text-gray-400 block mb-1">GitHub</label>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">GitHub</label>
               <a 
                 href={application.github_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:underline"
+                className="text-blue-600 hover:underline"
               >
                 View Profile
               </a>
@@ -285,7 +285,7 @@ export const ApplicationDetailContent = ({
       {/* Skills Assessment Responses - Truncated with Transcript Preview */}
       {skillsResponses.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-white">Skills Assessment (Preview)</h3>
+          <h3 className="text-lg font-semibold text-foreground">Skills Assessment (Preview)</h3>
           <div className="space-y-4">
             {skillsResponses.slice(0, 1).map((response: any, index: number) => (
               <div key={index} className="space-y-2">
@@ -296,9 +296,9 @@ export const ApplicationDetailContent = ({
                 />
                 {/* Show transcript preview if available */}
                 {skillsTranscripts.length > index && skillsTranscripts[index]?.transcript && (
-                  <div className="p-3 bg-gray-900/60 rounded border-l-4 border-blue-500">
-                    <h4 className="text-sm font-medium text-white mb-1">Video Transcript:</h4>
-                    <p className="text-sm text-gray-300 line-clamp-2">
+                  <div className="p-3 bg-muted/20 rounded border-l-4 border-blue-500">
+                    <h4 className="text-sm font-medium text-foreground mb-1">Video Transcript:</h4>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       "{skillsTranscripts[index].transcript}"
                     </p>
                   </div>
@@ -306,11 +306,11 @@ export const ApplicationDetailContent = ({
               </div>
             ))}
             {skillsResponses.length > 1 && (
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 +{skillsResponses.length - 1} more responses. 
                 <button
                   onClick={handleViewFullProfile}
-                  className="text-blue-400 hover:underline ml-1 cursor-pointer"
+                  className="text-blue-600 hover:underline ml-1 cursor-pointer"
                 >
                   View full profile to see all.
                 </button>
@@ -323,13 +323,13 @@ export const ApplicationDetailContent = ({
       {/* Cover Letter - Truncated */}
       {application.cover_letter && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-white">Cover Letter (Preview)</h3>
-          <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-            <p className="text-gray-200 line-clamp-3">{application.cover_letter}</p>
+          <h3 className="text-lg font-semibold text-foreground">Cover Letter (Preview)</h3>
+          <div className="p-4 bg-muted/30 rounded-lg border border-border">
+            <p className="text-foreground line-clamp-3">{application.cover_letter}</p>
             {application.cover_letter.length > 200 && (
               <button
                 onClick={handleViewFullProfile}
-                className="text-sm text-blue-400 hover:underline mt-2 cursor-pointer"
+                className="text-sm text-blue-600 hover:underline mt-2 cursor-pointer"
               >
                 View full profile to read complete cover letter.
               </button>
@@ -341,7 +341,7 @@ export const ApplicationDetailContent = ({
       {/* Video Interview - Show if exists with Transcript Preview */}
       {application.interview_video_url && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-white">Video Interview (Preview)</h3>
+          <h3 className="text-lg font-semibold text-foreground">Video Interview (Preview)</h3>
           <div className="bg-black rounded-lg overflow-hidden">
             <video
               src={application.interview_video_url}
@@ -354,16 +354,16 @@ export const ApplicationDetailContent = ({
           </div>
           {/* Show transcript preview if available */}
           {interviewTranscripts.length > 0 && interviewTranscripts[0]?.transcript && (
-            <div className="p-3 bg-gray-900/60 rounded border-l-4 border-green-500">
-              <h4 className="text-sm font-medium text-white mb-1">Interview Transcript:</h4>
-              <p className="text-sm text-gray-300 line-clamp-3">
+            <div className="p-3 bg-muted/20 rounded border-l-4 border-green-500">
+              <h4 className="text-sm font-medium text-foreground mb-1">Interview Transcript:</h4>
+              <p className="text-sm text-muted-foreground line-clamp-3">
                 "{interviewTranscripts[0].transcript}"
               </p>
             </div>
           )}
           <button
             onClick={handleViewFullProfile}
-            className="text-sm text-blue-400 hover:underline cursor-pointer"
+            className="text-sm text-blue-600 hover:underline cursor-pointer"
           >
             View full profile for complete transcript and better video player experience.
           </button>
@@ -373,11 +373,11 @@ export const ApplicationDetailContent = ({
       {/* Rejection Reason */}
       {application.status === 'rejected' && application.rejection_reason && (
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-white">Rejection Reason</h3>
-          <div className="p-4 bg-red-900/20 border border-red-700/40 rounded-lg">
-            <p className="text-gray-200">{application.rejection_reason}</p>
+          <h3 className="text-lg font-semibold text-foreground">Rejection Reason</h3>
+          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-foreground">{application.rejection_reason}</p>
             {application.previous_pipeline_stage && (
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Was previously in {application.previous_pipeline_stage} stage
               </p>
             )}
