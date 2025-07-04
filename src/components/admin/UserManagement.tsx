@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ interface UserRoleData {
 }
 
 export const UserManagement = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,6 +80,15 @@ export const UserManagement = () => {
 
     fetchUsers();
   }, []);
+
+  const handleViewDetails = (userId: string) => {
+    navigate(`/admin/users/${userId}`);
+  };
+
+  const handleManageRoles = (userId: string) => {
+    // For now, navigate to user details where role management could be implemented
+    navigate(`/admin/users/${userId}`);
+  };
 
   const filteredUsers = users.filter(user =>
     user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -184,11 +195,11 @@ export const UserManagement = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewDetails(user.id)}>
                           <Eye className="w-4 h-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleManageRoles(user.id)}>
                           <Shield className="w-4 h-4 mr-2" />
                           Manage Roles
                         </DropdownMenuItem>

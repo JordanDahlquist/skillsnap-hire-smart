@@ -34,6 +34,7 @@ import { LinkedInCallback } from "./pages/LinkedInCallback";
 import { AuthGuard } from "./components/AuthGuard";
 import AdminPanel from "./pages/AdminPanel";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminUserDetailPage from "./pages/admin/AdminUserDetailPage";
 import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 import AdminContentPage from "./pages/admin/AdminContentPage";
 import AdminSystemPage from "./pages/admin/AdminSystemPage";
@@ -81,6 +82,7 @@ function App() {
               <Route path="/inbox" element={<AuthGuard><Inbox /></AuthGuard>} />
               <Route path="/admin" element={<AuthGuard><AdminRoute><AdminPanel /></AdminRoute></AuthGuard>} />
               <Route path="/admin/users" element={<AuthGuard><AdminRoute><AdminUsersPage /></AdminRoute></AuthGuard>} />
+              <Route path="/admin/users/:userId" element={<AuthGuard><AdminRoute><AdminUserDetailPage /></AdminRoute></AuthGuard>} />
               <Route path="/admin/analytics" element={<AuthGuard><AdminRoute><AdminAnalyticsPage /></AdminRoute></AuthGuard>} />
               <Route path="/admin/content" element={<AuthGuard><AdminRoute><AdminContentPage /></AdminRoute></AuthGuard>} />
               <Route path="/admin/system" element={<AuthGuard><AdminRoute><AdminSystemPage /></AdminRoute></AuthGuard>} />
