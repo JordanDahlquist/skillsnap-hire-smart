@@ -28,7 +28,7 @@ export const ApplicationRatingSection = ({
     onManualRating(newRating);
   };
 
-  const renderCompactRating = (rating: number | null, isClickable: boolean = false, color: string = "blue") => {
+  const renderCompactRating = (rating: number | null, isClickable: boolean = false, color: string = "primary") => {
     return (
       <div className="flex gap-0.5">
         {Array.from({ length: 3 }, (_, i) => {
@@ -42,9 +42,9 @@ export const ApplicationRatingSection = ({
                 onClick={() => handleRatingClick(starValue)}
                 disabled={isUpdating}
                 className={`transition-all duration-200 hover:scale-110 disabled:opacity-50 ${
-                  isActive ? `text-${color}-500` : !hasManualRating 
-                    ? 'text-blue-300 hover:text-blue-500' 
-                    : 'text-muted-foreground/40 hover:text-blue-400'
+                  isActive ? 'text-primary' : !hasManualRating 
+                    ? 'text-primary/40 hover:text-primary/70' 
+                    : 'text-muted-foreground/40 hover:text-primary/60'
                 }`}
               >
                 <Star className={`w-5 h-5 ${isActive ? 'fill-current' : ''}`} />
@@ -56,7 +56,7 @@ export const ApplicationRatingSection = ({
             <Star
               key={i}
               className={`w-4 h-4 ${
-                isActive ? `text-${color}-500 fill-current` : 'text-muted-foreground/40'
+                isActive ? 'text-purple-500 dark:text-purple-400 fill-current' : 'text-muted-foreground/40'
               }`}
             />
           );
@@ -69,16 +69,16 @@ export const ApplicationRatingSection = ({
     <div className="bg-card border border-border rounded-lg p-3">
       <div className="flex items-center justify-between gap-4">
         <div className={`flex items-center gap-2 min-w-0 flex-1 p-2 rounded-lg transition-all ${
-          !hasManualRating ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
+          !hasManualRating ? 'bg-primary/10 border border-primary/30' : 'bg-muted/50'
         }`}>
           <span className={`text-sm font-medium shrink-0 ${
-            !hasManualRating ? 'text-blue-700' : 'text-muted-foreground'
+            !hasManualRating ? 'text-primary' : 'text-muted-foreground'
           }`}>
             {!hasManualRating ? 'Rate this candidate:' : 'You:'}
           </span>
-          {renderCompactRating(manualRating, true, "blue")}
+          {renderCompactRating(manualRating, true, "primary")}
           <span className={`text-sm font-medium ${
-            !hasManualRating ? 'text-blue-700' : 'text-blue-600'
+            !hasManualRating ? 'text-primary' : 'text-primary/80'
           }`}>
             {manualRating ? `${manualRating}/3` : '--'}
           </span>
@@ -89,7 +89,7 @@ export const ApplicationRatingSection = ({
         <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
           <span className="text-sm font-medium text-muted-foreground shrink-0">AI:</span>
           {renderCompactRating(normalizedAIRating, false, "purple")}
-          <span className="text-sm text-purple-600 font-medium">
+          <span className="text-sm text-purple-500 dark:text-purple-400 font-medium">
             {normalizedAIRating ? `${normalizedAIRating}/3` : 'N/A'}
           </span>
         </div>
