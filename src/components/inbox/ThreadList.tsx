@@ -1,5 +1,4 @@
 
-
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -67,7 +66,7 @@ export const ThreadList = ({
       {threads.map((thread) => {
         const displaySubject = thread.processedSubject || thread.subject;
         const isArchived = thread.status === 'archived';
-        const isSelected = selectedThreadIds.includes(thread.id);
+        const isBulkSelected = selectedThreadIds.includes(thread.id);
         const isActiveThread = selectedThreadId === thread.id;
         
         const participants = Array.isArray(thread.participants) 
@@ -87,24 +86,23 @@ export const ThreadList = ({
           <div
             onClick={(e) => handleThreadClick(thread, e)}
             className={cn(
-              "p-4 cursor-pointer hover:bg-muted/50 transition-colors flex items-center gap-3 relative",
-              // Left border for active thread - make it thicker and more prominent
-              "border-l-[6px]",
-              isActiveThread 
-                ? "border-l-primary shadow-sm" 
-                : "border-l-transparent",
-              // Background colors with proper hierarchy
-              isActiveThread && !isSelected && "bg-accent/50",
-              isActiveThread && isSelected && "bg-accent/70", 
-              !isActiveThread && isSelected && "bg-accent/80",
-              !isActiveThread && !isSelected && thread.unread_count > 0 && "bg-accent/30",
+              "p-4 cursor-pointer transition-colors flex items-center gap-3 relative",
+              // Active thread: Dark blue background with white text
+              isActiveThread && "bg-blue-600 text-white hover:bg-blue-700",
+              // Bulk selected (but not active): Light accent background
+              !isActiveThread && isBulkSelected && "bg-accent/80",
+              // Unread threads (but not active or bulk selected): Subtle background
+              !isActiveThread && !isBulkSelected && thread.unread_count > 0 && "bg-accent/30",
+              // Default hover state (only if not active)
+              !isActiveThread && "hover:bg-muted/50",
+              // Archived threads: Reduced opacity
               isArchived && "opacity-60"
             )}
           >
             {showSelection && onToggleThreadSelection && (
               <div data-checkbox onClick={(e) => e.stopPropagation()}>
                 <Checkbox
-                  checked={isSelected}
+                  checked={isBulkSelected}
                   onCheckedChange={() => onToggleThreadSelection(thread.id)}
                 />
               </div>
@@ -116,13 +114,22 @@ export const ThreadList = ({
                   <h3 className={cn(
                     "text-sm truncate flex-1 mr-2 leading-tight",
                     thread.unread_count > 0 
-                      ? "font-semibold text-foreground" 
-                      : "font-medium text-muted-foreground"
+                      ? "font-semibold" 
+                      : "font-medium",
+                    // Text color based on selection state
+                    isActiveThread 
+                      ? "text-white" 
+                      : thread.unread_count > 0 
+                        ? "text-foreground" 
+                        : "text-muted-foreground"
                   )}>
                     {displaySubject || 'No Subject'}
                   </h3>
                   {isArchived && (
-                    <Archive className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <Archive className={cn(
+                      "w-4 h-4 flex-shrink-0",
+                      isActiveThread ? "text-blue-200" : "text-muted-foreground"
+                    )} />
                   )}
                 </div>
                 {thread.unread_count > 0 && (
@@ -132,7 +139,10 @@ export const ThreadList = ({
                 )}
               </div>
               
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className={cn(
+                "flex items-center justify-between text-xs",
+                isActiveThread ? "text-blue-100" : "text-muted-foreground"
+              )}>
                 <span className="truncate flex-1 mr-2 font-medium">
                   {participantDisplay}
                 </span>
@@ -168,4 +178,3 @@ export const ThreadList = ({
     </div>
   );
 };
-
