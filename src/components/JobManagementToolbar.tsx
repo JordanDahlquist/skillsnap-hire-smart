@@ -46,15 +46,15 @@ export const JobManagementToolbar = ({
   return (
     <div className="">
       <div className="max-w-7xl mx-auto px-8">
-        {/* Search and filters row */}
+        {/* Search and controls row */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-          {/* Search bar with reduced width */}
+          {/* Search bar */}
           <div className="w-full sm:w-80 flex-shrink-0">
             <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
           </div>
           
-          {/* Filters with more space */}
-          <div className="flex-1 flex justify-center">
+          {/* Filters and sort controls grouped together */}
+          <div className="flex-shrink-0">
             <div className="flex gap-3 items-center">
               <FilterDropdowns 
                 statusFilter={statusFilter} 
@@ -62,17 +62,14 @@ export const JobManagementToolbar = ({
                 workTypeFilter={workTypeFilter} 
                 onWorkTypeFilterChange={onWorkTypeFilterChange} 
               />
+              <SortControls 
+                sortBy={sortBy} 
+                onSortChange={onSortChange}
+                sortOrder={sortOrder}
+                onSortOrderChange={onSortOrderChange}
+                onRefresh={onRefresh} 
+              />
             </div>
-          </div>
-          
-          <div className="flex-shrink-0">
-            <SortControls 
-              sortBy={sortBy} 
-              onSortChange={onSortChange}
-              sortOrder={sortOrder}
-              onSortOrderChange={onSortOrderChange}
-              onRefresh={onRefresh} 
-            />
           </div>
         </div>
 
