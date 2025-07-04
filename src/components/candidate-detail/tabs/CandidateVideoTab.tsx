@@ -147,7 +147,7 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
 
   if (allVideoResponses.length === 0) {
     return (
-      <Card className="glass-card">
+      <Card className="bg-card border border-border">
         <CardContent className="p-8 text-center">
           <div className="text-lg font-medium text-muted-foreground mb-2">
             No Video Responses Found
@@ -176,7 +176,7 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
 
   return (
     <div className="space-y-6">
-      <Card className="glass-card">
+      <Card className="bg-card border border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
