@@ -66,7 +66,7 @@ export const ApplicationRatingSection = ({
   };
 
   return (
-    <div className="glass-card-no-hover p-3 border border-border">
+    <div className="bg-card border border-border rounded-lg p-3">
       <div className="flex items-center justify-between gap-4">
         <div className={`flex items-center gap-2 min-w-0 flex-1 p-2 rounded-lg transition-all ${
           !hasManualRating ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'

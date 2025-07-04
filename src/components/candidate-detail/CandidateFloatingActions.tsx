@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -66,7 +67,7 @@ export const CandidateFloatingActions = ({
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      <Card className="glass-card p-4 shadow-lg border border-border/50">
+      <Card className="bg-card border border-border shadow-lg p-4">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground">Rate:</span>

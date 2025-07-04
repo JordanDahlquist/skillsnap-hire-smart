@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,7 @@ export const ApplicationDetailContent = ({
   };
 
   return (
-    <div className="glass-card-no-hover p-6 space-y-6">
+    <div className="bg-card border border-border rounded-lg p-6 space-y-6">
       {/* Redesigned Sleek Header */}
       <div className="bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 rounded-xl p-4 -mx-2">
         <div className="space-y-3">

@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useOptimizedAuth } from "@/hooks/useOptimizedAuth";
 import { useOptimizedJob } from "@/hooks/useOptimizedJobs";
@@ -88,7 +89,7 @@ export const CandidateDetailPage = () => {
     if (applicationError || jobError || !selectedApplication || !job) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="relative z-10 text-center glass-card p-8 mx-4">
+          <div className="relative z-10 text-center bg-card border border-border rounded-lg p-8 mx-4">
             <h1 className="text-2xl font-bold text-foreground mb-2">
               {!selectedApplication ? 'Candidate Not Found' : 'Job Not Found'}
             </h1>
@@ -214,7 +215,7 @@ export const CandidateDetailPage = () => {
           </div>
         )}
 
-        <div className="relative z-10 text-center glass-card p-8 mx-4">
+        <div className="relative z-10 text-center bg-card border border-border rounded-lg p-8 mx-4">
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {!selectedApplication ? 'Candidate Not Found' : 'Job Not Found'}
           </h1>
