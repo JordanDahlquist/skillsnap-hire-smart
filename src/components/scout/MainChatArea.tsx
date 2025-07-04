@@ -8,7 +8,7 @@ interface MainChatAreaProps {
 
 export const MainChatArea = ({ conversationId }: MainChatAreaProps) => {
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
+    <div className="flex flex-col h-full bg-background">
       <ScoutChat
         conversationId={conversationId}
         onConversationUpdate={() => {}}
