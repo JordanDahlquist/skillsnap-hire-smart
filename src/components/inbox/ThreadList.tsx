@@ -1,4 +1,5 @@
 
+
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -67,6 +68,7 @@ export const ThreadList = ({
         const displaySubject = thread.processedSubject || thread.subject;
         const isArchived = thread.status === 'archived';
         const isSelected = selectedThreadIds.includes(thread.id);
+        const isActiveThread = selectedThreadId === thread.id;
         
         const participants = Array.isArray(thread.participants) 
           ? thread.participants.filter(p => 
@@ -85,13 +87,18 @@ export const ThreadList = ({
           <div
             onClick={(e) => handleThreadClick(thread, e)}
             className={cn(
-              "p-4 cursor-pointer hover:bg-muted/50 transition-colors border-l-4 flex items-center gap-3",
-              selectedThreadId === thread.id 
-                ? "bg-accent border-l-primary" 
+              "p-4 cursor-pointer hover:bg-muted/50 transition-colors flex items-center gap-3 relative",
+              // Left border for active thread - make it thicker and more prominent
+              "border-l-[6px]",
+              isActiveThread 
+                ? "border-l-primary shadow-sm" 
                 : "border-l-transparent",
-              thread.unread_count > 0 && "bg-accent/30",
-              isArchived && "opacity-60",
-              isSelected && "bg-accent/80"
+              // Background colors with proper hierarchy
+              isActiveThread && !isSelected && "bg-accent/50",
+              isActiveThread && isSelected && "bg-accent/70", 
+              !isActiveThread && isSelected && "bg-accent/80",
+              !isActiveThread && !isSelected && thread.unread_count > 0 && "bg-accent/30",
+              isArchived && "opacity-60"
             )}
           >
             {showSelection && onToggleThreadSelection && (
@@ -161,3 +168,4 @@ export const ThreadList = ({
     </div>
   );
 };
+
