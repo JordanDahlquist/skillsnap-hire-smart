@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
@@ -33,12 +32,12 @@ export const CandidateDetailContent = ({
     <div className="w-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-6 mb-6 bg-background border border-border">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Overview</TabsTrigger>
-          <TabsTrigger value="email" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Email</TabsTrigger>
-          <TabsTrigger value="resume" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Resume</TabsTrigger>
-          <TabsTrigger value="skills" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Assessment</TabsTrigger>
-          <TabsTrigger value="video" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Video</TabsTrigger>
-          <TabsTrigger value="activity" className="data-[state=active]:bg-foreground data-[state=active]:text-background">Activity</TabsTrigger>
+          <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background">Overview</TabsTrigger>
+          <TabsTrigger value="email" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background">Email</TabsTrigger>
+          <TabsTrigger value="resume" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background">Resume</TabsTrigger>
+          <TabsTrigger value="skills" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background">Assessment</TabsTrigger>
+          <TabsTrigger value="video" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background">Video</TabsTrigger>
+          <TabsTrigger value="activity" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background">Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-0">
