@@ -46,11 +46,21 @@ export const JobManagementToolbar = ({
   return (
     <div className="">
       <div className="max-w-7xl mx-auto px-8">
-        {/* Search and controls row */}
+        {/* Search, stats, and controls row */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           {/* Search bar */}
           <div className="w-full sm:w-80 flex-shrink-0">
             <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
+          </div>
+          
+          {/* Stats in the middle */}
+          <div className="flex-1 flex justify-center">
+            <ToolbarStats 
+              totalJobs={totalJobs} 
+              selectedCount={selectedJobs.length} 
+              activeFiltersCount={activeFiltersCount} 
+              needsAttentionFilter={needsAttentionFilter} 
+            />
           </div>
           
           {/* Filters and sort controls grouped together */}
@@ -71,16 +81,6 @@ export const JobManagementToolbar = ({
               />
             </div>
           </div>
-        </div>
-
-        {/* Stats row only */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-          <ToolbarStats 
-            totalJobs={totalJobs} 
-            selectedCount={selectedJobs.length} 
-            activeFiltersCount={activeFiltersCount} 
-            needsAttentionFilter={needsAttentionFilter} 
-          />
         </div>
       </div>
     </div>
