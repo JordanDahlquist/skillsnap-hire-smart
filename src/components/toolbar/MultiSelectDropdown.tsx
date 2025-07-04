@@ -70,7 +70,7 @@ export const MultiSelectDropdown = ({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={`${className} justify-between bg-card/80 border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl backdrop-blur-sm hover:bg-card/90 hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]`}
+          className={`${className} h-10 justify-between bg-card/80 border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl backdrop-blur-sm hover:bg-card/90 hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]`}
         >
           <div className="flex items-center gap-2 min-w-0">
             {icon}
