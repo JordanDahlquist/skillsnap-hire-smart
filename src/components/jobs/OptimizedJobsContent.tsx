@@ -1,3 +1,4 @@
+
 import { memo, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { getTimeAgo } from "@/utils/dateUtils";
 import { Job } from "@/types";
 import { UI_CONSTANTS } from "@/constants/ui";
 import { BulkActionsDropdown } from "@/components/toolbar/BulkActionsDropdown";
-import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface OptimizedJobsContentProps {
   jobs: Job[];
@@ -73,13 +73,6 @@ export const OptimizedJobsContent = memo(({
   activeJobsFilter,
   onBulkAction
 }: OptimizedJobsContentProps) => {
-  const { currentTheme } = useThemeContext();
-  
-  // Theme-aware text colors
-  const titleColor = currentTheme === 'black' ? 'text-white' : 'text-gray-900';
-  const textColor = currentTheme === 'black' ? 'text-gray-200' : 'text-gray-600';
-  const labelTextColor = currentTheme === 'black' ? 'text-white' : 'text-foreground';
-
   const handleSelectAll = useCallback((checked: boolean) => {
     onSelectAll(checked, filteredJobs);
   }, [onSelectAll, filteredJobs]);
@@ -107,13 +100,13 @@ export const OptimizedJobsContent = memo(({
   if (filteredJobs.length === 0 && jobs.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-8 py-8">
-        <Card className="backdrop-blur-sm bg-card/80 border-2 border-border/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-card/90 hover:border-border/60">
-          <CardContent className={`p-12 text-center ${textColor}`}>
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Plus className="w-10 h-10 text-gray-400" />
+        <Card className="bg-card border-2 border-border/50 transition-all duration-300 shadow-sm hover:shadow-md hover:border-border/60">
+          <CardContent className="p-12 text-center">
+            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+              <Plus className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h3 className={`text-xl font-semibold mb-3 ${titleColor}`}>No jobs yet</h3>
-            <p className={`mb-6 max-w-md mx-auto ${textColor}`}>
+            <h3 className="text-xl font-semibold mb-3 text-foreground">No jobs yet</h3>
+            <p className="mb-6 max-w-md mx-auto text-muted-foreground">
               Create your first job posting to start receiving applications and building your talent pipeline
             </p>
             <Button 
@@ -133,12 +126,12 @@ export const OptimizedJobsContent = memo(({
   if (filteredJobs.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-8 py-8">
-        <Card className="backdrop-blur-sm bg-card/80 border-2 border-border/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-card/90 hover:border-border/60">
-          <CardContent className={`p-12 text-center ${textColor}`}>
-            <h3 className={`text-xl font-semibold mb-3 ${titleColor}`}>No jobs match your filters</h3>
-            <p className={`mb-6 ${textColor}`}>Try adjusting your search or filter criteria</p>
+        <Card className="bg-card border-2 border-border/50 transition-all duration-300 shadow-sm hover:shadow-md hover:border-border/60">
+          <CardContent className="p-12 text-center">
+            <h3 className="text-xl font-semibold mb-3 text-foreground">No jobs match your filters</h3>
+            <p className="mb-6 text-muted-foreground">Try adjusting your search or filter criteria</p>
             <div className="space-y-4">
-              <p className={`text-sm ${textColor}`}>
+              <p className="text-sm text-muted-foreground">
                 Showing {filteredJobs.length} of {jobs.length} total jobs
               </p>
               <Button variant="outline" onClick={clearFilters} size="lg">
@@ -155,7 +148,7 @@ export const OptimizedJobsContent = memo(({
     <div className="max-w-7xl mx-auto px-8 py-4">
       <div className="space-y-3">
         {filteredJobs.length > 0 && (
-          <Card className="backdrop-blur-sm bg-card/80 border-2 border-border/50 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] hover:bg-card/90 hover:border-border/60">
+          <Card className="bg-card border-2 border-border/50 transition-all duration-300 shadow-sm hover:shadow-md hover:border-border/60">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -163,7 +156,7 @@ export const OptimizedJobsContent = memo(({
                     checked={allSelected}
                     onCheckedChange={handleSelectAll}
                   />
-                  <span className={`text-sm font-medium ${labelTextColor}`}>
+                  <span className="text-sm font-medium text-foreground">
                     Select all {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
                   </span>
                   <BulkActionsDropdown 
@@ -171,7 +164,7 @@ export const OptimizedJobsContent = memo(({
                     onBulkAction={onBulkAction}
                   />
                 </div>
-                <div className={`text-sm ${labelTextColor}`}>
+                <div className="text-sm text-foreground">
                   Showing <span className="font-semibold">{filteredJobs.length}</span> of <span className="font-semibold">{jobs.length}</span> total jobs
                   {needsAttentionFilter && (
                     <span className="ml-2 text-orange-600 font-medium">
