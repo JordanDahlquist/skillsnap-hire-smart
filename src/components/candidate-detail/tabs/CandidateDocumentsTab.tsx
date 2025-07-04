@@ -13,7 +13,7 @@ export const CandidateDocumentsTab = ({ application }: CandidateDocumentsTabProp
 
   if (!hasDocuments) {
     return (
-      <Card className="glass-card">
+      <Card className="bg-card border border-border">
         <CardContent className="p-8 text-center">
           <div className="text-lg font-medium text-muted-foreground mb-2">
             No Documents
@@ -30,9 +30,9 @@ export const CandidateDocumentsTab = ({ application }: CandidateDocumentsTabProp
     <div className="space-y-6">
       {/* Resume */}
       {application.resume_file_path && (
-        <Card className="glass-card">
+        <Card className="bg-card border border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <FileText className="w-5 h-5" />
               Resume
             </CardTitle>
@@ -67,9 +67,9 @@ export const CandidateDocumentsTab = ({ application }: CandidateDocumentsTabProp
 
       {/* Cover Letter */}
       {application.cover_letter && (
-        <Card className="glass-card">
+        <Card className="bg-card border border-border">
           <CardHeader>
-            <CardTitle>Cover Letter</CardTitle>
+            <CardTitle className="text-foreground">Cover Letter</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="p-4 bg-muted/30 rounded-lg border border-border max-h-96 overflow-y-auto">

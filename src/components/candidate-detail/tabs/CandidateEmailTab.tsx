@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,15 +19,15 @@ export const CandidateEmailTab = ({ application, job }: CandidateEmailTabProps) 
   return (
     <div className="space-y-6">
       {/* Header Card */}
-      <Card>
+      <Card className="bg-card border border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Mail className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-blue-50 rounded-lg dark:bg-blue-950">
+                <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <CardTitle className="text-lg">Email Conversation</CardTitle>
+                <CardTitle className="text-lg text-foreground">Email Conversation</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   Direct communication with {application.name}
                 </p>
@@ -61,4 +60,3 @@ export const CandidateEmailTab = ({ application, job }: CandidateEmailTabProps) 
     </div>
   );
 };
-

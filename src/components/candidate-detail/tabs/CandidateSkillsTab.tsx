@@ -17,7 +17,7 @@ export const CandidateSkillsTab = ({
 
   if (skillsResponses.length === 0) {
     return (
-      <Card className="glass-card">
+      <Card className="bg-card border border-border">
         <CardContent className="p-8 text-center">
           <div className="text-lg font-medium text-muted-foreground mb-2">
             No Skills Assessment
@@ -32,9 +32,9 @@ export const CandidateSkillsTab = ({
 
   return (
     <div className="space-y-6">
-      <Card className="glass-card">
+      <Card className="bg-card border border-border">
         <CardHeader>
-          <CardTitle className="text-left">Skills Assessment Responses</CardTitle>
+          <CardTitle className="text-left text-foreground">Skills Assessment Responses</CardTitle>
           <p className="text-sm text-muted-foreground text-left">
             {skillsResponses.length} response{skillsResponses.length !== 1 ? 's' : ''} submitted
           </p>
