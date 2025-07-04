@@ -119,7 +119,7 @@ export const ApplicationsList = memo(({
 
   return (
     <div>
-      <div className="glass-card mb-2">
+      <div className="bg-card border border-border rounded-lg mb-2">
         <ApplicationsListHeader
           applicationsCount={processedApplications.length}
           selectedApplications={selectedApplications}

@@ -1,3 +1,4 @@
+
 import React, { memo, useCallback, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -138,7 +139,7 @@ export const ApplicationsListHeader = memo(({
 
   return (
     <TooltipProvider>
-      <div className="p-4 border-b border-border glass-card-no-hover">
+      <div className="p-4 border-b border-border bg-card">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-semibold text-foreground">
             Applications ({applicationsCount})
