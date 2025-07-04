@@ -25,7 +25,7 @@ export const MultiSelectDropdown = ({
   onSelectionChange,
   placeholder = "Select options",
   icon = <MapPin className="w-4 h-4" />,
-  className = "w-32"
+  className = "w-24"
 }: MultiSelectDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -39,7 +39,7 @@ export const MultiSelectDropdown = ({
       return option?.label || placeholder;
     }
     
-    return `${selectedValues.length} Selected`;
+    return `${selectedValues.length} Sel`;
   };
 
   const handleToggleOption = (value: string) => {
@@ -70,13 +70,13 @@ export const MultiSelectDropdown = ({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={`${className} h-10 justify-between bg-card/80 border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl backdrop-blur-sm hover:bg-card/90 hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)]`}
+          className={`${className} h-10 justify-between bg-card/80 border-2 border-border/50 focus:ring-2 focus:ring-blue-500/50 rounded-2xl backdrop-blur-sm hover:bg-card/90 hover:border-border/60 transition-all duration-300 text-foreground shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15)] px-2`}
         >
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1 min-w-0 flex-1">
             {icon}
-            <span className="text-sm">{getDisplayValue()}</span>
+            <span className="text-xs truncate">{getDisplayValue()}</span>
           </div>
-          <ChevronDown className="w-4 h-4 opacity-50 flex-shrink-0" />
+          <ChevronDown className="w-4 h-4 opacity-50 flex-shrink-0 ml-1" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-0 bg-background/95 backdrop-blur-sm border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl z-50">

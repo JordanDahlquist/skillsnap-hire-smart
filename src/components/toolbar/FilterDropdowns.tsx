@@ -38,17 +38,17 @@ export const FilterDropdowns = ({
         options={statusOptions}
         selectedValues={statusFilter || ['all']}
         onSelectionChange={onStatusFilterChange}
-        placeholder="All Status"
+        placeholder="Status"
         icon={<Filter className="w-4 h-4" />}
-        className="w-32"
+        className="w-24"
       />
 
       <MultiSelectDropdown
         options={workTypeOptions}
         selectedValues={workTypeFilter || ['all']}
         onSelectionChange={onWorkTypeFilterChange}
-        placeholder="All Types"
-        className="w-32"
+        placeholder="Types"
+        className="w-24"
       />
     </>
   );
