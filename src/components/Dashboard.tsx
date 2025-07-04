@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { useApplications } from "@/hooks/useApplications";
@@ -59,12 +60,16 @@ export const Dashboard = () => {
   };
 
   if (isLoading) {
-    return <DashboardSkeleton />;
+    return (
+      <div className="min-h-screen bg-background">
+        <DashboardSkeleton />
+      </div>
+    );
   }
 
   if (!job) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h2 className={`text-2xl font-bold mb-2 ${titleColor}`}>Job not found</h2>
           <p className={subtitleColor}>The job you're looking for doesn't exist or you don't have permission to view it.</p>
@@ -74,7 +79,7 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <EnhancedDashboardHeader
         job={job}
         applications={applications || []}
