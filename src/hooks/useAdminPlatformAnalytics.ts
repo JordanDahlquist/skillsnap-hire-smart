@@ -72,8 +72,8 @@ export const useAdminPlatformAnalytics = () => {
         });
 
         // Type cast the response data properly
-        if (statsData && typeof statsData === 'object') {
-          setAnalytics(statsData as AdminPlatformAnalytics);
+        if (statsData && typeof statsData === 'object' && !Array.isArray(statsData)) {
+          setAnalytics(statsData as unknown as AdminPlatformAnalytics);
         } else {
           throw new Error('Invalid stats data format');
         }
