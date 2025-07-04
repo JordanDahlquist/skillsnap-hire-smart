@@ -36,7 +36,9 @@ export const UserManagement = () => {
             email,
             company_name,
             created_at,
-            industry
+            industry,
+            phone,
+            default_location
           `)
           .order('created_at', { ascending: false });
 
