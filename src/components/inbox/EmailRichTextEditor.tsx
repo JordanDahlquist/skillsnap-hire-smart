@@ -1,3 +1,4 @@
+
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -191,7 +192,7 @@ export const EmailRichTextEditor = ({
     styleElement.textContent = `
       .email-rich-text-editor [contenteditable][data-placeholder]:empty::before {
         content: attr(data-placeholder);
-        color: #9ca3af;
+        color: hsl(var(--muted-foreground));
         font-style: italic;
       }
       .email-rich-text-editor [contenteditable] a {
@@ -217,9 +218,9 @@ export const EmailRichTextEditor = ({
   }, []);
 
   return (
-    <div className="email-rich-text-editor h-full flex flex-col border rounded-lg overflow-hidden bg-white shadow-sm">
+    <div className="email-rich-text-editor h-full flex flex-col border rounded-lg overflow-hidden bg-background shadow-sm">
       {/* Compact Toolbar with Variables */}
-      <div className="flex-shrink-0 border-b bg-gray-50/50 p-1">
+      <div className="flex-shrink-0 border-b bg-muted/50 p-1">
         <div className="flex items-center gap-1">
           {/* Formatting buttons */}
           <Button
@@ -279,7 +280,7 @@ export const EmailRichTextEditor = ({
 
           {/* Separator if variables exist */}
           {variables.length > 0 && (
-            <div className="w-px h-4 bg-gray-300 mx-1" />
+            <div className="w-px h-4 bg-border mx-1" />
           )}
 
           {/* Variable buttons */}
@@ -290,10 +291,10 @@ export const EmailRichTextEditor = ({
                 key={variable.name}
                 onClick={() => handleVariableClick(variable.name)}
                 disabled={disabled}
-                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-white border rounded hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs bg-background border rounded hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title={variable.description}
               >
-                <IconComponent className="w-3 h-3 text-gray-500" />
+                <IconComponent className="w-3 h-3 text-muted-foreground" />
                 <code className="text-blue-600">{variable.name}</code>
               </button>
             );
@@ -314,10 +315,10 @@ export const EmailRichTextEditor = ({
               w-full p-4 min-h-full focus:outline-none text-sm cursor-text
               transition-all duration-200 ease-in-out
               ${disabled 
-                ? 'bg-gray-50 text-gray-500 cursor-not-allowed' 
+                ? 'bg-muted text-muted-foreground cursor-not-allowed' 
                 : isFocused 
                   ? 'bg-blue-50/30 border-blue-200' 
-                  : 'bg-gray-50/30 hover:bg-blue-50/20'
+                  : 'bg-muted/30 hover:bg-blue-50/20'
               }
               ${!value && !disabled ? 'hover:bg-blue-50/30' : ''}
             `}

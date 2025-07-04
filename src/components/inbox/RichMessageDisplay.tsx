@@ -55,7 +55,7 @@ export const RichMessageDisplay = ({
         "p-4 rounded-lg max-w-[85%] shadow-sm transition-all duration-200",
         message.direction === 'outbound'
           ? "ml-auto bg-blue-600 text-white"
-          : "mr-auto bg-white border border-gray-200 text-gray-900 hover:shadow-md"
+          : "mr-auto bg-card border border-border text-foreground hover:shadow-md"
       )}
     >
       {/* Message Header */}
@@ -65,7 +65,7 @@ export const RichMessageDisplay = ({
           "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0",
           message.direction === 'outbound'
             ? "bg-blue-500 text-white"
-            : "bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700"
+            : "bg-gradient-to-br from-muted to-muted/80 text-muted-foreground"
         )}>
           {message.direction === 'outbound' ? 'You' : senderInitials}
         </div>
@@ -74,13 +74,13 @@ export const RichMessageDisplay = ({
         <div className="flex-1 min-w-0">
           <div className={cn(
             "text-sm font-medium truncate",
-            message.direction === 'outbound' ? "text-blue-100" : "text-gray-900"
+            message.direction === 'outbound' ? "text-blue-100" : "text-foreground"
           )}>
             {message.direction === 'outbound' ? 'You' : displayName}
           </div>
           <div className={cn(
             "text-xs truncate flex items-center gap-1",
-            message.direction === 'outbound' ? "text-blue-200" : "text-gray-500"
+            message.direction === 'outbound' ? "text-blue-200" : "text-muted-foreground"
           )}>
             <span>{formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}</span>
             {!message.is_read && message.direction === 'inbound' && (
@@ -97,7 +97,7 @@ export const RichMessageDisplay = ({
               "text-xs px-2 py-1 rounded transition-colors",
               message.direction === 'outbound'
                 ? "text-blue-200 hover:text-white hover:bg-blue-500"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             {isExpanded ? 'Less' : 'More'}
@@ -128,7 +128,7 @@ export const RichMessageDisplay = ({
         {!isExpanded && isLongMessage && (
           <div className={cn(
             "text-xs mt-2 italic",
-            message.direction === 'outbound' ? "text-blue-200" : "text-gray-500"
+            message.direction === 'outbound' ? "text-blue-200" : "text-muted-foreground"
           )}>
             Message truncated...
           </div>

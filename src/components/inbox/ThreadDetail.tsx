@@ -35,7 +35,7 @@ export const ThreadDetail = ({
   if (!thread) {
     return (
       <Card className="h-full flex items-center justify-center">
-        <CardContent className="text-center text-gray-500">
+        <CardContent className="text-center text-muted-foreground">
           <p className="text-lg font-medium">Select a conversation</p>
           <p className="text-sm">Choose a thread from the list to view messages</p>
         </CardContent>
@@ -83,10 +83,10 @@ export const ThreadDetail = ({
             <CardTitle className="text-lg truncate flex items-center gap-2">
               {thread.subject}
               {isArchived && (
-                <Archive className="w-4 h-4 text-gray-500" />
+                <Archive className="w-4 h-4 text-muted-foreground" />
               )}
             </CardTitle>
-            <p className="text-sm text-gray-600 truncate">
+            <p className="text-sm text-muted-foreground truncate">
               Conversation with: {participants}
             </p>
           </div>

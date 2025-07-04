@@ -83,10 +83,10 @@ export const InboxPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Inbox</h1>
-          <p className="text-gray-600 mb-4">Failed to load your messages.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Error Loading Inbox</h1>
+          <p className="text-muted-foreground mb-4">Failed to load your messages.</p>
           <button 
             onClick={() => window.location.reload()} 
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

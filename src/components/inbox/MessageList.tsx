@@ -9,7 +9,7 @@ interface MessageListProps {
 export const MessageList = ({ messages }: MessageListProps) => {
   if (messages.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500">
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
         <p>No messages in this conversation</p>
       </div>
     );
