@@ -37,7 +37,7 @@ export const CandidateOverviewTab = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Contact Information */}
-      <Card className="glass-card">
+      <Card className="bg-card border border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-left">
             Contact Information
@@ -128,7 +128,7 @@ export const CandidateOverviewTab = ({
       </Card>
 
       {/* Application Summary with Actions at Very Top */}
-      <Card className="glass-card">
+      <Card className="bg-card border border-border">
         <CardContent className="p-0">
           {/* Actions Bar - Prominent at the very top */}
           <div className="bg-muted/20 border-b border-border p-4">
@@ -215,7 +215,7 @@ export const CandidateOverviewTab = ({
 
       {/* Cover Letter */}
       {localApplication.cover_letter && (
-        <Card className="glass-card lg:col-span-2">
+        <Card className="bg-card border border-border lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-left">Cover Letter</CardTitle>
           </CardHeader>
