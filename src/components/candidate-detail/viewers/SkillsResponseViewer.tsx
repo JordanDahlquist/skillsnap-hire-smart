@@ -185,7 +185,7 @@ export const SkillsResponseViewer = ({
               </div>
               
               {isPDF && (
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div className="border border-border rounded-lg overflow-hidden">
                   <iframe
                     src={response.fileUrl}
                     className="w-full h-96"
@@ -229,15 +229,15 @@ export const SkillsResponseViewer = ({
       case 'code':
         return (
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-muted border border-border rounded-lg">
               <div className="flex items-center gap-2">
-                <Code className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <Code className="w-5 h-5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  <p className="text-sm font-medium text-foreground">
                     Code Submission
                   </p>
                   {response.codeLanguage && (
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground">
                       Language: {response.codeLanguage}
                     </p>
                   )}
@@ -258,8 +258,8 @@ export const SkillsResponseViewer = ({
 
       default: // text response
         return (
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words leading-relaxed">
+          <div className="p-4 bg-muted border border-border rounded-lg">
+            <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
               {response.answer}
             </div>
           </div>
@@ -267,8 +267,8 @@ export const SkillsResponseViewer = ({
     }
 
     return (
-      <div className="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-        <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words leading-relaxed">
+      <div className="p-4 bg-muted border border-border rounded-lg">
+        <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
           {response.answer}
         </div>
       </div>
@@ -278,14 +278,14 @@ export const SkillsResponseViewer = ({
   const IconComponent = getResponseIcon(response.answerType);
 
   return (
-    <Card className="border border-gray-200 dark:border-gray-700">
+    <Card className="border border-border">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">
+            <CardTitle className="text-base font-medium text-foreground mb-2">
               Question {questionIndex + 1}
             </CardTitle>
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
               {response.question}
             </p>
           </div>
