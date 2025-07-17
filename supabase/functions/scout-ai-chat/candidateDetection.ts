@@ -1,4 +1,3 @@
-
 export interface CandidateProfile {
   id: string;
   name: string;
@@ -91,6 +90,22 @@ export const createCandidateProfiles = (applications: any[]): CandidateProfile[]
 export const detectJobIds = (message: string, jobs: any[]): string[] => {
   const detectedIds = new Set<string>();
   
+  // **NEW: Check for generic requests that shouldn't trigger specific job detection**
+  const genericRequestPatterns = [
+    /\b(?:find|identify|show|help.*find).*(?:top|best|good).*candidates?\b/i,
+    /\b(?:candidate|applicant).*(?:for|to).*(?:role|position|job)\b/i,
+    /\b(?:who|which).*(?:candidate|applicant).*(?:should|would|best)\b/i,
+    /\b(?:recommend|suggest).*candidates?\b/i,
+    /\bhelp.*(?:choose|select|pick).*candidate\b/i
+  ];
+  
+  const isGenericRequest = genericRequestPatterns.some(pattern => pattern.test(message));
+  
+  if (isGenericRequest && !hasSpecificJobMentions(message, jobs)) {
+    console.log('Generic request detected without specific job mentions - returning empty array');
+    return [];
+  }
+  
   // Direct ID detection (exact matches)
   jobs.forEach(job => {
     if (message.includes(job.id)) {
@@ -175,6 +190,18 @@ export const detectJobIds = (message: string, jobs: any[]): string[] => {
   });
   
   return Array.from(detectedIds);
+};
+
+// Helper function to check for specific job mentions
+const hasSpecificJobMentions = (message: string, jobs: any[]): boolean => {
+  const messageLower = message.toLowerCase();
+  
+  // Check for direct job title mentions
+  return jobs.some(job => {
+    const titleLower = job.title.toLowerCase();
+    return messageLower.includes(titleLower) || 
+           messageLower.includes(job.id);
+  });
 };
 
 export const detectMentionedCandidates = (message: string, applications: any[]): string[] => {
