@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2'
 import { createCandidateProfiles, detectMentionedCandidates, detectJobIds } from './candidateDetection.ts'
@@ -75,8 +74,8 @@ serve(async (req) => {
     const allApplications = jobs?.flatMap(job => job.applications || []) || []
     const candidateProfiles = createCandidateProfiles(allApplications)
 
-    // **NEW: Detect jobs mentioned in user's message**
-    const userMentionedJobIds = detectJobIds(message, jobs || [])
+    // **UPDATED: Pass isAiResponse=false for user message detection**
+    const userMentionedJobIds = detectJobIds(message, jobs || [], false)
     console.log('Jobs detected in user message:', userMentionedJobIds)
 
     // Build system prompt with comprehensive context, highlighting user-mentioned jobs
@@ -99,8 +98,8 @@ serve(async (req) => {
 
     console.log('AI response received:', aiMessage.substring(0, 100))
 
-    // Detect mentioned candidates and jobs in AI response
-    const aiMentionedJobIds = detectJobIds(aiMessage, jobs || [])
+    // **UPDATED: Pass isAiResponse=true for AI message detection**
+    const aiMentionedJobIds = detectJobIds(aiMessage, jobs || [], true)
     const applicationIds = detectMentionedCandidates(aiMessage, allApplications)
 
     // Combine user-mentioned and AI-mentioned jobs for card display

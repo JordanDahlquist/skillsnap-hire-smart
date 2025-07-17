@@ -87,23 +87,106 @@ export const createCandidateProfiles = (applications: any[]): CandidateProfile[]
   });
 };
 
-export const detectJobIds = (message: string, jobs: any[]): string[] => {
-  const detectedIds = new Set<string>();
+// **NEW: Response type classification to determine AI intent**
+const classifyResponseType = (message: string): 'clarification_request' | 'recommendation' | 'information' => {
+  const messageLower = message.toLowerCase();
   
-  // **NEW: Check for generic requests that shouldn't trigger specific job detection**
-  const genericRequestPatterns = [
-    /\b(?:find|identify|show|help.*find).*(?:top|best|good).*candidates?\b/i,
-    /\b(?:candidate|applicant).*(?:for|to).*(?:role|position|job)\b/i,
-    /\b(?:who|which).*(?:candidate|applicant).*(?:should|would|best)\b/i,
-    /\b(?:recommend|suggest).*candidates?\b/i,
-    /\bhelp.*(?:choose|select|pick).*candidate\b/i
+  // Clarification request patterns - these should NOT show job cards
+  const clarificationPatterns = [
+    /could you please specify/i,
+    /which position/i,
+    /which role/i,
+    /let me know which/i,
+    /here are your.*job openings/i,
+    /active job openings/i,
+    /available positions/i,
+    /choose from/i,
+    /select from/i,
+    /would you like to focus on/i,
+    /are you referring to/i,
+    /which of these/i
   ];
   
-  const isGenericRequest = genericRequestPatterns.some(pattern => pattern.test(message));
+  if (clarificationPatterns.some(pattern => pattern.test(messageLower))) {
+    return 'clarification_request';
+  }
   
-  if (isGenericRequest && !hasSpecificJobMentions(message, jobs)) {
-    console.log('Generic request detected without specific job mentions - returning empty array');
-    return [];
+  // Recommendation patterns - these SHOULD show job cards
+  const recommendationPatterns = [
+    /i recommend/i,
+    /suggest.*for/i,
+    /best fit.*for/i,
+    /top candidates.*for/i,
+    /you should consider/i,
+    /would be perfect for/i,
+    /ideal candidate.*for/i
+  ];
+  
+  if (recommendationPatterns.some(pattern => pattern.test(messageLower))) {
+    return 'recommendation';
+  }
+  
+  return 'information';
+};
+
+// **NEW: Detect if AI is listing job options vs making recommendations**
+const isListingJobOptions = (message: string): boolean => {
+  const messageLower = message.toLowerCase();
+  
+  const listingPatterns = [
+    /here are your.*job/i,
+    /your active job/i,
+    /available positions/i,
+    /job openings/i,
+    /\d+\.\s*\*\*/i, // Pattern like "1. **Job Title**"
+    /1\.\s+\*\*/i    // Pattern like "1. **Job Title**"
+  ];
+  
+  return listingPatterns.some(pattern => pattern.test(messageLower));
+};
+
+export const detectJobIds = (message: string, jobs: any[], isAiResponse: boolean = false): string[] => {
+  const detectedIds = new Set<string>();
+  
+  // **NEW: For AI responses, be much more conservative**
+  if (isAiResponse) {
+    const responseType = classifyResponseType(message);
+    
+    // If AI is asking for clarification or listing options, don't show job cards
+    if (responseType === 'clarification_request' || isListingJobOptions(message)) {
+      console.log('AI is asking for clarification or listing options - not showing job cards');
+      return [];
+    }
+    
+    // Only proceed with job detection for clear recommendations
+    if (responseType !== 'recommendation') {
+      console.log('AI response is not a recommendation - minimal job card detection');
+      // Only detect very explicit job mentions for non-recommendation responses
+      jobs.forEach(job => {
+        if (message.includes(job.id)) {
+          detectedIds.add(job.id);
+        }
+      });
+      return Array.from(detectedIds);
+    }
+  }
+  
+  // **FOR USER MESSAGES: Check for generic requests that shouldn't trigger specific job detection**
+  if (!isAiResponse) {
+    const genericRequestPatterns = [
+      /\b(?:find|identify|show|help.*find).*(?:top|best|good).*candidates?\b/i,
+      /\b(?:candidate|applicant).*(?:for|to).*(?:role|position|job)\b/i,
+      /\b(?:who|which).*(?:candidate|applicant).*(?:should|would|best)\b/i,
+      /\b(?:recommend|suggest).*candidates?\b/i,
+      /\bhelp.*(?:choose|select|pick).*candidate\b/i
+    ];
+    
+    const isGenericRequest = genericRequestPatterns.some(pattern => pattern.test(message));
+    
+    if (isGenericRequest && !hasSpecificJobMentions(message, jobs)) {
+      console.log('Generic request detected without specific job mentions - returning empty array');
+      return [];
+    }
   }
   
   // Direct ID detection (exact matches)
@@ -113,7 +196,7 @@ export const detectJobIds = (message: string, jobs: any[]): string[] => {
     }
   });
   
-  // **ENHANCED: More aggressive job title detection with better partial matching**
+  // **Job title detection - more conservative for AI responses**
   const messageLower = message.toLowerCase();
   
   jobs.forEach(job => {
@@ -121,11 +204,19 @@ export const detectJobIds = (message: string, jobs: any[]): string[] => {
     
     // Exact title match
     if (messageLower.includes(titleLower)) {
-      detectedIds.add(job.id);
+      // **NEW: For AI responses, only add if it's a clear recommendation context**
+      if (isAiResponse) {
+        const recommendationContext = checkRecommendationContext(message, titleLower);
+        if (recommendationContext) {
+          detectedIds.add(job.id);
+        }
+      } else {
+        detectedIds.add(job.id);
+      }
       return;
     }
     
-    // **NEW: More flexible word-by-word matching**
+    // **More flexible word-by-word matching (less aggressive for AI responses)**
     const messageWords = messageLower.split(/[\s\-_.,;:!?()[\]{}'"]+/).filter(w => w.length > 1);
     const titleWords = titleLower.split(/[\s\-_.,;:!?()[\]{}'"]+/).filter(w => w.length > 1);
     
@@ -144,52 +235,80 @@ export const detectJobIds = (message: string, jobs: any[]): string[] => {
       });
     });
     
-    // If we match most of the title words, include the job
+    // **NEW: Higher threshold for AI responses to reduce false positives**
+    const requiredMatchRatio = isAiResponse ? 0.8 : 0.6;
     const matchRatio = matchingWords / totalTitleWords;
-    if (matchRatio >= 0.6 || (matchingWords >= 2 && titleWords.length <= 3)) {
-      detectedIds.add(job.id);
+    
+    if (matchRatio >= requiredMatchRatio || (matchingWords >= 2 && titleWords.length <= 3)) {
+      if (isAiResponse) {
+        const recommendationContext = checkRecommendationContext(message, titleLower);
+        if (recommendationContext) {
+          detectedIds.add(job.id);
+        }
+      } else {
+        detectedIds.add(job.id);
+      }
       return;
     }
     
-    // **NEW: Special handling for compound terms and common abbreviations**
-    const cleanMessage = messageLower.replace(/[^a-z0-9]/g, '');
-    const cleanTitle = titleLower.replace(/[^a-z0-9]/g, '');
-    
-    // Check for substring matches in cleaned versions
-    if ((cleanMessage.length >= 4 && cleanTitle.includes(cleanMessage)) ||
-        (cleanTitle.length >= 4 && cleanMessage.includes(cleanTitle))) {
-      detectedIds.add(job.id);
+    // **Variations matching (disabled for AI clarification responses)**
+    if (!isAiResponse || classifyResponseType(message) === 'recommendation') {
+      const variations = [
+        { pattern: /\bmonkey\s*test\b/i, matches: ['monkey test', 'monkeytest'] },
+        { pattern: /\bqa\b/i, matches: ['quality assurance', 'quality analyst'] },
+        { pattern: /\bdev\b/i, matches: ['developer', 'development'] },
+        { pattern: /\bfrontend\b/i, matches: ['front-end', 'front end'] },
+        { pattern: /\bbackend\b/i, matches: ['back-end', 'back end'] },
+        { pattern: /\bfullstack\b/i, matches: ['full-stack', 'full stack'] }
+      ];
+      
+      variations.forEach(variation => {
+        if (variation.pattern.test(messageLower)) {
+          variation.matches.forEach(match => {
+            if (titleLower.includes(match)) {
+              detectedIds.add(job.id);
+            }
+          });
+        }
+      });
     }
-    
-    // **NEW: Handle common variations and partial matches**
-    // For example: "monkey test" should match "Monkey Test", "QA" should match "Quality Assurance", etc.
-    const variations = [
-      { pattern: /\bmonkey\s*test\b/i, matches: ['monkey test', 'monkeytest'] },
-      { pattern: /\bqa\b/i, matches: ['quality assurance', 'quality analyst'] },
-      { pattern: /\bdev\b/i, matches: ['developer', 'development'] },
-      { pattern: /\bfrontend\b/i, matches: ['front-end', 'front end'] },
-      { pattern: /\bbackend\b/i, matches: ['back-end', 'back end'] },
-      { pattern: /\bfullstack\b/i, matches: ['full-stack', 'full stack'] }
-    ];
-    
-    variations.forEach(variation => {
-      if (variation.pattern.test(messageLower)) {
-        variation.matches.forEach(match => {
-          if (titleLower.includes(match)) {
-            detectedIds.add(job.id);
-          }
-        });
-      }
-    });
   });
   
   console.log('Job detection results:', {
-    message: messageLower,
+    message: messageLower.substring(0, 100) + '...',
+    isAiResponse,
+    responseType: isAiResponse ? classifyResponseType(message) : 'user_message',
     detectedJobIds: Array.from(detectedIds),
     jobTitles: jobs.filter(job => detectedIds.has(job.id)).map(job => job.title)
   });
   
   return Array.from(detectedIds);
+};
+
+// **NEW: Check if job mention is in a recommendation context**
+const checkRecommendationContext = (message: string, jobTitle: string): boolean => {
+  const messageLower = message.toLowerCase();
+  const jobIndex = messageLower.indexOf(jobTitle);
+  
+  if (jobIndex === -1) return false;
+  
+  // Get context around the job mention
+  const contextStart = Math.max(0, jobIndex - 100);
+  const contextEnd = Math.min(messageLower.length, jobIndex + jobTitle.length + 100);
+  const context = messageLower.substring(contextStart, contextEnd);
+  
+  const recommendationPatterns = [
+    /recommend.*for/i,
+    /suggest.*for/i,
+    /best.*for/i,
+    /perfect.*for/i,
+    /ideal.*for/i,
+    /consider.*for/i,
+    /hire.*for/i,
+    /interview.*for/i
+  ];
+  
+  return recommendationPatterns.some(pattern => pattern.test(context));
 };
 
 // Helper function to check for specific job mentions
@@ -207,7 +326,7 @@ const hasSpecificJobMentions = (message: string, jobs: any[]): boolean => {
 export const detectMentionedCandidates = (message: string, applications: any[]): string[] => {
   const mentionedIds: string[] = [];
   
-  // **UPDATED: Much stricter candidate detection - only for clear recommendations**
+  // **Much stricter candidate detection - only for clear recommendations**
   const strongRecommendationKeywords = [
     'recommend', 'suggest', 'top pick', 'best candidate', 'hire', 'interview',
     'move forward', 'next steps', 'standout', 'excellent choice', 'strong pick',
@@ -229,7 +348,7 @@ export const detectMentionedCandidates = (message: string, applications: any[]):
   applications.forEach(app => {
     const nameParts = app.name.toLowerCase().split(' ');
     
-    // **NEW: More sophisticated name detection in recommendation context**
+    // **More sophisticated name detection in recommendation context**
     const checkNameInRecommendationContext = (name: string) => {
       const nameIndex = messageLower.indexOf(name);
       if (nameIndex === -1) return false;
@@ -261,7 +380,7 @@ export const detectMentionedCandidates = (message: string, applications: any[]):
       }
     }
     
-    // **NEW: Check individual name parts but ONLY in very strong recommendation context**
+    // **Check individual name parts but ONLY in very strong recommendation context**
     nameParts.forEach(namePart => {
       if (namePart.length >= 3 && messageLower.includes(namePart)) {
         // Only for very explicit recommendations with the specific name
