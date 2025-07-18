@@ -33,7 +33,7 @@ export const VideoInterviewNavigation = ({
         variant="outline" 
         onClick={onPrevious}
         disabled={!canGoPrevious}
-        className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+        className="flex items-center gap-2"
       >
         <ChevronLeft className="w-4 h-4" />
         Previous Question
@@ -44,7 +44,8 @@ export const VideoInterviewNavigation = ({
           <Button 
             onClick={onNext} 
             disabled={!canGoNext || !isCurrentQuestionRecorded}
-            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            variant="solid"
+            className="flex items-center gap-2"
           >
             {isLastQuestion ? 'Finish Recording' : 'Next Question'}
             <ChevronRight className="w-4 h-4" />
@@ -54,6 +55,7 @@ export const VideoInterviewNavigation = ({
         {allCompleted && (
           <Button 
             onClick={onContinueToReview}
+            variant="solid"
             className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
           >
             <CheckCircle className="w-4 h-4" />

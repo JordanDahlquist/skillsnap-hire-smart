@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -213,9 +214,9 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                     />
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="solid"
                       onClick={() => document.getElementById('resume-upload')?.click()}
-                      className="mb-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="mb-2"
                       disabled={isUploading}
                     >
                       Choose Resume File
@@ -235,15 +236,15 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
                     <p className="text-xs text-green-700">Resume uploaded successfully</p>
                   </div>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="destructive"
+                  size="sm"
                   onClick={handleRemoveFile}
-                  className="text-black hover:text-red-700 hover:bg-red-50 border-2 border-black bg-white shadow-md h-8 w-8 p-0 rounded flex items-center justify-center"
-                  style={{ color: 'black !important' }}
                   disabled={isUploading}
                 >
-                  <X className="w-4 h-4" style={{ color: 'black !important' }} />
-                </button>
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
             )}
           </div>
@@ -268,14 +269,13 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
         <Button 
           variant="outline" 
           onClick={onBack}
-          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           Back
         </Button>
         <Button 
           onClick={onNext} 
           disabled={!isValid || isUploading}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          variant="solid"
         >
           {isUploading ? (
             <>
