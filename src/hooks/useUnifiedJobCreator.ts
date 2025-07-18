@@ -41,7 +41,8 @@ export const useUnifiedJobCreator = (
       state.skillsTestData,
       actions.setIsGenerating,
       actions.setInterviewQuestionsData,
-      actions.setInterviewQuestionsViewState
+      actions.setInterviewQuestionsViewState,
+      actions.setGeneratedInterviewQuestions  // Pass the callback to save raw questions
     );
   };
 
