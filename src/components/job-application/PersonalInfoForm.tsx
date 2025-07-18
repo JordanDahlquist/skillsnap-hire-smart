@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Upload, FileText, X, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, Upload, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { uploadResumeFile } from "@/utils/resumeUploadUtils";
 import { PersonalInfo } from "@/types/jobForm";
@@ -17,64 +18,70 @@ interface PersonalInfoFormProps {
 }
 
 export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInfoFormProps) => {
-  const [dragActive, setDragActive] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
 
-  const handleFileUpload = async (file: File) => {
-    if (file.type !== 'application/pdf' && !file.type.includes('document')) {
-      toast.error('Please upload a PDF or Word document');
+  // Check form validation
+  useEffect(() => {
+    const isValid = data.fullName.trim() !== '' && data.email.trim() !== '';
+    setIsFormValid(isValid);
+  }, [data]);
+
+  const handleInputChange = (field: keyof PersonalInfo, value: string | File | null) => {
+    onChange({ ...data, [field]: value });
+  };
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type)) {
+      toast.error("Please upload a PDF or Word document.");
       return;
     }
-    
-    setIsUploading(true);
+
+    setIsUploadingResume(true);
     try {
       const result = await uploadResumeFile(file);
       
-      // Only update resume file and URL, don't auto-fill form fields
-      onChange({ 
-        ...data, 
-        resumeFile: file, 
-        resumeUrl: result.url 
+      onChange({
+        ...data,
+        resumeFile: file,
+        resumeUrl: result.url
       });
       
-      // Only auto-fill empty fields, never override user input
+      // Only auto-fill empty fields
       if (result.parsedData) {
         const { personalInfo } = result.parsedData;
         onChange({
           ...data,
           resumeFile: file,
           resumeUrl: result.url,
-          // Only fill if the current field is empty
           fullName: data.fullName || personalInfo.name || data.fullName,
           email: data.email || personalInfo.email || data.email,
           phone: data.phone || personalInfo.phone || data.phone,
           location: data.location || personalInfo.location || data.location,
         });
-        toast.success('Resume uploaded and empty fields auto-filled');
+        
+        toast.success("Resume uploaded and form auto-filled successfully!");
       } else {
-        toast.success('Resume uploaded successfully');
+        toast.success("Resume uploaded successfully!");
       }
     } catch (error) {
       console.error('Resume upload failed:', error);
-      toast.error('Resume upload failed. Please try again.');
+      toast.error(error instanceof Error ? error.message : "Upload failed. Please try again.");
     } finally {
-      setIsUploading(false);
+      setIsUploadingResume(false);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragActive(false);
-    
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileUpload(file);
+  const handleNext = () => {
+    if (!isFormValid) {
+      toast.error("Please fill in all required fields (Name and Email).");
+      return;
+    }
+    onNext();
   };
-
-  const handleRemoveFile = () => {
-    onChange({ ...data, resumeFile: null, resumeUrl: null });
-  };
-
-  const isValid = data.fullName && data.email && data.resumeUrl;
 
   return (
     <div className="space-y-6">
@@ -84,207 +91,164 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
             Personal Information
           </CardTitle>
           <p className="text-gray-700">
-            Tell us about yourself and provide your contact details
+            Tell us about yourself and upload your resume
           </p>
         </CardHeader>
-        
         <CardContent className="space-y-6">
-          {/* Basic Info */}
+          {/* Resume Upload Section */}
+          <div className="space-y-4">
+            <Label htmlFor="resume" className="text-sm font-medium">
+              Resume Upload (Optional)
+            </Label>
+            <div className="flex items-center gap-4">
+              <input
+                id="resume"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleResumeUpload}
+                disabled={isUploadingResume}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById('resume')?.click()}
+                disabled={isUploadingResume}
+                className="flex items-center gap-2 bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
+              >
+                {isUploadingResume ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
+                {isUploadingResume ? "Uploading..." : "Choose Resume File"}
+              </Button>
+              {data.resumeUrl && (
+                <span className="text-sm text-green-600 flex items-center gap-1">
+                  <FileText className="w-4 h-4" />
+                  Resume uploaded successfully
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Personal Information Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="fullName" className="text-gray-800 font-medium">Full Name *</Label>
+              <Label htmlFor="fullName">Full Name *</Label>
               <Input
                 id="fullName"
                 value={data.fullName}
-                onChange={(e) => onChange({ ...data, fullName: e.target.value })}
-                placeholder="Enter your full name"
-                className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                onChange={(e) => handleInputChange("fullName", e.target.value)}
+                required
+                className="mt-1"
               />
             </div>
-            
             <div>
-              <Label htmlFor="email" className="text-gray-800 font-medium">Email Address *</Label>
+              <Label htmlFor="email">Email Address *</Label>
               <Input
                 id="email"
                 type="email"
                 value={data.email}
-                onChange={(e) => onChange({ ...data, email: e.target.value })}
-                placeholder="your.email@example.com"
-                className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                required
+                className="mt-1"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="phone" className="text-gray-800 font-medium">Phone Number</Label>
+              <Label htmlFor="phone">Phone Number</Label>
               <Input
                 id="phone"
                 value={data.phone}
-                onChange={(e) => onChange({ ...data, phone: e.target.value })}
-                placeholder="(555) 123-4567"
-                className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                onChange={(e) => handleInputChange("phone", e.target.value)}
+                className="mt-1"
               />
             </div>
-            
             <div>
-              <Label htmlFor="location" className="text-gray-800 font-medium">Location</Label>
+              <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
                 value={data.location}
-                onChange={(e) => onChange({ ...data, location: e.target.value })}
-                placeholder="City, State"
-                className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                onChange={(e) => handleInputChange("location", e.target.value)}
+                placeholder="City, State/Country"
+                className="mt-1"
               />
             </div>
           </div>
 
           {/* Professional Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Professional Links</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h3 className="text-lg font-medium text-gray-900">Professional Links</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="portfolio" className="text-gray-800 font-medium">Portfolio URL</Label>
+                <Label htmlFor="portfolioUrl">Portfolio URL</Label>
                 <Input
-                  id="portfolio"
+                  id="portfolioUrl"
                   type="url"
                   value={data.portfolioUrl}
-                  onChange={(e) => onChange({ ...data, portfolioUrl: e.target.value })}
+                  onChange={(e) => handleInputChange("portfolioUrl", e.target.value)}
                   placeholder="https://your-portfolio.com"
-                  className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1"
                 />
               </div>
-              
               <div>
-                <Label htmlFor="linkedin" className="text-gray-800 font-medium">LinkedIn Profile</Label>
+                <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
                 <Input
-                  id="linkedin"
+                  id="linkedinUrl"
                   type="url"
                   value={data.linkedinUrl}
-                  onChange={(e) => onChange({ ...data, linkedinUrl: e.target.value })}
-                  placeholder="https://linkedin.com/in/yourname"
-                  className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="github" className="text-gray-800 font-medium">GitHub Profile</Label>
-                <Input
-                  id="github"
-                  type="url"
-                  value={data.githubUrl}
-                  onChange={(e) => onChange({ ...data, githubUrl: e.target.value })}
-                  placeholder="https://github.com/yourusername"
-                  className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  onChange={(e) => handleInputChange("linkedinUrl", e.target.value)}
+                  placeholder="https://linkedin.com/in/your-profile"
+                  className="mt-1"
                 />
               </div>
             </div>
-          </div>
-
-          {/* Resume Upload */}
-          <div>
-            <Label className="text-gray-800 font-medium">Resume Upload *</Label>
-            {!data.resumeUrl ? (
-              <div
-                className={`mt-2 border-2 border-dashed rounded-lg p-6 text-center transition-colors bg-white ${
-                  dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-                }`}
-                onDragEnter={() => setDragActive(true)}
-                onDragLeave={() => setDragActive(false)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-              >
-                {isUploading ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                    <p className="text-sm text-gray-600">Uploading resume...</p>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                      className="hidden"
-                      id="resume-upload"
-                      disabled={isUploading}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('resume-upload')?.click()}
-                      className="mb-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                      disabled={isUploading}
-                    >
-                      Choose Resume File
-                    </Button>
-                    <p className="text-sm text-gray-600">
-                      PDF, DOC, or DOCX files only. Drag and drop or click to upload.
-                    </p>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="mt-2 flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium text-green-900">{data.resumeFile?.name || 'Resume uploaded'}</p>
-                    <p className="text-xs text-green-700">Resume uploaded successfully</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  className="text-black hover:text-red-700 hover:bg-red-50 border-2 border-black bg-white shadow-md h-8 w-8 p-0 rounded flex items-center justify-center"
-                  style={{ color: 'black !important' }}
-                  disabled={isUploading}
-                >
-                  <X className="w-4 h-4" style={{ color: 'black !important' }} />
-                </button>
-              </div>
-            )}
+            <div>
+              <Label htmlFor="githubUrl">GitHub URL</Label>
+              <Input
+                id="githubUrl"
+                type="url"
+                value={data.githubUrl}
+                onChange={(e) => handleInputChange("githubUrl", e.target.value)}
+                placeholder="https://github.com/your-username"
+                className="mt-1"
+              />
+            </div>
           </div>
 
           {/* Cover Letter */}
           <div>
-            <Label htmlFor="coverLetter" className="text-gray-800 font-medium">Cover Letter / Introduction</Label>
+            <Label htmlFor="coverLetter">Cover Letter</Label>
             <Textarea
               id="coverLetter"
               value={data.coverLetter}
-              onChange={(e) => onChange({ ...data, coverLetter: e.target.value })}
+              onChange={(e) => handleInputChange("coverLetter", e.target.value)}
+              placeholder="Tell us why you're interested in this position and why you'd be a great fit..."
               rows={4}
-              placeholder="Tell us why you're interested in this position and what makes you a great fit..."
-              className="mt-1 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Navigation */}
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <Button 
           variant="outline" 
           onClick={onBack}
-          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+          className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center gap-2"
         >
+          <ChevronLeft className="w-4 h-4" />
           Back
         </Button>
+
         <Button 
-          onClick={onNext} 
-          disabled={!isValid || isUploading}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          onClick={handleNext}
+          disabled={!isFormValid}
+          className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
         >
-          {isUploading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Uploading...
-            </>
-          ) : (
-            'Continue'
-          )}
+          Continue
+          <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
     </div>
