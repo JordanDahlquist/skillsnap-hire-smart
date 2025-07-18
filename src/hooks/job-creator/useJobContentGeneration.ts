@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { UnifiedJobFormData } from '@/types/jobForm';
+import { parseInterviewQuestionsFromMarkdown } from '@/utils/interviewQuestionParser';
 
 export const useJobContentGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -121,19 +122,24 @@ export const useJobContentGeneration = () => {
 
       // The edge function returns { questions: content } for interview-questions type
       if (data?.questions) {
+        console.log('Raw questions received:', data.questions);
+        
+        // Parse the raw markdown into structured data
+        const parsedInterviewData = parseInterviewQuestionsFromMarkdown(data.questions);
+        console.log('Parsed interview data:', parsedInterviewData);
+        
         // Set the structured data for the editor
-        setInterviewQuestionsDataCallback(data.questions);
-        setInterviewQuestionsViewStateCallback({ isEditing: false, showJson: false });
+        setInterviewQuestionsDataCallback(parsedInterviewData);
+        setInterviewQuestionsViewStateCallback('editor'); // Go directly to editor view
         
         // IMPORTANT: Also set the raw generated text for database storage
-        if (setGeneratedInterviewQuestionsCallback && data.rawQuestions) {
-          setGeneratedInterviewQuestionsCallback(data.rawQuestions);
-        } else if (setGeneratedInterviewQuestionsCallback && data.questions?.questions) {
-          // Fallback: convert structured questions to raw text format
-          const rawQuestions = data.questions.questions
-            .map((q: any, index: number) => `${index + 1}. ${q.question}`)
-            .join('\n\n');
-          setGeneratedInterviewQuestionsCallback(rawQuestions);
+        if (setGeneratedInterviewQuestionsCallback) {
+          if (data.rawQuestions) {
+            setGeneratedInterviewQuestionsCallback(data.rawQuestions);
+          } else {
+            // Use the original questions text as fallback
+            setGeneratedInterviewQuestionsCallback(data.questions);
+          }
         }
         
         toast.success('Interview questions generated successfully!');
