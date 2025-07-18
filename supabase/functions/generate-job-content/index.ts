@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -13,12 +12,10 @@ const corsHeaders = {
 const cleanJobPost = (content: string): string => {
   let cleaned = content;
   
-  // Remove "How to Apply" sections and everything after them
   cleaned = cleaned.replace(/\*\*How to Apply\*\*[\s\S]*$/i, '');
   cleaned = cleaned.replace(/\*\*Application Process\*\*[\s\S]*$/i, '');
   cleaned = cleaned.replace(/\*\*Apply Now\*\*[\s\S]*$/i, '');
   
-  // Remove specific forbidden phrases
   const forbiddenPatterns = [
     /send your resume to[\s\S]*$/i,
     /email your application to[\s\S]*$/i,
@@ -36,16 +33,12 @@ const cleanJobPost = (content: string): string => {
     cleaned = cleaned.replace(pattern, '');
   });
   
-  // Ensure it ends with the correct call-to-action
   cleaned = cleaned.trim();
   if (!cleaned.endsWith('Ready to make an impact? Click the apply button below!')) {
-    // Remove any existing call-to-action that might be wrong
     cleaned = cleaned.replace(/ready to[\s\S]*$/i, '');
     cleaned = cleaned.replace(/interested\?[\s\S]*$/i, '');
     cleaned = cleaned.replace(/apply now[\s\S]*$/i, '');
-    cleaned = cleaned.trim();
-    
-    // Add the correct ending
+    cleaned = cleaned.trim();  
     cleaned += '\n\nReady to make an impact? Click the apply button below!';
   }
   
@@ -60,7 +53,6 @@ const buildToneInstructions = (writingTone: any) => {
   
   console.log('Building tone instructions with values:', { professional, friendly, excited });
   
-  // Convert 1-5 scale to descriptive instructions
   const getProfessionalTone = (level: number) => {
     if (level <= 2) return "use casual, conversational language with contractions and informal phrasing. Avoid corporate jargon and stiff formal language.";
     if (level <= 3) return "use balanced professional tone with clear, straightforward communication that's neither too casual nor overly formal.";
@@ -102,70 +94,90 @@ Excitement Level (${excited}/5): ${getExcitedTone(excited)}
   return instructions;
 };
 
-// Function to build compelling company context from website analysis
+// ENHANCED function to build compelling company context from comprehensive website analysis
 const buildCompanyContext = (websiteAnalysisData: any) => {
   if (!websiteAnalysisData) return '';
   
+  console.log('Building enhanced company context from analysis data:', {
+    companyName: websiteAnalysisData.companyName,
+    hasAchievements: websiteAnalysisData.achievements?.length > 0,
+    hasUniquePoints: websiteAnalysisData.uniqueSellingPoints?.length > 0,
+    hasClients: websiteAnalysisData.notableClients?.length > 0,
+    hasNews: websiteAnalysisData.recentNews?.length > 0
+  });
+  
   let context = `
-**RICH COMPANY CONTEXT FOR COMPELLING JOB POST CREATION:**
+**COMPREHENSIVE COMPANY INTELLIGENCE FOR COMPELLING JOB POST CREATION:**
 
-**Company Overview:**
+**Company Profile:**
 - Company: ${websiteAnalysisData.companyName || 'Unknown'}
 - Industry: ${websiteAnalysisData.industry || 'Not specified'}
 - Size: ${websiteAnalysisData.companySize || 'Not specified'}
 - Location: ${websiteAnalysisData.location || 'Not specified'}
 - Market Position: ${websiteAnalysisData.marketPosition || 'Not specified'}
 
-**What Makes Them Exciting:**`;
+**WHAT MAKES ${websiteAnalysisData.companyName?.toUpperCase() || 'THIS COMPANY'} ABSOLUTELY INCREDIBLE:**`;
 
   if (websiteAnalysisData.achievements && websiteAnalysisData.achievements.length > 0) {
     context += `
-- **Awards & Achievements**: ${websiteAnalysisData.achievements.join(', ')}`;
+🏆 **Awards & Recognition**: ${websiteAnalysisData.achievements.join(', ')}`;
   }
 
   if (websiteAnalysisData.growthMetrics && websiteAnalysisData.growthMetrics.length > 0) {
     context += `
-- **Impressive Metrics**: ${websiteAnalysisData.growthMetrics.join(', ')}`;
+📈 **Impressive Growth & Metrics**: ${websiteAnalysisData.growthMetrics.join(', ')}`;
   }
 
   if (websiteAnalysisData.notableClients && websiteAnalysisData.notableClients.length > 0) {
     context += `
-- **Notable Clients/Partners**: ${websiteAnalysisData.notableClients.join(', ')}`;
+🤝 **Elite Clients & Partners**: ${websiteAnalysisData.notableClients.join(', ')}`;
   }
 
   if (websiteAnalysisData.recentNews && websiteAnalysisData.recentNews.length > 0) {
     context += `
-- **Recent Developments**: ${websiteAnalysisData.recentNews.join(', ')}`;
+🚀 **Recent Exciting Developments**: ${websiteAnalysisData.recentNews.join(', ')}`;
   }
 
   if (websiteAnalysisData.uniqueSellingPoints && websiteAnalysisData.uniqueSellingPoints.length > 0) {
     context += `
-- **What Makes Them Special**: ${websiteAnalysisData.uniqueSellingPoints.join(', ')}`;
+⭐ **What Makes Them Industry Leaders**: ${websiteAnalysisData.uniqueSellingPoints.join(', ')}`;
   }
 
   if (websiteAnalysisData.socialProof && websiteAnalysisData.socialProof.length > 0) {
     context += `
-- **Social Proof**: ${websiteAnalysisData.socialProof.join(', ')}`;
+💬 **Client Success & Social Proof**: ${websiteAnalysisData.socialProof.join(', ')}`;
   }
 
   if (websiteAnalysisData.leadershipHighlights && websiteAnalysisData.leadershipHighlights.length > 0) {
     context += `
-- **Leadership & Expertise**: ${websiteAnalysisData.leadershipHighlights.join(', ')}`;
+👥 **Leadership Excellence**: ${websiteAnalysisData.leadershipHighlights.join(', ')}`;
   }
 
   context += `
 
-**Company Culture & Values:**
-${websiteAnalysisData.culture || 'Not specified'}
+**Company Culture & Work Environment:**
+${websiteAnalysisData.culture || 'Dynamic and innovative culture focused on excellence'}
 
-**Products/Services:**
-${websiteAnalysisData.products || 'Not specified'}
+**Products/Services Excellence:**
+${websiteAnalysisData.products || 'Cutting-edge solutions and services'}
 
-**Technologies Used:**
-${websiteAnalysisData.technologies ? websiteAnalysisData.technologies.join(', ') : 'Not specified'}
+**Technology Stack & Tools:**
+${websiteAnalysisData.technologies ? websiteAnalysisData.technologies.join(', ') : 'Modern technology stack'}
 
-**CRITICAL INSTRUCTION**: Use this rich context to create a COMPELLING, EXCITING job summary and "About ${websiteAnalysisData.companyName || 'Company'}" section that highlights their achievements, uniqueness, and what makes them an amazing place to work. Don't just copy this information - weave it naturally into engaging, persuasive content that makes candidates excited to apply.`;
+**MISSION-CRITICAL INSTRUCTION FOR JOB POST CREATION:**
+Use this rich intelligence to create an IRRESISTIBLY COMPELLING job summary and "About ${websiteAnalysisData.companyName || 'Company'}" section that:
 
+1. **LEADS WITH THE MOST EXCITING FACTS**: Start with awards, achievements, growth metrics, or impressive clients
+2. **CREATES GENUINE EXCITEMENT**: Use specific accomplishments that make candidates think "Wow, I want to be part of this!"
+3. **SHOWS INDUSTRY LEADERSHIP**: Highlight what makes them unique, innovative, or market-leading
+4. **BUILDS CREDIBILITY**: Use concrete proof points like awards, notable clients, or growth metrics
+5. **CONVEYS MOMENTUM**: Show they're growing, winning, and doing exciting things
+
+DO NOT create generic company descriptions. Instead, weave these compelling details into engaging, persuasive content that makes top talent excited to apply. Every sentence should add genuine value and excitement about joining this incredible company.
+
+**EXCITEMENT LEVEL TARGET**: Make candidates feel like they're applying to join something truly special and prestigious.`;
+
+  console.log('Enhanced company context built successfully');
   return context;
 };
 
@@ -177,9 +189,12 @@ serve(async (req) => {
   try {
     const { type, jobData, formData, existingJobPost, existingSkillsTest, websiteAnalysisData, writingTone } = await req.json();
     console.log('Received request type:', type);
-    console.log('Received job data:', jobData || formData);
-    console.log('Received writing tone:', writingTone);
-    console.log('Website analysis data available:', !!websiteAnalysisData);
+    console.log('Enhanced website analysis data available:', !!websiteAnalysisData);
+    console.log('Company analysis preview:', websiteAnalysisData ? {
+      companyName: websiteAnalysisData.companyName,
+      achievementsCount: websiteAnalysisData.achievements?.length || 0,
+      uniquePointsCount: websiteAnalysisData.uniqueSellingPoints?.length || 0
+    } : 'No analysis data');
 
     let prompt = '';
     let responseKey = '';
@@ -187,12 +202,10 @@ serve(async (req) => {
     if (type === 'job-post') {
       responseKey = 'jobPost';
       
-      // Format work arrangement display
       const workArrangementDisplay = jobData.locationType === 'on-site' ? 'On-site' : 
                                    jobData.locationType === 'remote' ? 'Remote' : 
                                    jobData.locationType === 'hybrid' ? 'Hybrid' : jobData.locationType;
       
-      // Build comprehensive location string
       const locationParts = [];
       if (jobData.location) locationParts.push(jobData.location);
       if (jobData.city) locationParts.push(jobData.city);
@@ -200,18 +213,14 @@ serve(async (req) => {
       if (jobData.country) locationParts.push(jobData.country);
       const fullLocation = locationParts.length > 0 ? locationParts.join(', ') : 'Location to be determined';
       
-      // Determine if this is project-based or employee position
       const isProjectBased = jobData.employmentType === 'project';
       
-      // Build tone instructions
       const toneInstructions = buildToneInstructions(writingTone);
-      
-      // Build compelling company context
       const companyContext = buildCompanyContext(websiteAnalysisData);
       
       prompt = `CRITICAL WARNING: You MUST NOT include any application instructions, email addresses, or "How to Apply" sections. The job posting MUST end with the exact phrase specified below and NOTHING ELSE.
 
-You are creating a job posting that will make top talent excited to apply. Use the rich company information provided to create compelling, specific content that highlights what makes this company amazing.
+**MISSION**: Create a job posting so compelling and exciting that top talent will be genuinely thrilled to apply. Use the rich company intelligence provided to showcase what makes this company absolutely incredible to work for.
 
 ${toneInstructions}
 
@@ -226,7 +235,7 @@ ${companyContext}
 - Location: ${fullLocation}
 
 **JOB DESCRIPTION:**
-${jobData.jobOverview ? `User-provided overview: "${jobData.jobOverview}"` : 'No specific description provided - create a compelling one based on the role.'}
+${jobData.jobOverview ? `User-provided overview: "${jobData.jobOverview}"` : 'Create a compelling description based on the role and company context.'}
 
 **REQUIREMENTS AND SKILLS:**
 - Required Skills: ${jobData.skills || 'To be determined based on role'}
@@ -247,49 +256,48 @@ ${jobData.jobOverview ? `User-provided overview: "${jobData.jobOverview}"` : 'No
 
 **CRITICAL CONTENT CREATION REQUIREMENTS:**
 
-1. **COMPELLING JOB SUMMARY**: Create an engaging opening that:
-   - Highlights the most exciting aspects of the role and company
-   - Uses specific achievements, awards, or growth metrics from the company context
-   - Makes the opportunity sound genuinely exciting and unique
-   - Clearly states employment type (${jobData.employmentType}) and work arrangement (${workArrangementDisplay})
+1. **IRRESISTIBLE JOB SUMMARY**: Create an opening that makes candidates think "I MUST work here!" by:
+   - Leading with the most exciting company achievements, awards, or growth metrics
+   - Highlighting what makes this role at THIS specific company incredibly special
+   - Using specific proof points that build genuine excitement
+   - Clearly stating employment type (${jobData.employmentType}) and work arrangement (${workArrangementDisplay})
+   - Making it feel like joining a winning, prestigious, innovative team
 
-2. **AMAZING "About ${jobData.companyName}" SECTION**: Create content that:
-   - Leads with the most impressive facts about the company (awards, achievements, growth)
-   - Highlights what makes them unique in their industry
-   - Mentions notable clients, partnerships, or recognitions if available
-   - Showcases company culture and what makes it a great place to work
-   - Uses specific, exciting details rather than generic company descriptions
+2. **SHOW-STOPPING "About ${jobData.companyName}" SECTION**: Create content that makes candidates excited by:
+   - STARTING with the most impressive facts (awards, achievements, notable clients, growth)
+   - Showcasing what makes them industry leaders or innovators
+   - Including specific accomplishments that build credibility and excitement
+   - Highlighting company culture elements that top talent values
+   - Using concrete details rather than generic corporate speak
+   - Making it clear this is a prestigious place to work
 
-3. **ENGAGING KEY RESPONSIBILITIES**: Make the role sound impactful and meaningful
+3. **COMPELLING KEY RESPONSIBILITIES**: Make the role sound impactful, growth-oriented, and meaningful
 
-4. **COMPELLING REQUIREMENTS**: Present requirements as opportunities for growth
+4. **OPPORTUNITY-FOCUSED REQUIREMENTS**: Present requirements as exciting challenges and growth opportunities
 
-5. **ATTRACTIVE "What We Offer"**: Highlight the best aspects of compensation and benefits
+5. **ATTRACTIVE "What We Offer"**: Highlight the best aspects of compensation, benefits, and career growth
 
-**STRUCTURE THE POSTING WITH THESE SECTIONS ONLY:**
-- **Job Summary** (compelling opening with work arrangement and employment type)
-- **About ${jobData.companyName}** (exciting company section using rich context)
-- **Key Responsibilities** (impactful role description)
-- **Requirements** (experience level and skills as growth opportunities)
-- **What We Offer** (attractive compensation and benefits)
-
-**ABSOLUTELY FORBIDDEN - DO NOT INCLUDE:**
-- "How to Apply" sections
-- Email addresses for applications
-- Any application submission instructions
+**FORBIDDEN CONTENT - NEVER INCLUDE:**
 - Generic, boring company descriptions
-- Copying website content verbatim
+- "How to Apply" sections or application instructions
+- Email addresses or contact information
+- Copying website content verbatim without making it compelling
+
+**MANDATORY STRUCTURE:**
+- **Job Summary** (exciting opening with work arrangement and employment type)
+- **About ${jobData.companyName}** (compelling company section using rich intelligence)
+- **Key Responsibilities** (impactful role description)
+- **Requirements** (presented as exciting opportunities)
+- **What We Offer** (attractive compensation and career growth)
 
 **MANDATORY ENDING:**
-End the job posting immediately after the "What We Offer" section with EXACTLY this call-to-action:
-"Ready to make an impact? Click the apply button below!"
+End immediately after "What We Offer" with EXACTLY: "Ready to make an impact? Click the apply button below!"
 
-**FINAL INSTRUCTION**: Make this job posting so compelling and exciting that top talent will be genuinely excited to apply. Use the rich company context to create something special, not generic.`;
+**SUCCESS CRITERIA**: This job posting should make qualified candidates genuinely excited about the opportunity and proud to potentially join ${jobData.companyName}. Use every compelling detail from the company analysis to create something truly special.`;
 
     } else if (type === 'skills-test') {
       responseKey = 'skillsTest';
       
-      // Extract all available context
       const currentFormData = formData || {};
       const title = currentFormData.title || 'Unknown Role';
       const skills = currentFormData.skills || '';
@@ -297,7 +305,6 @@ End the job posting immediately after the "What We Offer" section with EXACTLY t
       const employmentType = currentFormData.employmentType || 'full-time';
       const companyName = currentFormData.companyName || 'the company';
       
-      // Company context from website analysis
       let companyContext = '';
       if (websiteAnalysisData) {
         companyContext = `
@@ -500,7 +507,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
       throw new Error('Invalid request type');
     }
 
-    console.log('Using prompt:', prompt);
+    console.log('Enhanced prompt for', type, 'generation prepared');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -516,7 +523,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
             content: type === 'skills-test' 
               ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with ## headers, numbered steps with **bold** phase names, bullet points, clear line breaks between sections, and DETAILED submission instructions about sharing public links. NO WALL OF TEXT ALLOWED - instructions must be properly structured and scannable with clear headers. MUST include comprehensive submission guidelines. ALWAYS return valid JSON in the exact format specified.'
               : type === 'job-post' 
-                ? 'You are an expert job posting writer who creates compelling, exciting job postings that make top talent want to apply. Use the rich company context provided to create specific, engaging content that highlights achievements, awards, and what makes the company amazing. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly. Make every job posting sound exciting and compelling using the company\'s actual achievements and unique qualities.'
+                ? 'You are an elite job posting creator who makes companies irresistible to top talent. Your mission is to transform company intelligence into compelling, exciting job postings that make qualified candidates genuinely thrilled to apply. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections. Job postings must end with the exact call-to-action specified and NOTHING ELSE. Use the rich company analysis data to create specific, engaging content that highlights achievements, awards, growth, and what makes the company amazing. Pay attention to writing tone requirements and make every job posting sound exciting and prestigious using factual company accomplishments.'
                 : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
           },
           {
@@ -524,8 +531,8 @@ Make the questions challenging but fair, and ensure they can be answered well wi
             content: prompt
           }
         ],
-        temperature: type === 'job-post' ? 0.7 : 0.8, // Higher creativity for job posts
-        max_tokens: type === 'skills-test' ? 2000 : type === 'job-post' ? 1800 : 1500
+        temperature: type === 'job-post' ? 0.7 : 0.8,
+        max_tokens: type === 'skills-test' ? 2000 : type === 'job-post' ? 2200 : 1500
       }),
     });
 
@@ -539,14 +546,11 @@ Make the questions challenging but fair, and ensure they can be answered well wi
     // Apply post-processing for job posts to remove any application instructions
     if (type === 'job-post') {
       generatedContent = cleanJobPost(generatedContent);
+      console.log('Enhanced job post generated and cleaned, preview:', generatedContent.substring(0, 200) + '...');
     }
 
-    console.log(`Generated ${type} preview:`, generatedContent.substring(0, 200) + '...');
-
-    // For enhanced skills-test, parse the JSON response
     if (type === 'skills-test') {
       try {
-        // Try to extract JSON from the response
         const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const skillsTestData = JSON.parse(jsonMatch[0]);
@@ -561,7 +565,6 @@ Make the questions challenging but fair, and ensure they can be answered well wi
         }
       } catch (parseError) {
         console.error('Error parsing skills test JSON:', parseError);
-        // Fallback to simple question parsing
         const lines = generatedContent.split('\n').filter(line => line.trim().length > 0);
         const questions = lines
           .filter(line => line.match(/^\d+\./))
@@ -583,7 +586,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
     );
 
   } catch (error) {
-    console.error('Error in generate-job-content function:', error);
+    console.error('Error in enhanced generate-job-content function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

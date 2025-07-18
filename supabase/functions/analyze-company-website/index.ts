@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -37,7 +36,6 @@ const extractCompanyFromDomain = (url: string): string => {
     const domain = new URL(url).hostname.replace('www.', '');
     const mainPart = domain.split('.')[0];
     
-    // Convert to proper case
     return mainPart.charAt(0).toUpperCase() + mainPart.slice(1);
   } catch {
     return '';
@@ -80,14 +78,14 @@ serve(async (req) => {
     const html = await response.text();
     console.log('Fetched HTML content, length:', html.length);
 
-    // Extract text content from HTML with better parsing
+    // Enhanced text extraction with better parsing for awards, achievements, and unique content
     const textContent = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 15000); // Increased limit for deeper analysis
+      .slice(0, 20000); // Increased limit for comprehensive analysis
 
     // Extract potential company name from HTML structure
     const htmlCompanyName = extractCompanyFromHTML(html);
@@ -99,7 +97,7 @@ serve(async (req) => {
     console.log('Page title:', pageTitle);
     console.log('Domain company name:', domainCompanyName);
 
-    // Enhanced AI analysis with comprehensive content mining
+    // ENHANCED AI analysis with deep content mining capabilities
     const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -111,69 +109,73 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing company websites to extract comprehensive, compelling information for creating outstanding job postings.
+            content: `You are an expert investigative analyst specializing in extracting the most compelling, exciting, and unique information about companies from their websites. Your mission is to uncover what makes this company truly special and worth joining.
 
 CRITICAL: You must respond with ONLY a valid JSON object, no markdown formatting, no backticks, no extra text.
 
-Your mission is to deeply analyze this company's website and extract the most compelling, exciting, and unique information that would make someone genuinely excited to work there. Think like a top-tier recruiter who knows how to make companies sound amazing.
+DEEP INTELLIGENCE EXTRACTION MISSION:
+You are tasked with mining this website for the most compelling, exciting, and unique information that would make top talent genuinely excited to work at this company. Think like an elite headhunter who knows how to make companies irresistible.
 
-DEEP CONTENT MINING REQUIREMENTS:
-1. **COMPANY ACHIEVEMENTS & AWARDS**: Look for any awards, recognitions, certifications, industry rankings, or accolades
-2. **IMPRESSIVE METRICS**: Extract growth numbers, client counts, revenue milestones, years in business, team size
-3. **NOTABLE CLIENTS/PARTNERSHIPS**: Identify big-name clients, partnerships, or collaborations mentioned
-4. **RECENT NEWS & MILESTONES**: Look for recent achievements, product launches, expansions, or exciting developments  
-5. **UNIQUE VALUE PROPOSITIONS**: What makes this company different, innovative, or industry-leading
-6. **COMPANY CULTURE HIGHLIGHTS**: Extract specific culture elements, values, work environment details
-7. **LEADERSHIP & EXPERTISE**: Notable team members, founders, or industry expertise mentioned
-8. **SOCIAL PROOF**: Testimonials, case studies, success stories, or client praise
-9. **MARKET POSITION**: Industry leadership, competitive advantages, or market recognition
-10. **EXCITING PROJECTS**: Innovative work, cutting-edge projects, or impressive portfolio pieces
+COMPREHENSIVE CONTENT MINING REQUIREMENTS:
+1. **AWARDS & RECOGNITION**: Hunt for ANY awards, certifications, industry rankings, "Best of" lists, recognitions, accolades, or honors
+2. **IMPRESSIVE METRICS & ACHIEVEMENTS**: Extract growth percentages, revenue milestones, client counts, years in business, team size, market share, success rates
+3. **NOTABLE CLIENTS & PARTNERSHIPS**: Identify big-name clients, Fortune 500 partnerships, celebrity clients, government contracts, major collaborations
+4. **RECENT NEWS & EXCITING DEVELOPMENTS**: Look for recent launches, expansions, funding rounds, new offices, major wins, breakthrough projects
+5. **UNIQUE VALUE PROPOSITIONS**: What makes them different, innovative, industry-leading, or cutting-edge
+6. **COMPANY CULTURE GOLD**: Extract specific culture elements, unique perks, work environment details, team philosophy, values in action
+7. **LEADERSHIP EXCELLENCE**: Notable founders, industry veterans, thought leaders, impressive backgrounds, company expertise
+8. **SOCIAL PROOF & SUCCESS STORIES**: Client testimonials, case studies, success metrics, customer praise, impact stories
+9. **MARKET LEADERSHIP**: Industry firsts, innovations, competitive advantages, thought leadership, market position
+10. **EXCITING PROJECTS & PORTFOLIO**: Cutting-edge work, impressive projects, innovative solutions, creative campaigns
 
 ANALYSIS CONTEXT:
 - HTML extracted company name: ${htmlCompanyName}
 - Page title: ${pageTitle}
 - Domain-based name: ${domainCompanyName}
 
-Prioritize the HTML extracted name if it looks like a real company name.
-
-RESPONSE FORMAT - Return this exact JSON structure with compelling, specific content:
+RESPONSE FORMAT - Return this exact JSON structure filled with SPECIFIC, EXCITING, COMPELLING content:
 {
   "companyName": "Actual company name (prioritize HTML extracted if valid)",
-  "location": "Primary location/headquarters if found",
-  "technologies": ["Array", "of", "specific", "technologies", "tools", "platforms"],
-  "benefits": ["Array", "of", "actual", "employee", "benefits", "NOT", "services"],
-  "industry": "Specific industry or sector",
-  "companySize": "Specific size info, employee count, or growth stage",
-  "description": "Compelling 2-3 sentence description highlighting what makes them exciting",
-  "culture": "Specific culture elements, values, and work environment details",
-  "products": "Main products, services, or solutions they offer",
-  "summary": "Engaging summary for job context that captures their uniqueness",
-  "achievements": ["Array", "of", "awards", "recognitions", "milestones", "achievements"],
-  "notableClients": ["Array", "of", "impressive", "clients", "partnerships", "if", "mentioned"],
-  "recentNews": ["Array", "of", "recent", "developments", "launches", "expansions"],
-  "uniqueSellingPoints": ["Array", "of", "what", "makes", "them", "special", "or", "innovative"],
-  "socialProof": ["Array", "of", "testimonials", "success", "stories", "case", "studies"],
-  "marketPosition": "Their position in the industry, competitive advantages, recognition",
-  "growthMetrics": ["Array", "of", "impressive", "numbers", "growth", "statistics"],
-  "leadershipHighlights": ["Array", "of", "notable", "team", "expertise", "founder", "info"]
+  "location": "Primary location/headquarters with specifics",
+  "technologies": ["Specific", "technologies", "tools", "platforms", "they", "actually", "use"],
+  "benefits": ["Actual", "employee", "benefits", "perks", "NOT", "client", "services"],
+  "industry": "Specific industry/sector with nuance",
+  "companySize": "Specific employee count, team size, or growth details",
+  "description": "Compelling 2-3 sentences highlighting their most exciting qualities and achievements",
+  "culture": "Specific culture elements, values, work environment details that make them special",
+  "products": "Their main products/services with specifics about what makes them unique",
+  "summary": "Exciting summary that captures their most impressive achievements and what makes them remarkable",
+  "achievements": ["Specific", "awards", "recognitions", "certifications", "industry", "honors", "accolades"],
+  "notableClients": ["Big", "name", "clients", "Fortune", "500", "partnerships", "celebrity", "clients"],
+  "recentNews": ["Recent", "launches", "expansions", "funding", "major", "wins", "breakthrough", "projects"],
+  "uniqueSellingPoints": ["What", "makes", "them", "innovative", "different", "industry", "leading", "cutting", "edge"],
+  "socialProof": ["Client", "testimonials", "success", "stories", "case", "studies", "impact", "metrics"],
+  "marketPosition": "Their position as industry leaders, innovators, or market disruptors with specifics",
+  "growthMetrics": ["Impressive", "growth", "percentages", "revenue", "milestones", "expansion", "statistics"],
+  "leadershipHighlights": ["Notable", "founders", "industry", "veterans", "thought", "leaders", "impressive", "backgrounds"]
 }
 
-CRITICAL INSTRUCTIONS:
-- Focus on extracting SPECIFIC, EXCITING, and COMPELLING information
-- Look for concrete achievements, not generic statements
-- Prioritize information that would make someone want to work there
-- Extract actual awards, specific client names, real numbers, concrete achievements
-- Make the company sound as exciting and appealing as possible based on factual content
-- If information isn't available, use empty arrays [] or null rather than making things up
-- Be specific and concrete, not generic or vague`
+CRITICAL SUCCESS FACTORS:
+- Extract CONCRETE, SPECIFIC information, not generic descriptions
+- Focus on what makes them EXCITING and SPECIAL, not just functional
+- Look for proof points that would impress potential employees
+- Prioritize recent achievements, growth, and forward momentum
+- Identify elements that create genuine career excitement
+- If specific information isn't found, use empty arrays [] rather than making things up
+- Make every field count - each should add genuine value and excitement
+
+EXTRACTION INTENSITY: MAXIMUM
+This analysis will be used to create job postings that make top talent excited to apply. Extract every compelling detail that would make someone say "I want to work there!"
+
+COMPANY ANALYSIS INTELLIGENCE TARGET: Make this company sound as exciting and attractive as possible based on factual website content.`
           },
           {
             role: 'user',
-            content: `Website Content:\n${textContent}`
+            content: `WEBSITE CONTENT TO ANALYZE:\n\n${textContent}`
           }
         ],
-        temperature: 0.2,
-        max_tokens: 2000
+        temperature: 0.3,
+        max_tokens: 2500
       }),
     });
 
@@ -184,7 +186,7 @@ CRITICAL INSTRUCTIONS:
     const analysisData = await analysisResponse.json();
     let analysisResult = analysisData.choices[0].message.content.trim();
 
-    console.log('Raw AI analysis result:', analysisResult);
+    console.log('Enhanced analysis result preview:', analysisResult.substring(0, 300) + '...');
 
     // Remove any markdown formatting if present
     analysisResult = analysisResult.replace(/^```json\s*/, '').replace(/\s*```$/, '');
@@ -207,7 +209,6 @@ CRITICAL INSTRUCTIONS:
         companyData.companyName = domainCompanyName;
       }
       
-      // Ensure arrays exist with fallbacks
       companyData.technologies = companyData.technologies || [];
       companyData.benefits = companyData.benefits || [];
       companyData.achievements = companyData.achievements || [];
@@ -219,9 +220,8 @@ CRITICAL INSTRUCTIONS:
       companyData.leadershipHighlights = companyData.leadershipHighlights || [];
       
     } catch (error) {
-      console.error('Failed to parse AI response as JSON:', error);
+      console.error('Failed to parse enhanced analysis JSON:', error);
       
-      // Enhanced fallback extraction
       companyData = {
         companyName: htmlCompanyName || domainCompanyName,
         location: null,
@@ -244,7 +244,13 @@ CRITICAL INSTRUCTIONS:
       };
     }
 
-    console.log('Final parsed company data:', companyData);
+    console.log('Final enhanced company analysis:', {
+      companyName: companyData.companyName,
+      achievementsCount: companyData.achievements?.length || 0,
+      uniquePointsCount: companyData.uniqueSellingPoints?.length || 0,
+      clientsCount: companyData.notableClients?.length || 0,
+      newsCount: companyData.recentNews?.length || 0
+    });
 
     return new Response(
       JSON.stringify(companyData),
@@ -252,7 +258,7 @@ CRITICAL INSTRUCTIONS:
     );
 
   } catch (error) {
-    console.error('Error in analyze-company-website function:', error);
+    console.error('Error in enhanced analyze-company-website function:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
