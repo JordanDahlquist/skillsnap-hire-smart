@@ -2,13 +2,13 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { JobFormData } from '@/types/jobForm';
+import { UnifiedJobFormData } from '@/types/jobForm';
 
 export const useJobContentGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateJobPost = async (
-    formData: JobFormData,
+    formData: UnifiedJobFormData,
     setIsGeneratingCallback: (loading: boolean) => void,
     setGeneratedJobPostCallback: (content: string) => void,
     websiteAnalysisData?: any,
@@ -41,7 +41,7 @@ export const useJobContentGeneration = () => {
   };
 
   const generateSkillsQuestions = async (
-    formData: JobFormData,
+    formData: UnifiedJobFormData,
     generatedJobPost: string,
     setIsGeneratingCallback: (loading: boolean) => void,
     setSkillsTestDataCallback: (data: any) => void,
@@ -74,7 +74,7 @@ export const useJobContentGeneration = () => {
   };
 
   const generateInterviewQuestions = async (
-    formData: JobFormData,
+    formData: UnifiedJobFormData,
     generatedJobPost: string,
     skillsTestData: any,
     setIsGeneratingCallback: (loading: boolean) => void,

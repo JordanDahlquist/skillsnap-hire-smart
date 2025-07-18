@@ -20,7 +20,7 @@ export const useUnifiedJobCreator = (
       actions.setIsGenerating, 
       actions.setGeneratedJobPost,
       state.websiteAnalysisData,
-      state.writingTone
+      JSON.stringify(state.writingTone)
     );
   };
 
