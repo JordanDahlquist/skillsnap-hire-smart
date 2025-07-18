@@ -122,11 +122,7 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
 
   const sendMessage = async (content: string) => {
     if (!user || !content.trim() || !conversationId) {
-      toast({
-        title: "Error",
-        description: "Please enter a message and ensure you have an active conversation.",
-        variant: "destructive"
-      });
+      // Simple validation without toast - let UI handle this with disabled state
       return;
     }
 
@@ -168,10 +164,7 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
         // Add AI response immediately to UI
         setMessages(prev => [...prev, aiMessage]);
         
-        toast({
-          title: "Message sent",
-          description: "Your message has been sent successfully.",
-        });
+        // No success toast - the message appearing in chat is sufficient feedback
       } else {
         throw new Error('No response received from AI');
       }
@@ -187,8 +180,8 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
     } catch (error) {
       logger.error('Failed to send message', { error });
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+        title: "Failed to send message",
+        description: "Please try again.",
         variant: "destructive"
       });
     } finally {
