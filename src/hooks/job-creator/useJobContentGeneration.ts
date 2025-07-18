@@ -33,8 +33,9 @@ export const useJobContentGeneration = () => {
         throw error;
       }
 
-      if (data?.content) {
-        setGeneratedJobPostCallback(data.content);
+      // The edge function returns { jobPost: content } for job-post type
+      if (data?.jobPost) {
+        setGeneratedJobPostCallback(data.jobPost);
         toast.success('Job post generated successfully!');
       } else {
         console.error('No job post content received:', data);
@@ -74,8 +75,9 @@ export const useJobContentGeneration = () => {
         throw error;
       }
 
-      if (data?.content) {
-        setSkillsTestDataCallback(data.content);
+      // The edge function returns { skillsTest: content } for skills-test type
+      if (data?.skillsTest) {
+        setSkillsTestDataCallback(data.skillsTest);
         toast.success('Skills assessment generated successfully!');
       } else {
         console.error('No skills questions received:', data);
@@ -117,17 +119,18 @@ export const useJobContentGeneration = () => {
         throw error;
       }
 
-      if (data?.content) {
+      // The edge function returns { questions: content } for interview-questions type
+      if (data?.questions) {
         // Set the structured data for the editor
-        setInterviewQuestionsDataCallback(data.content);
+        setInterviewQuestionsDataCallback(data.questions);
         setInterviewQuestionsViewStateCallback({ isEditing: false, showJson: false });
         
         // IMPORTANT: Also set the raw generated text for database storage
         if (setGeneratedInterviewQuestionsCallback && data.rawQuestions) {
           setGeneratedInterviewQuestionsCallback(data.rawQuestions);
-        } else if (setGeneratedInterviewQuestionsCallback && data.content?.questions) {
+        } else if (setGeneratedInterviewQuestionsCallback && data.questions?.questions) {
           // Fallback: convert structured questions to raw text format
-          const rawQuestions = data.content.questions
+          const rawQuestions = data.questions.questions
             .map((q: any, index: number) => `${index + 1}. ${q.question}`)
             .join('\n\n');
           setGeneratedInterviewQuestionsCallback(rawQuestions);
