@@ -14,22 +14,30 @@ export const useJobContentGeneration = () => {
     websiteAnalysisData?: any,
     writingTone?: string
   ) => {
+    console.log('Starting job post generation with:', { formData, websiteAnalysisData, writingTone });
     setIsGeneratingCallback(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-job-post', {
+      const { data, error } = await supabase.functions.invoke('generate-job-content', {
         body: {
-          formData,
+          type: 'job-post',
+          jobData: formData,
           websiteAnalysisData,
           writingTone
         }
       });
 
-      if (error) throw error;
+      console.log('Job post generation response:', { data, error });
 
-      if (data?.jobPost) {
-        setGeneratedJobPostCallback(data.jobPost);
+      if (error) {
+        console.error('Job post generation error:', error);
+        throw error;
+      }
+
+      if (data?.content) {
+        setGeneratedJobPostCallback(data.content);
         toast.success('Job post generated successfully!');
       } else {
+        console.error('No job post content received:', data);
         throw new Error('No job post content received');
       }
     } catch (error) {
@@ -47,22 +55,30 @@ export const useJobContentGeneration = () => {
     setSkillsTestDataCallback: (data: any) => void,
     websiteAnalysisData?: any
   ) => {
+    console.log('Starting skills questions generation');
     setIsGeneratingCallback(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-skills-questions', {
+      const { data, error } = await supabase.functions.invoke('generate-job-content', {
         body: {
-          formData,
+          type: 'skills-test',
+          jobData: formData,
           generatedJobPost,
           websiteAnalysisData
         }
       });
 
-      if (error) throw error;
+      console.log('Skills questions generation response:', { data, error });
 
-      if (data?.questions) {
-        setSkillsTestDataCallback(data.questions);
+      if (error) {
+        console.error('Skills questions generation error:', error);
+        throw error;
+      }
+
+      if (data?.content) {
+        setSkillsTestDataCallback(data.content);
         toast.success('Skills assessment generated successfully!');
       } else {
+        console.error('No skills questions received:', data);
         throw new Error('No skills questions received');
       }
     } catch (error) {
@@ -82,29 +98,36 @@ export const useJobContentGeneration = () => {
     setInterviewQuestionsViewStateCallback: (state: any) => void,
     setGeneratedInterviewQuestionsCallback?: (questions: string) => void
   ) => {
+    console.log('Starting interview questions generation');
     setIsGeneratingCallback(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-interview-questions', {
+      const { data, error } = await supabase.functions.invoke('generate-job-content', {
         body: {
-          formData,
+          type: 'interview-questions',
+          jobData: formData,
           generatedJobPost,
           skillsTestData
         }
       });
 
-      if (error) throw error;
+      console.log('Interview questions generation response:', { data, error });
 
-      if (data?.questions) {
+      if (error) {
+        console.error('Interview questions generation error:', error);
+        throw error;
+      }
+
+      if (data?.content) {
         // Set the structured data for the editor
-        setInterviewQuestionsDataCallback(data.questions);
+        setInterviewQuestionsDataCallback(data.content);
         setInterviewQuestionsViewStateCallback({ isEditing: false, showJson: false });
         
         // IMPORTANT: Also set the raw generated text for database storage
         if (setGeneratedInterviewQuestionsCallback && data.rawQuestions) {
           setGeneratedInterviewQuestionsCallback(data.rawQuestions);
-        } else if (setGeneratedInterviewQuestionsCallback) {
+        } else if (setGeneratedInterviewQuestionsCallback && data.content?.questions) {
           // Fallback: convert structured questions to raw text format
-          const rawQuestions = data.questions.questions
+          const rawQuestions = data.content.questions
             .map((q: any, index: number) => `${index + 1}. ${q.question}`)
             .join('\n\n');
           setGeneratedInterviewQuestionsCallback(rawQuestions);
@@ -112,6 +135,7 @@ export const useJobContentGeneration = () => {
         
         toast.success('Interview questions generated successfully!');
       } else {
+        console.error('No interview questions received:', data);
         throw new Error('No interview questions received');
       }
     } catch (error) {
