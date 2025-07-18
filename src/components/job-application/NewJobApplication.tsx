@@ -44,37 +44,6 @@ export const NewJobApplication = () => {
   // Validation states
   const [stepValidations, setStepValidations] = useState<{ [key: number]: boolean }>({});
 
-  // Enhanced helper function to check if job has valid interview questions
-  const hasValidInterviewQuestions = (job: Job): boolean => {
-    if (!job.generated_interview_questions) {
-      console.log('No generated_interview_questions field');
-      return false;
-    }
-    
-    const questions = job.generated_interview_questions.trim();
-    if (!questions) {
-      console.log('Interview questions field is empty or whitespace');
-      return false;
-    }
-    
-    // Try to parse as JSON array first
-    try {
-      const parsed = JSON.parse(questions);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        console.log('Found interview questions as JSON array:', parsed.length, 'questions');
-        return true;
-      }
-    } catch (e) {
-      // Not JSON, might be plain text
-    }
-    
-    // Check if it's a string with content (fallback for plain text questions)
-    const hasContent = questions.length > 10; // Reasonable minimum for actual questions
-    console.log('Interview questions check - hasContent:', hasContent, 'length:', questions.length);
-    
-    return hasContent;
-  };
-
   // Fetch job data
   useEffect(() => {
     const fetchJob = async () => {
@@ -92,17 +61,13 @@ export const NewJobApplication = () => {
           .single();
         
         if (error) throw error;
-        
         console.log('Fetched job data:', {
           id: data.id,
           title: data.title,
-          status: data.status,
           hasSkillsTest: !!data.generated_test,
-          hasInterviewQuestions: hasValidInterviewQuestions(data),
-          interviewQuestionsRaw: data.generated_interview_questions,
+          hasInterviewQuestions: !!data.generated_interview_questions,
           interviewQuestionsLength: data.generated_interview_questions?.length || 0
         });
-        
         setJob(data);
       } catch (error) {
         console.error('Error fetching job:', error);
@@ -137,7 +102,7 @@ export const NewJobApplication = () => {
     );
   }
 
-  // Create step configuration with proper indexing and enhanced logging
+  // Create step configuration with proper indexing
   const createStepConfiguration = () => {
     const stepConfig = [
       { name: 'Overview', type: 'overview', enabled: true }
@@ -148,20 +113,15 @@ export const NewJobApplication = () => {
       
       if (job.generated_test) {
         stepConfig.push({ name: 'Skills Test', type: 'skills-test', enabled: true });
-        console.log('Added Skills Test step');
       }
       
-      if (hasValidInterviewQuestions(job)) {
+      if (job.generated_interview_questions && job.generated_interview_questions.trim()) {
         stepConfig.push({ name: 'Video Interview', type: 'video-interview', enabled: true });
-        console.log('Added Video Interview step');
-      } else {
-        console.log('Video Interview step NOT added - no valid questions found');
       }
       
       stepConfig.push({ name: 'Review & Submit', type: 'review-submit', enabled: true });
     }
 
-    console.log('Final step configuration:', stepConfig.map(s => s.name));
     return stepConfig;
   };
 
@@ -254,7 +214,6 @@ export const NewJobApplication = () => {
         );
       
       case 'video-interview':
-        console.log('Rendering VideoInterview component with questions:', job.generated_interview_questions);
         return (
           <VideoInterview
             questions={job.generated_interview_questions}
