@@ -172,25 +172,32 @@ const getIntelligentSalary = (
       const roleKey = title.toLowerCase().replace(/[^a-z]/g, '');
       const companySize = determineCompanySize(websiteData);
       
-      if (ENHANCED_SALARY_DATABASE.executive[roleKey]) {
-        salaryRange = ENHANCED_SALARY_DATABASE.executive[roleKey][companySize] || [150, 300];
+      const executiveRoleData = ENHANCED_SALARY_DATABASE.executive[roleKey as keyof typeof ENHANCED_SALARY_DATABASE.executive];
+      if (executiveRoleData) {
+        const rangeTuple = executiveRoleData[companySize as keyof typeof executiveRoleData];
+        if (rangeTuple && Array.isArray(rangeTuple) && rangeTuple.length >= 2) {
+          salaryRange = [rangeTuple[0], rangeTuple[1]];
+        }
       } else {
         // Default executive range based on company size
-        const executiveDefaults = {
+        const executiveDefaults: Record<string, [number, number]> = {
           'startup': [120, 250],
           'small': [150, 300],
           'medium': [200, 400],
           'large': [300, 600]
         };
-        salaryRange = executiveDefaults[companySize];
+        salaryRange = executiveDefaults[companySize] || [150, 300];
       }
     } else {
       // Regular role compensation
       const roleType = determineRoleType(title);
-      const roleMap = ENHANCED_SALARY_DATABASE.regular[roleType];
+      const roleMap = ENHANCED_SALARY_DATABASE.regular[roleType as keyof typeof ENHANCED_SALARY_DATABASE.regular];
       
       if (roleMap && roleMap[experienceLevel]) {
-        salaryRange = roleMap[experienceLevel];
+        const rangeTuple = roleMap[experienceLevel];
+        if (Array.isArray(rangeTuple) && rangeTuple.length >= 2) {
+          salaryRange = [rangeTuple[0], rangeTuple[1]];
+        }
       }
     }
 
@@ -212,7 +219,7 @@ const getIntelligentSalary = (
 };
 
 // Helper functions
-const determineCompanySize = (websiteData: CompanyAnalysisData | null): 'startup' | 'small' | 'medium' | 'large' => {
+const determineCompanySize = (websiteData: CompanyAnalysisData | null): string => {
   if (websiteData?.companySize) {
     const size = websiteData.companySize.toLowerCase();
     if (size.includes('startup') || size.includes('small')) return 'startup';

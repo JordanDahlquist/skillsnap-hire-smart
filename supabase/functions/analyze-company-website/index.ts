@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -86,7 +87,7 @@ serve(async (req) => {
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 12000); // Increased limit for better analysis
+      .slice(0, 15000); // Increased limit for deeper analysis
 
     // Extract potential company name from HTML structure
     const htmlCompanyName = extractCompanyFromHTML(html);
@@ -98,7 +99,7 @@ serve(async (req) => {
     console.log('Page title:', pageTitle);
     console.log('Domain company name:', domainCompanyName);
 
-    // Enhanced AI analysis with more comprehensive prompting
+    // Enhanced AI analysis with comprehensive content mining
     const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -110,49 +111,69 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at analyzing company websites to extract comprehensive information for intelligent job posting auto-population.
+            content: `You are an expert at analyzing company websites to extract comprehensive, compelling information for creating outstanding job postings.
 
 CRITICAL: You must respond with ONLY a valid JSON object, no markdown formatting, no backticks, no extra text.
 
-Extract comprehensive company information focusing on details that would help auto-populate job forms intelligently. Pay special attention to:
+Your mission is to deeply analyze this company's website and extract the most compelling, exciting, and unique information that would make someone genuinely excited to work there. Think like a top-tier recruiter who knows how to make companies sound amazing.
 
-1. COMPANY NAME: Extract the actual company name, not generic descriptions
-2. LOCATION: Look for headquarters, office locations, "based in", "located in" 
-3. TECHNOLOGIES: Extract specific tech stack, programming languages, frameworks, tools mentioned
-4. BENEFITS: Look for employee benefits, perks, compensation details
-5. COMPANY CULTURE: Extract values, work environment, company culture details
-6. INDUSTRY: Determine the primary industry/sector
-7. COMPANY SIZE: Look for employee count, company size indicators
-8. PRODUCTS/SERVICES: What the company does/offers
+DEEP CONTENT MINING REQUIREMENTS:
+1. **COMPANY ACHIEVEMENTS & AWARDS**: Look for any awards, recognitions, certifications, industry rankings, or accolades
+2. **IMPRESSIVE METRICS**: Extract growth numbers, client counts, revenue milestones, years in business, team size
+3. **NOTABLE CLIENTS/PARTNERSHIPS**: Identify big-name clients, partnerships, or collaborations mentioned
+4. **RECENT NEWS & MILESTONES**: Look for recent achievements, product launches, expansions, or exciting developments  
+5. **UNIQUE VALUE PROPOSITIONS**: What makes this company different, innovative, or industry-leading
+6. **COMPANY CULTURE HIGHLIGHTS**: Extract specific culture elements, values, work environment details
+7. **LEADERSHIP & EXPERTISE**: Notable team members, founders, or industry expertise mentioned
+8. **SOCIAL PROOF**: Testimonials, case studies, success stories, or client praise
+9. **MARKET POSITION**: Industry leadership, competitive advantages, or market recognition
+10. **EXCITING PROJECTS**: Innovative work, cutting-edge projects, or impressive portfolio pieces
 
-Additional context provided:
+ANALYSIS CONTEXT:
 - HTML extracted company name: ${htmlCompanyName}
 - Page title: ${pageTitle}
 - Domain-based name: ${domainCompanyName}
 
 Prioritize the HTML extracted name if it looks like a real company name.
 
-Respond with this exact JSON structure:
+RESPONSE FORMAT - Return this exact JSON structure with compelling, specific content:
 {
   "companyName": "Actual company name (prioritize HTML extracted if valid)",
   "location": "Primary location/headquarters if found",
-  "technologies": ["Array", "of", "specific", "technologies", "mentioned"],
-  "benefits": ["Array", "of", "employee", "benefits", "found"],
-  "industry": "Primary industry or sector",
-  "companySize": "startup/small/medium/large/enterprise or specific count if found",
-  "description": "2-3 sentence company description",
-  "culture": "Company culture and values summary",
-  "products": "Main products or services offered",
-  "summary": "Overall summary for job context"
-}`
+  "technologies": ["Array", "of", "specific", "technologies", "tools", "platforms"],
+  "benefits": ["Array", "of", "actual", "employee", "benefits", "NOT", "services"],
+  "industry": "Specific industry or sector",
+  "companySize": "Specific size info, employee count, or growth stage",
+  "description": "Compelling 2-3 sentence description highlighting what makes them exciting",
+  "culture": "Specific culture elements, values, and work environment details",
+  "products": "Main products, services, or solutions they offer",
+  "summary": "Engaging summary for job context that captures their uniqueness",
+  "achievements": ["Array", "of", "awards", "recognitions", "milestones", "achievements"],
+  "notableClients": ["Array", "of", "impressive", "clients", "partnerships", "if", "mentioned"],
+  "recentNews": ["Array", "of", "recent", "developments", "launches", "expansions"],
+  "uniqueSellingPoints": ["Array", "of", "what", "makes", "them", "special", "or", "innovative"],
+  "socialProof": ["Array", "of", "testimonials", "success", "stories", "case", "studies"],
+  "marketPosition": "Their position in the industry, competitive advantages, recognition",
+  "growthMetrics": ["Array", "of", "impressive", "numbers", "growth", "statistics"],
+  "leadershipHighlights": ["Array", "of", "notable", "team", "expertise", "founder", "info"]
+}
+
+CRITICAL INSTRUCTIONS:
+- Focus on extracting SPECIFIC, EXCITING, and COMPELLING information
+- Look for concrete achievements, not generic statements
+- Prioritize information that would make someone want to work there
+- Extract actual awards, specific client names, real numbers, concrete achievements
+- Make the company sound as exciting and appealing as possible based on factual content
+- If information isn't available, use empty arrays [] or null rather than making things up
+- Be specific and concrete, not generic or vague`
           },
           {
             role: 'user',
             content: `Website Content:\n${textContent}`
           }
         ],
-        temperature: 0.1,
-        max_tokens: 1500
+        temperature: 0.2,
+        max_tokens: 2000
       }),
     });
 
@@ -186,9 +207,16 @@ Respond with this exact JSON structure:
         companyData.companyName = domainCompanyName;
       }
       
-      // Ensure arrays exist
+      // Ensure arrays exist with fallbacks
       companyData.technologies = companyData.technologies || [];
       companyData.benefits = companyData.benefits || [];
+      companyData.achievements = companyData.achievements || [];
+      companyData.notableClients = companyData.notableClients || [];
+      companyData.recentNews = companyData.recentNews || [];
+      companyData.uniqueSellingPoints = companyData.uniqueSellingPoints || [];
+      companyData.socialProof = companyData.socialProof || [];
+      companyData.growthMetrics = companyData.growthMetrics || [];
+      companyData.leadershipHighlights = companyData.leadershipHighlights || [];
       
     } catch (error) {
       console.error('Failed to parse AI response as JSON:', error);
@@ -204,7 +232,15 @@ Respond with this exact JSON structure:
         description: textContent.slice(0, 300) + "...",
         culture: null,
         products: null,
-        summary: textContent.slice(0, 200) + "..."
+        summary: textContent.slice(0, 200) + "...",
+        achievements: [],
+        notableClients: [],
+        recentNews: [],
+        uniqueSellingPoints: [],
+        socialProof: [],
+        marketPosition: null,
+        growthMetrics: [],
+        leadershipHighlights: []
       };
     }
 
@@ -229,7 +265,15 @@ Respond with this exact JSON structure:
         description: null,
         culture: null,
         products: null,
-        summary: null
+        summary: null,
+        achievements: [],
+        notableClients: [],
+        recentNews: [],
+        uniqueSellingPoints: [],
+        socialProof: [],
+        marketPosition: null,
+        growthMetrics: [],
+        leadershipHighlights: []
       }),
       { 
         status: 500, 

@@ -51,6 +51,14 @@ export interface CompanyAnalysisData {
   culture: string;
   products: string;
   summary: string;
+  achievements: string[];
+  notableClients: string[];
+  recentNews: string[];
+  uniqueSellingPoints: string[];
+  socialProof: string[];
+  marketPosition: string;
+  growthMetrics: string[];
+  leadershipHighlights: string[];
 }
 
 export interface UnifiedJobCreatorState {

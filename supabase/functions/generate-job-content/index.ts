@@ -102,6 +102,73 @@ Excitement Level (${excited}/5): ${getExcitedTone(excited)}
   return instructions;
 };
 
+// Function to build compelling company context from website analysis
+const buildCompanyContext = (websiteAnalysisData: any) => {
+  if (!websiteAnalysisData) return '';
+  
+  let context = `
+**RICH COMPANY CONTEXT FOR COMPELLING JOB POST CREATION:**
+
+**Company Overview:**
+- Company: ${websiteAnalysisData.companyName || 'Unknown'}
+- Industry: ${websiteAnalysisData.industry || 'Not specified'}
+- Size: ${websiteAnalysisData.companySize || 'Not specified'}
+- Location: ${websiteAnalysisData.location || 'Not specified'}
+- Market Position: ${websiteAnalysisData.marketPosition || 'Not specified'}
+
+**What Makes Them Exciting:**`;
+
+  if (websiteAnalysisData.achievements && websiteAnalysisData.achievements.length > 0) {
+    context += `
+- **Awards & Achievements**: ${websiteAnalysisData.achievements.join(', ')}`;
+  }
+
+  if (websiteAnalysisData.growthMetrics && websiteAnalysisData.growthMetrics.length > 0) {
+    context += `
+- **Impressive Metrics**: ${websiteAnalysisData.growthMetrics.join(', ')}`;
+  }
+
+  if (websiteAnalysisData.notableClients && websiteAnalysisData.notableClients.length > 0) {
+    context += `
+- **Notable Clients/Partners**: ${websiteAnalysisData.notableClients.join(', ')}`;
+  }
+
+  if (websiteAnalysisData.recentNews && websiteAnalysisData.recentNews.length > 0) {
+    context += `
+- **Recent Developments**: ${websiteAnalysisData.recentNews.join(', ')}`;
+  }
+
+  if (websiteAnalysisData.uniqueSellingPoints && websiteAnalysisData.uniqueSellingPoints.length > 0) {
+    context += `
+- **What Makes Them Special**: ${websiteAnalysisData.uniqueSellingPoints.join(', ')}`;
+  }
+
+  if (websiteAnalysisData.socialProof && websiteAnalysisData.socialProof.length > 0) {
+    context += `
+- **Social Proof**: ${websiteAnalysisData.socialProof.join(', ')}`;
+  }
+
+  if (websiteAnalysisData.leadershipHighlights && websiteAnalysisData.leadershipHighlights.length > 0) {
+    context += `
+- **Leadership & Expertise**: ${websiteAnalysisData.leadershipHighlights.join(', ')}`;
+  }
+
+  context += `
+
+**Company Culture & Values:**
+${websiteAnalysisData.culture || 'Not specified'}
+
+**Products/Services:**
+${websiteAnalysisData.products || 'Not specified'}
+
+**Technologies Used:**
+${websiteAnalysisData.technologies ? websiteAnalysisData.technologies.join(', ') : 'Not specified'}
+
+**CRITICAL INSTRUCTION**: Use this rich context to create a COMPELLING, EXCITING job summary and "About ${websiteAnalysisData.companyName || 'Company'}" section that highlights their achievements, uniqueness, and what makes them an amazing place to work. Don't just copy this information - weave it naturally into engaging, persuasive content that makes candidates excited to apply.`;
+
+  return context;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -112,6 +179,7 @@ serve(async (req) => {
     console.log('Received request type:', type);
     console.log('Received job data:', jobData || formData);
     console.log('Received writing tone:', writingTone);
+    console.log('Website analysis data available:', !!websiteAnalysisData);
 
     let prompt = '';
     let responseKey = '';
@@ -138,13 +206,18 @@ serve(async (req) => {
       // Build tone instructions
       const toneInstructions = buildToneInstructions(writingTone);
       
+      // Build compelling company context
+      const companyContext = buildCompanyContext(websiteAnalysisData);
+      
       prompt = `CRITICAL WARNING: You MUST NOT include any application instructions, email addresses, or "How to Apply" sections. The job posting MUST end with the exact phrase specified below and NOTHING ELSE.
 
-Create a compelling and comprehensive job posting for a ${jobData.title} position at ${jobData.companyName}.
+You are creating a job posting that will make top talent excited to apply. Use the rich company information provided to create compelling, specific content that highlights what makes this company amazing.
 
 ${toneInstructions}
 
-**COMPANY AND ROLE DETAILS:**
+${companyContext}
+
+**CORE JOB DETAILS:**
 - Company: ${jobData.companyName}
 - Job Title: ${jobData.title}
 - Employment Type: ${jobData.employmentType} (CRITICAL: Must be clearly stated throughout)
@@ -172,39 +245,46 @@ ${jobData.jobOverview ? `User-provided overview: "${jobData.jobOverview}"` : 'No
 
       prompt += `
 
-**CRITICAL FORMATTING AND ENDING REQUIREMENTS:**
-1. Employment Type (${jobData.employmentType}) must be clearly stated in the opening section
-2. Work Arrangement (${workArrangementDisplay}) must be prominently featured in both the summary and requirements
-3. Include ALL provided information in appropriate sections
-4. If user provided a description, incorporate it meaningfully into the job posting
-5. Create distinct sections for: Job Summary, Key Responsibilities, Requirements, and Compensation
-6. Make the posting engaging and specific to ${jobData.companyName}
-7. For ${isProjectBased ? 'project-based' : 'employee'} positions, emphasize ${isProjectBased ? 'project scope and deliverables' : 'career growth and company culture'}
+**CRITICAL CONTENT CREATION REQUIREMENTS:**
+
+1. **COMPELLING JOB SUMMARY**: Create an engaging opening that:
+   - Highlights the most exciting aspects of the role and company
+   - Uses specific achievements, awards, or growth metrics from the company context
+   - Makes the opportunity sound genuinely exciting and unique
+   - Clearly states employment type (${jobData.employmentType}) and work arrangement (${workArrangementDisplay})
+
+2. **AMAZING "About ${jobData.companyName}" SECTION**: Create content that:
+   - Leads with the most impressive facts about the company (awards, achievements, growth)
+   - Highlights what makes them unique in their industry
+   - Mentions notable clients, partnerships, or recognitions if available
+   - Showcases company culture and what makes it a great place to work
+   - Uses specific, exciting details rather than generic company descriptions
+
+3. **ENGAGING KEY RESPONSIBILITIES**: Make the role sound impactful and meaningful
+
+4. **COMPELLING REQUIREMENTS**: Present requirements as opportunities for growth
+
+5. **ATTRACTIVE "What We Offer"**: Highlight the best aspects of compensation and benefits
 
 **STRUCTURE THE POSTING WITH THESE SECTIONS ONLY:**
-- **Job Summary** (include work arrangement and employment type)
-- **About ${jobData.companyName}** (brief company section)
-- **Key Responsibilities** 
-- **Requirements** (include experience level and required skills)
-- **What We Offer** (compensation and benefits)
+- **Job Summary** (compelling opening with work arrangement and employment type)
+- **About ${jobData.companyName}** (exciting company section using rich context)
+- **Key Responsibilities** (impactful role description)
+- **Requirements** (experience level and skills as growth opportunities)
+- **What We Offer** (attractive compensation and benefits)
 
 **ABSOLUTELY FORBIDDEN - DO NOT INCLUDE:**
 - "How to Apply" sections
 - Email addresses for applications
-- "Send your resume to" instructions
-- "Submit your application to" instructions
-- "Contact us at" for applications
 - Any application submission instructions
-- Links to external application sites
-- References to emailing CVs or resumes
+- Generic, boring company descriptions
+- Copying website content verbatim
 
 **MANDATORY ENDING:**
 End the job posting immediately after the "What We Offer" section with EXACTLY this call-to-action:
 "Ready to make an impact? Click the apply button below!"
 
-Do NOT add any additional sections, application instructions, or contact information after this call-to-action.
-
-Make this posting comprehensive, professional, and attractive to qualified ${jobData.experienceLevel} candidates for a ${workArrangementDisplay} ${jobData.employmentType} position.`;
+**FINAL INSTRUCTION**: Make this job posting so compelling and exciting that top talent will be genuinely excited to apply. Use the rich company context to create something special, not generic.`;
 
     } else if (type === 'skills-test') {
       responseKey = 'skillsTest';
@@ -435,15 +515,17 @@ Make the questions challenging but fair, and ensure they can be answered well wi
             role: 'system',
             content: type === 'skills-test' 
               ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with ## headers, numbered steps with **bold** phase names, bullet points, clear line breaks between sections, and DETAILED submission instructions about sharing public links. NO WALL OF TEXT ALLOWED - instructions must be properly structured and scannable with clear headers. MUST include comprehensive submission guidelines. ALWAYS return valid JSON in the exact format specified.'
-              : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
+              : type === 'job-post' 
+                ? 'You are an expert job posting writer who creates compelling, exciting job postings that make top talent want to apply. Use the rich company context provided to create specific, engaging content that highlights achievements, awards, and what makes the company amazing. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly. Make every job posting sound exciting and compelling using the company\'s actual achievements and unique qualities.'
+                : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.8,
-        max_tokens: type === 'skills-test' ? 2000 : 1500
+        temperature: type === 'job-post' ? 0.7 : 0.8, // Higher creativity for job posts
+        max_tokens: type === 'skills-test' ? 2000 : type === 'job-post' ? 1800 : 1500
       }),
     });
 
