@@ -72,7 +72,29 @@ Return JSON in this exact format:
     });
 
     const data = await response.json();
-    const parsedData = JSON.parse(data.choices[0].message.content);
+    const content = data.choices[0].message.content.trim();
+    
+    // Try to extract JSON from the response
+    let parsedData;
+    try {
+      // First try direct parsing
+      parsedData = JSON.parse(content);
+    } catch (error) {
+      // Try to extract JSON from markdown code blocks
+      const jsonMatch = content.match(/```json\n?(.*?)\n?```/s) || content.match(/\{.*\}/s);
+      if (jsonMatch) {
+        const jsonString = jsonMatch[1] || jsonMatch[0];
+        try {
+          parsedData = JSON.parse(jsonString);
+        } catch (innerError) {
+          console.error('Failed to parse extracted JSON:', innerError);
+          throw new Error('Could not extract valid JSON from AI response');
+        }
+      } else {
+        console.error('No JSON found in AI response:', content);
+        throw new Error('AI response does not contain valid JSON');
+      }
+    }
 
     return new Response(JSON.stringify({ parsedData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
