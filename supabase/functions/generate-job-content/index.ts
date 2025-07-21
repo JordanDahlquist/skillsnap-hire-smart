@@ -472,7 +472,28 @@ Create an integrated project that candidates will find engaging, realistic, and 
 
     } else if (type === 'interview-questions') {
       responseKey = 'questions';
-      prompt = `Create 3-5 hard-hitting interview questions for video responses based on this job posting:
+      
+      let companyContext = '';
+      if (websiteAnalysisData) {
+        companyContext = `
+**COMPANY INTELLIGENCE:**
+- Company: ${websiteAnalysisData.companyName || jobData.companyName}
+- Industry: ${websiteAnalysisData.industry || 'Not specified'}
+- Company Size: ${websiteAnalysisData.companySize || 'Not specified'}
+- Culture: ${websiteAnalysisData.culture || 'Not specified'}
+- Products/Services: ${websiteAnalysisData.products || 'Not specified'}
+- Technologies: ${websiteAnalysisData.technologies ? websiteAnalysisData.technologies.join(', ') : 'Not specified'}
+- Notable Achievements: ${websiteAnalysisData.achievements ? websiteAnalysisData.achievements.join(', ') : 'Not specified'}
+- Unique Selling Points: ${websiteAnalysisData.uniqueSellingPoints ? websiteAnalysisData.uniqueSellingPoints.join(', ') : 'Not specified'}
+
+`;
+      }
+      
+      prompt = `Create 3-5 hard-hitting interview questions for video responses based on this job posting and company context:
+
+${companyContext}
+
+**JOB POSTING:**
 
 ${existingJobPost}
 
@@ -493,6 +514,24 @@ Create questions that:
 4. Reveal personality and work style fit
 5. Are specific to the ${jobData.title} position at ${jobData.companyName}
 6. Consider the ${jobData.locationType} work arrangement requirements
+7. Leverage company-specific context (achievements, culture, industry position)
+
+**FORMATTING REQUIREMENTS:**
+Each question MUST include substantial content - no blank or minimal questions allowed.
+
+**QUALITY STANDARDS:**
+- Each question must be fully developed with specific, relevant content
+- Questions should be challenging but fair
+- Must be answerable within a 3-15 minute video response
+- Use company intelligence to make questions more specific and relevant
+- Ensure all questions have substantial, meaningful content - NO blank or incomplete questions
+
+Format each question clearly with context and what you're looking for in the response. These will be answered via video submission, so make them engaging and thought-provoking.
+
+Example format:
+**Question [Number]: [Descriptive Title]**
+[Detailed question text with specific context about the role, company, or industry challenges]
+*What we're looking for: [Brief explanation of ideal response]*
 
 Format each question clearly with context and what you're looking for in the response. These will be answered via video submission, so make them engaging and thought-provoking.
 
