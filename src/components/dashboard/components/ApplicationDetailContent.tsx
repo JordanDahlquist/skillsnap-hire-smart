@@ -1,340 +1,475 @@
-import { useEffect, useState } from "react";
-import { Application } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, User, Briefcase, GraduationCap, BookOpen, Link, Github, AlertTriangle, RefreshCw } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { constructResumeUrl } from "@/utils/resumeUploadUtils";
-import { ExternalLink } from "@/components/icons/external-link";
-import { AIAnalysisService } from "@/services/aiAnalysisService";
-import { DASHBOARD_ACTION_CONSTANTS } from "@/constants/dashboardActions";
-import { ResumeProcessingDiagnostic } from "@/components/ResumeProcessingDiagnostic";
+import { ExternalLink, ThumbsDown, RotateCcw, Mail, FileText, User, RefreshCw } from "lucide-react";
+import { StageSelector } from "../StageSelector";
+import { ApplicationRatingSection } from "./ApplicationRatingSection";
+import { VideoResponsePlayer } from "./VideoResponsePlayer";
+import { getTimeAgo } from "@/utils/dateUtils";
+import { Application } from "@/types";
+import { safeParseSkillsTestResponses, safeParseVideoTranscripts } from "@/utils/typeGuards";
+import { reprocessApplicationResume } from "@/utils/resumeReprocessingUtils";
+import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface ApplicationDetailContentProps {
   application: Application;
-  onUpdate: () => void;
+  getStatusColor: (status: string) => string;
+  getRatingStars: (rating: number | null) => JSX.Element[];
+  getTimeAgo: (dateString: string) => string;
+  isUpdating: boolean;
+  onManualRating: (rating: number) => void;
+  onReject: () => void;
+  onUnreject: () => void;
+  onEmail: () => void;
+  jobId: string;
+  onStageChange: (applicationId: string, newStage: string) => void;
 }
 
-export const ApplicationDetailContent = ({ application, onUpdate }: ApplicationDetailContentProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+export const ApplicationDetailContent = ({
+  application,
+  getStatusColor,
+  getRatingStars,
+  getTimeAgo,
+  isUpdating,
+  onManualRating,
+  onReject,
+  onUnreject,
+  onEmail,
+  jobId,
+  onStageChange
+}: ApplicationDetailContentProps) => {
+  const navigate = useNavigate();
+  const [isReprocessing, setIsReprocessing] = useState(false);
+  const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
+  const pipelineStage = application.pipeline_stage || 'applied';
 
-  const handleAnalyzeApplication = async () => {
-    setIsLoading(true);
+  // Parse skills test responses safely
+  const skillsResponses = safeParseSkillsTestResponses(application.skills_test_responses || []);
+
+  // Parse video transcripts safely
+  const skillsTranscripts = safeParseVideoTranscripts(application.skills_video_transcripts || []);
+  const interviewTranscripts = safeParseVideoTranscripts(application.interview_video_transcripts || []);
+
+  const handleViewFullProfile = () => {
+    console.log('Navigating to full profile:', `/jobs/${jobId}/candidate/${application.id}`);
+    navigate(`/jobs/${jobId}/candidate/${application.id}`);
+  };
+
+  const handleViewResume = () => {
+    console.log('Navigating to resume tab:', `/jobs/${jobId}/candidate/${application.id}?tab=resume`);
+    navigate(`/jobs/${jobId}/candidate/${application.id}?tab=resume`);
+  };
+
+  const handleReprocessResume = async () => {
+    setIsReprocessing(true);
     try {
-      const jobData = {
-        title: application.job_title || 'Unknown Job',
-        description: application.job_description || 'No description',
-        role_type: application.job_role_type || 'Unknown',
-        experience_level: application.job_experience_level || 'Entry',
-        required_skills: application.job_required_skills || 'None',
-        employment_type: application.job_employment_type || 'Full-time',
-        company_name: application.job_company_name || 'Unknown Company'
-      };
-
-      const result = await AIAnalysisService.analyzeApplication(application, jobData);
+      const result = await reprocessApplicationResume(application.id);
+      
       if (result.success) {
         toast({
-          title: "AI Analysis Complete",
-          description: "The application has been analyzed and updated.",
+          title: "Resume reprocessed successfully",
+          description: "The resume has been reprocessed and parsed. The page will refresh to show updated information.",
         });
-        onUpdate();
+        
+        // Refresh the page after a short delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
         toast({
-          title: "AI Analysis Failed",
-          description: result.error || "Failed to analyze application",
-          variant: "destructive"
+          title: "Resume reprocessing failed",
+          description: result.error || "Failed to reprocess the resume. Please try again.",
+          variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('Error analyzing application:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred during analysis.",
-        variant: "destructive"
+        title: "Error reprocessing resume",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsReprocessing(false);
     }
   };
 
-  const handleReprocessComplete = () => {
-    // Refresh the application data
-    onUpdate();
+  // Get transcript processing status display
+  const getTranscriptStatusDisplay = () => {
+    const status = application.transcript_processing_status;
+    const hasVideos = skillsResponses.some((r: any) => r.answerType === 'video') || 
+                     application.interview_video_url || 
+                     (Array.isArray(application.interview_video_responses) && application.interview_video_responses.length > 0);
+    
+    if (!hasVideos) return null;
+
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="text-yellow-600 text-xs">Transcripts Pending</Badge>;
+      case 'processing':
+        return <Badge variant="outline" className="text-blue-600 text-xs">Processing...</Badge>;
+      case 'completed':
+        return <Badge variant="outline" className="text-green-600 text-xs">Transcripts Ready</Badge>;
+      case 'failed':
+        return <Badge variant="outline" className="text-red-600 text-xs">Transcript Failed</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  // Get resume processing status display
+  const getResumeStatusDisplay = () => {
+    if (!application.resume_file_path) return null;
+    
+    if (application.parsed_resume_data) {
+      return <Badge variant="outline" className="text-green-600 text-xs">Resume Parsed</Badge>;
+    } else {
+      return <Badge variant="outline" className="text-red-600 text-xs">Resume Parse Failed</Badge>;
+    }
+  };
+
+  // Get unreject preview text
+  const getUnrejectPreview = () => {
+    const restoreStage = application.previous_pipeline_stage || 'applied';
+    const stageDisplayName = restoreStage.charAt(0).toUpperCase() + restoreStage.slice(1).replace('_', ' ');
+    return `Unreject (→ ${stageDisplayName})`;
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Basic Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Name</label>
-                  <p className="text-sm text-gray-600">{application.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Email</label>
-                  <p className="text-sm text-gray-600">{application.email}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Phone</label>
-                  <p className="text-sm text-gray-600">{application.phone || 'Not provided'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Location</label>
-                  <p className="text-sm text-gray-600">{application.location || 'Not provided'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="bg-card border border-border rounded-lg p-6 space-y-6">
+      {/* Redesigned Sleek Header */}
+      <div className="bg-gradient-to-r from-muted/30 to-muted/10 border border-border/30 rounded-xl p-4 -mx-2">
+        <div className="space-y-3">
+          
+          {/* Top: Candidate Name - Full Width */}
+          <div className="w-full">
+            <h2 className="text-xl font-bold text-foreground mb-1 break-words">
+              {application.name}
+            </h2>
+            <div className="text-sm text-muted-foreground">
+              <span className="whitespace-nowrap">Applied {getTimeAgo(application.created_at)}</span>
+            </div>
+          </div>
 
-          {/* Resume Processing Diagnostic */}
-          <ResumeProcessingDiagnostic
-            applicationId={application.id}
-            resumeFilePath={application.resume_file_path}
-            parsedResumeData={application.parsed_resume_data}
-            onReprocessComplete={handleReprocessComplete}
-          />
+          {/* Bottom: Status Badges and Action Buttons */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Left: Status Badges */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className={getStatusColor(displayStatus)}>
+                {displayStatus}
+              </Badge>
+              {getTranscriptStatusDisplay()}
+              {getResumeStatusDisplay()}
+            </div>
 
-          {/* Skills */}
-          {application.skills && application.skills.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  Skills
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {application.skills.map((skill: any, index: number) => (
-                    <Badge key={index}>{typeof skill === 'string' ? skill : skill.name || skill.skill || 'Unknown Skill'}</Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Work Experience */}
-          {application.work_experience && application.work_experience.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="w-5 h-5" />
-                  Work Experience
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {application.work_experience.map((experience: any, index: number) => (
-                  <div key={index} className="space-y-2">
-                    <p className="text-sm font-medium">{experience.title || experience.position || 'Unknown Position'} at {experience.company || experience.employer || 'Unknown Company'}</p>
-                    <p className="text-xs text-gray-500">{experience.start_date || experience.startDate || 'Unknown'} - {experience.end_date || experience.endDate || 'Present'}</p>
-                    <p className="text-sm text-gray-600">{experience.description || 'No description provided'}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Education */}
-          {application.education && application.education.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5" />
-                  Education
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {application.education.map((education: any, index: number) => (
-                  <div key={index} className="space-y-2">
-                    <p className="text-sm font-medium">{education.degree || 'Unknown Degree'} in {education.field || education.major || 'Unknown Field'} from {education.institution || education.school || 'Unknown Institution'}</p>
-                    <p className="text-xs text-gray-500">Graduated: {education.year || education.graduation_year || 'Unknown'}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Additional Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Link className="w-5 h-5" />
-                Additional Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {application.portfolio_url && (
-                <div>
-                  <label className="text-sm font-medium">Portfolio URL</label>
-                  <p className="text-sm text-gray-600">
-                    <a href={application.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:underline">
-                      {application.portfolio_url}
-                      <ExternalLink className="w-4 h-4 text-gray-500" />
-                    </a>
-                  </p>
-                </div>
-              )}
-              {application.linkedin_url && (
-                <div>
-                  <label className="text-sm font-medium">LinkedIn URL</label>
-                  <p className="text-sm text-gray-600">
-                    <a href={application.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:underline">
-                      {application.linkedin_url}
-                      <ExternalLink className="w-4 h-4 text-gray-500" />
-                    </a>
-                  </p>
-                </div>
-              )}
-              {application.github_url && (
-                <div>
-                  <label className="text-sm font-medium">GitHub URL</label>
-                  <p className="text-sm text-gray-600">
-                    <a href={application.github_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:underline">
-                      {application.github_url}
-                      <ExternalLink className="w-4 h-4 text-gray-500" />
-                    </a>
-                  </p>
-                </div>
-              )}
-              {application.cover_letter && (
-                <div>
-                  <label className="text-sm font-medium">Cover Letter</label>
-                  <p className="text-sm text-gray-600">{application.cover_letter}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          {/* Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-settings-2 w-5 h-5"
-                >
-                  <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" />
-                  <path d="M12 2v2" />
-                  <path d="M12 20v2" />
-                  <path d="M5.1 8h2" />
-                  <path d="M16.9 8h2" />
-                  <path d="M3.5 15.5l1.42 1.42" />
-                  <path d="M19.08 15.5l-1.42 1.42" />
-                </svg>
-                Actions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button variant="outline" className="w-full">
-                Edit Application
-              </Button>
-              <Button variant="destructive" className="w-full">
-                Delete Application
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* AI Analysis */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-brain w-5 h-5"
-                >
-                  <path d="M15 5v7" />
-                  <path d="m9 12 3-3 3 3" />
-                  <path d="M20 9s0-5-6-5" />
-                  <path d="M4 9s0-5 6-5" />
-                  <path d="M4 15s0 5 6 5" />
-                  <path d="M20 15s0 5-6 5" />
-                  <path d="M12 4v16" />
-                </svg>
-                AI Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {application.ai_rating && application.ai_summary ? (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">AI Rating: {application.ai_rating}</p>
-                  <p className="text-sm text-gray-600">{application.ai_summary}</p>
-                </div>
-              ) : (
-                <div className="text-sm text-gray-600">No AI analysis available.</div>
-              )}
+            {/* Right: Action Buttons */}
+            <div className="flex items-center gap-2 flex-wrap">
               <Button
+                size="sm"
                 variant="outline"
-                className="w-full"
-                onClick={handleAnalyzeApplication}
-                disabled={isLoading}
+                onClick={handleViewFullProfile}
+                className="h-9 px-3 border-border/50 hover:border-border"
               >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  "Analyze Application"
-                )}
+                <User className="w-4 h-4 mr-2" />
+                View Profile
               </Button>
-            </CardContent>
-          </Card>
-
-          {/* Resume */}
-          {application.resume_file_path && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Resume
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <a
-                  href={constructResumeUrl(application.resume_file_path)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex gap-2 items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-accent hover:text-accent-foreground"
+              
+              {application.resume_file_path && (
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  onClick={handleViewResume}
+                  className="h-9 px-3 border-border/50 hover:border-border"
                 >
-                  View Resume
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </CardContent>
-            </Card>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Resume
+                </Button>
+              )}
+
+              {/* Resume Reprocessing Button */}
+              {application.resume_file_path && !application.parsed_resume_data && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleReprocessResume}
+                  disabled={isReprocessing}
+                  className="h-9 px-3 border-yellow-200 text-yellow-600 hover:bg-yellow-50"
+                >
+                  {isReprocessing ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                  )}
+                  {isReprocessing ? 'Processing...' : 'Reprocess Resume'}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Show resume parsing status warning */}
+      {application.resume_file_path && !application.parsed_resume_data && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <RefreshCw className="w-4 h-4 text-yellow-600" />
+            <div>
+              <h4 className="text-sm font-medium text-yellow-800">Resume Parsing Issue</h4>
+              <p className="text-sm text-yellow-700 mt-1">
+                This candidate uploaded a resume, but it couldn't be parsed automatically. 
+                This means the AI analysis might not have access to their full work experience, 
+                education, and skills. Click "Reprocess Resume" to try parsing it again.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prominent Action Bar */}
+      <div className="bg-muted/20 border border-border rounded-lg p-4 -m-2 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
+            <StageSelector
+              jobId={jobId}
+              currentStage={pipelineStage}
+              applicationId={application.id}
+              onStageChange={onStageChange}
+              size="sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            {application.status === 'rejected' ? (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={onUnreject}
+                disabled={isUpdating}
+                className="border-green-200 text-green-600 hover:bg-green-50 h-9 px-4"
+                title={`Will restore to ${application.previous_pipeline_stage || 'applied'} stage`}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                {getUnrejectPreview()}
+              </Button>
+            ) : (
+              <Button 
+                size="sm"
+                onClick={onReject}
+                disabled={isUpdating}
+                className="bg-red-600 hover:bg-red-700 text-white h-9 px-4"
+              >
+                <ThumbsDown className="w-4 h-4 mr-2" />
+                Reject
+              </Button>
+            )}
+            <Button 
+              size="sm"
+              onClick={onEmail}
+              disabled={isUpdating}
+              className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Email
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Rating Section */}
+      <ApplicationRatingSection
+        manualRating={application.manual_rating}
+        aiRating={application.ai_rating}
+        onManualRating={onManualRating}
+        isUpdating={isUpdating}
+      />
+
+      {/* AI Summary with Enhanced Context */}
+      {application.ai_summary && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-foreground">AI Analysis</h3>
+            {(skillsTranscripts.length > 0 || interviewTranscripts.length > 0) && (
+              <Badge variant="outline" className="text-green-600">Enhanced with Video Analysis</Badge>
+            )}
+            {application.parsed_resume_data && (
+              <Badge variant="outline" className="text-blue-600">Based on Parsed Resume</Badge>
+            )}
+          </div>
+          <div className="p-4 bg-muted/30 rounded-lg border border-border">
+            <p className="text-foreground">{application.ai_summary}</p>
+            {application.transcript_last_processed_at && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Analysis includes video transcripts processed {getTimeAgo(application.transcript_last_processed_at)}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Contact Information */}
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">Email</label>
+            <p className="text-foreground">{application.email}</p>
+          </div>
+          {application.phone && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Phone</label>
+              <p className="text-foreground">{application.phone}</p>
+            </div>
+          )}
+          {application.location && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Location</label>
+              <p className="text-foreground">{application.location}</p>
+            </div>
+          )}
+          {application.portfolio_url && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">Portfolio</label>
+              <a 
+                href={application.portfolio_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                View Portfolio
+              </a>
+            </div>
+          )}
+          {application.linkedin_url && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">LinkedIn</label>
+              <a 
+                href={application.linkedin_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                View Profile
+              </a>
+            </div>
+          )}
+          {application.github_url && (
+            <div>
+              <label className="text-sm font-medium text-muted-foreground block mb-1">GitHub</label>
+              <a 
+                href={application.github_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                View Profile
+              </a>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Skills Assessment Responses - Truncated with Transcript Preview */}
+      {skillsResponses.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-foreground">Skills Assessment (Preview)</h3>
+          <div className="space-y-4">
+            {skillsResponses.slice(0, 1).map((response: any, index: number) => (
+              <div key={index} className="space-y-2">
+                <VideoResponsePlayer
+                  response={response}
+                  questionIndex={index}
+                  transcript={skillsTranscripts.length > index ? skillsTranscripts[index] : undefined}
+                />
+                {/* Show transcript preview if available */}
+                {skillsTranscripts.length > index && skillsTranscripts[index]?.transcript && (
+                  <div className="p-3 bg-muted/20 rounded border-l-4 border-blue-500">
+                    <h4 className="text-sm font-medium text-foreground mb-1">Video Transcript:</h4>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      "{skillsTranscripts[index].transcript}"
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+            {skillsResponses.length > 1 && (
+              <p className="text-sm text-muted-foreground">
+                +{skillsResponses.length - 1} more responses. 
+                <button
+                  onClick={handleViewFullProfile}
+                  className="text-blue-600 hover:underline ml-1 cursor-pointer"
+                >
+                  View full profile to see all.
+                </button>
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Cover Letter - Truncated */}
+      {application.cover_letter && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-foreground">Cover Letter (Preview)</h3>
+          <div className="p-4 bg-muted/30 rounded-lg border border-border">
+            <p className="text-foreground line-clamp-3">{application.cover_letter}</p>
+            {application.cover_letter.length > 200 && (
+              <button
+                onClick={handleViewFullProfile}
+                className="text-sm text-blue-600 hover:underline mt-2 cursor-pointer"
+              >
+                View full profile to read complete cover letter.
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Video Interview - Show if exists with Transcript Preview */}
+      {application.interview_video_url && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-foreground">Video Interview (Preview)</h3>
+          <div className="bg-black rounded-lg overflow-hidden">
+            <video
+              src={application.interview_video_url}
+              controls
+              className="w-full max-h-60 object-contain"
+              preload="metadata"
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          {/* Show transcript preview if available */}
+          {interviewTranscripts.length > 0 && interviewTranscripts[0]?.transcript && (
+            <div className="p-3 bg-muted/20 rounded border-l-4 border-green-500">
+              <h4 className="text-sm font-medium text-foreground mb-1">Interview Transcript:</h4>
+              <p className="text-sm text-muted-foreground line-clamp-3">
+                "{interviewTranscripts[0].transcript}"
+              </p>
+            </div>
+          )}
+          <button
+            onClick={handleViewFullProfile}
+            className="text-sm text-blue-600 hover:underline cursor-pointer"
+          >
+            View full profile for complete transcript and better video player experience.
+          </button>
+        </div>
+      )}
+
+      {/* Rejection Reason */}
+      {application.status === 'rejected' && application.rejection_reason && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-foreground">Rejection Reason</h3>
+          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-foreground">{application.rejection_reason}</p>
+            {application.previous_pipeline_stage && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Was previously in {application.previous_pipeline_stage} stage
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

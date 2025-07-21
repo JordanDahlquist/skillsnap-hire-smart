@@ -1,5 +1,5 @@
 
-// Enhanced PDF text extraction utilities
+// PDF text extraction utilities
 export function extractTextFromPDF(pdfBuffer: Uint8Array): string {
   try {
     const pdfString = new TextDecoder('latin1').decode(pdfBuffer);
