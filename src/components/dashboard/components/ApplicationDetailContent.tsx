@@ -208,6 +208,24 @@ export const ApplicationDetailContent = ({
             {(skillsTranscripts.length > 0 || interviewTranscripts.length > 0) && (
               <Badge variant="outline" className="text-green-600">Enhanced with Video Analysis</Badge>
             )}
+            {/* Show re-parse button if resume exists but no parsed data */}
+            {application.resume_file_path && !application.parsed_resume_data && (
+              <Button
+                onClick={async () => {
+                  const { reparseResumeForApplication } = await import('@/utils/reparseResume');
+                  const success = await reparseResumeForApplication(application.id, application.resume_file_path);
+                  if (success) {
+                    // Trigger a refresh of the data
+                    window.location.reload();
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                Update Resume Data
+              </Button>
+            )}
           </div>
           <div className="p-4 bg-muted/30 rounded-lg border border-border">
             <p className="text-foreground">{application.ai_summary}</p>
