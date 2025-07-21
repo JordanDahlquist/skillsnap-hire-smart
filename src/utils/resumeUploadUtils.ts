@@ -60,8 +60,8 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
         });
 
         if (parseError) {
-          console.warn('Resume visual analysis failed:', parseError);
-          return { url: publicUrl };
+          console.error('Resume visual analysis failed:', parseError);
+          throw new Error(`Resume analysis failed: ${parseError.message}`);
         }
 
         if (parseResult?.parsedData) {
@@ -70,10 +70,13 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
             url: publicUrl,
             parsedData: parseResult.parsedData
           };
+        } else {
+          console.warn('No parsed data returned from analysis');
+          return { url: publicUrl };
         }
       } catch (parseError) {
-        console.warn('Resume parsing failed, but upload succeeded:', parseError);
-        return { url: publicUrl };
+        console.error('Resume parsing failed:', parseError);
+        throw parseError; // Re-throw to let the caller handle it
       }
     }
 
@@ -117,7 +120,7 @@ export const reprocessResumeWithVisualAnalysis = async (resumeUrl: string): Prom
 
     if (parseError) {
       console.error('Resume re-processing failed:', parseError);
-      throw new Error(parseError.message);
+      throw new Error(`Resume analysis failed: ${parseError.message}`);
     }
 
     if (parseResult?.parsedData) {
@@ -125,6 +128,7 @@ export const reprocessResumeWithVisualAnalysis = async (resumeUrl: string): Prom
       return parseResult.parsedData;
     }
 
+    console.warn('No parsed data returned from re-processing');
     return null;
   } catch (error) {
     console.error('Error re-processing resume:', error);

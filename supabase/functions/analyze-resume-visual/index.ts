@@ -54,10 +54,23 @@ serve(async (req) => {
     // Create Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
+    // Extract filename from URL - handle both full URLs and relative paths
+    let fileName: string;
+    if (resumeUrl.includes('/storage/v1/object/public/application-files/')) {
+      fileName = resumeUrl.split('/').pop() || '';
+    } else if (resumeUrl.startsWith('http')) {
+      fileName = resumeUrl.split('/').pop() || '';
+    } else {
+      // Assume it's already a filename
+      fileName = resumeUrl;
+    }
+
+    console.log('Downloading file:', fileName);
+
     // Download the PDF file from Supabase Storage
     const { data: fileData, error: downloadError } = await supabase.storage
       .from('application-files')
-      .download(resumeUrl.split('/').pop() || '');
+      .download(fileName);
 
     if (downloadError) {
       console.error('Error downloading file:', downloadError);

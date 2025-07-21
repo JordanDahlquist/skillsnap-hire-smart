@@ -65,11 +65,11 @@ export const BatchResumeReprocessor = ({
         const parsedData = await reprocessResumeWithVisualAnalysis(application.resume_file_path!);
 
         if (parsedData) {
-          // Update the application with the new parsed data
+          // Update the application with the new parsed data (cast to any for Json compatibility)
           const { error: updateError } = await supabase
             .from('applications')
             .update({
-              parsed_resume_data: parsedData,
+              parsed_resume_data: parsedData as any,
               updated_at: new Date().toISOString()
             })
             .eq('id', application.id);
