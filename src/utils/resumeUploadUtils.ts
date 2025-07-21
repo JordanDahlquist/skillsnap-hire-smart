@@ -31,19 +31,40 @@ const extractTextFromFile = async (file: File): Promise<string> => {
   const fileType = file.type;
   
   if (fileType === 'application/pdf') {
-    // For PDF files, we'll need to use a text extraction library
-    // For now, return a basic extraction notice
-    return `PDF file: ${file.name} (${file.size} bytes)`;
+    try {
+      // Use the new PDF extraction edge function
+      const formData = new FormData();
+      formData.append('pdf', file);
+      
+      const { data, error } = await supabase.functions.invoke('extract-pdf-text', {
+        body: formData
+      });
+      
+      if (error) {
+        console.error('PDF extraction error:', error);
+        throw new Error(`PDF extraction failed: ${error.message}`);
+      }
+      
+      if (!data?.success || !data?.text) {
+        throw new Error('Failed to extract text from PDF');
+      }
+      
+      console.log(`Successfully extracted ${data.text.length} characters from PDF`);
+      return data.text;
+    } catch (error) {
+      console.error('Error extracting PDF text:', error);
+      throw new Error('Failed to extract text from PDF. Please ensure the PDF contains readable text.');
+    }
   } else if (fileType === 'text/plain') {
     // For text files, read directly
     return await file.text();
   } else if (fileType.includes('document')) {
     // For Word documents, we'll need mammoth or similar
     // For now, return a basic extraction notice
-    return `Word document: ${file.name} (${file.size} bytes)`;
+    return `Word document: ${file.name} (${file.size} bytes) - Word document parsing not yet implemented`;
   }
   
-  return `File: ${file.name} (${file.size} bytes)`;
+  return `Unsupported file type: ${fileType}`;
 };
 
 export const uploadResumeFile = async (file: File): Promise<{ url: string; parsedData?: ParsedResumeData }> => {
@@ -67,19 +88,37 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
       .getPublicUrl(fileName);
 
     // Extract actual text from the file
+    console.log('Extracting text from file...');
     const extractedText = await extractTextFromFile(file);
-    console.log('Extracted text from file:', extractedText);
+    console.log('Extracted text length:', extractedText.length);
+
+    if (!extractedText || extractedText.length < 10) {
+      console.warn('No meaningful text extracted from file');
+      return { url: publicUrl };
+    }
 
     try {
       // Parse resume using AI with real extracted text
-      const { data: parseResult } = await supabase.functions.invoke('parse-resume', {
+      console.log('Sending text to parse-resume function...');
+      const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-resume', {
         body: { resumeText: extractedText }
       });
 
-      return {
-        url: publicUrl,
-        parsedData: parseResult?.parsedData
-      };
+      if (parseError) {
+        console.error('Parse error:', parseError);
+        throw parseError;
+      }
+
+      if (parseResult?.parsedData) {
+        console.log('Successfully parsed resume data');
+        return {
+          url: publicUrl,
+          parsedData: parseResult.parsedData
+        };
+      } else {
+        console.warn('No parsed data returned from parse-resume function');
+        return { url: publicUrl };
+      }
     } catch (parseError) {
       console.warn('Resume parsing failed, but upload succeeded:', parseError);
       return { url: publicUrl };
@@ -108,4 +147,51 @@ export const constructResumeUrl = (filePath: string): string => {
   
   // If it contains slashes but isn't a full URL, assume it's a relative path from the bucket
   return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
+};
+
+// Function to re-process existing resumes that failed to parse
+export const reprocessResumeFile = async (resumeUrl: string): Promise<{ success: boolean; parsedData?: ParsedResumeData; error?: string }> => {
+  try {
+    console.log('Re-processing resume from URL:', resumeUrl);
+    
+    // Fetch the file from the URL
+    const response = await fetch(resumeUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch resume: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    const file = new File([blob], 'resume.pdf', { type: 'application/pdf' });
+    
+    // Extract text from the file
+    const extractedText = await extractTextFromFile(file);
+    
+    if (!extractedText || extractedText.length < 10) {
+      throw new Error('No meaningful text could be extracted from the resume');
+    }
+    
+    // Parse the extracted text
+    const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-resume', {
+      body: { resumeText: extractedText }
+    });
+    
+    if (parseError) {
+      throw parseError;
+    }
+    
+    if (parseResult?.parsedData) {
+      return {
+        success: true,
+        parsedData: parseResult.parsedData
+      };
+    } else {
+      throw new Error('No parsed data returned from parse-resume function');
+    }
+  } catch (error) {
+    console.error('Resume re-processing failed:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
 };

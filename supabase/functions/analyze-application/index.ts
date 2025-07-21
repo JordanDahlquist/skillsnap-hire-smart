@@ -26,22 +26,21 @@ serve(async (req) => {
       if (Array.isArray(data) && data.length === 0) return `${title}: Not provided`;
       if (typeof data === 'object' && Object.keys(data).length === 0) return `${title}: Not provided`;
       
-      // Truncate large objects to prevent payload bloat
       const dataStr = JSON.stringify(data, null, 1);
-      if (dataStr.length > 1000) {
-        return `${title}: ${dataStr.substring(0, 1000)}... [truncated]`;
+      if (dataStr.length > 1200) {
+        return `${title}: ${dataStr.substring(0, 1200)}... [truncated]`;
       }
       return `${title}: ${dataStr}`;
     };
 
-    // Helper function to format video transcripts more efficiently
+    // Helper function to format video transcripts
     const formatTranscripts = (transcripts: any[]): string => {
       if (!transcripts || transcripts.length === 0) return 'No transcripts available';
       
       return transcripts.slice(0, 3).map((transcript, index) => {
         const transcriptText = transcript.transcript || 'No transcript';
-        const truncatedTranscript = transcriptText.length > 500 
-          ? transcriptText.substring(0, 500) + '...' 
+        const truncatedTranscript = transcriptText.length > 600 
+          ? transcriptText.substring(0, 600) + '...' 
           : transcriptText;
         
         return `Q${index + 1}: ${transcript.questionText || 'Unknown Question'}
@@ -51,69 +50,115 @@ Quality: ${transcript.confidence ? `${Math.round(transcript.confidence * 100)}%`
       }).join('\n');
     };
 
-    // Build streamlined analysis prompt
-    const analysisPrompt = `You are an expert technical recruiter. Analyze this job application comprehensively.
+    // Determine data source priority and quality
+    const dataSourceInfo = (() => {
+      const sources = [];
+      let dataQuality = 'Basic';
+      
+      if (applicationData.has_parsed_resume && applicationData.resume_parsing_status === 'success') {
+        sources.push('✓ Professional Resume (PDF parsed)');
+        dataQuality = 'Comprehensive';
+      } else if (applicationData.resume_file_path) {
+        sources.push('⚠ Resume file present but parsing failed');
+        dataQuality = 'Limited';
+      }
+      
+      if (applicationData.has_video_transcripts) {
+        sources.push('✓ Video Interview Transcripts');
+        dataQuality = dataQuality === 'Comprehensive' ? 'Excellent' : 'Good';
+      }
+      
+      if (applicationData.work_experience?.length > 0) {
+        sources.push('✓ Work Experience Details');
+      }
+      
+      if (applicationData.education?.length > 0) {
+        sources.push('✓ Education Background');
+      }
+      
+      return { sources, dataQuality };
+    })();
+
+    // Build comprehensive analysis prompt with prioritized resume data
+    const analysisPrompt = `You are an expert technical recruiter analyzing a job application. 
+
+DATA QUALITY: ${dataSourceInfo.dataQuality}
+DATA SOURCES: ${dataSourceInfo.sources.join(', ')}
 
 JOB REQUIREMENTS:
 Position: ${jobData.title}
-Role: ${jobData.roleType || jobData.role_type}
-Experience: ${jobData.experienceLevel || jobData.experience_level}
-Skills: ${jobData.required_skills}
+Role Type: ${jobData.role_type}
+Experience Level: ${jobData.experience_level}
+Required Skills: ${jobData.required_skills}
 Company: ${jobData.company_name || 'Not specified'}
+Employment: ${jobData.employment_type}
 
-Description: ${jobData.description?.substring(0, 800) || 'Not provided'}
+Job Description: ${jobData.description?.substring(0, 1000) || 'Not provided'}
 
 CANDIDATE PROFILE:
 Name: ${applicationData.name}
 Email: ${applicationData.email}
-Experience: ${applicationData.experience || 'Not provided'}
+Location: ${applicationData.location || 'Not provided'}
 
-${applicationData.has_parsed_resume ? 'RESUME DATA (Extracted from PDF):' : ''}
-${applicationData.professional_summary ? `Professional Summary: ${applicationData.professional_summary.substring(0, 400)}` : ''}
+${applicationData.has_parsed_resume ? 'RESUME DATA (PRIMARY SOURCE - PDF Parsed):' : 'MANUAL APPLICATION DATA:'}
+${applicationData.professional_summary ? `Professional Summary: ${applicationData.professional_summary.substring(0, 600)}` : ''}
 ${applicationData.total_experience ? `Total Experience: ${applicationData.total_experience}` : ''}
 
-PROFESSIONAL BACKGROUND:
-${formatSection('Work Experience', applicationData.work_experience)}
-${formatSection('Education', applicationData.education)}
-${formatSection('Skills', applicationData.skills)}
+WORK EXPERIENCE ${applicationData.has_parsed_resume ? '(From Resume)' : '(Manual Entry)'}:
+${formatSection('Experience', applicationData.work_experience)}
 
-RESPONSES:
-Cover Letter: ${applicationData.cover_letter?.substring(0, 500) || 'Not provided'}
-Tech Challenge: ${applicationData.answer_1?.substring(0, 300) || 'Not answered'}
-Problem Solving: ${applicationData.answer_2?.substring(0, 300) || 'Not answered'}
-Communication: ${applicationData.answer_3?.substring(0, 300) || 'Not answered'}
+EDUCATION ${applicationData.has_parsed_resume ? '(From Resume)' : '(Manual Entry)'}:
+${formatSection('Education', applicationData.education)}
+
+SKILLS ${applicationData.has_parsed_resume ? '(From Resume)' : '(Manual Entry)'}:
+${formatSection('Technical Skills', applicationData.skills)}
+
+ADDITIONAL RESPONSES:
+Cover Letter: ${applicationData.cover_letter?.substring(0, 700) || 'Not provided'}
+Portfolio: ${applicationData.portfolio_url || 'Not provided'}
+LinkedIn: ${applicationData.linkedin_url || 'Not provided'}
+GitHub: ${applicationData.github_url || 'Not provided'}
+
+ASSESSMENT RESPONSES:
+Tech Challenge: ${applicationData.answer_1?.substring(0, 400) || 'Not answered'}
+Problem Solving: ${applicationData.answer_2?.substring(0, 400) || 'Not answered'}
+Communication: ${applicationData.answer_3?.substring(0, 400) || 'Not answered'}
 
 VIDEO ANALYSIS:
-Has Video: ${applicationData.has_video_content ? 'Yes' : 'No'}
-Video Count: ${applicationData.video_response_count || 0}
+Has Video Content: ${applicationData.has_video_content ? 'Yes' : 'No'}
+Video Response Count: ${applicationData.video_response_count || 0}
 
 ${applicationData.has_video_transcripts ? 
-  `VIDEO TRANSCRIPTS:\n${formatTranscripts(applicationData.skills_video_transcripts || [])}${formatTranscripts(applicationData.interview_video_transcripts || [])}` : 
+  `VIDEO TRANSCRIPTS (High Value Data):\n${formatTranscripts(applicationData.skills_video_transcripts || [])}${formatTranscripts(applicationData.interview_video_transcripts || [])}` : 
   'No video transcripts available'}
 
 EVALUATION FRAMEWORK:
-1. Technical Competency (25%): Skill alignment, experience depth, portfolio quality
-2. Communication & Video (30%): Clarity, technical explanation ability, professional presentation  
-3. Experience Fit (20%): Years of experience, industry relevance, role progression
-4. Problem-Solving (15%): Technical challenges, analytical thinking, creativity
-5. Completeness (10%): Application effort, response quality, attention to detail
+1. Technical Competency (30%): Skills alignment, experience depth, technical knowledge
+2. Experience Match (25%): Years of experience, industry relevance, role progression
+3. Communication & Presentation (20%): Video performance, written communication, clarity
+4. Problem-Solving Ability (15%): Technical challenges, analytical thinking, creativity
+5. Application Quality (10%): Completeness, effort, professionalism
+
+${applicationData.has_parsed_resume ? 
+  'ANALYSIS PRIORITY: Resume data is primary source (PDF parsed). Weight heavily.' : 
+  'ANALYSIS NOTE: Limited to manual application data. Resume parsing failed or unavailable.'}
 
 ${applicationData.has_video_transcripts ? 
-  'FOCUS: Weight video analysis heavily as it provides authentic candidate insight.' : 
-  'NOTE: Focus on written responses and traditional materials.'}
+  'FOCUS: Video analysis available - assess communication skills and technical explanation ability.' : 
+  'FOCUS: No video content - rely on written materials and structured responses.'}
 
 RATING SCALE (1.0-3.0):
-- 1.0-1.5: Below expectations - significant gaps
-- 1.6-2.4: Meets expectations - adequate fit  
-- 2.5-3.0: Exceeds expectations - strong candidate
+- 1.0-1.5: Below expectations - significant gaps or poor fit
+- 1.6-2.4: Meets expectations - adequate fit with some strengths
+- 2.5-3.0: Exceeds expectations - strong candidate with excellent fit
 
-Provide JSON response:
+Provide comprehensive analysis in JSON format:
 {
-  "summary": "3-4 sentence analysis highlighting key strengths, job alignment, and recommendation",
-  "rating": 2.8
+  "summary": "4-5 sentence analysis highlighting key strengths, experience relevance, skill alignment, and overall recommendation based on available data",
+  "rating": 2.4
 }`
 
-    console.log('Calling OpenAI for application analysis:', applicationData.name)
+    console.log('Calling OpenAI for enhanced application analysis:', applicationData.name)
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -126,14 +171,14 @@ Provide JSON response:
         messages: [
           {
             role: 'system',
-            content: 'You are an expert technical recruiter with 15+ years of experience. Provide accurate, fair candidate assessments in the exact JSON format requested.'
+            content: 'You are an expert technical recruiter with 20+ years of experience in candidate evaluation. Provide thorough, fair, and actionable candidate assessments. Focus on job-relevance and potential. Return only valid JSON in the exact format requested.'
           },
           {
             role: 'user',
             content: analysisPrompt
           }
         ],
-        max_tokens: 600,
+        max_tokens: 800,
         temperature: 0.2,
       }),
     })
@@ -151,7 +196,7 @@ Provide JSON response:
       const content = data.choices[0].message.content.trim()
       console.log('Raw OpenAI response:', content)
       
-      // Try to extract JSON if it's wrapped in markdown
+      // Extract JSON from various formats
       const jsonMatch = content.match(/```json\n?(.*?)\n?```/s) || content.match(/\{.*\}/s)
       const jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : content
       
@@ -173,10 +218,12 @@ Provide JSON response:
       analysis.rating = Math.max(1.0, Math.min(3.0, analysis.rating))
     }
 
-    console.log('Analysis completed successfully:', {
+    console.log('Enhanced analysis completed successfully:', {
       name: applicationData.name,
       rating: analysis.rating,
-      summaryLength: analysis.summary.length
+      summaryLength: analysis.summary.length,
+      dataQuality: dataSourceInfo.dataQuality,
+      hasParsedResume: applicationData.has_parsed_resume
     })
 
     return new Response(
@@ -187,7 +234,7 @@ Provide JSON response:
       },
     )
   } catch (error) {
-    console.error('Error in application analysis:', error)
+    console.error('Error in enhanced application analysis:', error)
     return new Response(
       JSON.stringify({ 
         error: error.message,

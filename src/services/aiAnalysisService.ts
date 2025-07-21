@@ -36,16 +36,17 @@ interface StreamlinedAnalysisData {
   interview_video_transcripts?: any[];
   has_video_transcripts?: boolean;
   
-  // Structured Data (simplified)
+  // Structured Data (prioritized from resume)
   skills?: string[];
   work_experience?: any[];
   education?: any[];
   
-  // Resume Data (from PDF parsing)
+  // Resume Data (from PDF parsing) - PRIORITIZED
   resume_file_path?: string;
   professional_summary?: string;
   total_experience?: string;
   has_parsed_resume?: boolean;
+  resume_parsing_status?: string;
 }
 
 interface StreamlinedJobData {
@@ -93,59 +94,76 @@ export class AIAnalysisService {
       
       const hasVideoTranscripts = skillsTranscripts.length > 0 || interviewTranscripts.length > 0;
 
-      // Process resume data first (from PDF parsing)
+      // Process resume data (PRIORITIZED - this is the key fix)
       let resumeData = null;
-      if (application.parsed_resume_data) {
-        try {
-          resumeData = typeof application.parsed_resume_data === 'string' 
-            ? JSON.parse(application.parsed_resume_data) 
-            : application.parsed_resume_data;
-        } catch (e) {
-          console.warn('Failed to parse resume data:', e);
+      let resumeParsingStatus = 'none';
+      
+      if (application.resume_file_path) {
+        if (application.parsed_resume_data) {
+          try {
+            resumeData = typeof application.parsed_resume_data === 'string' 
+              ? JSON.parse(application.parsed_resume_data) 
+              : application.parsed_resume_data;
+            resumeParsingStatus = 'success';
+            console.log('Successfully loaded parsed resume data for:', application.name);
+          } catch (e) {
+            console.warn('Failed to parse resume data for:', application.name, e);
+            resumeParsingStatus = 'failed';
+          }
+        } else {
+          resumeParsingStatus = 'missing';
+          console.warn('Resume file exists but no parsed data for:', application.name);
         }
       }
 
-      // Process structured data (prioritize parsed resume data)
+      // Process structured data (PRIORITIZE parsed resume data over manual input)
       const processedSkills = (() => {
-        // First try parsed resume skills
-        if (resumeData?.skills && Array.isArray(resumeData.skills)) {
-          return resumeData.skills.slice(0, 15);
+        // First prioritize parsed resume skills
+        if (resumeData?.skills && Array.isArray(resumeData.skills) && resumeData.skills.length > 0) {
+          console.log('Using resume skills for:', application.name);
+          return resumeData.skills.slice(0, 20);
         }
-        // Fall back to application skills
-        return Array.isArray(application.skills) 
-          ? application.skills.slice(0, 10).map((skill: any) => 
-              typeof skill === 'string' ? skill : skill?.name || skill?.skill || 'Unknown skill'
-            ).filter(Boolean)
-          : [];
+        // Fall back to manual application skills
+        if (Array.isArray(application.skills) && application.skills.length > 0) {
+          console.log('Using manual skills for:', application.name);
+          return application.skills.slice(0, 15).map((skill: any) => 
+            typeof skill === 'string' ? skill : skill?.name || skill?.skill || 'Unknown skill'
+          ).filter(Boolean);
+        }
+        return [];
       })();
 
       const processedWorkExperience = (() => {
-        // First try parsed resume work experience
-        if (resumeData?.workExperience && Array.isArray(resumeData.workExperience)) {
-          return resumeData.workExperience.slice(0, 5).map((exp: any) => ({
+        // First prioritize parsed resume work experience
+        if (resumeData?.workExperience && Array.isArray(resumeData.workExperience) && resumeData.workExperience.length > 0) {
+          console.log('Using resume work experience for:', application.name);
+          return resumeData.workExperience.slice(0, 8).map((exp: any) => ({
             company: exp?.company || 'Unknown company',
             position: exp?.position || 'Unknown position',
             duration: exp?.startDate && exp?.endDate 
               ? `${exp.startDate} - ${exp.endDate}` 
               : exp?.duration || 'Duration not specified',
-            description: exp?.description?.substring(0, 300) || 'No description provided'
+            description: exp?.description?.substring(0, 400) || 'No description provided'
           }));
         }
-        // Fall back to application work experience
-        return Array.isArray(application.work_experience) 
-          ? application.work_experience.slice(0, 5).map((exp: any) => ({
-              company: exp?.company || exp?.employer || 'Unknown company',
-              position: exp?.title || exp?.position || 'Unknown position',
-              duration: exp?.duration || `${exp?.start_date || 'Unknown'} - ${exp?.end_date || 'Present'}`,
-              description: exp?.description?.substring(0, 200) || 'No description provided'
-            })).filter(exp => exp.company !== 'Unknown company' || exp.position !== 'Unknown position')
-          : [];
+        // Fall back to manual application work experience
+        if (Array.isArray(application.work_experience) && application.work_experience.length > 0) {
+          console.log('Using manual work experience for:', application.name);
+          return application.work_experience.slice(0, 6).map((exp: any) => ({
+            company: exp?.company || exp?.employer || 'Unknown company',
+            position: exp?.title || exp?.position || 'Unknown position',
+            duration: exp?.duration || `${exp?.start_date || 'Unknown'} - ${exp?.end_date || 'Present'}`,
+            description: exp?.description?.substring(0, 300) || 'No description provided'
+          })).filter(exp => exp.company !== 'Unknown company' || exp.position !== 'Unknown position');
+        }
+        return [];
       })();
 
       const processedEducation = (() => {
-        // First try parsed resume education
-        if (resumeData?.education && Array.isArray(resumeData.education)) {
-          return resumeData.education.slice(0, 3).map((edu: any) => ({
+        // First prioritize parsed resume education
+        if (resumeData?.education && Array.isArray(resumeData.education) && resumeData.education.length > 0) {
+          console.log('Using resume education for:', application.name);
+          return resumeData.education.slice(0, 5).map((edu: any) => ({
             institution: edu?.institution || 'Unknown institution',
             degree: edu?.degree || 'Unknown degree',
             field: edu?.field || 'Unknown field',
@@ -153,22 +171,34 @@ export class AIAnalysisService {
             gpa: edu?.gpa || 'Not specified'
           }));
         }
-        // Fall back to application education
-        return Array.isArray(application.education) 
-          ? application.education.slice(0, 3).map((edu: any) => ({
-              institution: edu?.institution || edu?.school || 'Unknown institution',
-              degree: edu?.degree || 'Unknown degree',
-              field: edu?.field || edu?.major || 'Unknown field',
-              year: edu?.year || edu?.graduation_year || 'Unknown year'
-            })).filter(edu => edu.institution !== 'Unknown institution' || edu.degree !== 'Unknown degree')
-          : [];
+        // Fall back to manual application education
+        if (Array.isArray(application.education) && application.education.length > 0) {
+          console.log('Using manual education for:', application.name);
+          return application.education.slice(0, 4).map((edu: any) => ({
+            institution: edu?.institution || edu?.school || 'Unknown institution',
+            degree: edu?.degree || 'Unknown degree',
+            field: edu?.field || edu?.major || 'Unknown field',
+            year: edu?.year || edu?.graduation_year || 'Unknown year'
+          })).filter(edu => edu.institution !== 'Unknown institution' || edu.degree !== 'Unknown degree');
+        }
+        return [];
       })();
 
-      // Extract professional summary from parsed resume
+      // Extract professional summary from parsed resume (PRIORITIZED)
       const professionalSummary = resumeData?.summary || '';
       const totalExperience = resumeData?.totalExperience || '';
 
-      // Create streamlined analysis data (remove previous AI data for re-analysis)
+      // Log what data we're working with
+      console.log('Data summary for', application.name, {
+        hasResumeFile: !!application.resume_file_path,
+        hasParsedData: !!resumeData,
+        skillsCount: processedSkills.length,
+        experienceCount: processedWorkExperience.length,
+        educationCount: processedEducation.length,
+        resumeParsingStatus
+      });
+
+      // Create streamlined analysis data
       const analysisData: StreamlinedAnalysisData = {
         // Basic Info
         name: application.name,
@@ -202,16 +232,17 @@ export class AIAnalysisService {
         interview_video_transcripts: interviewTranscripts.length > 0 ? interviewTranscripts : undefined,
         has_video_transcripts: hasVideoTranscripts,
         
-        // Structured Data (simplified)
+        // Structured Data (PRIORITIZED from resume)
         skills: processedSkills.length > 0 ? processedSkills : undefined,
         work_experience: processedWorkExperience.length > 0 ? processedWorkExperience : undefined,
         education: processedEducation.length > 0 ? processedEducation : undefined,
         
-        // Resume Data
+        // Resume Data (PRIORITIZED)
         resume_file_path: application.resume_file_path || undefined,
         professional_summary: professionalSummary || undefined,
         total_experience: totalExperience || undefined,
         has_parsed_resume: !!resumeData,
+        resume_parsing_status: resumeParsingStatus,
       };
 
       const jobData: StreamlinedJobData = {
@@ -269,8 +300,8 @@ export class AIAnalysisService {
   }
 
   static async processBatch(applications: Application[], job: Job): Promise<{ successCount: number; errorCount: number }> {
-    const BATCH_SIZE = 2; // Reduced batch size for more reliable processing
-    const BATCH_DELAY = 2000; // Increased delay between batches
+    const BATCH_SIZE = 2; // Keep batch size small for stability
+    const BATCH_DELAY = 2000; // 2 second delay between batches
     let successCount = 0;
     let errorCount = 0;
 
