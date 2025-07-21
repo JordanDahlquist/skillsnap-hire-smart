@@ -187,16 +187,7 @@ export const ApplicationDetail = ({
       <>
         <ApplicationDetailContent
           application={selectedApplication}
-          getStatusColor={(status: string) => getStatusColor(status, selectedApplication.manual_rating)}
-          getRatingStars={getRatingStars}
-          getTimeAgo={getTimeAgo}
-          isUpdating={isUpdating || isRejecting}
-          onManualRating={handleManualRating}
-          onReject={handleReject}
-          onUnreject={handleUnreject}
-          onEmail={handleEmail}
-          jobId={job.id}
-          onStageChange={handleStageChange}
+          onUpdate={onApplicationUpdate || (() => {})}
         />
 
         {/* Only show bulk email modal if there are multiple selected applications */}

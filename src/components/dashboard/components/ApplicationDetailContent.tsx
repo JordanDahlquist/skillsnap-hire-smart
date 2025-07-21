@@ -4,10 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, User, Briefcase, GraduationCap, BookOpen, Link, Github, AlertTriangle, RefreshCw } from "lucide-react";
+import { CheckCircle, User, Briefcase, GraduationCap, BookOpen, Link, Github, AlertTriangle, RefreshCw, FileText, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { constructResumeUrl } from "@/utils/resumeUploadUtils";
-import { ExternalLink } from "@/components/icons/external-link";
 import { AIAnalysisService } from "@/services/aiAnalysisService";
 import { DASHBOARD_ACTION_CONSTANTS } from "@/constants/dashboardActions";
 import { ResumeProcessingDiagnostic } from "@/components/ResumeProcessingDiagnostic";
@@ -24,14 +23,33 @@ export const ApplicationDetailContent = ({ application, onUpdate }: ApplicationD
   const handleAnalyzeApplication = async () => {
     setIsLoading(true);
     try {
+      // For now, we'll use basic job data since the Application type doesn't have job details
       const jobData = {
-        title: application.job_title || 'Unknown Job',
-        description: application.job_description || 'No description',
-        role_type: application.job_role_type || 'Unknown',
-        experience_level: application.job_experience_level || 'Entry',
-        required_skills: application.job_required_skills || 'None',
-        employment_type: application.job_employment_type || 'Full-time',
-        company_name: application.job_company_name || 'Unknown Company'
+        id: 'unknown',
+        user_id: 'unknown',
+        title: 'Job Analysis',
+        description: 'Analyzing candidate fit',
+        role_type: 'Unknown',
+        experience_level: 'Entry',
+        duration: null,
+        budget: null,
+        required_skills: 'General skills',
+        generated_job_post: null,
+        generated_test: null,
+        status: 'active',
+        location_type: 'remote',
+        country: null,
+        state: null,
+        region: null,
+        city: null,
+        employment_type: 'project',
+        ai_mini_description: null,
+        company_name: 'Company',
+        generated_interview_questions: null,
+        view_count: 0,
+        interview_video_max_length: 5,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       const result = await AIAnalysisService.analyzeApplication(application, jobData);
@@ -108,7 +126,7 @@ export const ApplicationDetailContent = ({ application, onUpdate }: ApplicationD
           />
 
           {/* Skills */}
-          {application.skills && application.skills.length > 0 && (
+          {application.skills && Array.isArray(application.skills) && (application.skills as any[]).length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -118,7 +136,7 @@ export const ApplicationDetailContent = ({ application, onUpdate }: ApplicationD
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-2">
-                  {application.skills.map((skill: any, index: number) => (
+                  {(application.skills as any[]).map((skill: any, index: number) => (
                     <Badge key={index}>{typeof skill === 'string' ? skill : skill.name || skill.skill || 'Unknown Skill'}</Badge>
                   ))}
                 </div>
@@ -127,7 +145,7 @@ export const ApplicationDetailContent = ({ application, onUpdate }: ApplicationD
           )}
 
           {/* Work Experience */}
-          {application.work_experience && application.work_experience.length > 0 && (
+          {application.work_experience && Array.isArray(application.work_experience) && (application.work_experience as any[]).length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -136,7 +154,7 @@ export const ApplicationDetailContent = ({ application, onUpdate }: ApplicationD
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {application.work_experience.map((experience: any, index: number) => (
+                {(application.work_experience as any[]).map((experience: any, index: number) => (
                   <div key={index} className="space-y-2">
                     <p className="text-sm font-medium">{experience.title || experience.position || 'Unknown Position'} at {experience.company || experience.employer || 'Unknown Company'}</p>
                     <p className="text-xs text-gray-500">{experience.start_date || experience.startDate || 'Unknown'} - {experience.end_date || experience.endDate || 'Present'}</p>
@@ -148,7 +166,7 @@ export const ApplicationDetailContent = ({ application, onUpdate }: ApplicationD
           )}
 
           {/* Education */}
-          {application.education && application.education.length > 0 && (
+          {application.education && Array.isArray(application.education) && (application.education as any[]).length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -157,7 +175,7 @@ export const ApplicationDetailContent = ({ application, onUpdate }: ApplicationD
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {application.education.map((education: any, index: number) => (
+                {(application.education as any[]).map((education: any, index: number) => (
                   <div key={index} className="space-y-2">
                     <p className="text-sm font-medium">{education.degree || 'Unknown Degree'} in {education.field || education.major || 'Unknown Field'} from {education.institution || education.school || 'Unknown Institution'}</p>
                     <p className="text-xs text-gray-500">Graduated: {education.year || education.graduation_year || 'Unknown'}</p>
