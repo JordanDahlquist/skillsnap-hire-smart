@@ -45,7 +45,7 @@ export const reprocessApplicationResume = async (applicationId: string): Promise
     const { error: updateError } = await supabase
       .from('applications')
       .update({
-        parsed_resume_data: result.parsedData,
+        parsed_resume_data: result.parsedData as any,
         updated_at: new Date().toISOString()
       })
       .eq('id', applicationId);
