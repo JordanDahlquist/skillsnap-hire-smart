@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Upload, X, Loader2 } from "lucide-react";
+import { FileText, Upload, X, Loader2, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { uploadResumeFile, ParsedResumeData } from "@/utils/resumeUploadUtils";
 
@@ -65,8 +65,8 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
       if (result.parsedData) {
         onResumeData(result.parsedData, result.url);
         toast({
-          title: "Resume uploaded successfully",
-          description: "Your document has been processed and is ready for preview.",
+          title: "Resume processed successfully",
+          description: "Your resume has been analyzed using advanced visual AI and is ready for preview.",
         });
       } else {
         // Still pass the URL even if parsing failed
@@ -81,7 +81,9 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
         
         toast({
           title: "Resume uploaded",
-          description: "Document uploaded successfully. You can preview it and fill the form manually.",
+          description: file.type === 'application/pdf' 
+            ? "PDF uploaded successfully. Visual analysis may have encountered issues. You can re-process it later or fill the form manually."
+            : "Document uploaded successfully. You can preview it and fill the form manually.",
         });
       }
     } catch (error) {
@@ -103,7 +105,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">Document uploaded successfully</span>
+              <span className="text-sm font-medium text-green-800">Resume processed with visual AI</span>
             </div>
             <Button
               variant="ghost"
@@ -115,7 +117,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
             </Button>
           </div>
           <p className="text-xs text-green-600 mt-1">
-            Your document is ready for preview and any extracted information has been filled in the form.
+            Your resume has been analyzed using advanced visual AI technology for better accuracy.
           </p>
         </CardContent>
       </Card>
@@ -135,14 +137,24 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
         <div className="text-center">
           {isProcessing ? (
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              <p className="text-sm text-gray-600">Processing document...</p>
+              <div className="flex items-center gap-2">
+                <Eye className="w-5 h-5 text-blue-600" />
+                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+              </div>
+              <p className="text-sm text-gray-600">Analyzing resume with visual AI...</p>
+              <p className="text-xs text-gray-500">This may take 10-15 seconds for better accuracy</p>
             </div>
           ) : (
             <>
-              <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Upload className="w-6 h-6 text-gray-400" />
+                <Eye className="w-5 h-5 text-blue-500" />
+              </div>
               <p className="text-sm font-medium text-gray-700 mb-1">
-                Upload your resume for auto-fill
+                Upload your resume for AI analysis
+              </p>
+              <p className="text-xs text-gray-500 mb-1">
+                Now powered by advanced visual AI for better accuracy
               </p>
               <p className="text-xs text-gray-500 mb-3">
                 Drag and drop or click to select a PDF, Word, or text document

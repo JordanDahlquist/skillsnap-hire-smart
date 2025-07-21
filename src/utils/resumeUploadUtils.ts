@@ -27,25 +27,6 @@ export interface ParsedResumeData {
   totalExperience: string;
 }
 
-const extractTextFromFile = async (file: File): Promise<string> => {
-  const fileType = file.type;
-  
-  if (fileType === 'application/pdf') {
-    // For PDF files, we'll need to use a text extraction library
-    // For now, return a basic extraction notice
-    return `PDF file: ${file.name} (${file.size} bytes)`;
-  } else if (fileType === 'text/plain') {
-    // For text files, read directly
-    return await file.text();
-  } else if (fileType.includes('document')) {
-    // For Word documents, we'll need mammoth or similar
-    // For now, return a basic extraction notice
-    return `Word document: ${file.name} (${file.size} bytes)`;
-  }
-  
-  return `File: ${file.name} (${file.size} bytes)`;
-};
-
 export const uploadResumeFile = async (file: File): Promise<{ url: string; parsedData?: ParsedResumeData }> => {
   try {
     // Upload file to Supabase Storage
@@ -66,24 +47,39 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
       .from('application-files')
       .getPublicUrl(fileName);
 
-    // Extract actual text from the file
-    const extractedText = await extractTextFromFile(file);
-    console.log('Extracted text from file:', extractedText);
+    console.log('File uploaded to:', publicUrl);
 
-    try {
-      // Parse resume using AI with real extracted text
-      const { data: parseResult } = await supabase.functions.invoke('parse-resume', {
-        body: { resumeText: extractedText }
-      });
+    // Only attempt parsing for PDF files
+    if (file.type === 'application/pdf') {
+      try {
+        console.log('Analyzing PDF resume with visual AI...');
+        
+        // Use the new visual analysis function
+        const { data: parseResult, error: parseError } = await supabase.functions.invoke('analyze-resume-visual', {
+          body: { resumeUrl: publicUrl }
+        });
 
-      return {
-        url: publicUrl,
-        parsedData: parseResult?.parsedData
-      };
-    } catch (parseError) {
-      console.warn('Resume parsing failed, but upload succeeded:', parseError);
-      return { url: publicUrl };
+        if (parseError) {
+          console.warn('Resume visual analysis failed:', parseError);
+          return { url: publicUrl };
+        }
+
+        if (parseResult?.parsedData) {
+          console.log('Successfully parsed resume data:', parseResult.parsedData);
+          return {
+            url: publicUrl,
+            parsedData: parseResult.parsedData
+          };
+        }
+      } catch (parseError) {
+        console.warn('Resume parsing failed, but upload succeeded:', parseError);
+        return { url: publicUrl };
+      }
     }
+
+    // For non-PDF files, just return the URL
+    return { url: publicUrl };
+
   } catch (error) {
     console.error('Resume upload failed:', error);
     throw error;
@@ -108,4 +104,30 @@ export const constructResumeUrl = (filePath: string): string => {
   
   // If it contains slashes but isn't a full URL, assume it's a relative path from the bucket
   return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
+};
+
+// Function to re-process existing resumes with visual analysis
+export const reprocessResumeWithVisualAnalysis = async (resumeUrl: string): Promise<ParsedResumeData | null> => {
+  try {
+    console.log('Re-processing resume with visual analysis:', resumeUrl);
+    
+    const { data: parseResult, error: parseError } = await supabase.functions.invoke('analyze-resume-visual', {
+      body: { resumeUrl }
+    });
+
+    if (parseError) {
+      console.error('Resume re-processing failed:', parseError);
+      throw new Error(parseError.message);
+    }
+
+    if (parseResult?.parsedData) {
+      console.log('Successfully re-processed resume:', parseResult.parsedData);
+      return parseResult.parsedData;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error re-processing resume:', error);
+    throw error;
+  }
 };

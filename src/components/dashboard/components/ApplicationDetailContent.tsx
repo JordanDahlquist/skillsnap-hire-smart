@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { ExternalLink, ThumbsDown, RotateCcw, Mail, FileText, User } from "lucid
 import { StageSelector } from "../StageSelector";
 import { ApplicationRatingSection } from "./ApplicationRatingSection";
 import { VideoResponsePlayer } from "./VideoResponsePlayer";
+import { ResumeReprocessor } from "@/components/ResumeReprocessor";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Application } from "@/types";
 import { safeParseSkillsTestResponses, safeParseVideoTranscripts } from "@/utils/typeGuards";
@@ -191,6 +191,20 @@ export const ApplicationDetailContent = ({
           </div>
         </div>
       </div>
+
+      {/* Resume Reprocessor - New Section */}
+      {application.resume_file_path && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-foreground">Resume Analysis</h3>
+          <ResumeReprocessor 
+            application={application} 
+            onSuccess={() => {
+              // Trigger a refresh of the application data
+              window.location.reload();
+            }}
+          />
+        </div>
+      )}
 
       {/* Rating Section */}
       <ApplicationRatingSection
