@@ -61,6 +61,25 @@ const EXECUTIVE_CONTEXT = {
   ]
 };
 
+// Capitalize company name properly
+const capitalizeCompanyName = (companyName: string): string => {
+  return companyName
+    .toLowerCase()
+    .split(' ')
+    .map(word => {
+      // Keep common business words lowercase unless at start
+      const lowercaseWords = ['and', 'or', 'of', 'the', 'for', 'in', 'on', 'at', 'to', 'a', 'an'];
+      if (lowercaseWords.includes(word)) {
+        return word;
+      }
+      // Capitalize first letter of each word
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ')
+    // Always capitalize first word
+    .replace(/^[a-z]/, match => match.toUpperCase());
+};
+
 // Smart company name extraction with priority logic
 const extractCompanyName = (overview: string, websiteData: CompanyAnalysisData | null): string => {
   console.log('=== SMART COMPANY NAME EXTRACTION ===');
@@ -80,18 +99,20 @@ const extractCompanyName = (overview: string, websiteData: CompanyAnalysisData |
   for (const pattern of companyPatterns) {
     const match = overview.match(pattern);
     if (match && match[1]) {
-      const companyName = match[1].trim().replace(/[,.]$/, '');
-      if (companyName.length > 1 && !['Inc', 'LLC', 'Corp', 'Ltd'].includes(companyName)) {
-        console.log('Extracted company from overview:', companyName);
-        return companyName;
+      const rawCompanyName = match[1].trim().replace(/[,.]$/, '');
+      if (rawCompanyName.length > 1 && !['Inc', 'LLC', 'Corp', 'Ltd'].includes(rawCompanyName)) {
+        const capitalizedName = capitalizeCompanyName(rawCompanyName);
+        console.log('Extracted company from overview:', capitalizedName);
+        return capitalizedName;
       }
     }
   }
 
   // Priority 2: Use website analysis data if available and makes sense
   if (websiteData?.companyName && websiteData.companyName.length > 2) {
-    console.log('Using website company name:', websiteData.companyName);
-    return websiteData.companyName;
+    const capitalizedName = capitalizeCompanyName(websiteData.companyName);
+    console.log('Using website company name:', capitalizedName);
+    return capitalizedName;
   }
 
   console.log('No company name extracted');
