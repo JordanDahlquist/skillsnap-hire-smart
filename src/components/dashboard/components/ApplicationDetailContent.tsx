@@ -1,16 +1,14 @@
+
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ThumbsDown, RotateCcw, Mail, FileText, User, RefreshCw } from "lucide-react";
+import { ExternalLink, ThumbsDown, RotateCcw, Mail, FileText, User } from "lucide-react";
 import { StageSelector } from "../StageSelector";
 import { ApplicationRatingSection } from "./ApplicationRatingSection";
 import { VideoResponsePlayer } from "./VideoResponsePlayer";
 import { getTimeAgo } from "@/utils/dateUtils";
 import { Application } from "@/types";
 import { safeParseSkillsTestResponses, safeParseVideoTranscripts } from "@/utils/typeGuards";
-import { reprocessApplicationResume } from "@/utils/resumeReprocessingUtils";
-import { toast } from "@/hooks/use-toast";
-import { useState } from "react";
 
 interface ApplicationDetailContentProps {
   application: Application;
@@ -40,7 +38,6 @@ export const ApplicationDetailContent = ({
   onStageChange
 }: ApplicationDetailContentProps) => {
   const navigate = useNavigate();
-  const [isReprocessing, setIsReprocessing] = useState(false);
   const displayStatus = application.status === "reviewed" && !application.manual_rating ? "pending" : application.status;
   const pipelineStage = application.pipeline_stage || 'applied';
 
@@ -59,39 +56,6 @@ export const ApplicationDetailContent = ({
   const handleViewResume = () => {
     console.log('Navigating to resume tab:', `/jobs/${jobId}/candidate/${application.id}?tab=resume`);
     navigate(`/jobs/${jobId}/candidate/${application.id}?tab=resume`);
-  };
-
-  const handleReprocessResume = async () => {
-    setIsReprocessing(true);
-    try {
-      const result = await reprocessApplicationResume(application.id);
-      
-      if (result.success) {
-        toast({
-          title: "Resume reprocessed successfully",
-          description: "The resume has been reprocessed and parsed. The page will refresh to show updated information.",
-        });
-        
-        // Refresh the page after a short delay
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      } else {
-        toast({
-          title: "Resume reprocessing failed",
-          description: result.error || "Failed to reprocess the resume. Please try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error reprocessing resume",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsReprocessing(false);
-    }
   };
 
   // Get transcript processing status display
@@ -114,17 +78,6 @@ export const ApplicationDetailContent = ({
         return <Badge variant="outline" className="text-red-600 text-xs">Transcript Failed</Badge>;
       default:
         return null;
-    }
-  };
-
-  // Get resume processing status display
-  const getResumeStatusDisplay = () => {
-    if (!application.resume_file_path) return null;
-    
-    if (application.parsed_resume_data) {
-      return <Badge variant="outline" className="text-green-600 text-xs">Resume Parsed</Badge>;
-    } else {
-      return <Badge variant="outline" className="text-red-600 text-xs">Resume Parse Failed</Badge>;
     }
   };
 
@@ -159,7 +112,6 @@ export const ApplicationDetailContent = ({
                 {displayStatus}
               </Badge>
               {getTranscriptStatusDisplay()}
-              {getResumeStatusDisplay()}
             </div>
 
             {/* Right: Action Buttons */}
@@ -185,45 +137,10 @@ export const ApplicationDetailContent = ({
                   Resume
                 </Button>
               )}
-
-              {/* Resume Reprocessing Button */}
-              {application.resume_file_path && !application.parsed_resume_data && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleReprocessResume}
-                  disabled={isReprocessing}
-                  className="h-9 px-3 border-yellow-200 text-yellow-600 hover:bg-yellow-50"
-                >
-                  {isReprocessing ? (
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                  )}
-                  {isReprocessing ? 'Processing...' : 'Reprocess Resume'}
-                </Button>
-              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Show resume parsing status warning */}
-      {application.resume_file_path && !application.parsed_resume_data && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <RefreshCw className="w-4 h-4 text-yellow-600" />
-            <div>
-              <h4 className="text-sm font-medium text-yellow-800">Resume Parsing Issue</h4>
-              <p className="text-sm text-yellow-700 mt-1">
-                This candidate uploaded a resume, but it couldn't be parsed automatically. 
-                This means the AI analysis might not have access to their full work experience, 
-                education, and skills. Click "Reprocess Resume" to try parsing it again.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Prominent Action Bar */}
       <div className="bg-muted/20 border border-border rounded-lg p-4 -m-2 mb-4">
@@ -290,9 +207,6 @@ export const ApplicationDetailContent = ({
             <h3 className="text-lg font-semibold text-foreground">AI Analysis</h3>
             {(skillsTranscripts.length > 0 || interviewTranscripts.length > 0) && (
               <Badge variant="outline" className="text-green-600">Enhanced with Video Analysis</Badge>
-            )}
-            {application.parsed_resume_data && (
-              <Badge variant="outline" className="text-blue-600">Based on Parsed Resume</Badge>
             )}
           </div>
           <div className="p-4 bg-muted/30 rounded-lg border border-border">
