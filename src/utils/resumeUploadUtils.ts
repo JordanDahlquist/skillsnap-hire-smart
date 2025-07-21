@@ -32,11 +32,11 @@ const extractTextFromFile = async (file: File): Promise<string> => {
   
   if (fileType === 'application/pdf') {
     try {
-      // Use the new PDF extraction edge function
+      // Use the enhanced PDF extraction edge function
       const formData = new FormData();
       formData.append('pdf', file);
       
-      const { data, error } = await supabase.functions.invoke('extract-pdf-text', {
+      const { data, error } = await supabase.functions.invoke('parse-pdf-content', {
         body: formData
       });
       
