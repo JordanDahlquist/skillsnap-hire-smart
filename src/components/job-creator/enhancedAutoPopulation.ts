@@ -119,6 +119,64 @@ const extractCompanyName = (overview: string, websiteData: CompanyAnalysisData |
   return '';
 };
 
+// Smart location extraction with proper formatting
+const extractLocation = (overview: string): string => {
+  console.log('=== SMART LOCATION EXTRACTION ===');
+  
+  // Location patterns to match various formats
+  const locationPatterns = [
+    // "in [City, Country]" or "in [City]"
+    /\bin\s+([A-Z][a-zA-Z\s,.-]+?)(?:\s+(?:australia|usa|uk|canada|germany|france|italy|spain|netherlands|sweden|norway|denmark|finland|switzerland|austria|belgium|ireland|new zealand|singapore|japan|south korea|india|brazil|mexico|argentina|chile|peru|colombia|venezuela|ecuador|bolivia|uruguay|paraguay|guyana|suriname|french guiana))\b/i,
+    // "located in [Location]"
+    /located\s+in\s+([A-Z][a-zA-Z\s,.-]+?)(?:\s|$|[,.])/i,
+    // "based in [Location]"
+    /based\s+in\s+([A-Z][a-zA-Z\s,.-]+?)(?:\s|$|[,.])/i,
+    // "[City], [Country]" pattern
+    /\b([A-Z][a-zA-Z\s]+),\s*(australia|usa|uk|canada|germany|france|italy|spain|netherlands|sweden|norway|denmark|finland|switzerland|austria|belgium|ireland|new zealand|singapore|japan|south korea|india|brazil|mexico|argentina|chile|peru|colombia|venezuela|ecuador|bolivia|uruguay|paraguay|guyana|suriname|french guiana)\b/i,
+    // Simple "in [City] [Country]" pattern
+    /\bin\s+([a-zA-Z\s]+)\s+(australia|usa|uk|canada|germany|france|italy|spain|netherlands|sweden|norway|denmark|finland|switzerland|austria|belgium|ireland|new zealand|singapore|japan|south korea|india|brazil|mexico|argentina|chile|peru|colombia|venezuela|ecuador|bolivia|uruguay|paraguay|guyana|suriname|french guiana)\b/i
+  ];
+
+  for (const pattern of locationPatterns) {
+    const match = overview.match(pattern);
+    if (match) {
+      let location = '';
+      
+      if (pattern.source.includes('([a-zA-Z\\s]+)\\s+(australia')) {
+        // Pattern 5: "in melbourne australia"
+        const city = match[1].trim();
+        const country = match[2].trim();
+        location = `${capitalizeLocation(city)}, ${capitalizeLocation(country)}`;
+      } else if (match[2]) {
+        // Pattern 4: "melbourne, australia"
+        const city = match[1].trim();
+        const country = match[2].trim();
+        location = `${capitalizeLocation(city)}, ${capitalizeLocation(country)}`;
+      } else if (match[1]) {
+        // Other patterns
+        location = capitalizeLocation(match[1].trim().replace(/[,.]$/, ''));
+      }
+      
+      if (location && location.length > 2) {
+        console.log('Extracted location:', location);
+        return location;
+      }
+    }
+  }
+
+  console.log('No location extracted');
+  return '';
+};
+
+// Capitalize location properly
+const capitalizeLocation = (location: string): string => {
+  return location
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 // Smart job title extraction with executive role detection
 const extractJobTitle = (overview: string): { title: string; isExecutive: boolean } => {
   console.log('=== SMART JOB TITLE EXTRACTION ===');
@@ -342,11 +400,19 @@ export const enhancedAutoPopulateFromOverview = (
     }
   }
 
+  // 3. Smart location extraction
+  if (!currentFormData.location?.trim()) {
+    const extractedLocation = extractLocation(overview);
+    if (extractedLocation) {
+      updates.location = extractedLocation;
+    }
+  }
+
   // 4. Intelligent salary calculation
   const finalTitle = updates.title || currentFormData.title;
   const finalExperienceLevel = updates.experienceLevel || currentFormData.experienceLevel;
   const finalEmploymentType = updates.employmentType || currentFormData.employmentType;
-  const finalLocation = currentFormData.location || 'Remote';
+  const finalLocation = updates.location || currentFormData.location || 'Remote';
   const isExecutiveRole = updates.experienceLevel === 'executive' || finalExperienceLevel === 'executive';
 
   if (finalTitle && finalEmploymentType !== 'project' && !currentFormData.salary?.trim()) {
