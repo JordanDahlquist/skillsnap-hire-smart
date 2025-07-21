@@ -68,6 +68,10 @@ Name: ${applicationData.name}
 Email: ${applicationData.email}
 Experience: ${applicationData.experience || 'Not provided'}
 
+${applicationData.has_parsed_resume ? 'RESUME DATA (Extracted from PDF):' : ''}
+${applicationData.professional_summary ? `Professional Summary: ${applicationData.professional_summary.substring(0, 400)}` : ''}
+${applicationData.total_experience ? `Total Experience: ${applicationData.total_experience}` : ''}
+
 PROFESSIONAL BACKGROUND:
 ${formatSection('Work Experience', applicationData.work_experience)}
 ${formatSection('Education', applicationData.education)}

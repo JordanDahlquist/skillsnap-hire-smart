@@ -41,8 +41,11 @@ interface StreamlinedAnalysisData {
   work_experience?: any[];
   education?: any[];
   
-  // Resume
+  // Resume Data (from PDF parsing)
   resume_file_path?: string;
+  professional_summary?: string;
+  total_experience?: string;
+  has_parsed_resume?: boolean;
 }
 
 interface StreamlinedJobData {
@@ -90,30 +93,80 @@ export class AIAnalysisService {
       
       const hasVideoTranscripts = skillsTranscripts.length > 0 || interviewTranscripts.length > 0;
 
-      // Process structured data (simplified)
-      const processedSkills = Array.isArray(application.skills) 
-        ? application.skills.slice(0, 10).map((skill: any) => 
-            typeof skill === 'string' ? skill : skill?.name || skill?.skill || 'Unknown skill'
-          ).filter(Boolean)
-        : [];
+      // Process resume data first (from PDF parsing)
+      let resumeData = null;
+      if (application.parsed_resume_data) {
+        try {
+          resumeData = typeof application.parsed_resume_data === 'string' 
+            ? JSON.parse(application.parsed_resume_data) 
+            : application.parsed_resume_data;
+        } catch (e) {
+          console.warn('Failed to parse resume data:', e);
+        }
+      }
 
-      const processedWorkExperience = Array.isArray(application.work_experience) 
-        ? application.work_experience.slice(0, 5).map((exp: any) => ({
-            company: exp?.company || exp?.employer || 'Unknown company',
-            position: exp?.title || exp?.position || 'Unknown position',
-            duration: exp?.duration || `${exp?.start_date || 'Unknown'} - ${exp?.end_date || 'Present'}`,
-            description: exp?.description?.substring(0, 200) || 'No description provided'
-          })).filter(exp => exp.company !== 'Unknown company' || exp.position !== 'Unknown position')
-        : [];
+      // Process structured data (prioritize parsed resume data)
+      const processedSkills = (() => {
+        // First try parsed resume skills
+        if (resumeData?.skills && Array.isArray(resumeData.skills)) {
+          return resumeData.skills.slice(0, 15);
+        }
+        // Fall back to application skills
+        return Array.isArray(application.skills) 
+          ? application.skills.slice(0, 10).map((skill: any) => 
+              typeof skill === 'string' ? skill : skill?.name || skill?.skill || 'Unknown skill'
+            ).filter(Boolean)
+          : [];
+      })();
 
-      const processedEducation = Array.isArray(application.education) 
-        ? application.education.slice(0, 3).map((edu: any) => ({
-            institution: edu?.institution || edu?.school || 'Unknown institution',
+      const processedWorkExperience = (() => {
+        // First try parsed resume work experience
+        if (resumeData?.workExperience && Array.isArray(resumeData.workExperience)) {
+          return resumeData.workExperience.slice(0, 5).map((exp: any) => ({
+            company: exp?.company || 'Unknown company',
+            position: exp?.position || 'Unknown position',
+            duration: exp?.startDate && exp?.endDate 
+              ? `${exp.startDate} - ${exp.endDate}` 
+              : exp?.duration || 'Duration not specified',
+            description: exp?.description?.substring(0, 300) || 'No description provided'
+          }));
+        }
+        // Fall back to application work experience
+        return Array.isArray(application.work_experience) 
+          ? application.work_experience.slice(0, 5).map((exp: any) => ({
+              company: exp?.company || exp?.employer || 'Unknown company',
+              position: exp?.title || exp?.position || 'Unknown position',
+              duration: exp?.duration || `${exp?.start_date || 'Unknown'} - ${exp?.end_date || 'Present'}`,
+              description: exp?.description?.substring(0, 200) || 'No description provided'
+            })).filter(exp => exp.company !== 'Unknown company' || exp.position !== 'Unknown position')
+          : [];
+      })();
+
+      const processedEducation = (() => {
+        // First try parsed resume education
+        if (resumeData?.education && Array.isArray(resumeData.education)) {
+          return resumeData.education.slice(0, 3).map((edu: any) => ({
+            institution: edu?.institution || 'Unknown institution',
             degree: edu?.degree || 'Unknown degree',
-            field: edu?.field || edu?.major || 'Unknown field',
-            year: edu?.year || edu?.graduation_year || 'Unknown year'
-          })).filter(edu => edu.institution !== 'Unknown institution' || edu.degree !== 'Unknown degree')
-        : [];
+            field: edu?.field || 'Unknown field',
+            year: edu?.graduationDate || edu?.year || 'Unknown year',
+            gpa: edu?.gpa || 'Not specified'
+          }));
+        }
+        // Fall back to application education
+        return Array.isArray(application.education) 
+          ? application.education.slice(0, 3).map((edu: any) => ({
+              institution: edu?.institution || edu?.school || 'Unknown institution',
+              degree: edu?.degree || 'Unknown degree',
+              field: edu?.field || edu?.major || 'Unknown field',
+              year: edu?.year || edu?.graduation_year || 'Unknown year'
+            })).filter(edu => edu.institution !== 'Unknown institution' || edu.degree !== 'Unknown degree')
+          : [];
+      })();
+
+      // Extract professional summary from parsed resume
+      const professionalSummary = resumeData?.summary || '';
+      const totalExperience = resumeData?.totalExperience || '';
 
       // Create streamlined analysis data (remove previous AI data for re-analysis)
       const analysisData: StreamlinedAnalysisData = {
@@ -154,8 +207,11 @@ export class AIAnalysisService {
         work_experience: processedWorkExperience.length > 0 ? processedWorkExperience : undefined,
         education: processedEducation.length > 0 ? processedEducation : undefined,
         
-        // Resume
+        // Resume Data
         resume_file_path: application.resume_file_path || undefined,
+        professional_summary: professionalSummary || undefined,
+        total_experience: totalExperience || undefined,
+        has_parsed_resume: !!resumeData,
       };
 
       const jobData: StreamlinedJobData = {
