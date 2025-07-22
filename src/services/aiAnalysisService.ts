@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Application, Job } from "@/types";
 import { DASHBOARD_ACTION_CONSTANTS } from "@/constants/dashboardActions";
@@ -106,10 +105,52 @@ export class AIAnalysisService {
         }
       }
 
+      // CRITICAL FIX: Extract work experience from the correct location
+      const processedWorkExperience = (() => {
+        // First, try to get from parsed resume data structure (correct location)
+        let workExpData = null;
+        
+        // Check different possible structures in parsed resume data
+        if (resumeData?.parsedData?.workExperience && Array.isArray(resumeData.parsedData.workExperience)) {
+          workExpData = resumeData.parsedData.workExperience;
+          console.log('Using work experience from parsedData.workExperience:', workExpData.length, 'entries');
+        } else if (resumeData?.workExperience && Array.isArray(resumeData.workExperience)) {
+          workExpData = resumeData.workExperience;
+          console.log('Using work experience from direct workExperience:', workExpData.length, 'entries');
+        } else if (Array.isArray(application.work_experience) && application.work_experience.length > 0) {
+          workExpData = application.work_experience;
+          console.log('Using work experience from application.work_experience:', workExpData.length, 'entries');
+        }
+
+        if (!workExpData || workExpData.length === 0) {
+          console.warn('No work experience data found for application:', application.id);
+          return [];
+        }
+
+        // Process and format the work experience data
+        return workExpData.slice(0, 5).map((exp: any) => ({
+          company: exp?.company || exp?.employer || 'Unknown company',
+          position: exp?.position || exp?.title || 'Unknown position',
+          startDate: exp?.startDate || exp?.start_date || 'Unknown start',
+          endDate: exp?.endDate || exp?.end_date || 'Present',
+          duration: exp?.duration || `${exp?.startDate || exp?.start_date || 'Unknown'} - ${exp?.endDate || exp?.end_date || 'Present'}`,
+          description: exp?.description?.substring(0, 400) || 'No description provided'
+        })).filter(exp => exp.company !== 'Unknown company' || exp.position !== 'Unknown position');
+      })();
+
+      // Log the processed work experience for debugging
+      console.log('Processed work experience for AI analysis:', {
+        applicationId: application.id,
+        workExperienceCount: processedWorkExperience.length,
+        positions: processedWorkExperience.map(exp => `${exp.position} at ${exp.company}`)
+      });
+
       // Process structured data (prioritize parsed resume data)
       const processedSkills = (() => {
         // First try parsed resume skills
-        if (resumeData?.skills && Array.isArray(resumeData.skills)) {
+        if (resumeData?.parsedData?.skills && Array.isArray(resumeData.parsedData.skills)) {
+          return resumeData.parsedData.skills.slice(0, 15);
+        } else if (resumeData?.skills && Array.isArray(resumeData.skills)) {
           return resumeData.skills.slice(0, 15);
         }
         // Fall back to application skills
@@ -120,32 +161,17 @@ export class AIAnalysisService {
           : [];
       })();
 
-      const processedWorkExperience = (() => {
-        // First try parsed resume work experience
-        if (resumeData?.workExperience && Array.isArray(resumeData.workExperience)) {
-          return resumeData.workExperience.slice(0, 5).map((exp: any) => ({
-            company: exp?.company || 'Unknown company',
-            position: exp?.position || 'Unknown position',
-            duration: exp?.startDate && exp?.endDate 
-              ? `${exp.startDate} - ${exp.endDate}` 
-              : exp?.duration || 'Duration not specified',
-            description: exp?.description?.substring(0, 300) || 'No description provided'
-          }));
-        }
-        // Fall back to application work experience
-        return Array.isArray(application.work_experience) 
-          ? application.work_experience.slice(0, 5).map((exp: any) => ({
-              company: exp?.company || exp?.employer || 'Unknown company',
-              position: exp?.title || exp?.position || 'Unknown position',
-              duration: exp?.duration || `${exp?.start_date || 'Unknown'} - ${exp?.end_date || 'Present'}`,
-              description: exp?.description?.substring(0, 200) || 'No description provided'
-            })).filter(exp => exp.company !== 'Unknown company' || exp.position !== 'Unknown position')
-          : [];
-      })();
-
       const processedEducation = (() => {
         // First try parsed resume education
-        if (resumeData?.education && Array.isArray(resumeData.education)) {
+        if (resumeData?.parsedData?.education && Array.isArray(resumeData.parsedData.education)) {
+          return resumeData.parsedData.education.slice(0, 3).map((edu: any) => ({
+            institution: edu?.institution || 'Unknown institution',
+            degree: edu?.degree || 'Unknown degree',
+            field: edu?.field || 'Unknown field',
+            year: edu?.graduationDate || edu?.year || 'Unknown year',
+            gpa: edu?.gpa || 'Not specified'
+          }));
+        } else if (resumeData?.education && Array.isArray(resumeData.education)) {
           return resumeData.education.slice(0, 3).map((edu: any) => ({
             institution: edu?.institution || 'Unknown institution',
             degree: edu?.degree || 'Unknown degree',
@@ -166,8 +192,8 @@ export class AIAnalysisService {
       })();
 
       // Extract professional summary from parsed resume
-      const professionalSummary = resumeData?.summary || '';
-      const totalExperience = resumeData?.totalExperience || '';
+      const professionalSummary = resumeData?.parsedData?.summary || resumeData?.summary || '';
+      const totalExperience = resumeData?.parsedData?.totalExperience || resumeData?.totalExperience || '';
 
       // Create streamlined analysis data (remove previous AI data for re-analysis)
       const analysisData: StreamlinedAnalysisData = {
@@ -203,7 +229,7 @@ export class AIAnalysisService {
         interview_video_transcripts: interviewTranscripts.length > 0 ? interviewTranscripts : undefined,
         has_video_transcripts: hasVideoTranscripts,
         
-        // Structured Data (simplified)
+        // Structured Data (simplified) - FIXED: Now uses correct work experience data
         skills: processedSkills.length > 0 ? processedSkills : undefined,
         work_experience: processedWorkExperience.length > 0 ? processedWorkExperience : undefined,
         education: processedEducation.length > 0 ? processedEducation : undefined,
@@ -213,7 +239,7 @@ export class AIAnalysisService {
         professional_summary: professionalSummary || undefined,
         total_experience: totalExperience || undefined,
         has_parsed_resume: !!resumeData,
-        resume_summary: application.resume_summary || undefined, // New field for AI-generated summary
+        resume_summary: application.resume_summary || undefined,
       };
 
       const jobData: StreamlinedJobData = {
@@ -229,7 +255,7 @@ export class AIAnalysisService {
         company_name: job.company_name || undefined,
       };
 
-      console.log('Calling analyze-application function for:', application.name);
+      console.log('Calling analyze-application function for:', application.name, 'with work experience count:', processedWorkExperience.length);
 
       const { data, error } = await supabase.functions.invoke('analyze-application', {
         body: {
@@ -259,7 +285,8 @@ export class AIAnalysisService {
         }
 
         console.log('Analysis completed for application:', application.id, 
-          'Rating:', data.rating, 'Summary length:', data.summary.length);
+          'Rating:', data.rating, 'Summary length:', data.summary.length,
+          'Work experience entries sent:', processedWorkExperience.length);
         return { success: true };
       }
 
