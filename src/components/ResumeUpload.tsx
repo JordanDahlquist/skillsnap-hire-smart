@@ -74,9 +74,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
           personalInfo: { name: '', email: '', phone: '', location: '' },
           workExperience: [],
           education: [],
-          skills: [],
-          summary: '',
-          totalExperience: ''
+          skills: []
         }, result.url);
         
         toast({
