@@ -51,14 +51,39 @@ Quality: ${transcript.confidence ? `${Math.round(transcript.confidence * 100)}%`
       }).join('\n');
     };
 
-    // Build streamlined analysis prompt
-    const analysisPrompt = `You are an expert technical recruiter. Analyze this job application comprehensively.
+    // Enhanced work experience formatting to highlight leadership roles
+    const formatWorkExperience = (workExp: any[]): string => {
+      if (!workExp || workExp.length === 0) return 'No work experience provided';
+      
+      return workExp.map((exp, index) => {
+        const position = exp.position || exp.title || 'Unknown Position';
+        const company = exp.company || exp.employer || 'Unknown Company';
+        const duration = exp.duration || `${exp.startDate || exp.start_date || 'Unknown'} - ${exp.endDate || exp.end_date || 'Present'}`;
+        const description = exp.description || 'No description provided';
+        
+        // Highlight leadership positions
+        const isLeadershipRole = /CEO|Chief Executive|President|Founder|Co-Founder|Director|VP|Vice President|Head of|Manager|Lead/i.test(position);
+        const roleHighlight = isLeadershipRole ? ' ⭐ LEADERSHIP ROLE' : '';
+        
+        return `${index + 1}. ${position}${roleHighlight}
+   Company: ${company}
+   Duration: ${duration}
+   Description: ${description.substring(0, 400)}${description.length > 400 ? '...' : ''}
+   ---`;
+      }).join('\n');
+    };
+
+    // Log the work experience data being sent for debugging
+    console.log('Work experience data being analyzed:', JSON.stringify(applicationData.work_experience, null, 2));
+
+    // Build enhanced analysis prompt with better leadership recognition
+    const analysisPrompt = `You are an expert technical recruiter with deep expertise in evaluating executive and leadership candidates. Analyze this job application comprehensively.
 
 JOB REQUIREMENTS:
 Position: ${jobData.title}
 Role: ${jobData.roleType || jobData.role_type}
-Experience: ${jobData.experienceLevel || jobData.experience_level}
-Skills: ${jobData.required_skills}
+Experience Level: ${jobData.experienceLevel || jobData.experience_level}
+Required Skills: ${jobData.required_skills}
 Company: ${jobData.company_name || 'Not specified'}
 
 Description: ${jobData.description?.substring(0, 800) || 'Not provided'}
@@ -68,16 +93,18 @@ Name: ${applicationData.name}
 Email: ${applicationData.email}
 Experience: ${applicationData.experience || 'Not provided'}
 
-${applicationData.has_parsed_resume ? 'RESUME DATA (Extracted from PDF):' : ''}
+${applicationData.has_parsed_resume ? 'RESUME DATA (Extracted and Parsed):' : ''}
 ${applicationData.professional_summary ? `Professional Summary: ${applicationData.professional_summary.substring(0, 400)}` : ''}
 ${applicationData.total_experience ? `Total Experience: ${applicationData.total_experience}` : ''}
 
-PROFESSIONAL BACKGROUND:
-${formatSection('Work Experience', applicationData.work_experience)}
+DETAILED WORK EXPERIENCE ANALYSIS:
+${formatWorkExperience(applicationData.work_experience || [])}
+
+ADDITIONAL PROFESSIONAL BACKGROUND:
 ${formatSection('Education', applicationData.education)}
 ${formatSection('Skills', applicationData.skills)}
 
-RESPONSES:
+APPLICATION RESPONSES:
 Cover Letter: ${applicationData.cover_letter?.substring(0, 500) || 'Not provided'}
 Tech Challenge: ${applicationData.answer_1?.substring(0, 300) || 'Not answered'}
 Problem Solving: ${applicationData.answer_2?.substring(0, 300) || 'Not answered'}
@@ -91,29 +118,39 @@ ${applicationData.has_video_transcripts ?
   `VIDEO TRANSCRIPTS:\n${formatTranscripts(applicationData.skills_video_transcripts || [])}${formatTranscripts(applicationData.interview_video_transcripts || [])}` : 
   'No video transcripts available'}
 
+CRITICAL EVALUATION INSTRUCTIONS:
+For leadership/executive roles (CEO, Director, VP, etc.), pay special attention to:
+1. **Previous Leadership Experience**: Look for CEO, Founder, Co-Founder, President, Director, VP, or similar titles
+2. **Company Growth & Revenue**: Evidence of scaling businesses, revenue growth, team building
+3. **Strategic Experience**: Business development, operational improvements, strategic planning
+4. **Industry Relevance**: Relevant industry experience and transferable skills
+5. **Team Management**: Evidence of leading and managing teams effectively
+
 EVALUATION FRAMEWORK:
-1. Technical Competency (25%): Skill alignment, experience depth, portfolio quality
-2. Communication & Video (30%): Clarity, technical explanation ability, professional presentation  
-3. Experience Fit (20%): Years of experience, industry relevance, role progression
-4. Problem-Solving (15%): Technical challenges, analytical thinking, creativity
-5. Completeness (10%): Application effort, response quality, attention to detail
+1. **Leadership Experience Match (35%)**: Direct leadership roles, executive experience, company building
+2. **Technical/Industry Competency (25%)**: Skill alignment, industry knowledge, domain expertise
+3. **Growth & Achievement Track Record (20%)**: Measurable business outcomes, scaling success
+4. **Communication & Presentation (15%)**: Video analysis, written responses, professional communication
+5. **Application Completeness (5%)**: Effort, response quality, attention to detail
 
 ${applicationData.has_video_transcripts ? 
-  'FOCUS: Weight video analysis heavily as it provides authentic candidate insight.' : 
-  'NOTE: Focus on written responses and traditional materials.'}
+  'FOCUS: Weight video analysis heavily as it provides authentic leadership presence insight.' : 
+  'NOTE: Focus on written responses and track record evidence.'}
 
 RATING SCALE (1.0-3.0):
-- 1.0-1.5: Below expectations - significant gaps
-- 1.6-2.4: Meets expectations - adequate fit  
-- 2.5-3.0: Exceeds expectations - strong candidate
+- 1.0-1.5: Below expectations - significant gaps in leadership experience or skills
+- 1.6-2.4: Meets expectations - adequate leadership background with some relevant experience
+- 2.5-3.0: Exceeds expectations - strong leadership track record with directly relevant experience
+
+IMPORTANT: If a candidate has multiple CEO/Founder roles or significant leadership experience that directly matches the job requirements, they should receive a HIGH rating (2.5-3.0). Do not undervalue proven leadership experience.
 
 Provide JSON response:
 {
-  "summary": "3-4 sentence analysis highlighting key strengths, job alignment, and recommendation",
+  "summary": "3-4 sentence analysis highlighting key leadership strengths, relevant experience, and clear recommendation",
   "rating": 2.8
 }`
 
-    console.log('Calling OpenAI for application analysis:', applicationData.name)
+    console.log('Calling OpenAI for enhanced leadership analysis:', applicationData.name)
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -126,7 +163,7 @@ Provide JSON response:
         messages: [
           {
             role: 'system',
-            content: 'You are an expert technical recruiter with 15+ years of experience. Provide accurate, fair candidate assessments in the exact JSON format requested.'
+            content: 'You are an expert executive recruiter with 20+ years of experience evaluating C-suite and leadership candidates. You understand the value of proven leadership experience and track records. Provide accurate, fair candidate assessments that properly weight leadership experience in the exact JSON format requested.'
           },
           {
             role: 'user',
@@ -149,7 +186,7 @@ Provide JSON response:
     let analysis;
     try {
       const content = data.choices[0].message.content.trim()
-      console.log('Raw OpenAI response:', content)
+      console.log('Raw OpenAI response for leadership analysis:', content)
       
       // Try to extract JSON if it's wrapped in markdown
       const jsonMatch = content.match(/```json\n?(.*?)\n?```/s) || content.match(/\{.*\}/s)
@@ -173,10 +210,11 @@ Provide JSON response:
       analysis.rating = Math.max(1.0, Math.min(3.0, analysis.rating))
     }
 
-    console.log('Analysis completed successfully:', {
+    console.log('Enhanced leadership analysis completed:', {
       name: applicationData.name,
       rating: analysis.rating,
-      summaryLength: analysis.summary.length
+      summaryLength: analysis.summary.length,
+      workExperienceCount: applicationData.work_experience?.length || 0
     })
 
     return new Response(
