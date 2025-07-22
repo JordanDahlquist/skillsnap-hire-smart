@@ -184,109 +184,141 @@ export class AIAnalysisService {
       
       const hasVideoTranscripts = skillsTranscripts.length > 0 || interviewTranscripts.length > 0;
 
-      // Process resume data first (from PDF parsing)
+      // CRITICAL FIX: Extract and properly format resume data
       let resumeData = null;
       if (application.parsed_resume_data) {
         try {
           resumeData = typeof application.parsed_resume_data === 'string' 
             ? JSON.parse(application.parsed_resume_data) 
             : application.parsed_resume_data;
+          
+          console.log('Parsed resume data structure:', {
+            applicationId: application.id,
+            hasWorkExperience: !!resumeData?.workExperience,
+            workExpLength: resumeData?.workExperience?.length || 0,
+            hasPersonalInfo: !!resumeData?.personalInfo,
+            hasEducation: !!resumeData?.education,
+            hasSkills: !!resumeData?.skills
+          });
         } catch (e) {
           console.warn('Failed to parse resume data:', e);
         }
       }
 
-      // CRITICAL FIX: Extract work experience from the correct location
+      // CRITICAL FIX: Extract work experience from the correct location with proper formatting
       const processedWorkExperience = (() => {
-        // First, try to get from parsed resume data structure (correct location)
         let workExpData = null;
         
-        // Check different possible structures in parsed resume data
-        if (resumeData?.parsedData?.workExperience && Array.isArray(resumeData.parsedData.workExperience)) {
-          workExpData = resumeData.parsedData.workExperience;
-          console.log('Using work experience from parsedData.workExperience:', workExpData.length, 'entries');
-        } else if (resumeData?.workExperience && Array.isArray(resumeData.workExperience)) {
+        // First priority: Extract from parsed resume data (the correct source)
+        if (resumeData?.workExperience && Array.isArray(resumeData.workExperience)) {
           workExpData = resumeData.workExperience;
-          console.log('Using work experience from direct workExperience:', workExpData.length, 'entries');
-        } else if (Array.isArray(application.work_experience) && application.work_experience.length > 0) {
+          console.log(`Using work experience from parsed resume data: ${workExpData.length} entries`);
+        } 
+        // Fallback: Check if it's nested under parsedData
+        else if (resumeData?.parsedData?.workExperience && Array.isArray(resumeData.parsedData.workExperience)) {
+          workExpData = resumeData.parsedData.workExperience;
+          console.log(`Using work experience from parsedData.workExperience: ${workExpData.length} entries`);
+        }
+        // Last resort: Application work experience field
+        else if (Array.isArray(application.work_experience) && application.work_experience.length > 0) {
           workExpData = application.work_experience;
-          console.log('Using work experience from application.work_experience:', workExpData.length, 'entries');
+          console.log(`Using work experience from application.work_experience: ${workExpData.length} entries`);
         }
 
         if (!workExpData || workExpData.length === 0) {
-          console.warn('No work experience data found for application:', application.id);
+          console.warn(`No work experience data found for application: ${application.id}`);
           return [];
         }
 
-        // Process and format the work experience data
-        return workExpData.slice(0, 5).map((exp: any) => ({
-          company: exp?.company || exp?.employer || 'Unknown company',
-          position: exp?.position || exp?.title || 'Unknown position',
-          startDate: exp?.startDate || exp?.start_date || 'Unknown start',
-          endDate: exp?.endDate || exp?.end_date || 'Present',
-          duration: exp?.duration || `${exp?.startDate || exp?.start_date || 'Unknown'} - ${exp?.endDate || exp?.end_date || 'Present'}`,
-          description: exp?.description?.substring(0, 400) || 'No description provided'
-        })).filter(exp => exp.company !== 'Unknown company' || exp.position !== 'Unknown position');
+        // Process and format the work experience data for AI analysis
+        const formattedExperience = workExpData.slice(0, 5).map((exp: any) => {
+          const formatted = {
+            company: exp?.company || exp?.employer || 'Unknown company',
+            position: exp?.position || exp?.title || 'Unknown position',
+            startDate: exp?.startDate || exp?.start_date || 'Unknown start',
+            endDate: exp?.endDate || exp?.end_date || 'Present',
+            duration: exp?.duration || `${exp?.startDate || exp?.start_date || 'Unknown'} - ${exp?.endDate || exp?.end_date || 'Present'}`,
+            description: (exp?.description || 'No description provided').substring(0, 400)
+          };
+          
+          console.log(`Formatted work experience entry: ${formatted.position} at ${formatted.company}`);
+          return formatted;
+        }).filter(exp => exp.company !== 'Unknown company' || exp.position !== 'Unknown position');
+
+        console.log(`Final processed work experience for ${application.name}: ${formattedExperience.length} entries`);
+        return formattedExperience;
       })();
 
-      // Log the processed work experience for debugging
-      console.log('Processed work experience for AI analysis:', {
-        applicationId: application.id,
-        workExperienceCount: processedWorkExperience.length,
-        positions: processedWorkExperience.map(exp => `${exp.position} at ${exp.company}`)
-      });
-
-      // Process structured data (prioritize parsed resume data)
+      // CRITICAL FIX: Extract skills from parsed resume data
       const processedSkills = (() => {
-        // First try parsed resume skills
-        if (resumeData?.parsedData?.skills && Array.isArray(resumeData.parsedData.skills)) {
-          return resumeData.parsedData.skills.slice(0, 15);
-        } else if (resumeData?.skills && Array.isArray(resumeData.skills)) {
-          return resumeData.skills.slice(0, 15);
+        let skillsData = [];
+        
+        // First priority: From parsed resume data
+        if (resumeData?.skills && Array.isArray(resumeData.skills)) {
+          skillsData = resumeData.skills.slice(0, 15);
+          console.log(`Using skills from parsed resume data: ${skillsData.length} skills`);
+        } 
+        // Fallback: Check nested structure
+        else if (resumeData?.parsedData?.skills && Array.isArray(resumeData.parsedData.skills)) {
+          skillsData = resumeData.parsedData.skills.slice(0, 15);
+          console.log(`Using skills from parsedData.skills: ${skillsData.length} skills`);
         }
-        // Fall back to application skills
-        return Array.isArray(application.skills) 
-          ? application.skills.slice(0, 10).map((skill: any) => 
-              typeof skill === 'string' ? skill : skill?.name || skill?.skill || 'Unknown skill'
-            ).filter(Boolean)
-          : [];
+        // Last resort: Application skills
+        else if (Array.isArray(application.skills)) {
+          skillsData = application.skills.slice(0, 10).map((skill: any) => 
+            typeof skill === 'string' ? skill : skill?.name || skill?.skill || 'Unknown skill'
+          ).filter(Boolean);
+          console.log(`Using skills from application.skills: ${skillsData.length} skills`);
+        }
+
+        return skillsData;
       })();
 
+      // CRITICAL FIX: Extract education from parsed resume data
       const processedEducation = (() => {
-        // First try parsed resume education
-        if (resumeData?.parsedData?.education && Array.isArray(resumeData.parsedData.education)) {
-          return resumeData.parsedData.education.slice(0, 3).map((edu: any) => ({
+        let educationData = [];
+        
+        // First priority: From parsed resume data
+        if (resumeData?.education && Array.isArray(resumeData.education)) {
+          educationData = resumeData.education.slice(0, 3).map((edu: any) => ({
             institution: edu?.institution || 'Unknown institution',
             degree: edu?.degree || 'Unknown degree',
             field: edu?.field || 'Unknown field',
             year: edu?.graduationDate || edu?.year || 'Unknown year',
             gpa: edu?.gpa || 'Not specified'
           }));
-        } else if (resumeData?.education && Array.isArray(resumeData.education)) {
-          return resumeData.education.slice(0, 3).map((edu: any) => ({
-            institution: edu?.institution || 'Unknown institution',
-            degree: edu?.degree || 'Unknown degree',
-            field: edu?.field || 'Unknown field',
-            year: edu?.graduationDate || edu?.year || 'Unknown year',
-            gpa: edu?.gpa || 'Not specified'
-          }));
+          console.log(`Using education from parsed resume data: ${educationData.length} entries`);
         }
-        // Fall back to application education
-        return Array.isArray(application.education) 
-          ? application.education.slice(0, 3).map((edu: any) => ({
-              institution: edu?.institution || edu?.school || 'Unknown institution',
-              degree: edu?.degree || 'Unknown degree',
-              field: edu?.field || edu?.major || 'Unknown field',
-              year: edu?.year || edu?.graduation_year || 'Unknown year'
-            })).filter(edu => edu.institution !== 'Unknown institution' || edu.degree !== 'Unknown degree')
-          : [];
+        // Fallback: Check nested structure
+        else if (resumeData?.parsedData?.education && Array.isArray(resumeData.parsedData.education)) {
+          educationData = resumeData.parsedData.education.slice(0, 3).map((edu: any) => ({
+            institution: edu?.institution || 'Unknown institution',
+            degree: edu?.degree || 'Unknown degree',
+            field: edu?.field || 'Unknown field',
+            year: edu?.graduationDate || edu?.year || 'Unknown year',
+            gpa: edu?.gpa || 'Not specified'
+          }));
+          console.log(`Using education from parsedData.education: ${educationData.length} entries`);
+        }
+        // Last resort: Application education
+        else if (Array.isArray(application.education)) {
+          educationData = application.education.slice(0, 3).map((edu: any) => ({
+            institution: edu?.institution || edu?.school || 'Unknown institution',
+            degree: edu?.degree || 'Unknown degree',
+            field: edu?.field || edu?.major || 'Unknown field',
+            year: edu?.year || edu?.graduation_year || 'Unknown year'
+          })).filter(edu => edu.institution !== 'Unknown institution' || edu.degree !== 'Unknown degree');
+          console.log(`Using education from application.education: ${educationData.length} entries`);
+        }
+
+        return educationData;
       })();
 
       // Extract professional summary from parsed resume
-      const professionalSummary = resumeData?.parsedData?.summary || resumeData?.summary || '';
-      const totalExperience = resumeData?.parsedData?.totalExperience || resumeData?.totalExperience || '';
+      const professionalSummary = resumeData?.summary || resumeData?.parsedData?.summary || '';
+      const totalExperience = resumeData?.totalExperience || resumeData?.parsedData?.totalExperience || '';
 
-      // Create streamlined analysis data (remove previous AI data for re-analysis)
+      // Create streamlined analysis data with FIXED work experience extraction
       const analysisData: StreamlinedAnalysisData = {
         // Basic Info
         name: application.name,
@@ -320,7 +352,7 @@ export class AIAnalysisService {
         interview_video_transcripts: interviewTranscripts.length > 0 ? interviewTranscripts : undefined,
         has_video_transcripts: hasVideoTranscripts,
         
-        // Structured Data (simplified) - FIXED: Now uses correct work experience data
+        // FIXED: Now properly extracts from parsed resume data
         skills: processedSkills.length > 0 ? processedSkills : undefined,
         work_experience: processedWorkExperience.length > 0 ? processedWorkExperience : undefined,
         education: processedEducation.length > 0 ? processedEducation : undefined,
@@ -346,7 +378,13 @@ export class AIAnalysisService {
         company_name: job.company_name || undefined,
       };
 
-      console.log('Calling analyze-application function for:', application.name, 'with work experience count:', processedWorkExperience.length);
+      console.log('FIXED: Calling analyze-application function for:', application.name, 'with structured data:', {
+        workExperienceCount: processedWorkExperience.length,
+        skillsCount: processedSkills.length,
+        educationCount: processedEducation.length,
+        hasProfessionalSummary: !!professionalSummary,
+        hasParsedResume: !!resumeData
+      });
 
       const { data, error } = await supabase.functions.invoke('analyze-application', {
         body: {
@@ -375,9 +413,13 @@ export class AIAnalysisService {
           return { success: false, error: updateError.message };
         }
 
-        console.log('Analysis completed for application:', application.id, 
-          'Rating:', data.rating, 'Summary length:', data.summary.length,
-          'Work experience entries sent:', processedWorkExperience.length);
+        console.log('FIXED: Analysis completed for application:', application.id, {
+          rating: data.rating, 
+          summaryLength: data.summary.length,
+          workExperienceEntriesSent: processedWorkExperience.length,
+          skillsSent: processedSkills.length,
+          educationSent: processedEducation.length
+        });
         return { success: true };
       }
 
