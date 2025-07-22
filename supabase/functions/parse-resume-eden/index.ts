@@ -72,16 +72,20 @@ serve(async (req) => {
 
     console.log('Data to use:', JSON.stringify(dataToUse, null, 2));
 
-    // Map Eden AI response to our schema with proper null checks
+    // Map Eden AI response to our schema with corrected field mapping
     const parsedData = {
       personalInfo: {
-        name: dataToUse.personal_infos?.name?.value || '',
-        email: dataToUse.personal_infos?.mail?.value || '',
-        phone: dataToUse.personal_infos?.phone?.value || '',
-        location: dataToUse.personal_infos?.address?.value || '',
+        name: dataToUse.personal_infos?.name?.raw_name || '',
+        email: Array.isArray(dataToUse.personal_infos?.mails) && dataToUse.personal_infos.mails.length > 0 
+          ? dataToUse.personal_infos.mails[0] 
+          : '',
+        phone: Array.isArray(dataToUse.personal_infos?.phones) && dataToUse.personal_infos.phones.length > 0 
+          ? dataToUse.personal_infos.phones[0] 
+          : '',
+        location: dataToUse.personal_infos?.address?.formatted_location || '',
       },
-      workExperience: Array.isArray(dataToUse.work_experience) 
-        ? dataToUse.work_experience.map(exp => ({
+      workExperience: Array.isArray(dataToUse.work_experience?.entries) 
+        ? dataToUse.work_experience.entries.map(exp => ({
             company: exp?.company || '',
             position: exp?.title || '',
             startDate: exp?.start_date || '',
@@ -89,12 +93,12 @@ serve(async (req) => {
             description: exp?.description || '',
           }))
         : [],
-      education: Array.isArray(dataToUse.education)
-        ? dataToUse.education.map(edu => ({
+      education: Array.isArray(dataToUse.education?.entries)
+        ? dataToUse.education.entries.map(edu => ({
             institution: edu?.establishment || '',
             degree: edu?.title || '',
             graduationDate: edu?.end_date || '',
-            description: edu?.description || '',
+            description: edu?.description || edu?.accreditation || '',
           }))
         : [],
       skills: Array.isArray(dataToUse.skills)
