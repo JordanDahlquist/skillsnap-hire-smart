@@ -22,11 +22,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DashboardHeaderDropdown } from "./DashboardHeaderDropdown";
-import { Job } from "@/types";
+import { Job, Application } from "@/types";
 import { useThemeContext } from "@/contexts/ThemeContext";
 
 interface DashboardHeaderActionsProps {
   job: Job;
+  applications: Application[];
   isUpdating: boolean;
   onStatusChange: (newStatus: string) => void;
   onShareJob: () => void;
@@ -40,6 +41,7 @@ interface DashboardHeaderActionsProps {
 
 export const DashboardHeaderActions = ({
   job,
+  applications,
   isUpdating,
   onStatusChange,
   onShareJob,
@@ -53,11 +55,17 @@ export const DashboardHeaderActions = ({
   const isArchived = job.status === 'closed';
   const { currentTheme } = useThemeContext();
 
+  // Count applications that need resume processing
+  const unparsedResumeCount = applications.filter(app => 
+    app.resume_file_path && !app.parsed_resume_data
+  ).length;
+
   console.log('DashboardHeaderActions render:', { 
     jobId: job.id, 
     status: job.status, 
     isUpdating,
-    isArchived 
+    isArchived,
+    unparsedResumeCount
   });
 
   const handleStatusChange = (newStatus: string) => {
@@ -71,6 +79,14 @@ export const DashboardHeaderActions = ({
       return "border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/30 gap-2";
     }
     return "border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300 gap-2";
+  };
+
+  // Create dynamic tooltip content
+  const getAIRankTooltip = () => {
+    if (unparsedResumeCount > 0) {
+      return `Process ${unparsedResumeCount} unprocessed resumes and analyze all applications with AI`;
+    }
+    return "Refresh AI-powered application rankings";
   };
 
   return (
@@ -93,11 +109,18 @@ export const DashboardHeaderActions = ({
               className={getAIRankButtonClasses()}
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">AI Rank</span>
+              <span className="hidden sm:inline">
+                AI Rank
+                {unparsedResumeCount > 0 && (
+                  <span className="ml-1 text-xs bg-orange-500 text-white px-1 rounded-full">
+                    {unparsedResumeCount}
+                  </span>
+                )}
+              </span>
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="z-[9999]">
-            <p>Refresh AI-powered application rankings for new applicants</p>
+            <p>{getAIRankTooltip()}</p>
           </TooltipContent>
         </Tooltip>
 

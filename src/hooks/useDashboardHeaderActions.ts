@@ -25,33 +25,35 @@ export const useDashboardHeaderActions = (
       const { MESSAGES, AI_REFRESH } = DASHBOARD_ACTION_CONSTANTS;
       
       toast({
-        title: "AI Re-ranking Started",
-        description: `Re-analyzing all ${applications.length} applications to update rankings. This may take ${AI_REFRESH.TIMEOUT_RANGE}.`,
+        title: "AI Analysis Started",
+        description: `Processing resumes and analyzing all ${applications.length} applications. This may take ${AI_REFRESH.TIMEOUT_RANGE}.`,
       });
 
-      console.log(`Starting AI re-ranking for ${applications.length} applications`);
+      console.log(`Starting AI analysis with resume processing for ${applications.length} applications`);
 
-      const { successCount, errorCount } = await AIAnalysisService.processBatch(applications, job);
+      // NEW: Process with resume parsing first, then AI analysis
+      const { successCount, errorCount, parsedCount } = await AIAnalysisService.processWithResumeParsing(applications, job);
 
       // Show completion message
       if (successCount > 0) {
+        const resumeMessage = parsedCount > 0 ? ` (${parsedCount} resumes processed)` : '';
         toast({
-          title: "AI Re-ranking Complete",
-          description: `Successfully re-analyzed ${successCount} applications${errorCount > 0 ? `, ${errorCount} failed` : ''}. Rankings have been updated.`,
+          title: "AI Analysis Complete",
+          description: `Successfully analyzed ${successCount} applications${resumeMessage}${errorCount > 0 ? `, ${errorCount} failed` : ''}. Rankings have been updated.`,
         });
         onJobUpdate(); // Refresh the data to show new rankings
       } else {
         toast({
-          title: "AI Re-ranking Failed",
-          description: `Unable to re-analyze applications. ${errorCount > 0 ? `${errorCount} applications failed.` : ''} Please try again.`,
+          title: "AI Analysis Failed",
+          description: `Unable to analyze applications. ${errorCount > 0 ? `${errorCount} applications failed.` : ''} Please try again.`,
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('AI refresh failed:', error);
+      console.error('AI analysis failed:', error);
       toast({
-        title: "AI Re-ranking Failed",
-        description: `An error occurred during re-analysis: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: "AI Analysis Failed",
+        description: `An error occurred during analysis: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {

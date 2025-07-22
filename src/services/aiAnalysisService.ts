@@ -1,6 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Application, Job } from "@/types";
 import { DASHBOARD_ACTION_CONSTANTS } from "@/constants/dashboardActions";
+import { reprocessResumeWithEdenAI, updateApplicationWithResumeData } from "@/utils/resumeUploadUtils";
 
 interface StreamlinedAnalysisData {
   // Basic Info
@@ -62,6 +64,95 @@ interface StreamlinedJobData {
 }
 
 export class AIAnalysisService {
+  // NEW: Main method that handles resume parsing before AI analysis
+  static async processWithResumeParsing(applications: Application[], job: Job): Promise<{ successCount: number; errorCount: number; parsedCount: number }> {
+    console.log(`Starting processWithResumeParsing for ${applications.length} applications`);
+    
+    // Step 1: Identify applications that need resume parsing
+    const applicationsNeedingParsing = applications.filter(app => 
+      app.resume_file_path && !app.parsed_resume_data
+    );
+    
+    let parsedCount = 0;
+    
+    console.log(`Found ${applicationsNeedingParsing.length} applications needing resume parsing`);
+    
+    // Step 2: Parse resumes first if needed
+    if (applicationsNeedingParsing.length > 0) {
+      parsedCount = await this.parseUnprocessedResumes(applicationsNeedingParsing);
+      console.log(`Successfully parsed ${parsedCount} resumes`);
+    }
+    
+    // Step 3: Run AI analysis on all applications (now with parsed data where available)
+    const { successCount, errorCount } = await this.processBatch(applications, job);
+    
+    return { successCount, errorCount, parsedCount };
+  }
+
+  // NEW: Parse resumes for applications that haven't been processed yet
+  private static async parseUnprocessedResumes(applications: Application[]): Promise<number> {
+    const PARSE_BATCH_SIZE = 2;
+    const PARSE_DELAY = 3000; // 3 seconds between parsing batches
+    let successCount = 0;
+
+    console.log(`Parsing ${applications.length} unprocessed resumes in batches of ${PARSE_BATCH_SIZE}`);
+
+    for (let i = 0; i < applications.length; i += PARSE_BATCH_SIZE) {
+      const batch = applications.slice(i, i + PARSE_BATCH_SIZE);
+      console.log(`Parsing batch ${Math.floor(i / PARSE_BATCH_SIZE) + 1}/${Math.ceil(applications.length / PARSE_BATCH_SIZE)}`);
+      
+      const results = await Promise.allSettled(
+        batch.map(application => this.parseApplicationResume(application))
+      );
+
+      results.forEach((result, index) => {
+        const applicationName = batch[index].name;
+        if (result.status === 'fulfilled' && result.value.success) {
+          successCount++;
+          console.log(`✓ Successfully parsed resume for: ${applicationName}`);
+        } else {
+          const error = result.status === 'fulfilled' ? result.value.error : result.reason;
+          console.error(`✗ Failed to parse resume for: ${applicationName}`, error);
+        }
+      });
+
+      // Delay between batches to avoid overwhelming the API
+      if (i + PARSE_BATCH_SIZE < applications.length) {
+        console.log(`Waiting ${PARSE_DELAY}ms before next parsing batch...`);
+        await new Promise(resolve => setTimeout(resolve, PARSE_DELAY));
+      }
+    }
+
+    return successCount;
+  }
+
+  // NEW: Parse individual application resume
+  private static async parseApplicationResume(application: Application): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!application.resume_file_path) {
+        return { success: false, error: 'No resume file path' };
+      }
+
+      console.log(`Parsing resume for application: ${application.id}, Resume: ${application.resume_file_path}`);
+      
+      const { parsedData, aiRating, summary } = await reprocessResumeWithEdenAI(application.resume_file_path);
+      
+      if (!parsedData) {
+        return { success: false, error: 'No parsed data returned' };
+      }
+
+      // Save parsed data to database
+      await updateApplicationWithResumeData(application.id, parsedData, aiRating, summary);
+      
+      console.log(`Successfully parsed and saved resume data for: ${application.name}`);
+      return { success: true };
+
+    } catch (error) {
+      console.error(`Error parsing resume for application: ${application.id}`, error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
   static async analyzeApplication(application: Application, job: Job): Promise<{ success: boolean; error?: string }> {
     try {
       console.log('Starting AI analysis for application:', application.id);

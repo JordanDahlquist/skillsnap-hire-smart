@@ -26,7 +26,8 @@ export interface ParsedResumeData {
   skills: string[];
 }
 
-export const uploadResumeFile = async (file: File): Promise<{ url: string; parsedData?: ParsedResumeData; aiRating?: number; summary?: string }> => {
+// MODIFIED: Remove automatic parsing, just upload file
+export const uploadResumeFile = async (file: File): Promise<{ url: string }> => {
   try {
     // Upload file to Supabase Storage
     const fileExt = file.name.split('.').pop();
@@ -48,41 +49,7 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
 
     console.log('File uploaded to:', publicUrl);
 
-    // Only attempt parsing for PDF files
-    if (file.type === 'application/pdf') {
-      try {
-        console.log('Parsing PDF resume with Eden AI...');
-        
-        const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-resume-eden', {
-          body: { resumeUrl: publicUrl }
-        });
-
-        if (parseError) {
-          console.error('Resume parsing error:', parseError);
-          throw new Error(`Resume analysis failed: ${parseError.message}`);
-        }
-
-        console.log('Resume parsing completed successfully:', {
-          hasPersonalInfo: !!parseResult?.parsedData?.personalInfo,
-          workExperienceCount: parseResult?.parsedData?.workExperience?.length || 0,
-          skillsCount: parseResult?.parsedData?.skills?.length || 0,
-          aiRating: parseResult?.aiRating,
-          summaryLength: parseResult?.summary?.length || 0
-        });
-
-        return {
-          url: publicUrl,
-          parsedData: parseResult.parsedData,
-          aiRating: parseResult.aiRating,
-          summary: parseResult.summary
-        };
-      } catch (parseError) {
-        console.error('Resume parsing failed:', parseError);
-        throw parseError;
-      }
-    }
-
-    // For non-PDF files, just return the URL
+    // REMOVED: No automatic parsing - just return the URL
     return { url: publicUrl };
 
   } catch (error) {
@@ -107,7 +74,7 @@ export const constructResumeUrl = (filePath: string): string => {
   return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
 };
 
-// Function to re-process existing resumes
+// Function to re-process existing resumes (used by AI Rank button)
 export const reprocessResumeWithEdenAI = async (resumeUrl: string): Promise<{ 
   parsedData: ParsedResumeData; 
   aiRating: number; 
@@ -148,7 +115,7 @@ export const reprocessResumeWithEdenAI = async (resumeUrl: string): Promise<{
   }
 };
 
-// CRITICAL FIX: Add function to update application with parsed resume data
+// Function to update application with parsed resume data (used by AI Rank button)
 export const updateApplicationWithResumeData = async (
   applicationId: string, 
   parsedData: ParsedResumeData, 
