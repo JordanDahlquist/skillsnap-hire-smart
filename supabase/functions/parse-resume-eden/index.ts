@@ -21,43 +21,28 @@ serve(async (req) => {
     }
 
     const edenApiKey = Deno.env.get('EDEN_AI_API_KEY');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!edenApiKey || !supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing required environment variables');
+    if (!edenApiKey) {
+      throw new Error('Missing EDEN_AI_API_KEY environment variable');
     }
 
     console.log('Parsing resume with Eden AI:', resumeUrl);
 
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Download the resume file from Supabase Storage
-    const fileName = resumeUrl.split('/').pop();
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('application-files')
-      .download(fileName);
-
-    if (downloadError) {
-      throw new Error(`Failed to download file: ${downloadError.message}`);
-    }
-
-    console.log('File downloaded, sending to Eden AI...');
-
-    // Convert blob to form data for Eden AI
-    const formData = new FormData();
-    formData.append('file', fileData, fileName);
-    formData.append('providers', 'microsoft'); // Use Microsoft as primary provider
-    formData.append('fallback_providers', 'google'); // Use Google as fallback
+    // Use JSON payload with file_url as shown in Eden AI example
+    const jsonPayload = {
+      providers: "affinda",
+      fallback_providers: "klippa",
+      file_url: resumeUrl
+    };
 
     // Send to Eden AI Resume Parser API
     const edenResponse = await fetch('https://api.edenai.run/v2/ocr/resume_parser', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${edenApiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify(jsonPayload),
     });
 
     if (!edenResponse.ok) {
@@ -68,35 +53,42 @@ serve(async (req) => {
     const edenData = await edenResponse.json();
     console.log('Eden AI response received');
 
-    // Extract data from the first provider result
-    const extractedData = edenData.extracted_data?.[0];
+    // Extract data from the primary provider (affinda)
+    const extractedData = edenData.affinda?.extracted_data;
     
     if (!extractedData) {
-      throw new Error('No data extracted from resume');
+      // Try fallback provider if primary failed
+      const fallbackData = edenData.klippa?.extracted_data;
+      if (!fallbackData) {
+        throw new Error('No data extracted from resume by any provider');
+      }
+      console.log('Using fallback provider data');
     }
+
+    const dataToUse = extractedData || edenData.klippa?.extracted_data;
 
     // Map Eden AI response to our schema
     const parsedData = {
       personalInfo: {
-        name: extractedData.personal_infos?.name?.value || '',
-        email: extractedData.personal_infos?.mail?.value || '',
-        phone: extractedData.personal_infos?.phone?.value || '',
-        location: extractedData.personal_infos?.address?.value || '',
+        name: dataToUse.personal_infos?.name?.value || '',
+        email: dataToUse.personal_infos?.mail?.value || '',
+        phone: dataToUse.personal_infos?.phone?.value || '',
+        location: dataToUse.personal_infos?.address?.value || '',
       },
-      workExperience: extractedData.work_experience?.map(exp => ({
+      workExperience: dataToUse.work_experience?.map(exp => ({
         company: exp.company || '',
         position: exp.title || '',
         startDate: exp.start_date || '',
         endDate: exp.end_date || 'Present',
         description: exp.description || '',
       })) || [],
-      education: extractedData.education?.map(edu => ({
+      education: dataToUse.education?.map(edu => ({
         institution: edu.establishment || '',
         degree: edu.title || '',
         graduationDate: edu.end_date || '',
         description: edu.description || '',
       })) || [],
-      skills: extractedData.skills?.map(skill => skill.name || '').filter(Boolean) || [],
+      skills: dataToUse.skills?.map(skill => skill.name || '').filter(Boolean) || [],
     };
 
     // Generate a professional summary
