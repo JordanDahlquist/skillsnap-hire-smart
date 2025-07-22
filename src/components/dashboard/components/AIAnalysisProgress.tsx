@@ -100,90 +100,74 @@ export const AIAnalysisProgress = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-      <Card className={`w-full max-w-2xl bg-gradient-to-br ${currentPhaseInfo.bgColor} border-0 shadow-2xl`}>
-        <CardContent className="p-12">
-          <div className="text-center space-y-8">
-            {/* Main Icon Animation */}
-            <div className="relative">
-              <div className="w-32 h-32 mx-auto bg-white rounded-full flex items-center justify-center shadow-2xl relative overflow-hidden">
-                <PhaseIcon className={`w-16 h-16 ${currentPhaseInfo.color} ${currentPhase !== 'complete' ? 'animate-pulse' : ''}`} />
-                
-                {/* Sparkle effects for active phases */}
-                {currentPhase !== 'complete' && (
-                  <>
-                    <Sparkles className="w-6 h-6 text-yellow-400 absolute top-4 right-6 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                    <Sparkles className="w-4 h-4 text-blue-400 absolute bottom-6 left-4 animate-bounce" style={{ animationDelay: '0.8s' }} />
-                    <Sparkles className="w-5 h-5 text-purple-400 absolute top-8 left-8 animate-bounce" style={{ animationDelay: '1.2s' }} />
-                  </>
-                )}
-              </div>
-              
-              {/* Spinning ring for active phases */}
-              {currentPhase !== 'complete' && (
-                <div className="absolute inset-0 border-4 border-transparent border-t-blue-500 rounded-full animate-spin" />
-              )}
+    <div className="fixed inset-0 bg-black/10 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+      <Card className="w-full max-w-lg bg-background/95 backdrop-blur border shadow-xl">
+        <CardContent className="p-8">
+          <div className="text-center space-y-6">
+            {/* Main Icon */}
+            <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+              <PhaseIcon className={`w-8 h-8 ${currentPhaseInfo.color} ${currentPhase !== 'complete' ? 'animate-pulse' : ''}`} />
             </div>
 
             {/* Phase Title and Description */}
-            <div className="space-y-3">
-              <h2 className="text-3xl font-bold text-gray-900">
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold text-foreground">
                 {currentPhaseInfo.title}
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {currentPhaseInfo.description}
               </p>
             </div>
 
             {/* Current Activity */}
             {currentApplicantName && currentPhase !== 'complete' && (
-              <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <p className="text-sm text-gray-600 mb-1">Currently analyzing:</p>
-                <p className="font-semibold text-gray-900 text-lg">{currentApplicantName}</p>
+              <div className="bg-muted/50 rounded-lg p-3 border">
+                <p className="text-xs text-muted-foreground mb-1">Currently analyzing:</p>
+                <p className="font-medium text-foreground">{currentApplicantName}</p>
               </div>
             )}
 
             {/* Progress Bar */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Progress 
                 value={displayedProgress} 
-                className="h-4 bg-white/60" 
+                className="h-2" 
               />
-              <div className="flex justify-between text-sm text-gray-600">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{currentApplication} of {totalApplications} processed</span>
                 <span>{Math.round(displayedProgress)}% complete</span>
               </div>
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/40 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                <div className="flex items-center gap-2 text-blue-600 mb-2">
-                  <FileText className="w-5 h-5" />
-                  <span className="font-medium">Resumes Processed</span>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-muted/30 rounded-lg p-3 border">
+                <div className="flex items-center gap-2 text-primary mb-1">
+                  <FileText className="w-4 h-4" />
+                  <span className="text-xs font-medium">Resumes Processed</span>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{parsedCount}</p>
+                <p className="text-xl font-bold text-foreground">{parsedCount}</p>
               </div>
               
-              <div className="bg-white/40 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                <div className="flex items-center gap-2 text-purple-600 mb-2">
-                  <Users className="w-5 h-5" />
-                  <span className="font-medium">Candidates Analyzed</span>
+              <div className="bg-muted/30 rounded-lg p-3 border">
+                <div className="flex items-center gap-2 text-primary mb-1">
+                  <Users className="w-4 h-4" />
+                  <span className="text-xs font-medium">Candidates Analyzed</span>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{currentApplication}</p>
+                <p className="text-xl font-bold text-foreground">{currentApplication}</p>
               </div>
             </div>
 
             {/* Completion Message */}
             {currentPhase === 'complete' && (
-              <div className="bg-emerald-100 border border-emerald-200 rounded-xl p-6">
-                <div className="flex items-center justify-center gap-3 text-emerald-700">
-                  <Check className="w-6 h-6" />
-                  <span className="font-semibold text-lg">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center justify-center gap-2 text-green-700">
+                  <Check className="w-5 h-5" />
+                  <span className="font-medium">
                     Successfully analyzed {totalApplications} candidates with {parsedCount} resumes processed!
                   </span>
                 </div>
-                <p className="text-emerald-600 mt-2">Rankings have been updated and are ready to view.</p>
+                <p className="text-green-600 text-sm mt-1 text-center">Rankings have been updated and are ready to view.</p>
               </div>
             )}
           </div>
