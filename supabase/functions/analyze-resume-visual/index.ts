@@ -1,41 +1,11 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface ParsedResumeData {
-  personalInfo: {
-    name: string;
-    email: string;
-    phone: string;
-    location: string;
-  };
-  workExperience: Array<{
-    company: string;
-    position: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-  }>;
-  education: Array<{
-    institution: string;
-    degree: string;
-    graduationDate: string;
-    gpa?: string;
-  }>;
-  skills: string[];
-  summary: string;
-  totalExperience: string;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -46,10 +16,40 @@ serve(async (req) => {
     const { resumeUrl } = await req.json();
     
     if (!resumeUrl) {
-      throw new Error('Resume URL is required');
+      return new Response(
+        JSON.stringify({ error: 'Resume URL is required' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     console.log('Analyzing resume at URL:', resumeUrl);
+
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!openaiApiKey) {
+      return new Response(
+        JSON.stringify({ error: 'OpenAI API key not configured' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({ error: 'Supabase configuration missing' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
     // Create Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
@@ -74,124 +74,188 @@ serve(async (req) => {
 
     if (downloadError) {
       console.error('Error downloading file:', downloadError);
-      throw new Error(`Failed to download resume: ${downloadError.message}`);
+      return new Response(
+        JSON.stringify({ error: 'Failed to download resume file' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
-    // Convert file to base64
+    if (!fileData) {
+      return new Response(
+        JSON.stringify({ error: 'Resume file not found' }),
+        { 
+          status: 404, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Convert the file data to ArrayBuffer
     const arrayBuffer = await fileData.arrayBuffer();
-    const base64File = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    console.log('File size:', arrayBuffer.byteLength, 'bytes');
 
-    console.log('File converted to base64, size:', base64File.length);
+    // Check file size (OpenAI has a 512MB limit, but we'll use 50MB as a reasonable limit)
+    const maxSizeBytes = 50 * 1024 * 1024; // 50MB
+    if (arrayBuffer.byteLength > maxSizeBytes) {
+      return new Response(
+        JSON.stringify({ error: 'File too large. Maximum size is 50MB.' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
-    // Analyze the PDF with OpenAI Vision API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Upload PDF directly to OpenAI Files API
+    console.log('Uploading PDF to OpenAI Files API...');
+    const formData = new FormData();
+    formData.append('file', new Blob([arrayBuffer], { type: 'application/pdf' }), fileName);
+    formData.append('purpose', 'assistants');
+
+    const uploadResponse = await fetch('https://api.openai.com/v1/files', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${openaiApiKey}`,
+      },
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      const uploadError = await uploadResponse.text();
+      console.error('OpenAI file upload failed:', uploadError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to upload PDF to OpenAI' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const uploadResult = await uploadResponse.json();
+    console.log('File uploaded to OpenAI with ID:', uploadResult.id);
+
+    // Generate comprehensive resume summary using the uploaded file
+    console.log('Generating resume summary...');
+    const summaryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
-            content: `You are an expert resume parser. Analyze the provided resume document and extract structured information. 
+            content: `You are an expert HR professional analyzing resumes. Read the provided resume document and create a comprehensive professional summary.
 
-Return the information in this exact JSON format:
-{
-  "personalInfo": {
-    "name": "Full Name",
-    "email": "email@example.com",
-    "phone": "phone number",
-    "location": "City, State/Country"
-  },
-  "workExperience": [
-    {
-      "company": "Company Name",
-      "position": "Job Title",
-      "startDate": "MM/YYYY",
-      "endDate": "MM/YYYY or Present",
-      "description": "Brief description of role and achievements"
-    }
-  ],
-  "education": [
-    {
-      "institution": "School/University Name",
-      "degree": "Degree Type and Field",
-      "graduationDate": "MM/YYYY",
-      "gpa": "GPA if mentioned"
-    }
-  ],
-  "skills": ["Skill 1", "Skill 2", "Skill 3"],
-  "summary": "Professional summary or objective statement",
-  "totalExperience": "X years"
-}
+Generate a detailed summary that includes:
+- Professional background and years of experience
+- Key technical skills and expertise areas
+- Notable achievements and accomplishments
+- Educational background and certifications
+- Industry experience and domain knowledge
+- Leadership and soft skills
+- Career progression and growth
 
-If any information is not found, use empty string or empty array as appropriate. Be thorough and extract as much relevant information as possible.`
+Write the summary in a clear, professional tone that would be useful for HR professionals and hiring managers to quickly understand the candidate's qualifications and potential fit for roles. Be specific about technologies, tools, and methodologies mentioned.
+
+The summary should be comprehensive (300-500 words) but concise enough to be easily scannable.`
           },
           {
             role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Please analyze this resume and extract all the information according to the format specified.'
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:application/pdf;base64,${base64File}`,
-                  detail: 'high'
-                }
-              }
-            ]
+            content: `Please analyze the uploaded resume file (ID: ${uploadResult.id}) and provide a comprehensive professional summary of this candidate.`,
           }
         ],
-        max_tokens: 2000,
-        temperature: 0.1,
+        max_tokens: 800,
+        temperature: 0.3,
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    if (!summaryResponse.ok) {
+      const summaryError = await summaryResponse.text();
+      console.error('OpenAI summary generation failed:', summaryError);
+      
+      // Clean up uploaded file
+      await fetch(`https://api.openai.com/v1/files/${uploadResult.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+        },
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'Failed to generate resume summary' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
-    const data = await response.json();
+    const summaryData = await summaryResponse.json();
     
-    if (!data.choices || !data.choices[0]) {
-      throw new Error('No response from OpenAI');
+    if (!summaryData.choices || !summaryData.choices[0]) {
+      console.error('No summary response from OpenAI');
+      
+      // Clean up uploaded file
+      await fetch(`https://api.openai.com/v1/files/${uploadResult.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+        },
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'No response from OpenAI summary generation' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
-    const content = data.choices[0].message.content;
-    console.log('OpenAI response:', content);
+    const resumeSummary = summaryData.choices[0].message.content;
+    console.log('Generated resume summary (length):', resumeSummary.length);
 
-    // Parse the JSON response
-    let parsedData: ParsedResumeData;
+    // Clean up the uploaded file from OpenAI
     try {
-      // Try to extract JSON if it's wrapped in markdown
-      const jsonMatch = content.match(/```json\n?(.*?)\n?```/s) || content.match(/\{.*\}/s);
-      const jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : content;
-      parsedData = JSON.parse(jsonString);
-    } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', content);
-      throw new Error('Invalid JSON response from AI analysis');
+      await fetch(`https://api.openai.com/v1/files/${uploadResult.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+        },
+      });
+      console.log('Cleaned up uploaded file from OpenAI');
+    } catch (cleanupError) {
+      console.warn('Failed to cleanup uploaded file:', cleanupError);
     }
 
-    // Validate the response structure
-    if (!parsedData.personalInfo || !parsedData.workExperience || !parsedData.education) {
-      console.error('AI analysis missing required fields:', parsedData);
-      throw new Error('AI analysis response missing required fields');
-    }
+    // Return both summary and minimal parsed data for backward compatibility
+    const response = {
+      parsedData: {
+        personalInfo: {
+          name: "",
+          email: "",
+          phone: "",
+          location: ""
+        },
+        workExperience: [],
+        education: [],
+        skills: [],
+        summary: resumeSummary,
+        totalExperience: ""
+      },
+      resumeSummary: resumeSummary
+    };
 
-    console.log('Successfully parsed resume data:', {
-      name: parsedData.personalInfo.name,
-      experienceCount: parsedData.workExperience.length,
-      educationCount: parsedData.education.length,
-      skillsCount: parsedData.skills.length
-    });
+    console.log('Successfully generated resume summary');
 
-    return new Response(JSON.stringify({ parsedData }), {
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

@@ -36,16 +36,32 @@ export const ResumeReprocessor = ({ application, onSuccess }: ResumeReprocessorP
 
     try {
       // Re-process the resume with visual analysis
-      const parsedData = await reprocessResumeWithVisualAnalysis(application.resume_file_path);
+      // Generate new resume summary using the updated edge function
+      const { data: parseResult, error: parseError } = await supabase.functions.invoke('analyze-resume-visual', {
+        body: { resumeUrl: application.resume_file_path }
+      });
 
-      if (parsedData) {
-        // Update the application with the new parsed data (cast to any for Json compatibility)
+      if (parseError) {
+        throw new Error(`Resume analysis failed: ${parseError.message}`);
+      }
+
+      if (parseResult?.resumeSummary || parseResult?.parsedData) {
+        // Update the application with both summary and parsed data
+        const updateData: any = {
+          updated_at: new Date().toISOString()
+        };
+
+        if (parseResult.resumeSummary) {
+          updateData.resume_summary = parseResult.resumeSummary;
+        }
+
+        if (parseResult.parsedData) {
+          updateData.parsed_resume_data = parseResult.parsedData;
+        }
+
         const { error: updateError } = await supabase
           .from('applications')
-          .update({
-            parsed_resume_data: parsedData as any,
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', application.id);
 
         if (updateError) {

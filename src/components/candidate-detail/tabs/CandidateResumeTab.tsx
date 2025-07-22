@@ -4,6 +4,7 @@ import { FileText } from "lucide-react";
 import { Application } from "@/types";
 import { constructResumeUrl } from "@/utils/resumeUploadUtils";
 import { WorkableStyleDocumentViewer } from "./WorkableStyleDocumentViewer";
+import { ResumeSummaryDisplay } from "@/components/ResumeSummaryDisplay";
 
 interface CandidateResumeTabProps {
   application: Application;
@@ -38,13 +39,19 @@ export const CandidateResumeTab = ({ application }: CandidateResumeTabProps) => 
 
   return (
     <div className="space-y-6">
+      {/* Resume Summary Section */}
+      <ResumeSummaryDisplay 
+        resumeSummary={application.resume_summary}
+        applicantName={application.name}
+      />
+
       {/* Resume Section */}
       {hasResume && (
         <Card className="bg-card border border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-left text-foreground">
               <FileText className="w-5 h-5" />
-              Resume
+              Resume Document
             </CardTitle>
           </CardHeader>
           <CardContent>

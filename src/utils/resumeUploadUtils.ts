@@ -27,7 +27,7 @@ export interface ParsedResumeData {
   totalExperience: string;
 }
 
-export const uploadResumeFile = async (file: File): Promise<{ url: string; parsedData?: ParsedResumeData }> => {
+export const uploadResumeFile = async (file: File): Promise<{ url: string; parsedData?: ParsedResumeData; resumeSummary?: string }> => {
   try {
     // Upload file to Supabase Storage
     const fileExt = file.name.split('.').pop();
@@ -64,14 +64,21 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
           throw new Error(`Resume analysis failed: ${parseError.message}`);
         }
 
-        if (parseResult?.parsedData) {
-          console.log('Successfully parsed resume data:', parseResult.parsedData);
+        if (parseResult?.resumeSummary) {
+          console.log('Resume summary generated successfully');
+          return {
+            url: publicUrl,
+            parsedData: parseResult.parsedData, // Backward compatibility
+            resumeSummary: parseResult.resumeSummary
+          };
+        } else if (parseResult?.parsedData) {
+          console.log('Resume parsed successfully (legacy format)');
           return {
             url: publicUrl,
             parsedData: parseResult.parsedData
           };
         } else {
-          console.warn('No parsed data returned from analysis');
+          console.warn('No parsed data or summary returned from analysis');
           return { url: publicUrl };
         }
       } catch (parseError) {
@@ -132,6 +139,33 @@ export const reprocessResumeWithVisualAnalysis = async (resumeUrl: string): Prom
     return null;
   } catch (error) {
     console.error('Error re-processing resume:', error);
+    throw error;
+  }
+};
+
+// Function to generate resume summary for existing resumes
+export const generateResumeSummary = async (resumeUrl: string): Promise<string | null> => {
+  try {
+    console.log('Generating resume summary:', resumeUrl);
+    
+    const { data: parseResult, error: parseError } = await supabase.functions.invoke('analyze-resume-visual', {
+      body: { resumeUrl }
+    });
+
+    if (parseError) {
+      console.error('Resume summary generation failed:', parseError);
+      throw new Error(`Resume analysis failed: ${parseError.message}`);
+    }
+
+    if (parseResult?.resumeSummary) {
+      console.log('Successfully generated resume summary');
+      return parseResult.resumeSummary;
+    }
+
+    console.warn('No resume summary returned');
+    return null;
+  } catch (error) {
+    console.error('Error generating resume summary:', error);
     throw error;
   }
 };

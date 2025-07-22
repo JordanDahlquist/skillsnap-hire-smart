@@ -45,6 +45,7 @@ export type Database = {
           previous_pipeline_stage: string | null
           rejection_reason: string | null
           resume_file_path: string | null
+          resume_summary: string | null
           skills: Json | null
           skills_test_responses: Json | null
           skills_video_transcripts: Json | null
@@ -84,6 +85,7 @@ export type Database = {
           previous_pipeline_stage?: string | null
           rejection_reason?: string | null
           resume_file_path?: string | null
+          resume_summary?: string | null
           skills?: Json | null
           skills_test_responses?: Json | null
           skills_video_transcripts?: Json | null
@@ -123,6 +125,7 @@ export type Database = {
           previous_pipeline_stage?: string | null
           rejection_reason?: string | null
           resume_file_path?: string | null
+          resume_summary?: string | null
           skills?: Json | null
           skills_test_responses?: Json | null
           skills_video_transcripts?: Json | null

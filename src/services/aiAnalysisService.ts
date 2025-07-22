@@ -46,6 +46,7 @@ interface StreamlinedAnalysisData {
   professional_summary?: string;
   total_experience?: string;
   has_parsed_resume?: boolean;
+  resume_summary?: string; // AI-generated comprehensive summary
 }
 
 interface StreamlinedJobData {
@@ -212,6 +213,7 @@ export class AIAnalysisService {
         professional_summary: professionalSummary || undefined,
         total_experience: totalExperience || undefined,
         has_parsed_resume: !!resumeData,
+        resume_summary: application.resume_summary || undefined, // New field for AI-generated summary
       };
 
       const jobData: StreamlinedJobData = {
