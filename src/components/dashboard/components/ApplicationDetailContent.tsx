@@ -37,6 +37,7 @@ interface ApplicationDetailContentProps {
   onReject: () => void;
   onUnreject: () => void;
   onEmail: () => void;
+  onViewFullProfile: () => void;
   jobId: string;
   onStageChange: (applicationId: string, newStage: string) => void;
 }
@@ -51,6 +52,7 @@ export const ApplicationDetailContent = ({
   onReject,
   onUnreject,
   onEmail,
+  onViewFullProfile,
   jobId,
   onStageChange
 }: ApplicationDetailContentProps) => {
@@ -187,7 +189,12 @@ export const ApplicationDetailContent = ({
         {/* Header Section */}
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold">{application.name}</h2>
+            <button
+              onClick={onViewFullProfile}
+              className="text-left hover:text-primary transition-colors"
+            >
+              <h2 className="text-2xl font-bold hover:underline">{application.name}</h2>
+            </button>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               {application.email && (
                 <div className="flex items-center gap-1">
@@ -224,6 +231,16 @@ export const ApplicationDetailContent = ({
         <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="default"
+            size="sm"
+            onClick={onViewFullProfile}
+            className="flex items-center gap-2"
+          >
+            <User className="w-4 h-4" />
+            View Full Profile
+          </Button>
+
+          <Button
+            variant="outline"
             size="sm"
             onClick={onEmail}
             className="flex items-center gap-2"

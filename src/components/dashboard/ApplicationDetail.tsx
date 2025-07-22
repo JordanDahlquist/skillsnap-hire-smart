@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { EmailComposerModal } from "./EmailComposerModal";
 import { ApplicationDetailContent } from "./components/ApplicationDetailContent";
 import { ApplicationRejectionDialog } from "./components/ApplicationRejectionDialog";
@@ -47,6 +48,7 @@ export const ApplicationDetail = ({
   const [selectedRejectionReason, setSelectedRejectionReason] = useState("");
   const [customReason, setCustomReason] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { navigateToEmailTabFromJob } = useEmailNavigation();
 
   // Get the sendReply function for email functionality
@@ -59,6 +61,12 @@ export const ApplicationDetail = ({
     sendReply,
     onApplicationUpdate
   );
+
+  const handleViewFullProfile = () => {
+    if (selectedApplication) {
+      navigate(`/jobs/${job.id}/candidate/${selectedApplication.id}`);
+    }
+  };
 
   const handleManualRating = async (rating: number) => {
     if (!selectedApplication || isUpdating) return;
@@ -195,6 +203,7 @@ export const ApplicationDetail = ({
           onReject={handleReject}
           onUnreject={handleUnreject}
           onEmail={handleEmail}
+          onViewFullProfile={handleViewFullProfile}
           jobId={job.id}
           onStageChange={handleStageChange}
         />
