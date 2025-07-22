@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.10';
@@ -6,40 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface EdenAIResponse {
-  extracted_data: Array<{
-    personal_infos?: {
-      name?: { value?: string };
-      address?: { value?: string };
-      phone?: { value?: string };
-      mail?: { value?: string };
-    };
-    work_experience?: Array<{
-      title?: string;
-      company?: string;
-      location?: string;
-      start_date?: string;
-      end_date?: string;
-      description?: string;
-    }>;
-    education?: Array<{
-      title?: string;
-      establishment?: string;
-      location?: string;
-      start_date?: string;
-      end_date?: string;
-      description?: string;
-    }>;
-    skills?: Array<{
-      name?: string;
-    }>;
-    languages?: Array<{
-      name?: string;
-      level?: string;
-    }>;
-  }>;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -81,8 +48,8 @@ serve(async (req) => {
     // Convert blob to form data for Eden AI
     const formData = new FormData();
     formData.append('file', fileData, fileName);
-    formData.append('providers', 'microsoft,google,affinda'); // Use multiple providers for better accuracy
-    formData.append('fallback_providers', 'amazon,ibm');
+    formData.append('providers', 'microsoft'); // Use Microsoft as primary provider
+    formData.append('fallback_providers', 'google'); // Use Google as fallback
 
     // Send to Eden AI Resume Parser API
     const edenResponse = await fetch('https://api.edenai.run/v2/ocr/resume_parser', {
@@ -98,7 +65,7 @@ serve(async (req) => {
       throw new Error(`Eden AI API error: ${errorText}`);
     }
 
-    const edenData: EdenAIResponse = await edenResponse.json();
+    const edenData = await edenResponse.json();
     console.log('Eden AI response received');
 
     // Extract data from the first provider result
@@ -109,59 +76,42 @@ serve(async (req) => {
     }
 
     // Map Eden AI response to our schema
-    const personalInfo = {
-      name: extractedData.personal_infos?.name?.value || '',
-      email: extractedData.personal_infos?.mail?.value || '',
-      phone: extractedData.personal_infos?.phone?.value || '',
-      location: extractedData.personal_infos?.address?.value || '',
+    const parsedData = {
+      personalInfo: {
+        name: extractedData.personal_infos?.name?.value || '',
+        email: extractedData.personal_infos?.mail?.value || '',
+        phone: extractedData.personal_infos?.phone?.value || '',
+        location: extractedData.personal_infos?.address?.value || '',
+      },
+      workExperience: extractedData.work_experience?.map(exp => ({
+        company: exp.company || '',
+        position: exp.title || '',
+        startDate: exp.start_date || '',
+        endDate: exp.end_date || 'Present',
+        description: exp.description || '',
+      })) || [],
+      education: extractedData.education?.map(edu => ({
+        institution: edu.establishment || '',
+        degree: edu.title || '',
+        graduationDate: edu.end_date || '',
+        description: edu.description || '',
+      })) || [],
+      skills: extractedData.skills?.map(skill => skill.name || '').filter(Boolean) || [],
     };
-
-    const workExperience = extractedData.work_experience?.map(exp => ({
-      company: exp.company || '',
-      position: exp.title || '',
-      startDate: exp.start_date || '',
-      endDate: exp.end_date || 'Present',
-      description: exp.description || '',
-    })) || [];
-
-    const education = extractedData.education?.map(edu => ({
-      institution: edu.establishment || '',
-      degree: edu.title || '',
-      graduationDate: edu.end_date || '',
-      description: edu.description || '',
-    })) || [];
-
-    const skills = extractedData.skills?.map(skill => skill.name || '').filter(Boolean) || [];
-    const languages = extractedData.languages?.map(lang => `${lang.name} (${lang.level})`).filter(Boolean) || [];
-
-    // Calculate total experience
-    const totalExperience = workExperience.length > 0 
-      ? `${workExperience.length} position${workExperience.length > 1 ? 's' : ''}`
-      : 'No experience listed';
 
     // Generate a professional summary
-    const summary = generateProfessionalSummary({
-      personalInfo,
-      workExperience,
-      education,
-      skills,
-      languages,
-    });
+    const summary = generateProfessionalSummary(parsedData);
 
-    const parsedData = {
-      personalInfo,
-      workExperience,
-      education,
-      skills: [...skills, ...languages],
-      summary,
-      totalExperience,
-    };
-
-    console.log('Successfully parsed resume with Eden AI');
+    // Calculate experience level based on work history
+    const totalYearsExperience = calculateTotalExperience(parsedData.workExperience);
+    
+    // Generate AI rating based on experience and skills
+    const aiRating = calculateAIRating(parsedData, totalYearsExperience);
 
     return new Response(JSON.stringify({
       parsedData,
-      resumeSummary: summary,
+      aiRating,
+      summary
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -193,7 +143,7 @@ function generateProfessionalSummary(data: any): string {
     if (latestJob.company) {
       summary += ` at ${latestJob.company}`;
     }
-    summary += ` with ${workExperience.length} position${workExperience.length > 1 ? 's' : ''} of experience. `;
+    summary += `. `;
   }
   
   if (education.length > 0) {
@@ -210,4 +160,40 @@ function generateProfessionalSummary(data: any): string {
   }
   
   return summary.trim() || 'Professional with relevant experience and qualifications.';
+}
+
+function calculateTotalExperience(workExperience: any[]): number {
+  let totalYears = 0;
+  
+  workExperience.forEach(exp => {
+    const startYear = exp.startDate ? parseInt(exp.startDate.split('-')[0]) : null;
+    const endYear = exp.endDate && exp.endDate !== 'Present' 
+      ? parseInt(exp.endDate.split('-')[0])
+      : new Date().getFullYear();
+      
+    if (startYear && endYear) {
+      totalYears += endYear - startYear;
+    }
+  });
+  
+  return totalYears;
+}
+
+function calculateAIRating(parsedData: any, yearsExperience: number): number {
+  let score = 0;
+  
+  // Experience points (max 1 point)
+  score += Math.min(yearsExperience / 10, 1);
+  
+  // Skills points (max 1 point)
+  const skillsCount = parsedData.skills.length;
+  score += Math.min(skillsCount / 10, 1);
+  
+  // Education points (max 0.5 points)
+  if (parsedData.education.length > 0) {
+    score += 0.5;
+  }
+  
+  // Scale to 3-point system
+  return Math.max(1, Math.min(3, Math.round(score * 3)));
 }

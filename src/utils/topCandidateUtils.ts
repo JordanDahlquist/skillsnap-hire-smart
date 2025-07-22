@@ -18,13 +18,11 @@ export const calculateTopCandidates = (applications: Application[]): Set<string>
     (b.ai_rating || 0) - (a.ai_rating || 0)
   );
   
-  // Calculate top 10% count (minimum 1, maximum based on total count)
+  // Get top 10% of candidates
   const topCount = Math.max(1, Math.ceil(sortedApplications.length * 0.1));
-  
-  // Get the top candidates
   const topApplications = sortedApplications.slice(0, topCount);
   
-  // Only include candidates with rating >= 2.5 (exceeds expectations threshold)
+  // Only include candidates with rating >= 2.5
   topApplications.forEach(app => {
     if (app.ai_rating && app.ai_rating >= 2.5) {
       topCandidateIds.add(app.id);

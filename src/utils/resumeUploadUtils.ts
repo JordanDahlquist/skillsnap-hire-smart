@@ -23,11 +23,9 @@ export interface ParsedResumeData {
     gpa?: string;
   }>;
   skills: string[];
-  summary: string;
-  totalExperience: string;
 }
 
-export const uploadResumeFile = async (file: File): Promise<{ url: string; parsedData?: ParsedResumeData; resumeSummary?: string }> => {
+export const uploadResumeFile = async (file: File): Promise<{ url: string; parsedData?: ParsedResumeData; aiRating?: number; summary?: string }> => {
   try {
     // Upload file to Supabase Storage
     const fileExt = file.name.split('.').pop();
@@ -42,7 +40,7 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
       throw new Error(`Upload failed: ${uploadError.message}`);
     }
 
-    // Construct the complete URL for the uploaded file
+    // Get the public URL for the uploaded file
     const { data: { publicUrl } } = supabase.storage
       .from('application-files')
       .getPublicUrl(fileName);
@@ -54,36 +52,23 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
       try {
         console.log('Parsing PDF resume with Eden AI...');
         
-        // Use Eden AI for structured resume parsing
         const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-resume-eden', {
           body: { resumeUrl: publicUrl }
         });
 
         if (parseError) {
-          console.error('Resume visual analysis failed:', parseError);
           throw new Error(`Resume analysis failed: ${parseError.message}`);
         }
 
-        if (parseResult?.resumeSummary) {
-          console.log('Resume summary generated successfully');
-          return {
-            url: publicUrl,
-            parsedData: parseResult.parsedData, // Backward compatibility
-            resumeSummary: parseResult.resumeSummary
-          };
-        } else if (parseResult?.parsedData) {
-          console.log('Resume parsed successfully (legacy format)');
-          return {
-            url: publicUrl,
-            parsedData: parseResult.parsedData
-          };
-        } else {
-          console.warn('No parsed data or summary returned from analysis');
-          return { url: publicUrl };
-        }
+        return {
+          url: publicUrl,
+          parsedData: parseResult.parsedData,
+          aiRating: parseResult.aiRating,
+          summary: parseResult.summary
+        };
       } catch (parseError) {
         console.error('Resume parsing failed:', parseError);
-        throw parseError; // Re-throw to let the caller handle it
+        throw parseError;
       }
     }
 
@@ -97,27 +82,27 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
 };
 
 export const constructResumeUrl = (filePath: string): string => {
-  // If it's already a complete URL, return as is
   if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
     return filePath;
   }
   
-  // If it's a blob URL (for local testing), return as is
   if (filePath.startsWith('blob:')) {
     return filePath;
   }
   
-  // If it's just a filename, construct the Supabase Storage URL
   if (!filePath.includes('/')) {
     return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
   }
   
-  // If it contains slashes but isn't a full URL, assume it's a relative path from the bucket
   return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
 };
 
-// Function to re-process existing resumes with Eden AI
-export const reprocessResumeWithEdenAI = async (resumeUrl: string): Promise<ParsedResumeData | null> => {
+// Function to re-process existing resumes
+export const reprocessResumeWithEdenAI = async (resumeUrl: string): Promise<{ 
+  parsedData: ParsedResumeData; 
+  aiRating: number; 
+  summary: string; 
+}> => {
   try {
     console.log('Re-processing resume with Eden AI:', resumeUrl);
     
@@ -126,46 +111,20 @@ export const reprocessResumeWithEdenAI = async (resumeUrl: string): Promise<Pars
     });
 
     if (parseError) {
-      console.error('Resume re-processing failed:', parseError);
       throw new Error(`Resume analysis failed: ${parseError.message}`);
     }
 
-    if (parseResult?.parsedData) {
-      console.log('Successfully re-processed resume:', parseResult.parsedData);
-      return parseResult.parsedData;
+    if (!parseResult?.parsedData) {
+      throw new Error('No parsed data returned from processing');
     }
 
-    console.warn('No parsed data returned from re-processing');
-    return null;
+    return {
+      parsedData: parseResult.parsedData,
+      aiRating: parseResult.aiRating,
+      summary: parseResult.summary
+    };
   } catch (error) {
     console.error('Error re-processing resume:', error);
-    throw error;
-  }
-};
-
-// Function to generate resume summary for existing resumes
-export const generateResumeSummary = async (resumeUrl: string): Promise<string | null> => {
-  try {
-    console.log('Generating resume summary:', resumeUrl);
-    
-    const { data: parseResult, error: parseError } = await supabase.functions.invoke('analyze-resume-visual', {
-      body: { resumeUrl }
-    });
-
-    if (parseError) {
-      console.error('Resume summary generation failed:', parseError);
-      throw new Error(`Resume analysis failed: ${parseError.message}`);
-    }
-
-    if (parseResult?.resumeSummary) {
-      console.log('Successfully generated resume summary');
-      return parseResult.resumeSummary;
-    }
-
-    console.warn('No resume summary returned');
-    return null;
-  } catch (error) {
-    console.error('Error generating resume summary:', error);
     throw error;
   }
 };
