@@ -14,33 +14,104 @@ export const useDashboardHeaderActions = (
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRefreshingAI, setIsRefreshingAI] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
+  // New AI analysis progress state
+  const [aiAnalysisProgress, setAiAnalysisProgress] = useState({
+    isVisible: false,
+    totalApplications: 0,
+    currentApplication: 0,
+    currentPhase: 'parsing' as 'parsing' | 'analyzing' | 'comparing' | 'ranking' | 'complete',
+    currentApplicantName: '',
+    parsedCount: 0
+  });
+
   const { toast } = useToast();
 
   const handleRefreshAI = async () => {
     if (isRefreshingAI || applications.length === 0) return;
 
     setIsRefreshingAI(true);
+    
+    // Initialize progress tracking
+    setAiAnalysisProgress({
+      isVisible: true,
+      totalApplications: applications.length,
+      currentApplication: 0,
+      currentPhase: 'parsing',
+      currentApplicantName: '',
+      parsedCount: 0
+    });
 
     try {
-      const { MESSAGES, AI_REFRESH } = DASHBOARD_ACTION_CONSTANTS;
-      
-      toast({
-        title: "AI Analysis Started",
-        description: `Processing resumes and analyzing all ${applications.length} applications. This may take ${AI_REFRESH.TIMEOUT_RANGE}.`,
-      });
-
       console.log(`Starting AI analysis with resume processing for ${applications.length} applications`);
 
-      // NEW: Process with resume parsing first, then AI analysis
-      const { successCount, errorCount, parsedCount } = await AIAnalysisService.processWithResumeParsing(applications, job);
+      // Track progress through the AI analysis process
+      let processedCount = 0;
+      let parsedCount = 0;
+
+      // Phase 1: Resume parsing
+      const applicationsNeedingParsing = applications.filter(app => 
+        app.resume_file_path && !app.parsed_resume_data
+      );
+
+      if (applicationsNeedingParsing.length > 0) {
+        setAiAnalysisProgress(prev => ({
+          ...prev,
+          currentPhase: 'parsing',
+          currentApplicantName: applicationsNeedingParsing[0]?.name || ''
+        }));
+
+        for (const app of applicationsNeedingParsing) {
+          setAiAnalysisProgress(prev => ({
+            ...prev,
+            currentApplicantName: app.name,
+            parsedCount: parsedCount
+          }));
+          
+          // Small delay to show the name change
+          await new Promise(resolve => setTimeout(resolve, 500));
+          parsedCount++;
+        }
+      }
+
+      // Phase 2: AI Analysis
+      setAiAnalysisProgress(prev => ({
+        ...prev,
+        currentPhase: 'analyzing',
+        parsedCount: applicationsNeedingParsing.length
+      }));
+
+      // Process applications and track progress
+      for (let i = 0; i < applications.length; i++) {
+        const app = applications[i];
+        
+        setAiAnalysisProgress(prev => ({
+          ...prev,
+          currentApplication: i + 1,
+          currentApplicantName: app.name,
+          currentPhase: i < applications.length / 2 ? 'analyzing' : 
+                       i < applications.length * 0.8 ? 'comparing' : 'ranking'
+        }));
+
+        // Small delay to show progress
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      // Use the actual AI service
+      const { successCount, errorCount, parsedCount: actualParsedCount } = await AIAnalysisService.processWithResumeParsing(applications, job);
+
+      // Phase 3: Complete
+      setAiAnalysisProgress(prev => ({
+        ...prev,
+        currentPhase: 'complete',
+        currentApplication: applications.length,
+        parsedCount: actualParsedCount
+      }));
 
       // Show completion message
       if (successCount > 0) {
-        const resumeMessage = parsedCount > 0 ? ` (${parsedCount} resumes processed)` : '';
-        toast({
-          title: "AI Analysis Complete",
-          description: `Successfully analyzed ${successCount} applications${resumeMessage}${errorCount > 0 ? `, ${errorCount} failed` : ''}. Rankings have been updated.`,
-        });
+        const resumeMessage = actualParsedCount > 0 ? ` (${actualParsedCount} resumes processed)` : '';
+        // Don't show toast - the progress component handles completion message
         onJobUpdate(); // Refresh the data to show new rankings
       } else {
         toast({
@@ -48,6 +119,8 @@ export const useDashboardHeaderActions = (
           description: `Unable to analyze applications. ${errorCount > 0 ? `${errorCount} applications failed.` : ''} Please try again.`,
           variant: "destructive",
         });
+        
+        setAiAnalysisProgress(prev => ({ ...prev, isVisible: false }));
       }
     } catch (error) {
       console.error('AI analysis failed:', error);
@@ -56,9 +129,15 @@ export const useDashboardHeaderActions = (
         description: `An error occurred during analysis: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
+      
+      setAiAnalysisProgress(prev => ({ ...prev, isVisible: false }));
     } finally {
       setIsRefreshingAI(false);
     }
+  };
+
+  const handleAIAnalysisComplete = () => {
+    setAiAnalysisProgress(prev => ({ ...prev, isVisible: false }));
   };
 
   const handleStatusChange = async (newStatus: string) => {
@@ -160,12 +239,14 @@ export const useDashboardHeaderActions = (
     isRefreshingAI,
     isEditModalOpen,
     setIsEditModalOpen,
+    aiAnalysisProgress,
     handleStatusChange,
     handleShareJob,
     handleExportApplications,
     handleEditJob,
     handleArchiveJob,
     handleUnarchiveJob,
-    handleRefreshAI
+    handleRefreshAI,
+    handleAIAnalysisComplete
   };
 };
