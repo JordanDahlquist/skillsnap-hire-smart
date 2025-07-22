@@ -1,11 +1,11 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle, XCircle, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { reprocessResumeWithEdenAI } from "@/utils/resumeUploadUtils";
-import { supabase } from "@/integrations/supabase/client";
+import { reprocessResumeWithEdenAI, updateApplicationWithResumeData } from "@/utils/resumeUploadUtils";
 import type { Application } from "@/types";
 
 interface ResumeReprocessorProps {
@@ -35,32 +35,31 @@ export const ResumeReprocessor = ({ application, onSuccess }: ResumeReprocessorP
     setProcessingStatus('processing');
 
     try {
+      console.log('Re-processing resume for application:', application.id, 'Resume URL:', application.resume_file_path);
+      
       // Re-process the resume with Eden AI
-      const parsedData = await reprocessResumeWithEdenAI(application.resume_file_path);
+      const { parsedData, aiRating, summary } = await reprocessResumeWithEdenAI(application.resume_file_path);
       
       if (!parsedData) {
         throw new Error('No data returned from Eden AI processing');
       }
 
-      // Update the application with parsed data
-      const updateData = {
-        parsed_resume_data: parsedData as any,
-        updated_at: new Date().toISOString()
-      };
+      console.log('Resume re-processing completed, saving to database:', {
+        applicationId: application.id,
+        hasPersonalInfo: !!parsedData?.personalInfo,
+        workExperienceCount: parsedData?.workExperience?.length || 0,
+        skillsCount: parsedData?.skills?.length || 0,
+        aiRating,
+        summaryLength: summary?.length || 0
+      });
 
-      const { error: updateError } = await supabase
-        .from('applications')
-        .update(updateData)
-        .eq('id', application.id);
-
-      if (updateError) {
-        throw new Error(`Failed to update application: ${updateError.message}`);
-      }
+      // CRITICAL FIX: Use the new utility function to properly save to database
+      await updateApplicationWithResumeData(application.id, parsedData, aiRating, summary);
 
       setProcessingStatus('success');
       toast({
         title: "Resume processed successfully",
-        description: "The resume has been analyzed with Eden AI.",
+        description: "The resume has been re-analyzed with Eden AI and saved to the database.",
       });
 
       if (onSuccess) {
@@ -117,10 +116,10 @@ export const ResumeReprocessor = ({ application, onSuccess }: ResumeReprocessorP
         <div className="flex items-center gap-2">
           {getStatusIcon()}
           <span className="text-sm text-muted-foreground">
-            {processingStatus === 'processing' && "Processing resume with AI..."}
-            {processingStatus === 'success' && "Resume processed successfully"}
+            {processingStatus === 'processing' && "Processing resume with AI and saving to database..."}
+            {processingStatus === 'success' && "Resume processed and saved successfully"}
             {processingStatus === 'error' && "Processing failed"}
-            {processingStatus === 'idle' && (hasParsedData ? "Resume data available" : "Ready to process")}
+            {processingStatus === 'idle' && (hasParsedData ? "Resume data available in database" : "Ready to process and save")}
           </span>
         </div>
 
@@ -129,7 +128,7 @@ export const ResumeReprocessor = ({ application, onSuccess }: ResumeReprocessorP
             <span className="font-medium">Resume File:</span> {hasResumeFile ? "Available" : "Not uploaded"}
           </div>
           <div className="text-sm">
-            <span className="font-medium">Parsed Data:</span> {hasParsedData ? "Available" : "Not processed"}
+            <span className="font-medium">Parsed Data:</span> {hasParsedData ? "Saved in database" : "Not processed"}
           </div>
           {hasParsedData && application.parsed_resume_data && (
             <div className="text-xs text-muted-foreground">
@@ -147,7 +146,7 @@ export const ResumeReprocessor = ({ application, onSuccess }: ResumeReprocessorP
           {isProcessing ? (
             <>
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              Processing...
+              Processing & Saving...
             </>
           ) : (
             <>

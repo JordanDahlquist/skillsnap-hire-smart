@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle, XCircle, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { reprocessResumeWithEdenAI } from "@/utils/resumeUploadUtils";
+import { reprocessResumeWithEdenAI, updateApplicationWithResumeData } from "@/utils/resumeUploadUtils";
 import { supabase } from "@/integrations/supabase/client";
 import type { Application } from "@/types";
 
@@ -38,28 +38,27 @@ export const ResumeProcessor = ({ application, onSuccess, batchMode }: ResumePro
     setProcessingStatus('processing');
 
     try {
+      console.log('Processing resume for application:', application.id, 'Resume URL:', application.resume_file_path);
+      
       // Process the resume with Eden AI
       const { parsedData, aiRating, summary } = await reprocessResumeWithEdenAI(application.resume_file_path);
       
-      // Update the application with parsed data
-      const { error: updateError } = await supabase
-        .from('applications')
-        .update({
-          parsed_resume_data: parsedData,
-          ai_rating: aiRating,
-          ai_summary: summary,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', application.id);
+      console.log('Resume processing completed, saving to database:', {
+        applicationId: application.id,
+        hasPersonalInfo: !!parsedData?.personalInfo,
+        workExperienceCount: parsedData?.workExperience?.length || 0,
+        skillsCount: parsedData?.skills?.length || 0,
+        aiRating,
+        summaryLength: summary?.length || 0
+      });
 
-      if (updateError) {
-        throw new Error(`Failed to update application: ${updateError.message}`);
-      }
+      // CRITICAL FIX: Save parsed data to database using the new utility function
+      await updateApplicationWithResumeData(application.id, parsedData, aiRating, summary);
 
       setProcessingStatus('success');
       toast({
         title: "Resume processed successfully",
-        description: "The resume has been analyzed with AI.",
+        description: "The resume has been analyzed with AI and saved to the database.",
       });
 
       if (onSuccess) {
@@ -106,7 +105,7 @@ export const ResumeProcessor = ({ application, onSuccess, batchMode }: ResumePro
             {isProcessing ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
+                Processing & Saving...
               </>
             ) : (
               <>
@@ -118,8 +117,8 @@ export const ResumeProcessor = ({ application, onSuccess, batchMode }: ResumePro
 
           {processingStatus !== 'idle' && (
             <div className="text-sm text-muted-foreground">
-              {processingStatus === 'processing' && "Processing resume with AI..."}
-              {processingStatus === 'success' && "Resume processed successfully"}
+              {processingStatus === 'processing' && "Processing resume with AI and saving to database..."}
+              {processingStatus === 'success' && "Resume processed and saved successfully"}
               {processingStatus === 'error' && "Processing failed"}
             </div>
           )}

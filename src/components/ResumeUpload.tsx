@@ -4,15 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText, Upload, X, Loader2, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { uploadResumeFile, ParsedResumeData } from "@/utils/resumeUploadUtils";
+import { uploadResumeFile, updateApplicationWithResumeData, ParsedResumeData } from "@/utils/resumeUploadUtils";
 
 interface ResumeUploadProps {
   onResumeData: (data: ParsedResumeData, filePath: string) => void;
   onRemove: () => void;
   uploadedFile: string | null;
+  applicationId?: string; // Add applicationId prop for database updates
 }
 
-export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUploadProps) => {
+export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile, applicationId }: ResumeUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
@@ -60,13 +61,45 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
   const processResumeFile = async (file: File) => {
     setIsProcessing(true);
     try {
+      console.log('Starting resume file processing:', file.name);
+      
       const result = await uploadResumeFile(file);
+      console.log('Resume upload result:', {
+        hasUrl: !!result.url,
+        hasParsedData: !!result.parsedData,
+        hasAiRating: !!result.aiRating,
+        hasSummary: !!result.summary
+      });
       
       if (result.parsedData) {
+        // CRITICAL FIX: Save parsed data to database if applicationId is provided
+        if (applicationId) {
+          try {
+            console.log('Saving parsed resume data to database for application:', applicationId);
+            await updateApplicationWithResumeData(
+              applicationId, 
+              result.parsedData, 
+              result.aiRating, 
+              result.summary
+            );
+            console.log('Successfully saved parsed resume data to database');
+          } catch (saveError) {
+            console.error('Failed to save parsed data to database:', saveError);
+            // Don't fail the entire process if database save fails
+            toast({
+              title: "Warning",
+              description: "Resume was processed but failed to save to database. You may need to re-process later.",
+              variant: "destructive"
+            });
+          }
+        } else {
+          console.warn('No applicationId provided - cannot save parsed data to database');
+        }
+
         onResumeData(result.parsedData, result.url);
         toast({
           title: "Resume processed successfully",
-          description: "Your resume has been analyzed using advanced visual AI and is ready for preview.",
+          description: "Your resume has been analyzed using advanced visual AI and saved to the database.",
         });
       } else {
         // Still pass the URL even if parsing failed
@@ -85,9 +118,9 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
         });
       }
     } catch (error) {
-      console.error('Error uploading resume:', error);
+      console.error('Error uploading/processing resume:', error);
       toast({
-        title: "Error uploading resume",
+        title: "Error processing resume",
         description: error instanceof Error ? error.message : "Please try again or fill the form manually.",
         variant: "destructive"
       });
@@ -115,7 +148,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
             </Button>
           </div>
           <p className="text-xs text-green-600 mt-1">
-            Your resume has been analyzed using advanced visual AI technology for better accuracy.
+            Your resume has been analyzed using advanced visual AI technology and saved to the database.
           </p>
         </CardContent>
       </Card>
@@ -140,7 +173,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
                 <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
               </div>
               <p className="text-sm text-gray-600">Analyzing resume with visual AI...</p>
-              <p className="text-xs text-gray-500">This may take 10-15 seconds for better accuracy</p>
+              <p className="text-xs text-gray-500">Processing and saving to database...</p>
             </div>
           ) : (
             <>
@@ -152,7 +185,7 @@ export const ResumeUpload = ({ onResumeData, onRemove, uploadedFile }: ResumeUpl
                 Upload your resume for AI analysis
               </p>
               <p className="text-xs text-gray-500 mb-1">
-                Now powered by advanced visual AI for better accuracy
+                Now powered by advanced visual AI with database persistence
               </p>
               <p className="text-xs text-gray-500 mb-3">
                 Drag and drop or click to select a PDF, Word, or text document
