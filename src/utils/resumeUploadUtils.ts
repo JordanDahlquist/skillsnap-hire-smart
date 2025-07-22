@@ -26,7 +26,7 @@ export interface ParsedResumeData {
   skills: string[];
 }
 
-// MODIFIED: Remove automatic parsing, just upload file
+// Upload file to Supabase Storage
 export const uploadResumeFile = async (file: File): Promise<{ url: string }> => {
   try {
     // Upload file to Supabase Storage
@@ -49,7 +49,6 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string }> => 
 
     console.log('File uploaded to:', publicUrl);
 
-    // REMOVED: No automatic parsing - just return the URL
     return { url: publicUrl };
 
   } catch (error) {
@@ -72,92 +71,4 @@ export const constructResumeUrl = (filePath: string): string => {
   }
   
   return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
-};
-
-// Function to re-process existing resumes (used by AI Rank button)
-export const reprocessResumeWithEdenAI = async (resumeUrl: string): Promise<{ 
-  parsedData: ParsedResumeData; 
-  aiRating: number; 
-  summary: string; 
-}> => {
-  try {
-    console.log('Re-processing resume with Eden AI:', resumeUrl);
-    
-    const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-resume-eden', {
-      body: { resumeUrl }
-    });
-
-    if (parseError) {
-      console.error('Resume re-processing error:', parseError);
-      throw new Error(`Resume analysis failed: ${parseError.message}`);
-    }
-
-    if (!parseResult?.parsedData) {
-      throw new Error('No parsed data returned from processing');
-    }
-
-    console.log('Resume re-processing completed successfully:', {
-      hasPersonalInfo: !!parseResult?.parsedData?.personalInfo,
-      workExperienceCount: parseResult?.parsedData?.workExperience?.length || 0,
-      skillsCount: parseResult?.parsedData?.skills?.length || 0,
-      aiRating: parseResult?.aiRating,
-      summaryLength: parseResult?.summary?.length || 0
-    });
-
-    return {
-      parsedData: parseResult.parsedData,
-      aiRating: parseResult.aiRating,
-      summary: parseResult.summary
-    };
-  } catch (error) {
-    console.error('Error re-processing resume:', error);
-    throw error;
-  }
-};
-
-// Function to update application with parsed resume data (used by AI Rank button)
-export const updateApplicationWithResumeData = async (
-  applicationId: string, 
-  parsedData: ParsedResumeData, 
-  aiRating?: number, 
-  summary?: string
-): Promise<void> => {
-  try {
-    console.log('Updating application with parsed resume data:', {
-      applicationId,
-      hasPersonalInfo: !!parsedData?.personalInfo,
-      workExperienceCount: parsedData?.workExperience?.length || 0,
-      skillsCount: parsedData?.skills?.length || 0,
-      aiRating,
-      summaryLength: summary?.length || 0
-    });
-
-    const updateData: any = {
-      parsed_resume_data: parsedData,
-      updated_at: new Date().toISOString()
-    };
-
-    // Add AI rating and summary if provided
-    if (aiRating !== undefined) {
-      updateData.ai_rating = aiRating;
-    }
-    if (summary) {
-      updateData.ai_summary = summary;
-    }
-
-    const { error: updateError } = await supabase
-      .from('applications')
-      .update(updateData)
-      .eq('id', applicationId);
-
-    if (updateError) {
-      console.error('Failed to update application with resume data:', updateError);
-      throw new Error(`Failed to update application: ${updateError.message}`);
-    }
-
-    console.log('Successfully updated application with parsed resume data');
-  } catch (error) {
-    console.error('Error updating application with resume data:', error);
-    throw error;
-  }
 };
