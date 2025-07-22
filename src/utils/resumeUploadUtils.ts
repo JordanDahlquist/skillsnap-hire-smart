@@ -52,10 +52,10 @@ export const uploadResumeFile = async (file: File): Promise<{ url: string; parse
     // Only attempt parsing for PDF files
     if (file.type === 'application/pdf') {
       try {
-        console.log('Analyzing PDF resume with visual AI...');
+        console.log('Parsing PDF resume with Eden AI...');
         
-        // Use the new visual analysis function
-        const { data: parseResult, error: parseError } = await supabase.functions.invoke('analyze-resume-visual', {
+        // Use Eden AI for structured resume parsing
+        const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-resume-eden', {
           body: { resumeUrl: publicUrl }
         });
 
@@ -116,12 +116,12 @@ export const constructResumeUrl = (filePath: string): string => {
   return `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/public/application-files/${filePath}`;
 };
 
-// Function to re-process existing resumes with visual analysis
-export const reprocessResumeWithVisualAnalysis = async (resumeUrl: string): Promise<ParsedResumeData | null> => {
+// Function to re-process existing resumes with Eden AI
+export const reprocessResumeWithEdenAI = async (resumeUrl: string): Promise<ParsedResumeData | null> => {
   try {
-    console.log('Re-processing resume with visual analysis:', resumeUrl);
+    console.log('Re-processing resume with Eden AI:', resumeUrl);
     
-    const { data: parseResult, error: parseError } = await supabase.functions.invoke('analyze-resume-visual', {
+    const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-resume-eden', {
       body: { resumeUrl }
     });
 

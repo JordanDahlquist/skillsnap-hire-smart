@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, CheckCircle, XCircle, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { reprocessResumeWithVisualAnalysis } from "@/utils/resumeUploadUtils";
+import { reprocessResumeWithEdenAI } from "@/utils/resumeUploadUtils";
 import { supabase } from "@/integrations/supabase/client";
 import type { Application } from "@/types";
 
@@ -35,50 +35,36 @@ export const ResumeReprocessor = ({ application, onSuccess }: ResumeReprocessorP
     setProcessingStatus('processing');
 
     try {
-      // Re-process the resume with visual analysis
-      // Generate new resume summary using the updated edge function
-      const { data: parseResult, error: parseError } = await supabase.functions.invoke('analyze-resume-visual', {
-        body: { resumeUrl: application.resume_file_path }
-      });
-
-      if (parseError) {
-        throw new Error(`Resume analysis failed: ${parseError.message}`);
+      // Re-process the resume with Eden AI
+      const parsedData = await reprocessResumeWithEdenAI(application.resume_file_path);
+      
+      if (!parsedData) {
+        throw new Error('No data returned from Eden AI processing');
       }
 
-      if (parseResult?.resumeSummary || parseResult?.parsedData) {
-        // Update the application with both summary and parsed data
-        const updateData: any = {
-          updated_at: new Date().toISOString()
-        };
+      // Update the application with parsed data
+      const updateData = {
+        parsed_resume_data: parsedData as any,
+        updated_at: new Date().toISOString()
+      };
 
-        if (parseResult.resumeSummary) {
-          updateData.resume_summary = parseResult.resumeSummary;
-        }
+      const { error: updateError } = await supabase
+        .from('applications')
+        .update(updateData)
+        .eq('id', application.id);
 
-        if (parseResult.parsedData) {
-          updateData.parsed_resume_data = parseResult.parsedData;
-        }
+      if (updateError) {
+        throw new Error(`Failed to update application: ${updateError.message}`);
+      }
 
-        const { error: updateError } = await supabase
-          .from('applications')
-          .update(updateData)
-          .eq('id', application.id);
+      setProcessingStatus('success');
+      toast({
+        title: "Resume processed successfully",
+        description: "The resume has been analyzed with Eden AI.",
+      });
 
-        if (updateError) {
-          throw new Error(`Failed to update application: ${updateError.message}`);
-        }
-
-        setProcessingStatus('success');
-        toast({
-          title: "Resume processed successfully",
-          description: "The resume has been re-analyzed and the data has been updated.",
-        });
-
-        if (onSuccess) {
-          onSuccess();
-        }
-      } else {
-        throw new Error('No data returned from resume processing');
+      if (onSuccess) {
+        onSuccess();
       }
 
     } catch (error) {
