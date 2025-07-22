@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Application, Job } from "@/types";
 import { DASHBOARD_ACTION_CONSTANTS } from "@/constants/dashboardActions";
-import { reprocessResumeWithEdenAI, updateApplicationWithResumeData } from "@/utils/resumeUploadUtils";
+
 
 interface StreamlinedAnalysisData {
   // Basic Info
@@ -135,14 +135,12 @@ export class AIAnalysisService {
 
       console.log(`Parsing resume for application: ${application.id}, Resume: ${application.resume_file_path}`);
       
-      const { parsedData, aiRating, summary } = await reprocessResumeWithEdenAI(application.resume_file_path);
       
-      if (!parsedData) {
-        return { success: false, error: 'No parsed data returned' };
-      }
-
-      // Save parsed data to database
-      await updateApplicationWithResumeData(application.id, parsedData, aiRating, summary);
+      // Resume parsing functions have been removed
+      console.log(`Parsing resume for application: ${application.id}, Resume: ${application.resume_file_path}`);
+      
+      // These functions were removed, so skip resume parsing for now
+      return { success: false, error: 'Resume parsing functions removed' };
       
       console.log(`Successfully parsed and saved resume data for: ${application.name}`);
       return { success: true };

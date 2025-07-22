@@ -11,6 +11,9 @@ export interface Job extends DatabaseJob {
 export interface Application extends DatabaseApplication {
   // All properties come from DatabaseApplication, no additional fields needed
   // The skills_test_responses field is already Json type from Supabase
+  // Map database fields to expected property names
+  stage?: string; // maps to pipeline_stage
+  additional_questions?: Record<string, any>; // for backwards compatibility
 }
 
 export interface Profile {

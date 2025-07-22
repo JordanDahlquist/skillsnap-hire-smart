@@ -23,7 +23,7 @@ import {
   Trash2,
   RotateCcw
 } from "lucide-react";
-import { StageSelector } from "./StageSelector";
+import { StageSelector } from "../StageSelector";
 import { constructResumeUrl } from "@/utils/resumeUploadUtils";
 import { Application } from "@/types";
 
@@ -333,8 +333,9 @@ export const ApplicationDetailContent = ({
             </CardHeader>
             <CardContent>
               <StageSelector
+                jobId={jobId}
                 applicationId={application.id}
-                currentStage={application.stage || 'applied'}
+                currentStage={application.pipeline_stage || 'applied'}
                 onStageChange={onStageChange}
               />
             </CardContent>
@@ -431,23 +432,7 @@ export const ApplicationDetailContent = ({
               </>
             )}
 
-            {/* Additional Questions */}
-            {application.additional_questions && Object.keys(application.additional_questions).length > 0 && (
-              <>
-                <Separator />
-                <div>
-                  <h3 className="font-medium text-sm mb-2">Additional Questions</h3>
-                  <div className="space-y-2">
-                    {Object.entries(application.additional_questions).map(([question, answer]) => (
-                      <div key={question} className="text-sm">
-                        <div className="font-medium">{question}</div>
-                        <div className="text-muted-foreground mt-1">{String(answer)}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+            {/* Additional Questions - Remove since not in database schema */}
           </CardContent>
         </Card>
       </div>
