@@ -47,27 +47,32 @@ serve(async (req) => {
 
     if (!edenResponse.ok) {
       const errorText = await edenResponse.text();
+      console.error('Eden AI API error:', errorText);
       throw new Error(`Eden AI API error: ${errorText}`);
     }
 
     const edenData = await edenResponse.json();
-    console.log('Eden AI response received');
+    console.log('Eden AI response received:', JSON.stringify(edenData, null, 2));
 
-    // Extract data from the primary provider (affinda)
-    const extractedData = edenData.affinda?.extracted_data;
+    // Extract data from the primary provider (affinda) first
+    let dataToUse = null;
     
-    if (!extractedData) {
-      // Try fallback provider if primary failed
-      const fallbackData = edenData.klippa?.extracted_data;
-      if (!fallbackData) {
-        throw new Error('No data extracted from resume by any provider');
-      }
-      console.log('Using fallback provider data');
+    if (edenData.affinda?.extracted_data) {
+      console.log('Using primary provider (affinda) data');
+      dataToUse = edenData.affinda.extracted_data;
+    } else if (edenData.klippa?.extracted_data) {
+      console.log('Using fallback provider (klippa) data');
+      dataToUse = edenData.klippa.extracted_data;
+    }
+    
+    if (!dataToUse) {
+      console.error('No extracted data found in response:', edenData);
+      throw new Error('No data extracted from resume by any provider');
     }
 
-    const dataToUse = extractedData || edenData.klippa?.extracted_data;
+    console.log('Data to use:', JSON.stringify(dataToUse, null, 2));
 
-    // Map Eden AI response to our schema
+    // Map Eden AI response to our schema with proper null checks
     const parsedData = {
       personalInfo: {
         name: dataToUse.personal_infos?.name?.value || '',
@@ -75,21 +80,29 @@ serve(async (req) => {
         phone: dataToUse.personal_infos?.phone?.value || '',
         location: dataToUse.personal_infos?.address?.value || '',
       },
-      workExperience: dataToUse.work_experience?.map(exp => ({
-        company: exp.company || '',
-        position: exp.title || '',
-        startDate: exp.start_date || '',
-        endDate: exp.end_date || 'Present',
-        description: exp.description || '',
-      })) || [],
-      education: dataToUse.education?.map(edu => ({
-        institution: edu.establishment || '',
-        degree: edu.title || '',
-        graduationDate: edu.end_date || '',
-        description: edu.description || '',
-      })) || [],
-      skills: dataToUse.skills?.map(skill => skill.name || '').filter(Boolean) || [],
+      workExperience: Array.isArray(dataToUse.work_experience) 
+        ? dataToUse.work_experience.map(exp => ({
+            company: exp?.company || '',
+            position: exp?.title || '',
+            startDate: exp?.start_date || '',
+            endDate: exp?.end_date || 'Present',
+            description: exp?.description || '',
+          }))
+        : [],
+      education: Array.isArray(dataToUse.education)
+        ? dataToUse.education.map(edu => ({
+            institution: edu?.establishment || '',
+            degree: edu?.title || '',
+            graduationDate: edu?.end_date || '',
+            description: edu?.description || '',
+          }))
+        : [],
+      skills: Array.isArray(dataToUse.skills)
+        ? dataToUse.skills.map(skill => skill?.name || '').filter(Boolean)
+        : [],
     };
+
+    console.log('Parsed data:', JSON.stringify(parsedData, null, 2));
 
     // Generate a professional summary
     const summary = generateProfessionalSummary(parsedData);
