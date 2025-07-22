@@ -54,31 +54,11 @@ export const ApplicationForm = ({ onSubmit, isSubmitting = false }: ApplicationF
       const result = await uploadResumeFile(file);
       setResumeUrl(result.url);
       
-      // Only auto-fill empty fields, never override existing user input
-      if (result.parsedData) {
-        const { personalInfo, workExperience } = result.parsedData;
-        setFormData(prev => ({
-          ...prev,
-          // Only fill if the field is currently empty
-          name: prev.name || personalInfo.name || prev.name,
-          email: prev.email || personalInfo.email || prev.email,
-          phone: prev.phone || personalInfo.phone || prev.phone,
-          location: prev.location || personalInfo.location || prev.location,
-          experience: prev.experience || (workExperience.length > 0 ? workExperience.map(exp => 
-            `${exp.position} at ${exp.company} (${exp.startDate} - ${exp.endDate}): ${exp.description}`
-          ).join('\n\n') : prev.experience),
-        }));
-        
-        toast({
-          title: "Resume uploaded successfully",
-          description: "Empty fields have been filled with extracted information.",
-        });
-      } else {
-        toast({
-          title: "Resume uploaded",
-          description: "Resume uploaded successfully, but auto-fill failed. Please complete the form manually.",
-        });
-      }
+      // Resume uploaded successfully - no auto-fill since we removed parsing
+      toast({
+        title: "Resume uploaded",
+        description: "Resume uploaded successfully. Please complete the form manually.",
+      });
     } catch (error) {
       console.error('Resume upload failed:', error);
       toast({

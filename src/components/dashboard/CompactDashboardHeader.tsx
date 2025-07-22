@@ -81,6 +81,7 @@ export const CompactDashboardHeader = ({
             
             <DashboardHeaderActions
               job={job}
+              applications={applications}
               isUpdating={isUpdating}
               isRefreshingAI={isRefreshingAI}
               onStatusChange={handleStatusChange}

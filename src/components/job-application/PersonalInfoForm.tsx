@@ -38,23 +38,8 @@ export const PersonalInfoForm = ({ data, onChange, onNext, onBack }: PersonalInf
         resumeUrl: result.url 
       });
       
-      // Only auto-fill empty fields, never override user input
-      if (result.parsedData) {
-        const { personalInfo } = result.parsedData;
-        onChange({
-          ...data,
-          resumeFile: file,
-          resumeUrl: result.url,
-          // Only fill if the current field is empty
-          fullName: data.fullName || personalInfo.name || data.fullName,
-          email: data.email || personalInfo.email || data.email,
-          phone: data.phone || personalInfo.phone || data.phone,
-          location: data.location || personalInfo.location || data.location,
-        });
-        toast.success('Resume uploaded and empty fields auto-filled');
-      } else {
-        toast.success('Resume uploaded successfully');
-      }
+      // Resume uploaded successfully - no auto-fill since we removed parsing
+      toast.success('Resume uploaded successfully');
     } catch (error) {
       console.error('Resume upload failed:', error);
       toast.error('Resume upload failed. Please try again.');
