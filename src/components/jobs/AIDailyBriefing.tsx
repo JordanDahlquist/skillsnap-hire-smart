@@ -65,56 +65,15 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   };
 
   const getNewUserContent = () => {
-    const now = new Date();
-    const hour = now.getHours();
-    let timeBasedGreeting = 'Welcome';
-    
-    if (hour >= 6 && hour < 12) {
-      timeBasedGreeting = 'Good morning';
-    } else if (hour >= 12 && hour < 18) {
-      timeBasedGreeting = 'Good afternoon';
-    } else if (hour >= 18 && hour < 24) {
-      timeBasedGreeting = 'Good evening';
-    }
-
     return (
       <div className="space-y-2">
         <h2 className="text-lg font-semibold text-foreground">
-          {timeBasedGreeting}, {userDisplayName}! Welcome to your hiring dashboard! 🎉
+          Welcome {userDisplayName}, let's get started.
         </h2>
-        <div className="space-y-2 text-sm text-foreground leading-relaxed">
+        <div className="text-sm text-foreground leading-relaxed">
           <p className="text-muted-foreground">
-            Let's get you started with finding amazing talent. Here's what you can do:
+            You'll get custom AI-powered suggestions and updates here! Check back later for more.
           </p>
-          <div className="space-y-1">
-            <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted/50">
-              <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
-                1
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Create your first job posting</p>
-                <p className="text-xs text-muted-foreground">Click "Create New Job" below to post your first position and start attracting candidates.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted/50">
-              <div className="w-5 h-5 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
-                2
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Explore Scout AI</p>
-                <p className="text-xs text-muted-foreground">Use the Scout tab above to get AI-powered help with candidate evaluation and hiring decisions.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted/50">
-              <div className="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
-                3
-              </div>
-              <div>
-                <p className="font-medium text-foreground">Track your progress</p>
-                <p className="text-xs text-muted-foreground">Monitor applications and analytics to optimize your hiring process as candidates apply.</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     );
