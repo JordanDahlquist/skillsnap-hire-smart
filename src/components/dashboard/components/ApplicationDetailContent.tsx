@@ -76,6 +76,54 @@ export const ApplicationDetailContent = ({
     }
   };
 
+  // Normalize AI rating from 5-star to 3-star scale
+  const normalizeAIRating = (rating: number | null): number | null => {
+    if (!rating) return null;
+    return Math.max(1, Math.min(3, Math.round((rating / 5) * 3)));
+  };
+
+  const renderManualRating = (rating: number | null) => {
+    return Array.from({ length: 3 }, (_, i) => {
+      const starValue = i + 1;
+      const isActive = rating && starValue <= rating;
+      
+      return (
+        <button
+          key={i}
+          onClick={() => onManualRating(starValue)}
+          disabled={isUpdating}
+          className="hover:scale-105 transition-transform disabled:opacity-50"
+        >
+          <Star
+            className={`w-4 h-4 ${
+              isActive 
+                ? 'text-blue-500 fill-current' 
+                : 'text-gray-300 hover:text-blue-400'
+            }`}
+          />
+        </button>
+      );
+    });
+  };
+
+  const renderAIRating = (rating: number | null) => {
+    const normalizedRating = normalizeAIRating(rating);
+    
+    return Array.from({ length: 3 }, (_, i) => {
+      const starValue = i + 1;
+      const isActive = normalizedRating && starValue <= normalizedRating;
+      
+      return (
+        <Star
+          key={i}
+          className={`w-4 h-4 ${
+            isActive ? 'text-purple-500 fill-current' : 'text-gray-300'
+          }`}
+        />
+      );
+    });
+  };
+
   const renderParsedResumeData = () => {
     if (!application.parsed_resume_data) {
       return (
@@ -259,34 +307,22 @@ export const ApplicationDetailContent = ({
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Manual Rating:</span>
                 <div className="flex items-center gap-1">
-                  {[1, 2, 3].map((star) => (
-                    <button
-                      key={star}
-                      onClick={() => onManualRating(star)}
-                      disabled={isUpdating}
-                      className="hover:scale-105 transition-transform disabled:opacity-50"
-                    >
-                      <Star
-                        className={`w-5 h-5 ${
-                          application.manual_rating && star <= application.manual_rating
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'text-gray-300 hover:text-yellow-400'
-                        }`}
-                      />
-                    </button>
-                  ))}
+                  {renderManualRating(application.manual_rating)}
                 </div>
+                <span className="text-sm text-muted-foreground ml-1">
+                  ({application.manual_rating || 0}/3)
+                </span>
               </div>
               
               {application.ai_rating && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">AI Rating:</span>
                   <div className="flex items-center gap-1">
-                    {getRatingStars(application.ai_rating)}
-                    <span className="text-sm text-muted-foreground ml-1">
-                      ({application.ai_rating}/5)
-                    </span>
+                    {renderAIRating(application.ai_rating)}
                   </div>
+                  <span className="text-sm text-muted-foreground ml-1">
+                    ({normalizeAIRating(application.ai_rating) || 0}/3)
+                  </span>
                 </div>
               )}
             </div>
