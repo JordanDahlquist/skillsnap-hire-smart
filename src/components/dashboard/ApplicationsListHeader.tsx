@@ -148,7 +148,7 @@ export const ApplicationsListHeader = memo(({
 
   return (
     <TooltipProvider>
-      <div className="p-4 border-b border-border bg-card rounded-t-lg">
+      <div className="p-3 border-b border-border bg-card rounded-t-lg">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-semibold text-foreground">
             Applications ({applicationsCount})
