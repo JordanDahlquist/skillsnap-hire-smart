@@ -189,6 +189,28 @@ export const UserManagement = () => {
           }
         }
 
+        // If user is being reactivated, confirm their email automatically
+        if (newStatus === 'active' && userToUpdateStatus.status !== 'active') {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const { error: confirmError } = await supabase.functions.invoke('confirm-user-email', {
+              body: { userId: userToUpdateStatus.id },
+              headers: {
+                Authorization: `Bearer ${session?.access_token}`
+              }
+            });
+
+            if (confirmError) {
+              console.error('Error confirming email for reactivated user:', confirmError);
+            } else {
+              console.log('Email confirmed for reactivated user');
+            }
+          } catch (emailError) {
+            console.error('Error confirming email for reactivated user:', emailError);
+            // Don't block the status update if email confirmation fails
+          }
+        }
+
         // Update user in local state
         setUsers(users.map(u => 
           u.id === userToUpdateStatus.id 
