@@ -73,7 +73,7 @@ export const ApplicationReview = ({
           email: personalInfo.email, // Use actual form data
           phone: personalInfo.phone,
           location: personalInfo.location,
-          portfolio_url: personalInfo.portfolioUrl,
+          portfolio: personalInfo.portfolioUrl, // Fixed: portfolio_url -> portfolio
           linkedin_url: personalInfo.linkedinUrl,
           github_url: personalInfo.githubUrl,
           cover_letter: personalInfo.coverLetter,
@@ -87,7 +87,13 @@ export const ApplicationReview = ({
         .single();
 
       if (insertError) {
-        console.error('Insert error:', insertError);
+        console.error('Insert error details:', {
+          error: insertError,
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint
+        });
         throw insertError;
       }
 
