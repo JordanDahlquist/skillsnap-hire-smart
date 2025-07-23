@@ -119,37 +119,35 @@ export const ApplicationsList = memo(({
   }, [applications, searchTerm, sortBy, sortOrder, onSortChange]);
 
   return (
-    <div>
-      <div className="bg-card border border-border rounded-lg mb-2">
-        <ApplicationsListHeader
-          applicationsCount={processedApplications.length}
-          selectedApplications={selectedApplications}
-          onSelectApplications={onSelectApplications}
-          applications={processedApplications}
-          searchTerm={searchTerm}
-          onSearchChange={onSearchChange}
-          onSendEmail={onSendEmail}
-          onSetRating={onSetRating}
-          onMoveToStage={onMoveToStage}
-          onReject={onReject}
-          onUnreject={onUnreject}
-          jobId={jobId}
-          isLoading={isLoading}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSortChange={onSortChange}
-        />
-      </div>
+    <div className="bg-card border border-border rounded-lg">
+      <ApplicationsListHeader
+        applicationsCount={processedApplications.length}
+        selectedApplications={selectedApplications}
+        onSelectApplications={onSelectApplications}
+        applications={processedApplications}
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        onSendEmail={onSendEmail}
+        onSetRating={onSetRating}
+        onMoveToStage={onMoveToStage}
+        onReject={onReject}
+        onUnreject={onUnreject}
+        jobId={jobId}
+        isLoading={isLoading}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={onSortChange}
+      />
 
       <div 
-        className="overflow-y-auto relative bg-card border border-border rounded-lg"
+        className="overflow-y-auto relative rounded-b-lg"
         style={{ 
           height: '750px',
           maskImage: 'linear-gradient(to bottom, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%)'
         }}
       >
-        <div className="py-2 px-3">
+        <div className="py-2 px-5">
           {processedApplications.length === 0 ? (
             <div className="p-8 text-center">
               <div className="text-lg font-medium mb-2 text-foreground">
