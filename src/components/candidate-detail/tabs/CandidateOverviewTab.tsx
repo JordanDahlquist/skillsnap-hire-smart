@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Phone, MapPin, Globe, Linkedin, Github, Calendar, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
 import { renderManualRating, renderAIRating } from "@/components/dashboard/utils/ratingUtils";
 import { getTimeAgo } from "@/utils/dateUtils";
+import { toast } from "@/hooks/use-toast";
 import { Application, Job } from "@/types";
 
 interface CandidateOverviewTabProps {
@@ -34,6 +35,47 @@ export const CandidateOverviewTab = ({
     setLocalApplication(application);
   }, [application]);
 
+  const handleCopyEmail = async () => {
+    if (localApplication.email) {
+      try {
+        await navigator.clipboard.writeText(localApplication.email);
+        toast({
+          description: "Email copied!",
+        });
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: "Failed to copy email",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleCopyPhone = async () => {
+    if (localApplication.phone) {
+      try {
+        await navigator.clipboard.writeText(localApplication.phone);
+        toast({
+          description: "Phone copied!",
+        });
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: "Failed to copy phone",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleOpenLocation = () => {
+    if (localApplication.location) {
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(localApplication.location)}`;
+      window.open(googleMapsUrl, '_blank');
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Contact Information */}
@@ -45,9 +87,17 @@ export const CandidateOverviewTab = ({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground text-left block">Email</label>
-              <p className="text-foreground text-left">{localApplication.email}</p>
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-muted-foreground" />
+              <div>
+                <label className="text-sm font-medium text-muted-foreground text-left block">Email</label>
+                <button
+                  onClick={handleCopyEmail}
+                  className="text-foreground text-left hover:text-primary transition-colors cursor-pointer"
+                >
+                  {localApplication.email}
+                </button>
+              </div>
             </div>
             
             {localApplication.phone && (
@@ -55,7 +105,12 @@ export const CandidateOverviewTab = ({
                 <Phone className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <label className="text-sm font-medium text-muted-foreground text-left block">Phone</label>
-                  <p className="text-foreground text-left">{localApplication.phone}</p>
+                  <button
+                    onClick={handleCopyPhone}
+                    className="text-foreground text-left hover:text-primary transition-colors cursor-pointer"
+                  >
+                    {localApplication.phone}
+                  </button>
                 </div>
               </div>
             )}
@@ -65,7 +120,12 @@ export const CandidateOverviewTab = ({
                 <MapPin className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <label className="text-sm font-medium text-muted-foreground text-left block">Location</label>
-                  <p className="text-foreground text-left">{localApplication.location}</p>
+                  <button
+                    onClick={handleOpenLocation}
+                    className="text-foreground text-left hover:text-primary transition-colors cursor-pointer"
+                  >
+                    {localApplication.location}
+                  </button>
                 </div>
               </div>
             )}
