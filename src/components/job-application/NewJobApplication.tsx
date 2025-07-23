@@ -12,6 +12,7 @@ import { SkillsAssessmentStep } from "./steps/SkillsAssessmentStep";
 import { VideoInterview } from "./VideoInterview";
 import { ApplicationReview } from "./ApplicationReview";
 import { toast } from "sonner";
+import { useViewTracking } from "@/hooks/useViewTracking";
 
 interface ApplicationFormData {
   personalInfo: PersonalInfo;
@@ -79,6 +80,9 @@ export const NewJobApplication = () => {
 
     fetchJob();
   }, [jobId]);
+
+  // Track view for this job (only for active jobs after data is loaded)
+  useViewTracking(jobId || '', !loading && !!job && job.status === 'active');
 
   if (loading) {
     return (
