@@ -302,51 +302,62 @@ export const UserManagement = () => {
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>Platform Users ({filteredUsers.length})</CardTitle>
-              <CardDescription>All registered users on the platform</CardDescription>
-            </div>
-            <div className="flex gap-4 items-center">
-              <div className="flex gap-2">
-                <Button 
-                  variant={statusFilter === 'all' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setStatusFilter('all')}
-                >
-                  All ({users.length})
-                </Button>
-                <Button 
-                  variant={statusFilter === 'active' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setStatusFilter('active')}
-                >
-                  Active ({users.filter(u => u.status === 'active').length})
-                </Button>
-                <Button 
-                  variant={statusFilter === 'inactive' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setStatusFilter('inactive')}
-                >
-                  Inactive ({users.filter(u => u.status === 'inactive').length})
-                </Button>
-                <Button 
-                  variant={statusFilter === 'deleted' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setStatusFilter('deleted')}
-                >
-                  Deleted ({users.filter(u => u.status === 'deleted').length})
-                </Button>
+        <CardHeader className="pb-4">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-xl">Platform Users</CardTitle>
+                <CardDescription className="text-sm">Manage user accounts and statuses</CardDescription>
               </div>
-              <div className="relative w-64">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <div className="relative w-80">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search users..."
+                  placeholder="Search by name, email, or company..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
+                  className="pl-10 h-9"
                 />
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant={statusFilter === 'all' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                  className="h-8 px-3 text-xs"
+                >
+                  All <span className="ml-1 opacity-60">({users.length})</span>
+                </Button>
+                <Button 
+                  variant={statusFilter === 'active' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setStatusFilter('active')}
+                  className="h-8 px-3 text-xs"
+                >
+                  Active <span className="ml-1 opacity-60">({users.filter(u => u.status === 'active').length})</span>
+                </Button>
+                <Button 
+                  variant={statusFilter === 'inactive' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setStatusFilter('inactive')}
+                  className="h-8 px-3 text-xs"
+                >
+                  Inactive <span className="ml-1 opacity-60">({users.filter(u => u.status === 'inactive').length})</span>
+                </Button>
+                <Button 
+                  variant={statusFilter === 'deleted' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setStatusFilter('deleted')}
+                  className="h-8 px-3 text-xs"
+                >
+                  Deleted <span className="ml-1 opacity-60">({users.filter(u => u.status === 'deleted').length})</span>
+                </Button>
+              </div>
+              
+              <div className="text-xs text-muted-foreground">
+                Showing {filteredUsers.length} of {users.length} users
               </div>
             </div>
           </div>
