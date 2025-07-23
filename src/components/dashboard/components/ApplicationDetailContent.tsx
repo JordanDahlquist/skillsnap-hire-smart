@@ -319,7 +319,7 @@ export const ApplicationDetailContent = ({
           <div className="flex items-center gap-2">
             <Badge 
               variant="secondary"
-              className={`${getStatusColor(application.status)} text-white`}
+              className={getStatusColor(application.status)}
             >
               {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
             </Badge>
