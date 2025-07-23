@@ -75,3 +75,17 @@
       0 0 60px rgba(59, 130, 246, 0.4);
   }
 }
+
+/* Subtle pulse glow animation for input fields */
+@keyframes pulse-glow-subtle {
+  0%, 100% {
+    box-shadow: 
+      0 0 8px rgba(59, 130, 246, 0.15),
+      0 0 16px rgba(59, 130, 246, 0.08);
+  }
+  50% {
+    box-shadow: 
+      0 0 12px rgba(59, 130, 246, 0.25),
+      0 0 24px rgba(59, 130, 246, 0.12);
+  }
+}
