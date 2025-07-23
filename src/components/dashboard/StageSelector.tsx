@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronDown } from "lucide-react";
@@ -78,7 +77,7 @@ export const StageSelector = ({
     >
       <SelectTrigger 
         className={`
-          ${size === "sm" ? "h-11 px-4" : "h-11 px-4"} 
+          h-11 px-4 rounded-2xl
           text-white 
           border-0
           hover:opacity-90
