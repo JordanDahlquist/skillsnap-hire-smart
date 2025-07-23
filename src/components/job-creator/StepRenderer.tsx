@@ -14,6 +14,7 @@ interface StepRendererProps {
   onGenerateJobPost: () => Promise<void>;
   onGenerateSkillsQuestions: () => Promise<void>;
   onGenerateInterviewQuestions: () => Promise<void>;
+  jobs?: any[];
 }
 
 export const StepRenderer = ({
@@ -22,7 +23,8 @@ export const StepRenderer = ({
   actions,
   onGenerateJobPost,
   onGenerateSkillsQuestions,
-  onGenerateInterviewQuestions
+  onGenerateInterviewQuestions,
+  jobs
 }: StepRendererProps) => {
   switch (currentStep) {
     case 1:
@@ -30,6 +32,7 @@ export const StepRenderer = ({
         <Step1JobOverview
           formData={state.formData}
           actions={actions}
+          jobs={jobs}
         />
       );
     case 2:

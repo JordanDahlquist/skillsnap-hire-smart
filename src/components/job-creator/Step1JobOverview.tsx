@@ -8,11 +8,13 @@ import { UnifiedJobFormData, UnifiedJobCreatorActions } from "@/types/jobForm";
 interface Step1JobOverviewProps {
   formData: UnifiedJobFormData;
   actions: UnifiedJobCreatorActions;
+  jobs?: any[];
 }
 
 export const Step1JobOverview = ({
   formData,
-  actions
+  actions,
+  jobs = []
 }: Step1JobOverviewProps) => {
   return (
     <Card className="w-full">
@@ -29,7 +31,7 @@ export const Step1JobOverview = ({
             value={formData.jobOverview}
             onChange={(e) => actions.updateFormData('jobOverview', e.target.value)}
             placeholder="e.g. Senior React Developer for a marketing agency in LA"
-            className="mt-2"
+            className={`mt-2 ${jobs.length === 0 ? 'new-user-button-glow' : ''}`}
             rows={3}
             required
           />
@@ -44,7 +46,7 @@ export const Step1JobOverview = ({
             value={formData.companyWebsite}
             onChange={(e) => actions.updateFormData('companyWebsite', e.target.value)}
             placeholder="e.g. https://company.com"
-            className="mt-2"
+            className={`mt-2 ${jobs.length === 0 ? 'new-user-button-glow' : ''}`}
           />
           <p className="text-xs text-gray-500 mt-1">We'll analyze your website to better understand your company when you proceed to the next step</p>
         </div>
