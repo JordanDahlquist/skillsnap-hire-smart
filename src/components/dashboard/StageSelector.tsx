@@ -99,7 +99,7 @@ export const StageSelector = ({
           </div>
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="bg-popover/95 backdrop-blur-md border border-border shadow-md z-50">
+      <SelectContent className="bg-background border border-border shadow-lg z-50">
         {stages.map((stage) => {
           const stageKey = getStageKey(stage.name);
           const isRejectedStage = stage.name.toLowerCase() === 'rejected';
