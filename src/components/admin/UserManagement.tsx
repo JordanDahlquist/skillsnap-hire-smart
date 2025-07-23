@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, MoreHorizontal, Eye, Shield } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, MoreHorizontal, Eye, Shield, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminUser } from "@/types/admin";
+import { DeleteUserDialog } from "./DeleteUserDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserRoleData {
   user_id: string;
@@ -18,9 +20,13 @@ interface UserRoleData {
 
 export const UserManagement = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -100,6 +106,51 @@ export const UserManagement = () => {
   const handleManageRoles = (userId: string) => {
     // For now, navigate to user details where role management could be implemented
     navigate(`/admin/users/${userId}`);
+  };
+
+  const handleDeleteUser = (user: AdminUser) => {
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.rpc('delete_user_completely', {
+        target_user_id: userToDelete.id
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const result = data as { success: boolean; error?: string; message?: string };
+      
+      if (result?.success) {
+        // Remove user from local state
+        setUsers(users.filter(u => u.id !== userToDelete.id));
+        
+        toast({
+          title: "User deleted",
+          description: `${userToDelete.full_name || userToDelete.email} has been permanently deleted.`,
+        });
+      } else {
+        throw new Error(result?.error || 'Failed to delete user');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    }
   };
 
   const filteredUsers = users.filter(user =>
@@ -215,6 +266,14 @@ export const UserManagement = () => {
                           <Shield className="w-4 h-4 mr-2" />
                           Manage Roles
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteUser(user)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete User
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -230,6 +289,14 @@ export const UserManagement = () => {
           )}
         </CardContent>
       </Card>
+
+      <DeleteUserDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        user={userToDelete}
+        onConfirm={confirmDeleteUser}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

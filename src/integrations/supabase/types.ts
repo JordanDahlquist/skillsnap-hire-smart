@@ -761,6 +761,10 @@ export type Database = {
         Args: { job_id: string }
         Returns: undefined
       }
+      delete_user_completely: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       generate_unique_email: {
         Args: { user_id: string; full_name: string; email: string }
         Returns: string
