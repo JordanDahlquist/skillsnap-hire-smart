@@ -1,8 +1,10 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Eye, Calendar, Clock, Users, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Eye, Calendar, Clock, Users, Copy } from "lucide-react";
 import { Job, Application } from "@/types";
 import { useThemeContext } from "@/contexts/ThemeContext";
+import { toast } from "sonner";
 
 interface DashboardHeaderMetadataProps {
   job: Job;
@@ -38,60 +40,80 @@ export const DashboardHeaderMetadata = ({ job, applications, isVisible }: Dashbo
   const textColor = currentTheme === 'black' ? 'text-gray-200' : 'text-gray-600';
   const iconColor = currentTheme === 'black' ? 'text-gray-400' : 'text-gray-500';
 
+  // Job ID display (first 8 characters + ellipsis)
+  const displayJobId = job.id.substring(0, 8) + '...';
+
+  const handleCopyJobId = async () => {
+    try {
+      await navigator.clipboard.writeText(job.id);
+      toast.success('Job ID copied to clipboard');
+    } catch (error) {
+      console.error('Failed to copy job ID:', error);
+      toast.error('Failed to copy job ID');
+    }
+  };
+
   if (!isVisible) return null;
 
   return (
-    <div className={`mt-3 p-4 rounded-lg border border-border/50 ${cardBg} transition-all duration-200`}>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="flex items-center gap-2">
-          <Calendar className={`w-4 h-4 ${iconColor}`} />
-          <div>
-            <div className={`text-xs font-medium ${textColor}`}>Started</div>
-            <div className={`text-sm ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
-              {startDateFormatted}
+    <div className={`mt-3 p-3 rounded-lg border border-border/50 ${cardBg} transition-all duration-200`}>
+      <div className="flex items-center justify-between">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 flex-1">
+          <div className="flex items-center gap-2">
+            <Calendar className={`w-4 h-4 ${iconColor} flex-shrink-0`} />
+            <div className="min-w-0">
+              <span className={`text-xs font-medium ${textColor}`}>Started: </span>
+              <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
+                {startDateFormatted} {startTimeFormatted}
+              </span>
             </div>
-            <div className={`text-xs ${textColor}`}>
-              {startTimeFormatted}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Clock className={`w-4 h-4 ${iconColor} flex-shrink-0`} />
+            <div className="min-w-0">
+              <span className={`text-xs font-medium ${textColor}`}>Duration: </span>
+              <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
+                {daysRunning} day{daysRunning !== 1 ? 's' : ''} running
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Users className={`w-4 h-4 ${iconColor} flex-shrink-0`} />
+            <div className="min-w-0">
+              <span className={`text-xs font-medium ${textColor}`}>Applications: </span>
+              <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
+                {applications.length} received
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Eye className={`w-4 h-4 ${iconColor} flex-shrink-0`} />
+            <div className="min-w-0">
+              <span className={`text-xs font-medium ${textColor}`}>Views: </span>
+              <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
+                {viewCount} total
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Clock className={`w-4 h-4 ${iconColor}`} />
-          <div>
-            <div className={`text-xs font-medium ${textColor}`}>Duration</div>
-            <div className={`text-sm ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
-              {daysRunning} day{daysRunning !== 1 ? 's' : ''}
-            </div>
-            <div className={`text-xs ${textColor}`}>
-              running
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Users className={`w-4 h-4 ${iconColor}`} />
-          <div>
-            <div className={`text-xs font-medium ${textColor}`}>Applications</div>
-            <div className={`text-sm ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
-              {applications.length}
-            </div>
-            <div className={`text-xs ${textColor}`}>
-              received
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Eye className={`w-4 h-4 ${iconColor}`} />
-          <div>
-            <div className={`text-xs font-medium ${textColor}`}>Views</div>
-            <div className={`text-sm ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
-              {viewCount}
-            </div>
-            <div className={`text-xs ${textColor}`}>
-              total
-            </div>
+        <div className="flex items-center gap-2 ml-6 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <span className={`text-xs font-medium ${textColor}`}>Job ID:</span>
+            <code className={`text-sm font-mono ${currentTheme === 'black' ? 'text-white' : 'text-foreground'} bg-background/50 px-2 py-1 rounded`}>
+              {displayJobId}
+            </code>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopyJobId}
+              className="h-7 w-7 p-0 hover:bg-background/50"
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
           </div>
         </div>
       </div>
