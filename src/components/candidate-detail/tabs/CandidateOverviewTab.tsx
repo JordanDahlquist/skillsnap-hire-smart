@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -236,22 +235,6 @@ export const CandidateOverviewTab = ({
             <div>
               <label className="text-sm font-medium text-muted-foreground text-left block">Applied</label>
               <p className="text-foreground text-left">{getTimeAgo(localApplication.created_at)}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground text-left block">Your Rating</label>
-                <div className="flex gap-0.5 mt-1">
-                  {renderManualRating(localApplication.manual_rating)}
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-muted-foreground text-left block">AI Rating</label>
-                <div className="flex gap-0.5 mt-1">
-                  {renderAIRating(localApplication.ai_rating)}
-                </div>
-              </div>
             </div>
 
             {localApplication.ai_summary && (
