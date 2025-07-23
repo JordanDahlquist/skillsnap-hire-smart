@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SignUpFormData } from "@/pages/SignUp";
-import { useDebounceValidation } from "@/hooks/useDebounceValidation";
+
 
 interface UseCaseStepProps {
   formData: SignUpFormData;
@@ -72,14 +72,13 @@ export const UseCaseStep = ({
     return isValid;
   }, [formData.hiringGoals, formData.hiresPerMonth, formData.currentTools, formData.biggestChallenges, onValidationChange]);
 
-  const { debouncedValidate, clearDebounce } = useDebounceValidation(validateForm, 300);
-
+  // Immediate validation on form data changes
   useEffect(() => {
     if (!isLoading) {
-      debouncedValidate();
+      console.log('UseCaseStep: Validating form data');
+      validateForm();
     }
-    return () => clearDebounce();
-  }, [debouncedValidate, clearDebounce, isLoading]);
+  }, [validateForm, isLoading]);
 
   const handleGoalChange = useCallback((goal: string, checked: boolean) => {
     if (isLoading) return;

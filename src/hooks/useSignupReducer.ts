@@ -34,28 +34,42 @@ const initialState: SignupState = {
 };
 
 function signupReducer(state: SignupState, action: SignupAction): SignupState {
-  switch (action.type) {
-    case 'UPDATE_FORM_DATA':
-      return {
-        ...state,
-        formData: { ...state.formData, ...action.payload }
-      };
-    case 'SET_STEP_VALIDATION':
-      const newValidation = [...state.stepValidation];
-      newValidation[action.payload.stepIndex] = action.payload.isValid;
-      return {
-        ...state,
-        stepValidation: newValidation
-      };
-    case 'SET_CURRENT_STEP':
-      return {
-        ...state,
-        currentStep: action.payload
-      };
-    case 'RESET_FORM':
-      return initialState;
-    default:
-      return state;
+  try {
+    console.log('Signup reducer action:', action.type, 'payload' in action ? action.payload : 'no payload');
+    
+    switch (action.type) {
+      case 'UPDATE_FORM_DATA':
+        const newFormData = { ...state.formData, ...action.payload };
+        console.log('Updated form data:', newFormData);
+        return {
+          ...state,
+          formData: newFormData
+        };
+      case 'SET_STEP_VALIDATION':
+        const newValidation = [...state.stepValidation];
+        newValidation[action.payload.stepIndex] = action.payload.isValid;
+        console.log(`Step ${action.payload.stepIndex} validation:`, action.payload.isValid);
+        return {
+          ...state,
+          stepValidation: newValidation
+        };
+      case 'SET_CURRENT_STEP':
+        console.log(`Moving to step ${action.payload}`);
+        return {
+          ...state,
+          currentStep: action.payload
+        };
+      case 'RESET_FORM':
+        console.log('Resetting form to initial state');
+        return initialState;
+      default:
+        console.warn('Unknown action type:', (action as any).type);
+        return state;
+    }
+  } catch (error) {
+    console.error('Error in signup reducer:', error);
+    // Return current state to prevent crashes
+    return state;
   }
 }
 

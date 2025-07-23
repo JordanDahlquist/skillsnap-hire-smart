@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 import { SignUpFormData } from "@/pages/SignUp";
 import { cn } from "@/lib/utils";
-import { useDebounceValidation } from "@/hooks/useDebounceValidation";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { AuthDivider } from "@/components/auth/AuthDivider";
 
@@ -60,14 +59,13 @@ export const BasicInfoStep = ({
     return isValid;
   }, [formData.fullName, formData.email, formData.password, onValidationChange, passwordRequirements]);
 
-  const { debouncedValidate, clearDebounce } = useDebounceValidation(validateForm, 300);
-
+  // Immediate validation on form data changes
   useEffect(() => {
     if (!isLoading) {
-      debouncedValidate();
+      console.log('BasicInfoStep: Validating form data');
+      validateForm();
     }
-    return () => clearDebounce();
-  }, [debouncedValidate, clearDebounce, isLoading]);
+  }, [validateForm, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

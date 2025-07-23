@@ -57,9 +57,22 @@ const SignUp = () => {
 
   const handleNext = useCallback(() => {
     try {
-      if (currentStep < STEPS.length - 1 && stepValidation[currentStep] && !isProcessing) {
-        console.log(`Moving from step ${currentStep} to step ${currentStep + 1}`);
-        setCurrentStep(currentStep + 1);
+      console.log('handleNext called:', { currentStep, stepValidation, isProcessing });
+      
+      if (currentStep < STEPS.length - 1 && !isProcessing) {
+        if (stepValidation[currentStep]) {
+          console.log(`Moving from step ${currentStep} to step ${currentStep + 1}`);
+          setCurrentStep(currentStep + 1);
+        } else {
+          console.warn(`Step ${currentStep} is not valid, cannot proceed`);
+          toast({
+            title: "Please complete all required fields",
+            description: "Make sure all fields are filled correctly before continuing.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        console.warn('Cannot proceed:', { currentStep, isProcessing, maxStep: STEPS.length - 1 });
       }
     } catch (error) {
       console.error('Error in handleNext:', error);
