@@ -111,6 +111,12 @@ const SignUp = () => {
     try {
       console.log('Creating account with data:', formData);
 
+      // Check if this is a repeated signup attempt by first checking existing auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email === formData.email) {
+        throw new Error("You are already signed in with this email. Please sign out first or use a different email.");
+      }
+
       // Sign up the user with Supabase
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
@@ -132,16 +138,41 @@ const SignUp = () => {
 
       if (error) {
         console.error('Signup error:', error);
+        
+        // Handle specific error cases
+        if (error.message?.includes('already registered')) {
+          throw new Error("An account with this email already exists. Please sign in instead or use a different email.");
+        }
+        
         throw error;
+      }
+
+      // Check if this was a repeated signup (user already exists)
+      if (data.user && !data.user.email_confirmed_at && data.user.created_at) {
+        const createdAt = new Date(data.user.created_at);
+        const now = new Date();
+        const timeDiff = now.getTime() - createdAt.getTime();
+        
+        // If user was created more than 1 minute ago, it's likely a repeated signup
+        if (timeDiff > 60000) {
+          throw new Error("An account with this email already exists. Please check your email for confirmation or sign in instead.");
+        }
       }
 
       console.log('Account created successfully:', data);
 
-      // Show success message
-      toast({
-        title: "Account created successfully!",
-        description: "Welcome to Atract. Let's get you started with your first job posting.",
-      });
+      // Check if email confirmation is required
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Check your email",
+          description: "We've sent you a confirmation link. Please check your email and click the link to complete your registration.",
+        });
+      } else {
+        toast({
+          title: "Account created successfully!",
+          description: "Welcome to Atract. Let's get you started with your first job posting.",
+        });
+      }
 
     } catch (error: any) {
       console.error('Account creation error:', error);

@@ -27,7 +27,7 @@ export const UserManagement = () => {
       try {
         console.log('Fetching users and roles...');
         
-        // Fetch all profiles
+        // Fetch all profiles with better error handling
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select(`
@@ -63,6 +63,16 @@ export const UserManagement = () => {
           }
         } catch (error) {
           console.warn('User roles functionality not available:', error);
+        }
+
+        // Also try to get auth users count for comparison
+        try {
+          const { count: authUsersCount } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
+          console.log('Total profiles in database:', authUsersCount);
+        } catch (error) {
+          console.warn('Could not get auth users count:', error);
         }
 
         const usersWithRoles: AdminUser[] = profiles?.map(profile => ({

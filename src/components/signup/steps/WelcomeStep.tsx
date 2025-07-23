@@ -28,7 +28,17 @@ export const WelcomeStep = ({ formData, onComplete, onCreateAccount }: WelcomeSt
       }, 2000);
     } catch (error: any) {
       console.error('Account creation error:', error);
-      setError(error.message || "Something went wrong. Please try again.");
+      
+      // Handle specific error messages for better UX
+      let errorMessage = error.message || "Something went wrong. Please try again.";
+      
+      if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
+        errorMessage = "This email is already registered. Please sign in instead or use a different email.";
+      } else if (error.message?.includes('confirmation')) {
+        errorMessage = "Please check your email for a confirmation link before proceeding.";
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsCreatingAccount(false);
     }
