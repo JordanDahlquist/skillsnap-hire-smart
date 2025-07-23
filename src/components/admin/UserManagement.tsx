@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, MoreHorizontal, Eye, Shield, Trash2, UserCheck, UserX, UserMinus } from "lucide-react";
+import { Search, MoreHorizontal, Eye, Shield, Trash2, UserCheck, UserX, UserMinus, Crown } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AdminUser } from "@/types/admin";
 import { DeleteUserDialog } from "./DeleteUserDialog";
 import { UpdateUserStatusDialog } from "./UpdateUserStatusDialog";
 import { useToast } from "@/hooks/use-toast";
 import { getUserStatusColor } from "@/utils/statusUtils";
+import { useAuth } from "@/hooks/useAuth";
 
 interface UserRoleData {
   user_id: string;
@@ -23,6 +25,7 @@ interface UserRoleData {
 export const UserManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -116,12 +119,38 @@ export const UserManagement = () => {
     navigate(`/admin/users/${userId}`);
   };
 
+  // Helper function to check if user is a master user (super admin)
+  const isMasterUser = (user: AdminUser) => {
+    return user.role === 'super_admin';
+  };
+
+  // Helper function to check if user is the current user
+  const isCurrentUser = (user: AdminUser) => {
+    return currentUser?.id === user.id;
+  };
+
   const handleDeleteUser = (user: AdminUser) => {
+    if (isMasterUser(user)) {
+      toast({
+        title: "Cannot delete master user",
+        description: "Master users cannot be deleted through the interface.",
+        variant: "destructive",
+      });
+      return;
+    }
     setUserToDelete(user);
     setDeleteDialogOpen(true);
   };
 
   const handleUpdateUserStatus = (user: AdminUser, status: 'active' | 'inactive' | 'deleted') => {
+    if (isMasterUser(user)) {
+      toast({
+        title: "Cannot modify master user",
+        description: "Master users cannot have their status changed.",
+        variant: "destructive",
+      });
+      return;
+    }
     setUserToUpdateStatus(user);
     setNewStatus(status);
     setStatusDialogOpen(true);
@@ -222,8 +251,21 @@ export const UserManagement = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, user?: AdminUser) => {
     const colorClass = getUserStatusColor(status);
+    const isMaster = user && isMasterUser(user);
+    
+    if (isMaster) {
+      return (
+        <div className="flex items-center gap-2">
+          <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+            <Crown className="w-3 h-3 mr-1" />
+            Master User
+          </Badge>
+        </div>
+      );
+    }
+    
     return (
       <Badge className={colorClass}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -232,6 +274,11 @@ export const UserManagement = () => {
   };
 
   const getStatusActions = (user: AdminUser) => {
+    // No actions available for master users
+    if (isMasterUser(user)) {
+      return [];
+    }
+
     const actions = [];
     
     if (user.status !== 'active') {
@@ -375,49 +422,78 @@ export const UserManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{user.full_name || 'No name'}</div>
-                      <div className="text-sm text-muted-foreground">{user.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.company_name}</TableCell>
-                  <TableCell>{user.industry || 'Not specified'}</TableCell>
-                  <TableCell>{getStatusBadge(user.status)}</TableCell>
-                  <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewDetails(user.id)}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleManageRoles(user.id)}>
-                          <Shield className="w-4 h-4 mr-2" />
-                          Manage Roles
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {getStatusActions(user)}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => handleDeleteUser(user)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete User Permanently
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredUsers.map((user) => {
+                const isMaster = isMasterUser(user);
+                const rowClass = isMaster ? "opacity-60" : "";
+                
+                return (
+                  <TableRow key={user.id} className={rowClass}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{user.full_name || 'No name'}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.company_name}</TableCell>
+                    <TableCell>{user.industry || 'Not specified'}</TableCell>
+                    <TableCell>{getStatusBadge(user.status, user)}</TableCell>
+                    <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    disabled={isMaster}
+                                    className={isMaster ? "opacity-50 cursor-not-allowed" : ""}
+                                  >
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                {!isMaster && (
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleViewDetails(user.id)}>
+                                      <Eye className="w-4 h-4 mr-2" />
+                                      View Details
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleManageRoles(user.id)}>
+                                      <Shield className="w-4 h-4 mr-2" />
+                                      Manage Roles
+                                    </DropdownMenuItem>
+                                    {getStatusActions(user).length > 0 && (
+                                      <>
+                                        <DropdownMenuSeparator />
+                                        {getStatusActions(user)}
+                                      </>
+                                    )}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem 
+                                      onClick={() => handleDeleteUser(user)}
+                                      className="text-destructive focus:text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete User Permanently
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                )}
+                              </DropdownMenu>
+                            </div>
+                          </TooltipTrigger>
+                          {isMaster && (
+                            <TooltipContent>
+                              <p>Master users cannot be modified</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
           
