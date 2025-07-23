@@ -1,17 +1,13 @@
 
 import { useState } from "react";
-import { Loader2, Sparkles, TrendingUp, Users, Bell, RefreshCw, BarChart3, FileText, Plus, Briefcase, Calendar } from "lucide-react";
+import { Loader2, Sparkles, Users, Bell, RefreshCw, BarChart3, Plus, Briefcase, Calendar } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
 import { useJobs } from "@/hooks/useJobs";
-import { useHiringAnalytics } from "@/hooks/useHiringAnalytics";
 import { useBriefingMetrics } from "@/hooks/useBriefingMetrics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { parseMarkdown } from "@/utils/markdownParser";
 import { AnalyticsModal } from "@/components/analytics/AnalyticsModal";
-import { generatePDFReport } from "@/utils/pdfReportGenerator";
-import { useToast } from "@/hooks/use-toast";
 
 interface AIDailyBriefingProps {
   userDisplayName: string;
@@ -22,11 +18,8 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const { data: briefing, isLoading, error } = useDailyBriefing();
   const { regenerate, isRegenerating, remainingRegenerations, canRegenerate } = useRegenerateBriefing();
   const { data: jobs = [] } = useJobs();
-  const analytics = useHiringAnalytics();
   const metrics = useBriefingMetrics();
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const { toast } = useToast();
 
   const getFallbackContent = () => {
     const now = new Date();
@@ -195,40 +188,6 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     ];
   };
 
-  const handleExportReport = async () => {
-    setIsExporting(true);
-    try {
-      toast({
-        title: "Generating Report",
-        description: "Creating your comprehensive PDF report with analytics...",
-      });
-
-      const reportData = {
-        metrics: analytics.metrics,
-        pipelineData: analytics.pipelineData,
-        trendData: analytics.trendData,
-        jobPerformanceData: analytics.jobPerformanceData,
-        jobs,
-        userDisplayName
-      };
-
-      await generatePDFReport(reportData);
-      
-      toast({
-        title: "Report Generated",
-        description: "Your comprehensive hiring analytics report has been downloaded as a PDF.",
-      });
-    } catch (error) {
-      console.error('Export error:', error);
-      toast({
-        title: "Export Failed",
-        description: "There was an error generating your report. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   const metricsData = getMetricsData();
 
@@ -299,21 +258,6 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 View Analytics
-              </Button>
-              
-              <Button 
-                variant="outline"
-                size="sm"
-                className="text-sm"
-                onClick={handleExportReport}
-                disabled={isExporting || analytics.isLoading}
-              >
-                {isExporting ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <FileText className="w-4 h-4 mr-2" />
-                )}
-                Export PDF Report
               </Button>
             </div>
           </CardContent>
