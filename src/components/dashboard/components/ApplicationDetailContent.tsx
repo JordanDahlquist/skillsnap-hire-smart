@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -248,116 +247,66 @@ export const ApplicationDetailContent = ({
             <Mail className="w-4 h-4" />
             Email
           </Button>
-          
-          {application.status !== 'rejected' ? (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={onReject}
-              disabled={isUpdating}
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              Reject
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onUnreject}
-              disabled={isUpdating}
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Unreject
-            </Button>
-          )}
-
-          {application.resume_file_path && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleViewResume}
-                className="flex items-center gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                View Resume
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadResume}
-                className="flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Download
-              </Button>
-            </>
-          )}
         </div>
 
-        {/* Rating and Stage Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Rating Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Rating</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+        {/* Rating Section */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Rating</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Manual Rating:</span>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => onManualRating(star)}
+                      disabled={isUpdating}
+                      className="hover:scale-105 transition-transform disabled:opacity-50"
+                    >
+                      <Star
+                        className={`w-5 h-5 ${
+                          application.manual_rating && star <= application.manual_rating
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-gray-300 hover:text-yellow-400'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {application.ai_rating && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Manual Rating:</span>
+                  <span className="text-sm text-muted-foreground">AI Rating:</span>
                   <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => onManualRating(star)}
-                        disabled={isUpdating}
-                        className="hover:scale-105 transition-transform disabled:opacity-50"
-                      >
-                        <Star
-                          className={`w-5 h-5 ${
-                            application.manual_rating && star <= application.manual_rating
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300 hover:text-yellow-400'
-                          }`}
-                        />
-                      </button>
-                    ))}
+                    {getRatingStars(application.ai_rating)}
+                    <span className="text-sm text-muted-foreground ml-1">
+                      ({application.ai_rating}/5)
+                    </span>
                   </div>
                 </div>
-                
-                {application.ai_rating && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">AI Rating:</span>
-                    <div className="flex items-center gap-1">
-                      {getRatingStars(application.ai_rating)}
-                      <span className="text-sm text-muted-foreground ml-1">
-                        ({application.ai_rating}/5)
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Stage Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Stage</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <StageSelector
-                jobId={jobId}
-                applicationId={application.id}
-                currentStage={application.pipeline_stage || 'applied'}
-                onStageChange={onStageChange}
-              />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stage Section */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Stage</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StageSelector
+              jobId={jobId}
+              applicationId={application.id}
+              currentStage={application.pipeline_stage || 'applied'}
+              onStageChange={onStageChange}
+            />
+          </CardContent>
+        </Card>
 
         {/* AI Summary */}
         {application.ai_summary && (
@@ -448,8 +397,6 @@ export const ApplicationDetailContent = ({
                 </div>
               </>
             )}
-
-            {/* Additional Questions - Remove since not in database schema */}
           </CardContent>
         </Card>
       </div>
