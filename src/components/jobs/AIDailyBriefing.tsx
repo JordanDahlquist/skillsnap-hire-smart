@@ -85,17 +85,17 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
     }
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-2">
         <h2 className="text-lg font-semibold text-foreground">
           {timeBasedGreeting}, {userDisplayName}! Welcome to your hiring dashboard! 🎉
         </h2>
-        <div className="space-y-3 text-sm text-foreground leading-relaxed">
+        <div className="space-y-2 text-sm text-foreground leading-relaxed">
           <p className="text-muted-foreground">
             Let's get you started with finding amazing talent. Here's what you can do:
           </p>
-          <div className="space-y-2">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
+          <div className="space-y-1">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted/50">
+              <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
                 1
               </div>
               <div>
@@ -103,8 +103,8 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 <p className="text-xs text-muted-foreground">Click "Create New Job" below to post your first position and start attracting candidates.</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-              <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted/50">
+              <div className="w-5 h-5 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
                 2
               </div>
               <div>
@@ -112,8 +112,8 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
                 <p className="text-xs text-muted-foreground">Use the Scout tab above to get AI-powered help with candidate evaluation and hiring decisions.</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-              <div className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted/50">
+              <div className="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-semibold flex-shrink-0">
                 3
               </div>
               <div>
