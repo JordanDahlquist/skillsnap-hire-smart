@@ -67,11 +67,10 @@ export const SignUpForm = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: fullName,
             company_name: companyName
@@ -81,9 +80,32 @@ export const SignUpForm = () => {
 
       if (error) throw error;
 
+      // Send custom confirmation email using edge function
+      if (data.user && !data.user.email_confirmed_at) {
+        try {
+          const confirmationUrl = `${window.location.origin}/confirm-email?email=${encodeURIComponent(signupEmail)}&name=${encodeURIComponent(fullName)}`;
+          
+          const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+            body: {
+              email: signupEmail,
+              name: fullName,
+              confirmationUrl: confirmationUrl
+            }
+          });
+
+          if (emailError) {
+            console.error('Error sending confirmation email:', emailError);
+            // Don't throw here - the account was created successfully
+          }
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          // Don't throw here - the account was created successfully
+        }
+      }
+
       toast({
         title: "Account created successfully!",
-        description: "Please check your email to confirm your account.",
+        description: "Please check your email for a beautiful confirmation message.",
       });
 
       // Redirect to email confirmation page

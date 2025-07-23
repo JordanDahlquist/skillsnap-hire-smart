@@ -80,7 +80,6 @@ export const useSignupForm = () => {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: formData.fullName,
             company_name: formData.companyName,
@@ -96,10 +95,33 @@ export const useSignupForm = () => {
       }
 
       console.log('Account created successfully:', data);
+
+      // Send custom confirmation email using edge function
+      if (data.user && !data.user.email_confirmed_at) {
+        try {
+          const confirmationUrl = `${window.location.origin}/confirm-email?email=${encodeURIComponent(formData.email)}&name=${encodeURIComponent(formData.fullName)}`;
+          
+          const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+            body: {
+              email: formData.email,
+              name: formData.fullName,
+              confirmationUrl: confirmationUrl
+            }
+          });
+
+          if (emailError) {
+            console.error('Error sending confirmation email:', emailError);
+            // Don't throw here - the account was created successfully
+          }
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          // Don't throw here - the account was created successfully
+        }
+      }
       
       toast({
         title: "Account created successfully!",
-        description: "Please check your email to confirm your account.",
+        description: "Please check your email for a beautiful confirmation message.",
       });
 
       // Redirect to email confirmation page with user details
