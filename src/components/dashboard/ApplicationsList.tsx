@@ -1,4 +1,3 @@
-
 import React, { memo, useMemo } from 'react';
 import { ApplicationsListHeader } from './ApplicationsListHeader';
 import { ApplicationItem } from './ApplicationItem';
@@ -143,7 +142,7 @@ export const ApplicationsList = memo(({
       </div>
 
       <div 
-        className="overflow-y-auto relative"
+        className="overflow-y-auto relative bg-card border border-border rounded-lg"
         style={{ 
           height: '750px',
           maskImage: 'linear-gradient(to bottom, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%)',
