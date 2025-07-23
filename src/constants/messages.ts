@@ -6,7 +6,9 @@ export const ERROR_MESSAGES = {
   SERVER_ERROR: 'An unexpected server error occurred. Please try again later.',
   VALIDATION_FAILED: 'Please check your input and try again.',
   FILE_TOO_LARGE: 'File size must be less than 10MB',
-  INVALID_FILE_TYPE: 'File type not supported'
+  INVALID_FILE_TYPE: 'File type not supported',
+  ACCOUNT_INACTIVE: 'Your account is inactive. Please contact support.',
+  ACCOUNT_DELETED: 'Your account has been deleted. Please contact support.'
 } as const;
 
 export const SUCCESS_MESSAGES = {
