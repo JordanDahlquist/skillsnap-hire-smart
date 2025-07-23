@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Mail, Star } from "lucide-react";
-import { getTimeAgo } from "@/utils/dateUtils";
+import { getTimeAgo, formatSubmissionDateTime } from "@/utils/dateUtils";
 import { Application } from "@/types";
 
 interface CandidateActivityTabProps {
@@ -66,9 +66,14 @@ export const CandidateActivityTab = ({ application }: CandidateActivityTabProps)
                       <h4 className="text-sm font-medium text-foreground text-left">
                         {event.title}
                       </h4>
-                      <span className="text-xs text-muted-foreground">
-                        {getTimeAgo(event.timestamp)}
-                      </span>
+                      <div className="text-right">
+                        <div className="text-xs font-medium text-foreground">
+                          {formatSubmissionDateTime(event.timestamp)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {getTimeAgo(event.timestamp)}
+                        </div>
+                      </div>
                     </div>
                     
                     <p className="text-sm text-muted-foreground text-left">
