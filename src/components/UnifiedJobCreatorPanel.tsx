@@ -11,8 +11,7 @@ export const UnifiedJobCreatorPanel = ({
   open, 
   onOpenChange, 
   onJobCreated, 
-  editingJob,
-  jobs 
+  editingJob 
 }: UnifiedJobCreatorPanelProps) => {
   const {
     state,
@@ -107,7 +106,6 @@ export const UnifiedJobCreatorPanel = ({
             onGenerateJobPost={handleGenerateJobPost}
             onGenerateSkillsQuestions={handleGenerateSkillsQuestions}
             onGenerateInterviewQuestions={handleGenerateInterviewQuestions}
-            jobs={jobs}
           />
         </div>
 

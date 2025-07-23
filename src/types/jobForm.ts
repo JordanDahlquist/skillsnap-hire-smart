@@ -116,5 +116,4 @@ export interface UnifiedJobCreatorPanelProps {
   onOpenChange: (open: boolean) => void;
   onJobCreated?: () => void;
   editingJob?: any;
-  jobs?: any[];
 }

@@ -123,7 +123,6 @@ export const JobsPageContent = memo(({
         open={isCreatePanelOpen} 
         onOpenChange={setIsCreatePanelOpen}
         onJobCreated={refetch}
-        jobs={jobs}
       />
     </>
   );
