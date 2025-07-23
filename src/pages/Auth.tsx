@@ -59,7 +59,11 @@ const Auth = () => {
                 />
               </div>
             ) : (
-              <Tabs defaultValue="signin" className="w-full">
+              <Tabs defaultValue="signin" className="w-full" onValueChange={(value) => {
+                if (value === "signup") {
+                  navigate("/signup");
+                }
+              }}>
                 <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-lg h-12 p-1 mb-8">
                   <TabsTrigger value="signin" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-md">Sign In</TabsTrigger>
                   <TabsTrigger value="signup" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-md">Sign Up</TabsTrigger>
@@ -67,10 +71,6 @@ const Auth = () => {
 
                 <TabsContent value="signin" className="mt-0">
                   <SignInForm onForgotPassword={() => setShowForgotPassword(true)} />
-                </TabsContent>
-
-                <TabsContent value="signup" className="mt-0">
-                  <SignUpForm />
                 </TabsContent>
               </Tabs>
             )}
