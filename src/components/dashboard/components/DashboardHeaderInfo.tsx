@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
 import { Job, Application } from "@/types";
 import { useThemeContext } from "@/contexts/ThemeContext";
-import { DashboardHeaderMetadata } from "./DashboardHeaderMetadata";
+import { FullWidthInsightsBar } from "./FullWidthInsightsBar";
 
 interface DashboardHeaderInfoProps {
   job: Job;
@@ -66,10 +66,10 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
         </Button>
       </div>
 
-      <DashboardHeaderMetadata
-        job={job}
-        applications={applications}
-        isVisible={showMetadata}
+      <FullWidthInsightsBar 
+        job={job} 
+        applications={applications} 
+        isVisible={showMetadata} 
       />
     </div>
   );
