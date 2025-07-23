@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PulsingDot } from "@/components/ui/pulsing-dot";
+import { useCandidateInboxData } from "@/hooks/useCandidateInboxData";
 import { CandidateOverviewTab } from "./tabs/CandidateOverviewTab";
 import { CandidateResumeTab } from "./tabs/CandidateResumeTab";
 import { CandidateSkillsTab } from "./tabs/CandidateSkillsTab";
@@ -23,6 +25,7 @@ export const CandidateDetailContent = ({
   initialTab = 'overview'
 }: CandidateDetailContentProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const { hasUnreadMessages } = useCandidateInboxData(application.id);
 
   // Update active tab when initialTab changes (from URL)
   useEffect(() => {
@@ -41,9 +44,10 @@ export const CandidateDetailContent = ({
           </TabsTrigger>
           <TabsTrigger 
             value="email" 
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background border-r border-border last:border-r-0 hover:bg-muted/50 hover:text-blue-600 transition-colors"
+            className="relative data-[state=active]:bg-blue-600 data-[state=active]:text-white dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background border-r border-border last:border-r-0 hover:bg-muted/50 hover:text-blue-600 transition-colors"
           >
             Email
+            {hasUnreadMessages && <PulsingDot />}
           </TabsTrigger>
           <TabsTrigger 
             value="resume" 

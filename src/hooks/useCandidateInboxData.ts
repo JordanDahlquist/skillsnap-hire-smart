@@ -70,6 +70,22 @@ export const useCandidateInboxData = (applicationId: string) => {
     return filtered;
   }, [allMessages, candidateThreads]);
 
+  // Calculate unread messages from candidate (inbound direction)
+  const unreadInfo = useMemo(() => {
+    const unreadCount = candidateThreads.reduce((sum, thread) => sum + thread.unread_count, 0);
+    const hasUnreadMessages = unreadCount > 0;
+    
+    console.log('=== UNREAD MESSAGE CALCULATION ===');
+    console.log('Candidate threads:', candidateThreads.map(t => ({ id: t.id, unread_count: t.unread_count })));
+    console.log('Total unread count:', unreadCount);
+    console.log('Has unread messages:', hasUnreadMessages);
+    
+    return {
+      unreadCount,
+      hasUnreadMessages
+    };
+  }, [candidateThreads]);
+
   // Get the primary thread for this candidate (most recent)
   const primaryThread = useMemo(() => {
     const sorted = candidateThreads.sort((a, b) => 
@@ -88,6 +104,8 @@ export const useCandidateInboxData = (applicationId: string) => {
     error,
     refetchThreads,
     markThreadAsRead,
-    sendReply
+    sendReply,
+    unreadCount: unreadInfo.unreadCount,
+    hasUnreadMessages: unreadInfo.hasUnreadMessages
   };
 };
