@@ -120,7 +120,7 @@ export const JobsContent = memo(({
             </p>
             <Button 
               onClick={handleCreateJob}
-              className="bg-[#007af6] hover:bg-[#0056b3] px-8 py-3 text-lg font-semibold"
+              className="bg-[#007af6] hover:bg-[#0056b3] px-8 py-3 text-lg font-semibold new-user-button-glow"
               size="lg"
             >
               <Plus className="w-5 h-5 mr-2" />
