@@ -3,11 +3,13 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Check, X } from "lucide-react";
+import { Eye, EyeOff, Check, X, Loader2 } from "lucide-react";
 import { SignUpFormData } from "@/pages/SignUp";
 import { cn } from "@/lib/utils";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { AuthDivider } from "@/components/auth/AuthDivider";
+import { supabase } from "@/integrations/supabase/client";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface BasicInfoStepProps {
   formData: SignUpFormData;
@@ -26,6 +28,67 @@ export const BasicInfoStep = ({
 }: BasicInfoStepProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<'available' | 'taken' | null>(null);
+  
+  // Debounce email input to avoid excessive API calls
+  const debouncedEmail = useDebounce(formData.email, 500);
+
+  // Check if email already exists in the database
+  const checkEmailExists = useCallback(async (email: string): Promise<boolean> => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking email:', error);
+        return false;
+      }
+
+      return !!data;
+    } catch (error) {
+      console.error('Error checking email availability:', error);
+      return false;
+    }
+  }, []);
+
+  // Effect to check email availability when debounced email changes
+  useEffect(() => {
+    const validateEmail = async () => {
+      if (!debouncedEmail) {
+        setEmailStatus(null);
+        return;
+      }
+
+      // Only check if email format is valid
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(debouncedEmail)) {
+        setEmailStatus(null);
+        return;
+      }
+
+      setIsCheckingEmail(true);
+      setEmailStatus(null);
+
+      try {
+        const emailExists = await checkEmailExists(debouncedEmail);
+        setEmailStatus(emailExists ? 'taken' : 'available');
+      } catch (error) {
+        console.error('Email validation error:', error);
+        setEmailStatus(null);
+      } finally {
+        setIsCheckingEmail(false);
+      }
+    };
+
+    validateEmail();
+  }, [debouncedEmail, checkEmailExists]);
 
   const passwordRequirements = useMemo(() => [
     { text: "At least 8 characters", met: formData.password.length >= 8 },
@@ -45,6 +108,8 @@ export const BasicInfoStep = ({
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
+    } else if (emailStatus === 'taken') {
+      newErrors.email = "This email is already registered";
     }
 
     if (!formData.password) {
@@ -54,10 +119,10 @@ export const BasicInfoStep = ({
     }
 
     setErrors(newErrors);
-    const isValid = Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0 && emailStatus !== 'taken' && !isCheckingEmail;
     onValidationChange(isValid);
     return isValid;
-  }, [formData.fullName, formData.email, formData.password, passwordRequirements]);
+  }, [formData.fullName, formData.email, formData.password, passwordRequirements, emailStatus, isCheckingEmail]);
 
   // Immediate validation on form data changes
   useEffect(() => {
@@ -65,7 +130,7 @@ export const BasicInfoStep = ({
       console.log('BasicInfoStep: Validating form data');
       validateForm();
     }
-  }, [formData.fullName, formData.email, formData.password, passwordRequirements, isLoading]);
+  }, [formData.fullName, formData.email, formData.password, passwordRequirements, emailStatus, isCheckingEmail, validateForm, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,19 +188,53 @@ export const BasicInfoStep = ({
           <Label htmlFor="email" className="text-sm font-medium text-gray-700">
             Work Email
           </Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleInputChange('email', e.target.value)}
-            className={cn(
-              "mt-1",
-              errors.email && "border-red-500 focus-visible:ring-red-500"
-            )}
-            placeholder="your.email@company.com"
-            disabled={isLoading}
-          />
-          {errors.email && (
+          <div className="relative">
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              className={cn(
+                "mt-1 pr-10",
+                errors.email && "border-red-500 focus-visible:ring-red-500",
+                emailStatus === 'available' && "border-green-500 focus-visible:ring-green-500",
+                emailStatus === 'taken' && "border-red-500 focus-visible:ring-red-500"
+              )}
+              placeholder="your.email@company.com"
+              disabled={isLoading}
+            />
+            {/* Email status indicator */}
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              {isCheckingEmail && (
+                <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+              )}
+              {!isCheckingEmail && emailStatus === 'available' && (
+                <Check className="w-4 h-4 text-green-500" />
+              )}
+              {!isCheckingEmail && emailStatus === 'taken' && (
+                <X className="w-4 h-4 text-red-500" />
+              )}
+            </div>
+          </div>
+          
+          {/* Email status messages */}
+          {emailStatus === 'available' && !errors.email && (
+            <p className="text-green-600 text-sm mt-1 flex items-center gap-1">
+              <Check className="w-3 h-3" />
+              Email is available
+            </p>
+          )}
+          {emailStatus === 'taken' && (
+            <div className="mt-1">
+              <p className="text-red-500 text-sm">This email is already registered</p>
+              <p className="text-sm text-gray-600 mt-1">
+                <a href="/auth" className="text-blue-600 hover:text-blue-700 underline">
+                  Sign in instead
+                </a> or use a different email address
+              </p>
+            </div>
+          )}
+          {errors.email && emailStatus !== 'taken' && (
             <p className="text-red-500 text-sm mt-1">{errors.email}</p>
           )}
         </div>
