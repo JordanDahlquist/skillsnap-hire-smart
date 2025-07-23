@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SignUpFormData } from "@/pages/SignUp";
 import { cn } from "@/lib/utils";
-import { useDebounceValidation } from "@/hooks/useDebounceValidation";
 
 interface CompanyInfoStepProps {
   formData: SignUpFormData;
@@ -69,14 +68,12 @@ export const CompanyInfoStep = ({
     return isValid;
   }, [formData.companyName, formData.companySize, formData.industry, onValidationChange]);
 
-  const { debouncedValidate, clearDebounce } = useDebounceValidation(validateForm, 300);
-
+  // Immediate validation on form data changes
   useEffect(() => {
     if (!isLoading) {
-      debouncedValidate();
+      validateForm();
     }
-    return () => clearDebounce();
-  }, [debouncedValidate, clearDebounce, isLoading]);
+  }, [validateForm, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
