@@ -25,6 +25,7 @@ import {
 import { StageSelector } from "../StageSelector";
 import { constructResumeUrl } from "@/utils/resumeUploadUtils";
 import { Application } from "@/types";
+import { toast } from "sonner";
 
 interface ApplicationDetailContentProps {
   application: Application;
@@ -73,6 +74,35 @@ export const ApplicationDetailContent = ({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+  };
+
+  const handleCopyEmail = async () => {
+    if (application.email) {
+      try {
+        await navigator.clipboard.writeText(application.email);
+        toast.success("Email copied!");
+      } catch (err) {
+        toast.error("Failed to copy email");
+      }
+    }
+  };
+
+  const handleCopyPhone = async () => {
+    if (application.phone) {
+      try {
+        await navigator.clipboard.writeText(application.phone);
+        toast.success("Phone copied!");
+      } catch (err) {
+        toast.error("Failed to copy phone");
+      }
+    }
+  };
+
+  const handleOpenLocation = () => {
+    if (application.location) {
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(application.location)}`;
+      window.open(googleMapsUrl, '_blank');
     }
   };
 
@@ -244,22 +274,31 @@ export const ApplicationDetailContent = ({
             </button>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               {application.email && (
-                <div className="flex items-center gap-1">
+                <button 
+                  onClick={handleCopyEmail}
+                  className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                >
                   <Mail className="w-4 h-4" />
                   {application.email}
-                </div>
+                </button>
               )}
               {application.phone && (
-                <div className="flex items-center gap-1">
+                <button 
+                  onClick={handleCopyPhone}
+                  className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                >
                   <Phone className="w-4 h-4" />
                   {application.phone}
-                </div>
+                </button>
               )}
               {application.location && (
-                <div className="flex items-center gap-1">
+                <button 
+                  onClick={handleOpenLocation}
+                  className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                >
                   <MapPin className="w-4 h-4" />
                   {application.location}
-                </div>
+                </button>
               )}
             </div>
           </div>
