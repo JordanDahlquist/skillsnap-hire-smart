@@ -91,7 +91,7 @@ export const ApplicationReview = ({
         email: personalInfo.email,
         phone: personalInfo.phone || null,
         location: personalInfo.location || null,
-        portfolio: personalInfo.portfolioUrl || null,
+        portfolio_url: personalInfo.portfolioUrl || null,
         linkedin_url: personalInfo.linkedinUrl || null,
         github_url: personalInfo.githubUrl || null,
         cover_letter: personalInfo.coverLetter || null,
