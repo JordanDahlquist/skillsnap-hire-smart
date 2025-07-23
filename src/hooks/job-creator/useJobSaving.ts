@@ -1,11 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { UnifiedJobCreatorState } from "@/types/jobForm";
 
 export const useJobSaving = () => {
-  const { toast } = useToast();
   const { user, profile } = useAuth();
 
   const saveJob = async (
@@ -17,11 +15,7 @@ export const useJobSaving = () => {
     onClose?: (open: boolean) => void
   ) => {
     if (!user?.id) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to save jobs.",
-        variant: "destructive",
-      });
+      console.error('Authentication required: Please log in to save jobs.');
       return;
     }
 
@@ -69,11 +63,6 @@ export const useJobSaving = () => {
 
         if (error) throw error;
         result = data;
-
-        toast({
-          title: "Job updated!",
-          description: "Your job has been updated successfully.",
-        });
       } else {
         // Create new job
         const { data, error } = await supabase
@@ -84,13 +73,6 @@ export const useJobSaving = () => {
 
         if (error) throw error;
         result = data;
-
-        toast({
-          title: status === 'active' ? "Job published!" : "Job saved as draft!",
-          description: status === 'active' 
-            ? "Your job has been published and is now live." 
-            : "Your job has been saved as a draft.",
-        });
       }
 
       // Reset form and close modal
@@ -100,11 +82,6 @@ export const useJobSaving = () => {
 
     } catch (error) {
       console.error('Error saving job:', error);
-      toast({
-        title: "Save failed",
-        description: "Failed to save job. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSaving(false);
     }

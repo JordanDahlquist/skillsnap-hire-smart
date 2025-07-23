@@ -2,12 +2,10 @@ import { UnifiedJobCreatorActions, UnifiedJobFormData, CompanyAnalysisData, Writ
 import { SkillsTestData } from "@/types/skillsAssessment";
 import { InterviewQuestionsData } from "@/types/interviewQuestions";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
 export const createJobCreatorActions = (
   setState: React.Dispatch<React.SetStateAction<any>>
 ): UnifiedJobCreatorActions => {
-  const { toast } = useToast();
 
   return {
     setCurrentStep: (step) => setState((prev: any) => ({ ...prev, currentStep: step })),
@@ -59,11 +57,6 @@ export const createJobCreatorActions = (
           websiteAnalysisData: analysisData,
           isAnalyzingWebsite: false 
         }));
-
-        toast({
-          title: "Website analyzed!",
-          description: "Company information extracted successfully.",
-        });
       } catch (error) {
         console.error('Error analyzing website:', error);
         setState((prev: any) => ({ 
@@ -71,12 +64,6 @@ export const createJobCreatorActions = (
           websiteAnalysisError: 'Failed to analyze website. Please try again.',
           isAnalyzingWebsite: false 
         }));
-        
-        toast({
-          title: "Analysis failed",
-          description: "Failed to analyze website. Please check the URL and try again.",
-          variant: "destructive",
-        });
       }
     },
 

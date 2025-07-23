@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { UnifiedJobFormData } from '@/types/jobForm';
 import { parseInterviewQuestionsFromMarkdown } from '@/utils/interviewQuestionParser';
 
@@ -37,14 +36,12 @@ export const useJobContentGeneration = () => {
       // The edge function returns { jobPost: content } for job-post type
       if (data?.jobPost) {
         setGeneratedJobPostCallback(data.jobPost);
-        toast.success('Job post generated successfully!');
       } else {
         console.error('No job post content received:', data);
         throw new Error('No job post content received');
       }
     } catch (error) {
       console.error('Error generating job post:', error);
-      toast.error('Failed to generate job post. Please try again.');
     } finally {
       setIsGeneratingCallback(false);
     }
@@ -79,14 +76,12 @@ export const useJobContentGeneration = () => {
       // The edge function returns { skillsTest: content } for skills-test type
       if (data?.skillsTest) {
         setSkillsTestDataCallback(data.skillsTest);
-        toast.success('Skills assessment generated successfully!');
       } else {
         console.error('No skills questions received:', data);
         throw new Error('No skills questions received');
       }
     } catch (error) {
       console.error('Error generating skills questions:', error);
-      toast.error('Failed to generate skills assessment. Please try again.');
     } finally {
       setIsGeneratingCallback(false);
     }
@@ -141,15 +136,12 @@ export const useJobContentGeneration = () => {
             setGeneratedInterviewQuestionsCallback(data.questions);
           }
         }
-        
-        toast.success('Interview questions generated successfully!');
       } else {
         console.error('No interview questions received:', data);
         throw new Error('No interview questions received');
       }
     } catch (error) {
       console.error('Error generating interview questions:', error);
-      toast.error('Failed to generate interview questions. Please try again.');
     } finally {
       setIsGeneratingCallback(false);
     }
