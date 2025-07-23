@@ -49,7 +49,7 @@ const Auth = () => {
       {/* Auth Form */}
       <div className="flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 flex-1 bg-white">
         <Card className="w-full max-w-lg bg-white border border-gray-200 shadow-lg rounded-xl">
-          <CardContent className="bg-white p-8">
+          <CardContent className="p-8">
             {showForgotPassword ? (
               <div className="space-y-6">
                 <ForgotPasswordForm 
