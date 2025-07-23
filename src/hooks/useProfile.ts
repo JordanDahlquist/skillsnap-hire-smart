@@ -17,6 +17,7 @@ interface UserProfile {
   industry: string | null;
   daily_briefing_regenerations: number | null;
   last_regeneration_date: string | null;
+  status: 'active' | 'inactive' | 'deleted';
 }
 
 export const useProfile = (userId: string | undefined) => {

@@ -3,3 +3,6 @@ project_id = "wrnscwadcetbimpstnpu"
 
 [functions.handle-email-webhook]
 verify_jwt = false
+
+[functions.revoke-user-session]
+verify_jwt = false

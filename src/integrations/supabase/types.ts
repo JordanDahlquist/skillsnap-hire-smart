@@ -671,6 +671,27 @@ export type Database = {
         }
         Relationships: []
       }
+      session_revocations: {
+        Row: {
+          created_at: string
+          id: string
+          revoked_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          revoked_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          revoked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           applications_count: number | null
@@ -806,6 +827,10 @@ export type Database = {
       is_super_admin: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      revoke_user_sessions: {
+        Args: { target_user_id: string }
+        Returns: undefined
       }
       track_job_view: {
         Args: {

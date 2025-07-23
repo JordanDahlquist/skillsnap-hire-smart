@@ -19,6 +19,7 @@ interface UserProfile {
   daily_briefing_regenerations: number | null;
   last_regeneration_date: string | null;
   unique_email: string | null;
+  status: 'active' | 'inactive' | 'deleted';
 }
 
 export const useOptimizedProfile = (userId: string | undefined) => {

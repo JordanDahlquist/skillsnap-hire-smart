@@ -1,5 +1,6 @@
 
 import { useAuth } from "@/hooks/useAuth";
+import { useSessionRevocation } from "@/hooks/useSessionRevocation";
 import { Navigate, useLocation } from "react-router-dom";
 import { ReactNode } from "react";
 
@@ -9,8 +10,11 @@ interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, profile } = useAuth();
   const location = useLocation();
+  
+  // Enable session revocation monitoring for authenticated users
+  useSessionRevocation();
 
   // Only show loading for auth, not profile
   if (loading) {
@@ -22,6 +26,13 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
         </div>
       </div>
     );
+  }
+
+  // Check user status if authenticated and profile is loaded
+  if (requireAuth && isAuthenticated && profile && profile.status !== 'active') {
+    // User is inactive or deleted, redirect to auth page
+    sessionStorage.removeItem('auth_redirect_url');
+    return <Navigate to="/auth" replace />;
   }
 
   if (requireAuth && !isAuthenticated) {

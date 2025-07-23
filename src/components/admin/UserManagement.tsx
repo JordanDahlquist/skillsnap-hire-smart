@@ -173,6 +173,22 @@ export const UserManagement = () => {
       const result = data as { success: boolean; error?: string; message?: string };
       
       if (result?.success) {
+        // If status changed to inactive or deleted, revoke user sessions
+        if (newStatus === 'inactive' || newStatus === 'deleted') {
+          try {
+            const { error: revokeError } = await supabase.functions.invoke('revoke-user-session', {
+              body: { userId: userToUpdateStatus.id }
+            });
+
+            if (revokeError) {
+              console.error('Error revoking user sessions:', revokeError);
+              // Don't fail the status update if session revocation fails
+            }
+          } catch (revokeError) {
+            console.error('Error calling session revocation function:', revokeError);
+          }
+        }
+
         // Update user in local state
         setUsers(users.map(u => 
           u.id === userToUpdateStatus.id 
