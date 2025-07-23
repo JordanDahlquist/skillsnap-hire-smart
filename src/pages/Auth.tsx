@@ -47,11 +47,11 @@ const Auth = () => {
       <AuthHeader showForgotPassword={showForgotPassword} />
 
       {/* Auth Form */}
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 flex-1 bg-white">
-        <Card className="w-full max-w-md bg-white border border-gray-200 shadow-sm">
-          <CardContent className="bg-white">
+      <div className="flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 flex-1 bg-white">
+        <Card className="w-full max-w-lg bg-white border border-gray-200 shadow-lg rounded-xl">
+          <CardContent className="bg-white p-8">
             {showForgotPassword ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <ForgotPasswordForm 
                   email={email}
                   setEmail={setEmail}
@@ -60,16 +60,16 @@ const Auth = () => {
               </div>
             ) : (
               <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-gray-100">
-                  <TabsTrigger value="signin" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900">Sign Up</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-lg h-12 p-1 mb-8">
+                  <TabsTrigger value="signin" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-md">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-gray-700 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm rounded-md">Sign Up</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="signin">
+                <TabsContent value="signin" className="mt-0">
                   <SignInForm onForgotPassword={() => setShowForgotPassword(true)} />
                 </TabsContent>
 
-                <TabsContent value="signup">
+                <TabsContent value="signup" className="mt-0">
                   <SignUpForm />
                 </TabsContent>
               </Tabs>

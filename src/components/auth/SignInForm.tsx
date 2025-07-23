@@ -57,21 +57,22 @@ export const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
   };
 
   return (
-    <div className="space-y-4 bg-white">
-      <form onSubmit={handleSignIn} className="space-y-4">
-        <div>
-          <Label htmlFor="signin-email" className="text-gray-700">Email</Label>
+    <div className="space-y-6 bg-white">
+      <form onSubmit={handleSignIn} className="space-y-6">
+        <div className="space-y-3">
+          <Label htmlFor="signin-email" className="text-sm font-medium text-gray-700">Email</Label>
           <Input
             id="signin-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
+            placeholder="Enter your email"
+            className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 rounded-lg focus:border-[#007af6] focus:ring-[#007af6]"
           />
         </div>
-        <div>
-          <Label htmlFor="signin-password" className="text-gray-700">Password</Label>
+        <div className="space-y-3">
+          <Label htmlFor="signin-password" className="text-sm font-medium text-gray-700">Password</Label>
           <div className="relative">
             <Input
               id="signin-password"
@@ -79,7 +80,8 @@ export const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
+              placeholder="Enter your password"
+              className="h-12 pr-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 rounded-lg focus:border-[#007af6] focus:ring-[#007af6]"
             />
             <button
               type="button"
@@ -92,18 +94,18 @@ export const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
         </div>
         <Button 
           type="submit" 
-          className="w-full bg-[#007af6] hover:bg-[#0056b3] text-white" 
+          className="w-full h-12 bg-[#007af6] hover:bg-[#0056b3] text-white font-medium rounded-lg mt-8" 
           disabled={loading}
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           Sign In
         </Button>
-        <div className="text-center">
+        <div className="text-center mt-6">
           <Button
             type="button"
             variant="link"
             onClick={onForgotPassword}
-            className="text-sm text-[#007af6] hover:text-[#0056b3]"
+            className="text-sm text-[#007af6] hover:text-[#0056b3] p-0"
           >
             Forgot your password?
           </Button>

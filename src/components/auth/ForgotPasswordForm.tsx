@@ -56,14 +56,24 @@ export const ForgotPasswordForm = ({ email, setEmail, onBack }: ForgotPasswordFo
 
   if (resetEmailSent) {
     return (
-      <div className="text-center space-y-4 bg-white">
-        <div className="text-green-600 text-sm">
-          Password reset email sent! Check your inbox and follow the instructions to reset your password.
+      <div className="text-center space-y-6 bg-white">
+        <div className="space-y-4">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <ArrowLeft className="w-4 h-4 text-white rotate-180" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900">Check your email</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Password reset email sent! Check your inbox and follow the instructions to reset your password.
+            </p>
+          </div>
         </div>
         <Button 
           variant="outline" 
           onClick={onBack}
-          className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+          className="w-full h-12 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Sign In
@@ -73,12 +83,15 @@ export const ForgotPasswordForm = ({ email, setEmail, onBack }: ForgotPasswordFo
   }
 
   return (
-    <form onSubmit={handleForgotPassword} className="space-y-4 bg-white">
-      <div className="text-sm text-gray-600 text-center">
-        Enter your email address and we'll send you a link to reset your password.
+    <form onSubmit={handleForgotPassword} className="space-y-6 bg-white">
+      <div className="text-center space-y-3">
+        <h2 className="text-xl font-semibold text-gray-900">Reset your password</h2>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          Enter your email address and we'll send you a link to reset your password.
+        </p>
       </div>
-      <div>
-        <Label htmlFor="reset-email" className="text-gray-700">Email</Label>
+      <div className="space-y-3">
+        <Label htmlFor="reset-email" className="text-sm font-medium text-gray-700">Email</Label>
         <Input
           id="reset-email"
           type="email"
@@ -86,12 +99,12 @@ export const ForgotPasswordForm = ({ email, setEmail, onBack }: ForgotPasswordFo
           onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="Enter your email"
-          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
+          className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 rounded-lg focus:border-[#007af6] focus:ring-[#007af6]"
         />
       </div>
       <Button 
         type="submit" 
-        className="w-full bg-[#007af6] hover:bg-[#0056b3] text-white" 
+        className="w-full h-12 bg-[#007af6] hover:bg-[#0056b3] text-white font-medium rounded-lg" 
         disabled={loading}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -101,7 +114,7 @@ export const ForgotPasswordForm = ({ email, setEmail, onBack }: ForgotPasswordFo
         type="button" 
         variant="outline" 
         onClick={onBack}
-        className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+        className="w-full h-12 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to Sign In

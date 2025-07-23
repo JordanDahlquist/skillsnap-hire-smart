@@ -105,46 +105,48 @@ export const SignUpForm = () => {
   };
 
   return (
-    <div className="space-y-4 bg-white">
-      <form onSubmit={handleSignUp} className="space-y-4">
-        <div>
-          <Label htmlFor="signup-fullname" className="text-gray-700">Full Name</Label>
-          <Input
-            id="signup-fullname"
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Enter your full name"
-            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
-            required
-          />
+    <div className="space-y-6 bg-white">
+      <form onSubmit={handleSignUp} className="space-y-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <Label htmlFor="signup-fullname" className="text-sm font-medium text-gray-700">Full Name</Label>
+            <Input
+              id="signup-fullname"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Enter your full name"
+              className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 rounded-lg focus:border-[#007af6] focus:ring-[#007af6]"
+              required
+            />
+          </div>
+          <div className="space-y-3">
+            <Label htmlFor="signup-company" className="text-sm font-medium text-gray-700">Company Name</Label>
+            <Input
+              id="signup-company"
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="Your company name"
+              className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 rounded-lg focus:border-[#007af6] focus:ring-[#007af6]"
+              required
+            />
+          </div>
         </div>
-        <div>
-          <Label htmlFor="signup-company" className="text-gray-700">Company Name</Label>
-          <Input
-            id="signup-company"
-            type="text"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="Your company name"
-            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="signup-email" className="text-gray-700">Work Email</Label>
+        <div className="space-y-3">
+          <Label htmlFor="signup-email" className="text-sm font-medium text-gray-700">Work Email</Label>
           <Input
             id="signup-email"
             type="email"
             value={signupEmail}
             onChange={(e) => setSignupEmail(e.target.value)}
             placeholder="your.email@company.com"
-            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
+            className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 rounded-lg focus:border-[#007af6] focus:ring-[#007af6]"
             required
           />
         </div>
-        <div>
-          <Label htmlFor="signup-password" className="text-gray-700">Password</Label>
+        <div className="space-y-3">
+          <Label htmlFor="signup-password" className="text-sm font-medium text-gray-700">Password</Label>
           <div className="relative">
             <Input
               id="signup-password"
@@ -152,7 +154,7 @@ export const SignUpForm = () => {
               value={signupPassword}
               onChange={(e) => setSignupPassword(e.target.value)}
               placeholder="Create a strong password"
-              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500"
+              className="h-12 pr-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 rounded-lg focus:border-[#007af6] focus:ring-[#007af6]"
               required
             />
             <button
@@ -165,13 +167,13 @@ export const SignUpForm = () => {
           </div>
           
           {signupPassword && (
-            <div className="mt-2 space-y-1">
+            <div className="mt-4 space-y-3">
               {passwordRequirements.map((req, index) => (
-                <div key={index} className="flex items-center gap-2 text-sm">
+                <div key={index} className="flex items-center gap-3 text-sm">
                   {req.met ? (
-                    <Check className="w-3 h-3 text-green-500" />
+                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                   ) : (
-                    <X className="w-3 h-3 text-gray-300" />
+                    <X className="w-4 h-4 text-gray-300 flex-shrink-0" />
                   )}
                   <span className={req.met ? "text-green-600" : "text-gray-500"}>
                     {req.text}
@@ -183,13 +185,13 @@ export const SignUpForm = () => {
         </div>
         <Button 
           type="submit" 
-          className="w-full bg-[#007af6] hover:bg-[#0056b3] text-white" 
+          className="w-full h-12 bg-[#007af6] hover:bg-[#0056b3] text-white font-medium rounded-lg mt-8" 
           disabled={loading}
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           Create Account & Start Free Trial
         </Button>
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-gray-500 text-center mt-6">
           By creating an account, you agree to our Terms of Service and Privacy Policy
         </p>
       </form>
