@@ -14,7 +14,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext"
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
-import SimpleSignUp from "./pages/SimpleSignUp";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import ResetPassword from "./pages/ResetPassword";
 import { OptimizedJobsPage } from "./components/jobs/OptimizedJobsPage";
@@ -69,7 +68,6 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/signup" element={<SignUp />} />
-              <Route path="/simple-signup" element={<SimpleSignUp />} />
               <Route path="/confirm" element={<ConfirmEmail />} />
               <Route path="/confirm-email" element={<ConfirmEmail />} />
               <Route path="/reset-password" element={<ResetPassword />} />
