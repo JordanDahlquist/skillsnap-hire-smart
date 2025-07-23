@@ -7,6 +7,8 @@ import { DashboardHeaderInfo } from "./components/DashboardHeaderInfo";
 import { DashboardHeaderActions } from "./components/DashboardHeaderActions";
 import { DashboardHeaderLoader } from "./components/DashboardHeaderLoader";
 import { AIAnalysisProgress } from "./components/AIAnalysisProgress";
+import { FullWidthInsightsBar } from "./components/FullWidthInsightsBar";
+import { useState } from "react";
 import { useDashboardHeaderActions } from "@/hooks/useDashboardHeaderActions";
 import { DASHBOARD_HEADER_CONSTANTS } from "./constants/dashboardHeaderConstants";
 import { Job, Application } from "@/types";
@@ -24,6 +26,8 @@ export const CompactDashboardHeader = ({
   getTimeAgo, 
   onJobUpdate 
 }: CompactDashboardHeaderProps) => {
+  const [showMetadata, setShowMetadata] = useState(false);
+  
   const {
     isUpdating,
     isRefreshingAI,
@@ -76,6 +80,8 @@ export const CompactDashboardHeader = ({
                 job={job}
                 applications={applications}
                 getTimeAgo={getTimeAgo}
+                showMetadata={showMetadata}
+                setShowMetadata={setShowMetadata}
               />
             </div>
             
@@ -97,6 +103,12 @@ export const CompactDashboardHeader = ({
           </div>
         </div>
       </div>
+
+      <FullWidthInsightsBar 
+        job={job} 
+        applications={applications} 
+        isVisible={showMetadata} 
+      />
 
       <UnifiedJobCreatorPanel
         open={isEditModalOpen}

@@ -11,11 +11,12 @@ interface DashboardHeaderInfoProps {
   job: Job;
   applications: Application[];
   getTimeAgo: (dateString: string) => string;
+  showMetadata: boolean;
+  setShowMetadata: (show: boolean) => void;
 }
 
-export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: DashboardHeaderInfoProps) => {
+export const DashboardHeaderInfo = ({ job, applications, getTimeAgo, showMetadata, setShowMetadata }: DashboardHeaderInfoProps) => {
   const { currentTheme } = useThemeContext();
-  const [showMetadata, setShowMetadata] = useState(false);
   
   const getStatusBadgeClasses = (status: string) => {
     switch (status) {
@@ -65,12 +66,6 @@ export const DashboardHeaderInfo = ({ job, applications, getTimeAgo }: Dashboard
           )}
         </Button>
       </div>
-
-      <FullWidthInsightsBar 
-        job={job} 
-        applications={applications} 
-        isVisible={showMetadata} 
-      />
     </div>
   );
 };
