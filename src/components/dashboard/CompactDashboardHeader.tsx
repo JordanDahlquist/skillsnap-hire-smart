@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -23,12 +24,6 @@ export const CompactDashboardHeader = ({
   getTimeAgo, 
   onJobUpdate 
 }: CompactDashboardHeaderProps) => {
-  console.log('CompactDashboardHeader render:', { 
-    jobId: job.id, 
-    status: job.status, 
-    applicationsCount: applications.length 
-  });
-
   const {
     isUpdating,
     isRefreshingAI,
@@ -52,7 +47,6 @@ export const CompactDashboardHeader = ({
 
   return (
     <>
-      {/* Show AI Analysis Progress instead of generic loader when doing AI analysis */}
       <AIAnalysisProgress
         totalApplications={aiAnalysisProgress.totalApplications}
         currentApplication={aiAnalysisProgress.currentApplication}
@@ -63,17 +57,16 @@ export const CompactDashboardHeader = ({
         onComplete={handleAIAnalysisComplete}
       />
 
-      {/* Keep the regular loader for non-AI updates */}
       <DashboardHeaderLoader 
         isVisible={isUpdating && !aiAnalysisProgress.isVisible} 
         message="Updating job status..."
       />
 
       <div className={`bg-background/80 backdrop-blur-sm border-b border-border sticky ${DASHBOARD_HEADER_CONSTANTS.STICKY_TOP_OFFSET} ${DASHBOARD_HEADER_CONSTANTS.Z_INDEX}`}>
-        <div className={`${DASHBOARD_HEADER_CONSTANTS.MAX_WIDTH} mx-auto ${DASHBOARD_HEADER_CONSTANTS.PADDING.HORIZONTAL} ${DASHBOARD_HEADER_CONSTANTS.PADDING.VERTICAL}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" asChild>
+        <div className={`${DASHBOARD_HEADER_CONSTANTS.MAX_WIDTH} mx-auto ${DASHBOARD_HEADER_CONSTANTS.PADDING.HORIZONTAL} py-4`}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4 flex-1">
+              <Button variant="outline" size="sm" asChild className="mt-1 flex-shrink-0">
                 <Link to="/jobs">
                   <ArrowLeft className="w-4 h-4 text-muted-foreground" />
                 </Link>
@@ -86,19 +79,21 @@ export const CompactDashboardHeader = ({
               />
             </div>
             
-            <DashboardHeaderActions
-              job={job}
-              applications={applications}
-              isUpdating={isUpdating}
-              isRefreshingAI={isRefreshingAI}
-              onStatusChange={handleStatusChange}
-              onShareJob={handleShareJob}
-              onEditJob={handleEditJob}
-              onExportApplications={handleExportApplications}
-              onArchiveJob={handleArchiveJob}
-              onUnarchiveJob={handleUnarchiveJob}
-              onRefreshAI={handleRefreshAI}
-            />
+            <div className="flex-shrink-0">
+              <DashboardHeaderActions
+                job={job}
+                applications={applications}
+                isUpdating={isUpdating}
+                isRefreshingAI={isRefreshingAI}
+                onStatusChange={handleStatusChange}
+                onShareJob={handleShareJob}
+                onEditJob={handleEditJob}
+                onExportApplications={handleExportApplications}
+                onArchiveJob={handleArchiveJob}
+                onUnarchiveJob={handleUnarchiveJob}
+                onRefreshAI={handleRefreshAI}
+              />
+            </div>
           </div>
         </div>
       </div>

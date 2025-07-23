@@ -11,16 +11,8 @@ import {
   ExternalLink, 
   Share2, 
   MoreHorizontal,
-  Loader2,
   RefreshCw
 } from "lucide-react";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { DashboardHeaderDropdown } from "./DashboardHeaderDropdown";
 import { Job, Application } from "@/types";
 import { useThemeContext } from "@/contexts/ThemeContext";
@@ -52,7 +44,6 @@ export const DashboardHeaderActions = ({
   onRefreshAI,
   isRefreshingAI
 }: DashboardHeaderActionsProps) => {
-  const isArchived = job.status === 'closed';
   const { currentTheme } = useThemeContext();
 
   // Count applications that need resume processing
@@ -60,25 +51,16 @@ export const DashboardHeaderActions = ({
     app.resume_file_path && !app.parsed_resume_data
   ).length;
 
-  console.log('DashboardHeaderActions render:', { 
-    jobId: job.id, 
-    status: job.status, 
-    isUpdating,
-    isArchived,
-    unparsedResumeCount
-  });
-
   const handleStatusChange = (newStatus: string) => {
-    console.log('Status change triggered from actions:', { from: job.status, to: newStatus });
     onStatusChange(newStatus);
   };
 
   // Get theme-aware AI Rank button classes
   const getAIRankButtonClasses = () => {
     if (currentTheme === 'black') {
-      return "border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/30 gap-2";
+      return "border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/30";
     }
-    return "border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300 gap-2";
+    return "border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300";
   };
 
   // Create dynamic tooltip content
@@ -106,10 +88,10 @@ export const DashboardHeaderActions = ({
               size="sm" 
               onClick={onRefreshAI}
               disabled={isUpdating || isRefreshingAI}
-              className={getAIRankButtonClasses()}
+              className={`gap-2 ${getAIRankButtonClasses()}`}
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">
+              <span className="font-medium">
                 AI Rank
                 {unparsedResumeCount > 0 && (
                   <span className="ml-1 text-xs bg-orange-500 text-white px-1 rounded-full">
@@ -124,31 +106,34 @@ export const DashboardHeaderActions = ({
           </TooltipContent>
         </Tooltip>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onShareJob} 
-          disabled={isUpdating}
-          title="Share job application link"
-        >
-          <Share2 className="w-4 h-4 text-muted-foreground" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onShareJob} 
+            disabled={isUpdating}
+            className="gap-2"
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Share</span>
+          </Button>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
-          asChild 
-          disabled={isUpdating}
-          title="View public job page"
-        >
-          <a href={`/job/${job.id}/apply`} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="w-4 h-4 text-muted-foreground" />
-          </a>
-        </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            asChild 
+            disabled={isUpdating}
+          >
+            <a href={`/job/${job.id}/apply`} target="_blank" rel="noopener noreferrer" className="gap-2">
+              <ExternalLink className="w-4 h-4" />
+              <span className="hidden sm:inline">View</span>
+            </a>
+          </Button>
+        </div>
 
         <DashboardHeaderDropdown
           isUpdating={isUpdating}
-          isArchived={isArchived}
+          isArchived={job.status === 'closed'}
           onEditJob={onEditJob}
           onExportApplications={onExportApplications}
           onArchiveJob={onArchiveJob}
