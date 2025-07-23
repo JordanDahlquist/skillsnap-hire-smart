@@ -1,6 +1,9 @@
 
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronDown } from "lucide-react";
 import { useHiringStages } from "@/hooks/useHiringStages";
+import { useState } from "react";
 
 interface StageSelectorProps {
   jobId: string;
@@ -18,11 +21,13 @@ export const StageSelector = ({
   size = "default"
 }: StageSelectorProps) => {
   const { stages, updateApplicationStage, isUpdating } = useHiringStages(jobId);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleStageChange = (newStage: string) => {
     console.log('StageSelector change initiated:', { applicationId, newStage, currentStage });
     updateApplicationStage({ applicationId, stage: newStage });
     onStageChange?.(applicationId, newStage);
+    setIsOpen(false);
   };
 
   // Get the stage key in the format expected by the backend (lowercase with underscores)
@@ -68,33 +73,33 @@ export const StageSelector = ({
       value={getCurrentStageKey()}
       onValueChange={handleStageChange}
       disabled={isUpdating}
+      open={isOpen}
+      onOpenChange={setIsOpen}
     >
-      <SelectTrigger 
-        className={`
-          ${size === "sm" ? "h-9" : "h-11"} 
-          w-auto min-w-[120px] 
-          border border-border 
-          bg-background/80 backdrop-blur-sm
-          hover:bg-accent 
-          hover:text-accent-foreground 
-          text-sm 
-          px-3
-          focus:ring-2 
-          focus:ring-ring 
-          focus:ring-offset-2
-          transition-all duration-200
-        `}
-        title="Change pipeline stage (automatically updates status)"
-      >
-        <SelectValue>
+      <SelectTrigger asChild>
+        <Button
+          variant="outline"
+          size={size}
+          className={`
+            ${size === "sm" ? "h-11 px-6" : "h-14 px-8"} 
+            rounded-2xl 
+            text-white 
+            border-0
+            hover:opacity-90
+            transition-all duration-200
+            gap-2
+          `}
+          style={{ backgroundColor: getCurrentStageColor() }}
+          disabled={isUpdating}
+        >
           <div className="flex items-center gap-2">
             <div 
-              className="w-2 h-2 rounded-full flex-shrink-0" 
-              style={{ backgroundColor: getCurrentStageColor() }}
+              className="w-2 h-2 rounded-full bg-white/30 flex-shrink-0" 
             />
-            {getCurrentStageName()}
+            <span className="truncate">{getCurrentStageName()}</span>
           </div>
-        </SelectValue>
+          <ChevronDown className="w-4 h-4 opacity-70" />
+        </Button>
       </SelectTrigger>
       <SelectContent className="bg-popover/95 backdrop-blur-md border border-border shadow-md z-50">
         {stages.map((stage) => {
