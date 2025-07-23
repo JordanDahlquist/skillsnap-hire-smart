@@ -295,6 +295,14 @@ export const ApplicationDetailContent = ({
             <Mail className="w-4 h-4" />
             Email
           </Button>
+
+          <StageSelector
+            jobId={jobId}
+            applicationId={application.id}
+            currentStage={application.pipeline_stage || 'applied'}
+            onStageChange={onStageChange}
+            size="sm"
+          />
         </div>
 
         {/* Rating Section */}
@@ -326,21 +334,6 @@ export const ApplicationDetailContent = ({
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Stage Section */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Stage</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <StageSelector
-              jobId={jobId}
-              applicationId={application.id}
-              currentStage={application.pipeline_stage || 'applied'}
-              onStageChange={onStageChange}
-            />
           </CardContent>
         </Card>
 
