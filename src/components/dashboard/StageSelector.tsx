@@ -76,30 +76,28 @@ export const StageSelector = ({
       open={isOpen}
       onOpenChange={setIsOpen}
     >
-      <SelectTrigger asChild>
-        <Button
-          variant="outline"
-          size={size}
-          className={`
-            ${size === "sm" ? "h-11 px-6" : "h-14 px-8"} 
-            rounded-2xl 
-            text-white 
-            border-0
-            hover:opacity-90
-            transition-all duration-200
-            gap-2
-          `}
-          style={{ backgroundColor: getCurrentStageColor() }}
-          disabled={isUpdating}
-        >
+      <SelectTrigger 
+        className={`
+          ${size === "sm" ? "h-11 px-6" : "h-14 px-8"} 
+          rounded-2xl 
+          text-white 
+          border-0
+          hover:opacity-90
+          transition-all duration-200
+          gap-2
+          w-auto min-w-[120px]
+        `}
+        style={{ backgroundColor: getCurrentStageColor() }}
+        disabled={isUpdating}
+      >
+        <SelectValue>
           <div className="flex items-center gap-2">
             <div 
               className="w-2 h-2 rounded-full bg-white/30 flex-shrink-0" 
             />
             <span className="truncate">{getCurrentStageName()}</span>
           </div>
-          <ChevronDown className="w-4 h-4 opacity-70" />
-        </Button>
+        </SelectValue>
       </SelectTrigger>
       <SelectContent className="bg-popover/95 backdrop-blur-md border border-border shadow-md z-50">
         {stages.map((stage) => {
