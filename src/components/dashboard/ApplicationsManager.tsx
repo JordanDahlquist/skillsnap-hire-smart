@@ -191,6 +191,57 @@ export const ApplicationsManager = ({
     }
   }, [selectedApplications, applications, toast, onSelectApplications, onApplicationUpdate]);
 
+  const handleBulkUnreject = useCallback(async () => {
+    if (selectedApplications.length === 0) return;
+
+    setIsUpdating(true);
+    try {
+      // Get current applications to restore their previous stages
+      const currentApplications = applications.filter(app => selectedApplications.includes(app.id));
+      
+      // Update each application with proper stage restoration
+      const updatePromises = currentApplications.map(app => {
+        const restoreStage = app.previous_pipeline_stage || 'applied';
+        
+        // Determine appropriate status based on restore stage and manual rating
+        let newStatus = 'pending';
+        if (restoreStage === 'applied') {
+          newStatus = 'pending';
+        } else if (app.manual_rating && app.manual_rating > 0) {
+          newStatus = 'reviewed';
+        } else {
+          newStatus = 'pending';
+        }
+        
+        return applicationService.updateApplication(app.id, {
+          status: newStatus,
+          pipeline_stage: restoreStage,
+          previous_pipeline_stage: null,
+          rejection_reason: null
+        });
+      });
+      
+      await Promise.all(updatePromises);
+      
+      toast({
+        title: "Applications unrejected",
+        description: `Restored ${selectedApplications.length} application${selectedApplications.length > 1 ? 's' : ''} to their previous stages`,
+      });
+      
+      onSelectApplications([]);
+      onApplicationUpdate();
+    } catch (error) {
+      console.error('Error unrejecting applications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to unreject applications",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [selectedApplications, applications, toast, onSelectApplications, onApplicationUpdate]);
+
   return (
     <div className="flex-1">
       <HiringStagesNav
@@ -218,6 +269,7 @@ export const ApplicationsManager = ({
               onSetRating={handleBulkSetRating}
               onMoveToStage={handleBulkMoveToStage}
               onReject={handleBulkReject}
+              onUnreject={handleBulkUnreject}
               jobId={job.id}
               isLoading={isUpdating}
               sortBy={sortBy}

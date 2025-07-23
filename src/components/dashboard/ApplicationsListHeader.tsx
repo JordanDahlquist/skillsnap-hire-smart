@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/tooltip';
 import { SearchBar } from '@/components/toolbar/SearchBar';
 import { BulkStageSelector } from './bulk-actions/BulkStageSelector';
-import { Mail, X, ChevronDown, Star, StarOff, ArrowDownAZ, ArrowDownZA, ArrowUpDown } from 'lucide-react';
+import { Mail, X, ChevronDown, Star, StarOff, ArrowDownAZ, ArrowDownZA, ArrowUpDown, RotateCcw } from 'lucide-react';
 import { logger } from '@/services/loggerService';
 
 interface ApplicationsListHeaderProps {
@@ -25,6 +25,8 @@ interface ApplicationsListHeaderProps {
   applications: Array<{
     id: string;
     manual_rating?: number | null;
+    status?: string;
+    pipeline_stage?: string;
   }>;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
@@ -32,6 +34,7 @@ interface ApplicationsListHeaderProps {
   onSetRating?: (rating: number | null) => void;
   onMoveToStage?: (stage: string) => void;
   onReject?: () => void;
+  onUnreject?: () => void;
   jobId?: string;
   isLoading?: boolean;
   sortBy?: string;
@@ -59,6 +62,7 @@ export const ApplicationsListHeader = memo(({
   onSetRating,
   onMoveToStage,
   onReject,
+  onUnreject,
   jobId,
   isLoading = false,
   sortBy = 'created_at',
@@ -136,6 +140,12 @@ export const ApplicationsListHeader = memo(({
   const isSomeSelected = selectedApplications.length > 0 && selectedApplications.length < applicationsCount;
   const hasSelection = selectedApplications.length > 0;
 
+  // Check if selected applications are rejected
+  const selectedAppsData = applications.filter(app => selectedApplications.includes(app.id));
+  const allSelectedAreRejected = selectedAppsData.length > 0 && selectedAppsData.every(app => 
+    app.status === 'rejected' || app.pipeline_stage === 'rejected'
+  );
+
   return (
     <TooltipProvider>
       <div className="p-4 border-b border-border bg-card rounded-t-lg">
@@ -204,16 +214,29 @@ export const ApplicationsListHeader = memo(({
                 </DropdownMenu>
               )}
 
-              <Button 
-                size="sm"
-                variant="destructive"
-                onClick={onReject}
-                disabled={isLoading}
-                className="gap-1 flex-shrink-0 h-7 px-2 text-xs"
-              >
-                <X className="w-3 h-3" />
-                Reject
-              </Button>
+              {allSelectedAreRejected && onUnreject ? (
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  onClick={onUnreject}
+                  disabled={isLoading}
+                  className="gap-1 flex-shrink-0 h-7 px-2 text-xs border-green-200 text-green-700 hover:bg-green-50"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Unreject
+                </Button>
+              ) : (
+                <Button 
+                  size="sm"
+                  variant="destructive"
+                  onClick={onReject}
+                  disabled={isLoading}
+                  className="gap-1 flex-shrink-0 h-7 px-2 text-xs"
+                >
+                  <X className="w-3 h-3" />
+                  Reject
+                </Button>
+              )}
             </div>
           </div>
         )}

@@ -20,6 +20,7 @@ interface ApplicationsListProps {
   onSetRating?: (rating: number) => void;
   onMoveToStage?: (stage: string) => void;
   onReject?: () => void;
+  onUnreject?: () => void;
   jobId?: string;
   isLoading?: boolean;
   // New sorting props
@@ -42,6 +43,7 @@ export const ApplicationsList = memo(({
   onSetRating,
   onMoveToStage,
   onReject,
+  onUnreject,
   jobId,
   isLoading = false,
   sortBy = 'created_at',
@@ -131,6 +133,7 @@ export const ApplicationsList = memo(({
           onSetRating={onSetRating}
           onMoveToStage={onMoveToStage}
           onReject={onReject}
+          onUnreject={onUnreject}
           jobId={jobId}
           isLoading={isLoading}
           sortBy={sortBy}
