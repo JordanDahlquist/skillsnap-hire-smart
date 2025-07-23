@@ -57,7 +57,7 @@ export const BasicInfoStep = ({
     const isValid = Object.keys(newErrors).length === 0;
     onValidationChange(isValid);
     return isValid;
-  }, [formData.fullName, formData.email, formData.password, onValidationChange, passwordRequirements]);
+  }, [formData.fullName, formData.email, formData.password, passwordRequirements]);
 
   // Immediate validation on form data changes
   useEffect(() => {
@@ -65,7 +65,7 @@ export const BasicInfoStep = ({
       console.log('BasicInfoStep: Validating form data');
       validateForm();
     }
-  }, [validateForm, isLoading]);
+  }, [formData.fullName, formData.email, formData.password, passwordRequirements, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

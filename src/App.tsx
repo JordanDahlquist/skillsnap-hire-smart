@@ -45,26 +45,28 @@ import Help from "./pages/Help";
 
 const queryClient = new QueryClient();
 
+// Scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 function App() {
-  // Scroll to top on route change
-  const ScrollToTop = () => {
-    const { pathname } = useLocation();
-
-    useEffect(() => {
-      window.scrollTo(0, 0);
-    }, [pathname]);
-
-    return null;
-  };
-  
-  return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <Toaster />
-          <SonnerToaster />
-          <ErrorBoundary>
-            <Routes>
+  try {
+    return (
+      <BrowserRouter>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <Toaster />
+            <SonnerToaster />
+            <ScrollToTop />
+            <ErrorBoundary>
+              <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/signup" element={<SignUp />} />
@@ -94,12 +96,29 @@ function App() {
               <Route path="/refund" element={<RefundPolicy />} />
               <Route path="/linkedin/callback" element={<LinkedInCallback />} />
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ErrorBoundary>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  );
+              </Routes>
+            </ErrorBoundary>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    );
+  } catch (error) {
+    console.error('App crashed:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
+          <p className="text-muted-foreground mb-4">Please refresh the page to try again.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 }
 
 export default App;
