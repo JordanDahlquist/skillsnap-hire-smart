@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { ChevronLeft, Star, ThumbsDown, RotateCcw, Mail } from "lucide-react";
+import { ChevronLeft, Star, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -12,8 +13,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { renderAIRating } from "@/components/dashboard/utils/ratingUtils";
 import { StageSelector } from "@/components/dashboard/StageSelector";
-import { RejectionConfirmationDialog } from "@/components/ui/rejection-confirmation-dialog";
-import { useSimpleRejection } from "@/hooks/useSimpleRejection";
 import { useCandidateInboxData } from "@/hooks/useCandidateInboxData";
 import { useEmailNavigation } from "@/hooks/useEmailNavigation";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,8 +24,6 @@ interface CandidateDetailHeaderProps {
   application: Application;
   onBackToDashboard: () => void;
   onApplicationUpdate: () => void;
-  onReject?: () => void;
-  onUnreject?: () => void;
   onEmail?: () => void;
   isUpdating?: boolean;
 }
@@ -36,12 +33,9 @@ export const CandidateDetailHeader = ({
   application, 
   onBackToDashboard,
   onApplicationUpdate,
-  onReject: propOnReject,
-  onUnreject: propOnUnreject,
   onEmail: propOnEmail,
   isUpdating: propIsUpdating
 }: CandidateDetailHeaderProps) => {
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [isUpdatingRating, setIsUpdatingRating] = useState(false);
   const { navigateToEmailTab } = useEmailNavigation();
   
@@ -52,13 +46,6 @@ export const CandidateDetailHeader = ({
   }, [application]);
   
   const { sendReply } = useCandidateInboxData(application.id);
-  
-  const { rejectWithEmail, unrejectApplication, isRejecting } = useSimpleRejection(
-    localApplication,
-    job,
-    sendReply,
-    onApplicationUpdate
-  );
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -71,7 +58,7 @@ export const CandidateDetailHeader = ({
   };
 
   const handleRating = async (rating: number) => {
-    if (isUpdatingRating || propIsUpdating || isRejecting) return;
+    if (isUpdatingRating || propIsUpdating) return;
     
     // Check if clicking the same rating - if so, deselect it
     const newRating = localApplication.manual_rating === rating ? null : rating;
@@ -123,44 +110,6 @@ export const CandidateDetailHeader = ({
     }
   };
 
-  const handleReject = () => {
-    if (isRejecting || propIsUpdating || isUpdatingRating) return;
-    setShowRejectDialog(true);
-  };
-
-  const handleConfirmReject = async (reason: string) => {
-    if (isRejecting || propIsUpdating || isUpdatingRating) return;
-    
-    try {
-      setLocalApplication(prev => ({
-        ...prev,
-        status: 'rejected'
-      }));
-      
-      await rejectWithEmail(reason);
-      propOnReject?.();
-      setShowRejectDialog(false);
-    } catch (error) {
-      setLocalApplication(application);
-    }
-  };
-
-  const handleUnreject = async () => {
-    if (isRejecting || propIsUpdating || isUpdatingRating) return;
-    
-    try {
-      setLocalApplication(prev => ({
-        ...prev,
-        status: 'pending'
-      }));
-      
-      await unrejectApplication();
-      propOnUnreject?.();
-    } catch (error) {
-      setLocalApplication(application);
-    }
-  };
-
   const handleEmail = () => {
     navigateToEmailTab(localApplication, job.id);
     propOnEmail?.();
@@ -171,7 +120,7 @@ export const CandidateDetailHeader = ({
     onApplicationUpdate();
   };
 
-  const isAnyUpdating = isUpdatingRating || propIsUpdating || isRejecting;
+  const isAnyUpdating = isUpdatingRating || propIsUpdating;
 
   return (
     <>
@@ -284,31 +233,6 @@ export const CandidateDetailHeader = ({
                 <Mail className="w-4 h-4 mr-2" />
                 Email
               </Button>
-              
-              {localApplication.status === 'rejected' ? (
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={handleUnreject}
-                  disabled={isAnyUpdating}
-                  className="border-green-200 text-green-600 hover:bg-green-50 px-4 h-11"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Unreject
-                </Button>
-              ) : (
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReject}
-                  disabled={isAnyUpdating}
-                  className="border-red-200 text-red-600 hover:bg-red-50 px-4 h-11"
-                  title="Reject candidate and move to rejected stage"
-                >
-                  <ThumbsDown className="w-4 h-4 mr-2" />
-                  Reject
-                </Button>
-              )}
             </div>
           </div>
 
@@ -317,21 +241,13 @@ export const CandidateDetailHeader = ({
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                 <span className="text-sm text-muted-foreground">
-                  {isRejecting ? 'Rejecting...' : isUpdatingRating ? 'Updating rating...' : 'Updating...'}
+                  {isUpdatingRating ? 'Updating rating...' : 'Updating...'}
                 </span>
               </div>
             </div>
           )}
         </div>
       </div>
-
-      <RejectionConfirmationDialog
-        open={showRejectDialog}
-        onOpenChange={setShowRejectDialog}
-        candidateName={localApplication.name}
-        isUpdating={isRejecting}
-        onConfirm={handleConfirmReject}
-      />
     </>
   );
 };

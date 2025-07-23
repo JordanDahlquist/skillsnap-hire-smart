@@ -78,14 +78,13 @@ export const StageSelector = ({
     >
       <SelectTrigger 
         className={`
-          ${size === "sm" ? "h-11 px-6" : "h-14 px-8"} 
-          rounded-2xl 
+          ${size === "sm" ? "h-11 px-4" : "h-11 px-4"} 
           text-white 
           border-0
           hover:opacity-90
           transition-all duration-200
           gap-2
-          w-auto min-w-[120px]
+          w-auto
         `}
         style={{ backgroundColor: getCurrentStageColor() }}
         disabled={isUpdating}
