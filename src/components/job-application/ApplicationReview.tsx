@@ -84,7 +84,7 @@ export const ApplicationReview = ({
         }
       }
 
-      // Prepare application data
+      // Prepare application data - let database defaults handle timestamps
       const applicationData = {
         job_id: job.id,
         name: personalInfo.fullName,
@@ -98,8 +98,7 @@ export const ApplicationReview = ({
         resume_file_path: personalInfo.resumeUrl || null,
         skills_test_responses: skillsResponses || [],
         interview_video_responses: interviewVideoResponses,
-        status: 'pending',
-        created_at: new Date().toISOString(),
+        // Remove manual status and timestamps - database defaults will handle these
       };
 
       console.log('Application data to insert:', applicationData);
