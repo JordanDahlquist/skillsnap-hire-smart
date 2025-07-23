@@ -45,11 +45,31 @@ export const ApplicationReview = ({
     setIsSubmitting(true);
 
     try {
-      console.log('Submitting application with data:', {
-        name: personalInfo.fullName,
-        email: personalInfo.email,
-        personalInfo
-      });
+      console.log('=== APPLICATION SUBMISSION START ===');
+      console.log('Job ID:', job.id);
+      console.log('Job Status:', job.status);
+      console.log('Personal Info:', personalInfo);
+      
+      // First validate that the job exists and is active
+      const { data: jobData, error: jobError } = await supabase
+        .from('jobs')
+        .select('id, status, title')
+        .eq('id', job.id)
+        .single();
+
+      if (jobError) {
+        console.error('Job validation error:', jobError);
+        toast.error("Could not validate job posting. Please try again.");
+        return;
+      }
+
+      if (!jobData || jobData.status !== 'active') {
+        console.error('Job not active:', jobData);
+        toast.error("This job posting is no longer accepting applications.");
+        return;
+      }
+
+      console.log('Job validation passed:', jobData);
 
       // Parse video interview responses from the JSON string if needed
       let interviewVideoResponses = [];
@@ -64,48 +84,72 @@ export const ApplicationReview = ({
         }
       }
 
-      // Insert the application using the actual form data from personalInfo
-      const { data: applicationData, error: insertError } = await supabase
+      // Prepare application data
+      const applicationData = {
+        job_id: job.id,
+        name: personalInfo.fullName,
+        email: personalInfo.email,
+        phone: personalInfo.phone || null,
+        location: personalInfo.location || null,
+        portfolio: personalInfo.portfolioUrl || null,
+        linkedin_url: personalInfo.linkedinUrl || null,
+        github_url: personalInfo.githubUrl || null,
+        cover_letter: personalInfo.coverLetter || null,
+        resume_file_path: personalInfo.resumeUrl || null,
+        skills_test_responses: skillsResponses || [],
+        interview_video_responses: interviewVideoResponses,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      };
+
+      console.log('Application data to insert:', applicationData);
+
+      // Insert the application
+      const { data: insertedData, error: insertError } = await supabase
         .from('applications')
-        .insert({
-          job_id: job.id,
-          name: personalInfo.fullName, // Use actual form data
-          email: personalInfo.email, // Use actual form data
-          phone: personalInfo.phone,
-          location: personalInfo.location,
-          portfolio: personalInfo.portfolioUrl, // Fixed: portfolio_url -> portfolio
-          linkedin_url: personalInfo.linkedinUrl,
-          github_url: personalInfo.githubUrl,
-          cover_letter: personalInfo.coverLetter,
-          resume_file_path: personalInfo.resumeUrl,
-          skills_test_responses: skillsResponses,
-          interview_video_responses: interviewVideoResponses,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-        })
+        .insert(applicationData)
         .select()
         .single();
 
       if (insertError) {
-        console.error('Insert error details:', {
-          error: insertError,
-          code: insertError.code,
-          message: insertError.message,
-          details: insertError.details,
-          hint: insertError.hint
-        });
+        console.error('=== INSERT ERROR ===');
+        console.error('Error code:', insertError.code);
+        console.error('Error message:', insertError.message);
+        console.error('Error details:', insertError.details);
+        console.error('Error hint:', insertError.hint);
+        console.error('Full error object:', insertError);
+        
+        // Provide more specific error messages
+        if (insertError.code === '42501') {
+          toast.error("Permission denied. Please try refreshing the page and submitting again.");
+        } else if (insertError.code === '23502') {
+          toast.error("Missing required information. Please check all fields are filled correctly.");
+        } else if (insertError.code === '23503') {
+          toast.error("Invalid job reference. Please try refreshing the page.");
+        } else {
+          toast.error(`Submission failed: ${insertError.message}`);
+        }
         throw insertError;
       }
 
-      console.log('Application submitted successfully:', applicationData);
+      console.log('=== APPLICATION SUBMITTED SUCCESSFULLY ===');
+      console.log('Inserted data:', insertedData);
       toast.success("Application submitted successfully!");
       setSubmitted(true);
       onSubmit();
     } catch (error) {
-      console.error('Error submitting application:', error);
-      toast.error("Failed to submit application. Please try again.");
+      console.error('=== SUBMISSION ERROR ===');
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      console.error('Error message:', error?.message);
+      console.error('Full error:', error);
+      
+      if (!toast.error.toString().includes('already')) {
+        toast.error("Failed to submit application. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
+      console.log('=== APPLICATION SUBMISSION END ===');
     }
   };
 
