@@ -103,7 +103,13 @@ export const ApplicationReview = ({
 
       console.log('Application data to insert:', applicationData);
 
-      // Insert the application
+      // Log current session and user context for debugging
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current session:', session);
+      console.log('Current user:', session?.user);
+      console.log('Auth role being used:', session?.user ? 'authenticated' : 'anon');
+
+      // Insert the application with comprehensive error logging
       const { data: insertedData, error: insertError } = await supabase
         .from('applications')
         .insert(applicationData)
@@ -111,12 +117,15 @@ export const ApplicationReview = ({
         .single();
 
       if (insertError) {
-        console.error('=== INSERT ERROR ===');
+        console.error('=== COMPREHENSIVE INSERT ERROR DEBUGGING ===');
         console.error('Error code:', insertError.code);
         console.error('Error message:', insertError.message);
         console.error('Error details:', insertError.details);
         console.error('Error hint:', insertError.hint);
         console.error('Full error object:', insertError);
+        console.error('Application data that failed:', applicationData);
+        console.error('Current session context:', session);
+        console.error('=== END ERROR DEBUG ===');
         
         // Provide more specific error messages
         if (insertError.code === '42501') {
