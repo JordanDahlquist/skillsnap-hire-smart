@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, MoreHorizontal, Eye, Shield, Trash2 } from "lucide-react";
+import { Search, MoreHorizontal, Eye, Shield, Trash2, UserCheck, UserX, UserMinus } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminUser } from "@/types/admin";
 import { DeleteUserDialog } from "./DeleteUserDialog";
+import { UpdateUserStatusDialog } from "./UpdateUserStatusDialog";
 import { useToast } from "@/hooks/use-toast";
+import { getUserStatusColor } from "@/utils/statusUtils";
 
 interface UserRoleData {
   user_id: string;
@@ -27,6 +29,11 @@ export const UserManagement = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [userToUpdateStatus, setUserToUpdateStatus] = useState<AdminUser | null>(null);
+  const [newStatus, setNewStatus] = useState<'active' | 'inactive' | 'deleted'>('active');
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'deleted'>('active');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -44,7 +51,8 @@ export const UserManagement = () => {
             created_at,
             industry,
             phone,
-            default_location
+            default_location,
+            status
           `)
           .order('created_at', { ascending: false });
 
@@ -113,6 +121,57 @@ export const UserManagement = () => {
     setDeleteDialogOpen(true);
   };
 
+  const handleUpdateUserStatus = (user: AdminUser, status: 'active' | 'inactive' | 'deleted') => {
+    setUserToUpdateStatus(user);
+    setNewStatus(status);
+    setStatusDialogOpen(true);
+  };
+
+  const confirmUpdateUserStatus = async () => {
+    if (!userToUpdateStatus) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const { data, error } = await supabase.rpc('update_user_status', {
+        target_user_id: userToUpdateStatus.id,
+        new_status: newStatus
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const result = data as { success: boolean; error?: string; message?: string };
+      
+      if (result?.success) {
+        // Update user in local state
+        setUsers(users.map(u => 
+          u.id === userToUpdateStatus.id 
+            ? { ...u, status: newStatus }
+            : u
+        ));
+        
+        toast({
+          title: "Status updated",
+          description: `${userToUpdateStatus.full_name || userToUpdateStatus.email} has been marked as ${newStatus}.`,
+        });
+      } else {
+        throw new Error(result?.error || 'Failed to update user status');
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update user status. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingStatus(false);
+      setStatusDialogOpen(false);
+      setUserToUpdateStatus(null);
+    }
+  };
+
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;
 
@@ -153,21 +212,56 @@ export const UserManagement = () => {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.company_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'super_admin':
-        return <Badge variant="destructive">Super Admin</Badge>;
-      case 'admin':
-        return <Badge variant="secondary">Admin</Badge>;
-      default:
-        return <Badge variant="outline">User</Badge>;
+  const getStatusBadge = (status: string) => {
+    const colorClass = getUserStatusColor(status);
+    return (
+      <Badge className={colorClass}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
+  };
+
+  const getStatusActions = (user: AdminUser) => {
+    const actions = [];
+    
+    if (user.status !== 'active') {
+      actions.push(
+        <DropdownMenuItem key="activate" onClick={() => handleUpdateUserStatus(user, 'active')}>
+          <UserCheck className="w-4 h-4 mr-2" />
+          Mark as Active
+        </DropdownMenuItem>
+      );
     }
+    
+    if (user.status !== 'inactive') {
+      actions.push(
+        <DropdownMenuItem key="deactivate" onClick={() => handleUpdateUserStatus(user, 'inactive')}>
+          <UserX className="w-4 h-4 mr-2" />
+          Mark as Inactive
+        </DropdownMenuItem>
+      );
+    }
+    
+    if (user.status !== 'deleted') {
+      actions.push(
+        <DropdownMenuItem key="delete" onClick={() => handleUpdateUserStatus(user, 'deleted')}>
+          <UserMinus className="w-4 h-4 mr-2" />
+          Mark as Deleted
+        </DropdownMenuItem>
+      );
+    }
+    
+    return actions;
   };
 
   if (isLoading) {
@@ -209,19 +303,51 @@ export const UserManagement = () => {
 
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-start">
             <div>
-              <CardTitle>Platform Users ({users.length})</CardTitle>
+              <CardTitle>Platform Users ({filteredUsers.length})</CardTitle>
               <CardDescription>All registered users on the platform</CardDescription>
             </div>
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
+            <div className="flex gap-4 items-center">
+              <div className="flex gap-2">
+                <Button 
+                  variant={statusFilter === 'all' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                >
+                  All ({users.length})
+                </Button>
+                <Button 
+                  variant={statusFilter === 'active' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setStatusFilter('active')}
+                >
+                  Active ({users.filter(u => u.status === 'active').length})
+                </Button>
+                <Button 
+                  variant={statusFilter === 'inactive' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setStatusFilter('inactive')}
+                >
+                  Inactive ({users.filter(u => u.status === 'inactive').length})
+                </Button>
+                <Button 
+                  variant={statusFilter === 'deleted' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setStatusFilter('deleted')}
+                >
+                  Deleted ({users.filter(u => u.status === 'deleted').length})
+                </Button>
+              </div>
+              <div className="relative w-64">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -232,7 +358,7 @@ export const UserManagement = () => {
                 <TableHead>User</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Industry</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
@@ -248,7 +374,7 @@ export const UserManagement = () => {
                   </TableCell>
                   <TableCell>{user.company_name}</TableCell>
                   <TableCell>{user.industry || 'Not specified'}</TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
+                  <TableCell>{getStatusBadge(user.status)}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -267,12 +393,14 @@ export const UserManagement = () => {
                           Manage Roles
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
+                        {getStatusActions(user)}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           onClick={() => handleDeleteUser(user)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
-                          Delete User
+                          Delete User Permanently
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -296,6 +424,15 @@ export const UserManagement = () => {
         user={userToDelete}
         onConfirm={confirmDeleteUser}
         isDeleting={isDeleting}
+      />
+
+      <UpdateUserStatusDialog
+        open={statusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+        user={userToUpdateStatus}
+        newStatus={newStatus}
+        onConfirm={confirmUpdateUserStatus}
+        isUpdating={isUpdatingStatus}
       />
     </div>
   );

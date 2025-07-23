@@ -18,6 +18,7 @@ export interface AdminUser {
   role: string;
   phone: string | null;
   default_location: string | null;
+  status: 'active' | 'inactive' | 'deleted';
 }
 
 export interface AdminAuditLog {
