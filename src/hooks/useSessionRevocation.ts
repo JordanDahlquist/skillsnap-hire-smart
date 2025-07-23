@@ -12,6 +12,18 @@ export const useSessionRevocation = () => {
 
     const checkSessionRevocation = async () => {
       try {
+        // First check user's current status
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('status')
+          .eq('id', user.id)
+          .single();
+
+        // If user is active, don't check for revocations
+        if (profile?.status === 'active') {
+          return;
+        }
+
         const { data, error } = await supabase
           .from('session_revocations')
           .select('revoked_at')
@@ -32,10 +44,13 @@ export const useSessionRevocation = () => {
           const now = new Date();
           
           // If session was revoked and it's recent (within last hour to handle timing issues)
-          if (revokedAt <= now && (now.getTime() - revokedAt.getTime()) < 60 * 60 * 1000) {
+          // and user is still inactive/deleted
+          if (revokedAt <= now && 
+              (now.getTime() - revokedAt.getTime()) < 60 * 60 * 1000 &&
+              (profile?.status === 'inactive' || profile?.status === 'deleted')) {
             productionLogger.info('User session revoked, signing out', {
               component: 'useSessionRevocation',
-              metadata: { userId: user.id, revokedAt: data.revoked_at }
+              metadata: { userId: user.id, revokedAt: data.revoked_at, userStatus: profile?.status }
             });
             
             await signOut();

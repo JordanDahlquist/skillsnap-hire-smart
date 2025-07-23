@@ -109,5 +109,24 @@ export const authService = {
       logger.error('Sign in with status check failed:', error);
       throw error;
     }
+  },
+
+  async cleanupSessionRevocation(userId: string) {
+    try {
+      const { error } = await supabase
+        .from('session_revocations')
+        .delete()
+        .eq('user_id', userId);
+
+      if (error) {
+        logger.error('Failed to cleanup session revocation:', error);
+        throw error;
+      }
+
+      logger.info('Session revocation cleaned up for user:', userId);
+    } catch (error) {
+      logger.error('Cleanup session revocation failed:', error);
+      throw error;
+    }
   }
 };
