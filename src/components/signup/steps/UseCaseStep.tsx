@@ -62,14 +62,17 @@ export const UseCaseStep = ({
   onNext,
   isLoading = false
 }: UseCaseStepProps) => {
+  const [isValid, setIsValid] = useState(false);
+
   const validateForm = useCallback(() => {
-    const isValid = formData.hiringGoals.length > 0 && 
-                   formData.hiresPerMonth !== "" &&
-                   formData.currentTools.length > 0 &&
-                   formData.biggestChallenges.length > 0;
+    const valid = formData.hiringGoals.length > 0 && 
+                  formData.hiresPerMonth !== "" &&
+                  formData.currentTools.length > 0 &&
+                  formData.biggestChallenges.length > 0;
     
-    onValidationChange(isValid);
-    return isValid;
+    setIsValid(valid);
+    onValidationChange(valid);
+    return valid;
   }, [formData.hiringGoals, formData.hiresPerMonth, formData.currentTools, formData.biggestChallenges, onValidationChange]);
 
   // Immediate validation on form data changes
@@ -215,7 +218,7 @@ export const UseCaseStep = ({
         <Button
           type="submit"
           className="w-full py-3 text-lg font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-          disabled={!validateForm() || isLoading}
+          disabled={!isValid || isLoading}
         >
           {isLoading ? "Processing..." : "Continue"}
         </Button>
