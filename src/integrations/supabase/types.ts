@@ -578,6 +578,7 @@ export type Database = {
           last_regeneration_date: string | null
           phone: string | null
           profile_picture_url: string | null
+          status: Database["public"]["Enums"]["user_status"]
           unique_email: string
           updated_at: string
         }
@@ -601,6 +602,7 @@ export type Database = {
           last_regeneration_date?: string | null
           phone?: string | null
           profile_picture_url?: string | null
+          status?: Database["public"]["Enums"]["user_status"]
           unique_email: string
           updated_at?: string
         }
@@ -624,6 +626,7 @@ export type Database = {
           last_regeneration_date?: string | null
           phone?: string | null
           profile_picture_url?: string | null
+          status?: Database["public"]["Enums"]["user_status"]
           unique_email?: string
           updated_at?: string
         }
@@ -813,6 +816,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_user_status: {
+        Args: {
+          target_user_id: string
+          new_status: Database["public"]["Enums"]["user_status"]
+        }
+        Returns: Json
+      }
       user_has_active_access: {
         Args: { user_id: string }
         Returns: boolean
@@ -827,6 +837,7 @@ export type Database = {
         | "past_due"
         | "canceled"
         | "paused"
+      user_status: "active" | "inactive" | "deleted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -963,6 +974,7 @@ export const Constants = {
         "canceled",
         "paused",
       ],
+      user_status: ["active", "inactive", "deleted"],
     },
   },
 } as const
