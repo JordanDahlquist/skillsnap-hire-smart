@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Shield } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useInboxUnreadCount } from "@/hooks/useInboxUnreadCount";
+import { InboxNotificationBadge } from "@/components/inbox/InboxNotificationBadge";
 
 interface MainNavigationProps {
   location: Location;
@@ -20,6 +22,7 @@ export const MainNavigation = ({
   setIsMobileMenuOpen 
 }: MainNavigationProps) => {
   const { isSuperAdmin, isLoading } = useAdminRole();
+  const { unreadCount } = useInboxUnreadCount();
 
   const navigation = [
     { name: "Pricing", href: "/pricing" },
@@ -56,7 +59,10 @@ export const MainNavigation = ({
             }`}
           >
             {item.name === "Admin Panel" && <Shield className="w-4 h-4 text-red-500" />}
-            {item.name}
+            <span>{item.name}</span>
+            {item.name === "Inbox" && isAuthenticated && (
+              <InboxNotificationBadge count={unreadCount} className="ml-1" />
+            )}
           </Link>
         ))}
       </nav>
@@ -87,7 +93,10 @@ export const MainNavigation = ({
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {item.name === "Admin Panel" && <Shield className="w-4 h-4 text-red-500" />}
-                {item.name}
+                <span>{item.name}</span>
+                {item.name === "Inbox" && isAuthenticated && (
+                  <InboxNotificationBadge count={unreadCount} className="ml-1" />
+                )}
               </Link>
             ))}
           </nav>
