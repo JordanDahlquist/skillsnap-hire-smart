@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft } from "lucide-react";
@@ -55,17 +55,37 @@ const SignUp = () => {
     resetForm
   } = useSignupReducer();
 
-  const handleNext = () => {
-    if (currentStep < STEPS.length - 1 && stepValidation[currentStep] && !isProcessing) {
-      setCurrentStep(currentStep + 1);
+  const handleNext = useCallback(() => {
+    try {
+      if (currentStep < STEPS.length - 1 && stepValidation[currentStep] && !isProcessing) {
+        console.log(`Moving from step ${currentStep} to step ${currentStep + 1}`);
+        setCurrentStep(currentStep + 1);
+      }
+    } catch (error) {
+      console.error('Error in handleNext:', error);
+      toast({
+        title: "Navigation Error",
+        description: "There was an issue moving to the next step. Please try again.",
+        variant: "destructive",
+      });
     }
-  };
+  }, [currentStep, stepValidation, isProcessing, setCurrentStep, toast]);
 
-  const handleBack = () => {
-    if (currentStep > 0 && !isProcessing) {
-      setCurrentStep(currentStep - 1);
+  const handleBack = useCallback(() => {
+    try {
+      if (currentStep > 0 && !isProcessing) {
+        console.log(`Moving back from step ${currentStep} to step ${currentStep - 1}`);
+        setCurrentStep(currentStep - 1);
+      }
+    } catch (error) {
+      console.error('Error in handleBack:', error);
+      toast({
+        title: "Navigation Error", 
+        description: "There was an issue going back. Please try again.",
+        variant: "destructive",
+      });
     }
-  };
+  }, [currentStep, isProcessing, setCurrentStep, toast]);
 
   const handleSignInRedirect = () => {
     if (!isProcessing) {

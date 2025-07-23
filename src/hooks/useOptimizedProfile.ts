@@ -80,5 +80,14 @@ export const useOptimizedProfile = (userId: string | undefined) => {
     // Prevent refetching on every mount
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    // Add retry configuration to prevent infinite loops
+    retry: (failureCount, error) => {
+      // Don't retry if it's a timeout or if we've already tried 2 times
+      if (error.message?.includes('timeout') || failureCount >= 2) {
+        return false;
+      }
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };

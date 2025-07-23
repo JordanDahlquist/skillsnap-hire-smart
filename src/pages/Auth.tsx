@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
@@ -15,7 +15,7 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthState();
 
   // Redirect if already authenticated
   useEffect(() => {

@@ -21,7 +21,7 @@ class EnvironmentService {
       isDevelopment: import.meta.env.DEV,
       isProduction: import.meta.env.PROD,
       apiTimeout: this.getNumberEnv('VITE_API_TIMEOUT', 5000), // Reduced from 10000ms
-      profileTimeout: this.getNumberEnv('VITE_PROFILE_TIMEOUT', 3000), // New profile-specific timeout
+      profileTimeout: this.getNumberEnv('VITE_PROFILE_TIMEOUT', 10000), // Increased timeout to prevent loops
       retryAttempts: this.getNumberEnv('VITE_RETRY_ATTEMPTS', 2),
       retryDelay: this.getNumberEnv('VITE_RETRY_DELAY', 1000),
       logLevel: this.getStringEnv('VITE_LOG_LEVEL', 'info') as any,
