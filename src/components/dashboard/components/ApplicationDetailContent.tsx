@@ -25,7 +25,7 @@ import {
 import { StageSelector } from "../StageSelector";
 import { constructResumeUrl } from "@/utils/resumeUploadUtils";
 import { Application } from "@/types";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface ApplicationDetailContentProps {
   application: Application;
@@ -57,6 +57,7 @@ export const ApplicationDetailContent = ({
   onStageChange
 }: ApplicationDetailContentProps) => {
   const [showFullCoverLetter, setShowFullCoverLetter] = useState(false);
+  const { toast } = useToast();
 
   const handleViewResume = () => {
     if (application.resume_file_path) {
@@ -81,9 +82,15 @@ export const ApplicationDetailContent = ({
     if (application.email) {
       try {
         await navigator.clipboard.writeText(application.email);
-        toast.success("Email copied!");
+        toast({
+          description: "Email copied!",
+        });
       } catch (err) {
-        toast.error("Failed to copy email");
+        toast({
+          title: "Error",
+          description: "Failed to copy email",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -92,9 +99,15 @@ export const ApplicationDetailContent = ({
     if (application.phone) {
       try {
         await navigator.clipboard.writeText(application.phone);
-        toast.success("Phone copied!");
+        toast({
+          description: "Phone copied!",
+        });
       } catch (err) {
-        toast.error("Failed to copy phone");
+        toast({
+          title: "Error",
+          description: "Failed to copy phone",
+          variant: "destructive",
+        });
       }
     }
   };
