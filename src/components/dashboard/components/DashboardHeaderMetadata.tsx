@@ -56,65 +56,55 @@ export const DashboardHeaderMetadata = ({ job, applications, isVisible }: Dashbo
   if (!isVisible) return null;
 
   return (
-    <div className={`mt-3 p-3 rounded-lg border border-border/50 ${cardBg} transition-all duration-200`}>
-      <div className="flex items-center justify-between">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 flex-1">
+    <div className={`mt-3 p-2 rounded-lg border border-border/50 ${cardBg} transition-all duration-200`}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
           <div className="flex items-center gap-2">
             <Calendar className={`w-4 h-4 ${iconColor} flex-shrink-0`} />
-            <div className="min-w-0">
-              <span className={`text-xs font-medium ${textColor}`}>Started: </span>
-              <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
-                {startDateFormatted} {startTimeFormatted}
-              </span>
-            </div>
+            <span className={`text-xs font-medium ${textColor}`}>Started:</span>
+            <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
+              {startDateFormatted} {startTimeFormatted}
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
             <Clock className={`w-4 h-4 ${iconColor} flex-shrink-0`} />
-            <div className="min-w-0">
-              <span className={`text-xs font-medium ${textColor}`}>Duration: </span>
-              <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
-                {daysRunning} day{daysRunning !== 1 ? 's' : ''} running
-              </span>
-            </div>
+            <span className={`text-xs font-medium ${textColor}`}>Duration:</span>
+            <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
+              {daysRunning} day{daysRunning !== 1 ? 's' : ''} running
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
             <Users className={`w-4 h-4 ${iconColor} flex-shrink-0`} />
-            <div className="min-w-0">
-              <span className={`text-xs font-medium ${textColor}`}>Applications: </span>
-              <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
-                {applications.length} received
-              </span>
-            </div>
+            <span className={`text-xs font-medium ${textColor}`}>Applications:</span>
+            <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
+              {applications.length} received
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
             <Eye className={`w-4 h-4 ${iconColor} flex-shrink-0`} />
-            <div className="min-w-0">
-              <span className={`text-xs font-medium ${textColor}`}>Views: </span>
-              <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
-                {viewCount} total
-              </span>
-            </div>
+            <span className={`text-xs font-medium ${textColor}`}>Views:</span>
+            <span className={`text-sm font-medium ${currentTheme === 'black' ? 'text-white' : 'text-foreground'}`}>
+              {viewCount} total
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 ml-6 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-medium ${textColor}`}>Job ID:</span>
-            <code className={`text-sm font-mono ${currentTheme === 'black' ? 'text-white' : 'text-foreground'} bg-background/50 px-2 py-1 rounded`}>
-              {displayJobId}
-            </code>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopyJobId}
-              className="h-7 w-7 p-0 hover:bg-background/50"
-            >
-              <Copy className="w-3 h-3" />
-            </Button>
-          </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className={`text-xs font-medium ${textColor}`}>ID:</span>
+          <code className={`text-sm font-mono ${currentTheme === 'black' ? 'text-white' : 'text-foreground'} bg-background/50 px-2 py-1 rounded`}>
+            {displayJobId}
+          </code>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCopyJobId}
+            className="h-7 w-7 p-0 hover:bg-background/50"
+          >
+            <Copy className="w-3 h-3" />
+          </Button>
         </div>
       </div>
     </div>
