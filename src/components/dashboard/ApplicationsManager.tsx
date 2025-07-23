@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { applicationService } from '@/services/applicationService';
@@ -156,10 +157,20 @@ export const ApplicationsManager = ({
 
     setIsUpdating(true);
     try {
-      await applicationService.bulkUpdateApplications(selectedApplications, { 
-        status: 'rejected',
-        rejection_reason: 'Bulk rejection'
-      });
+      // Get current applications to store their previous stages
+      const currentApplications = applications.filter(app => selectedApplications.includes(app.id));
+      
+      // Update each application with proper stage tracking
+      const updatePromises = currentApplications.map(app => 
+        applicationService.updateApplication(app.id, {
+          status: 'rejected',
+          pipeline_stage: 'rejected',
+          previous_pipeline_stage: app.pipeline_stage,
+          rejection_reason: 'Bulk rejection'
+        })
+      );
+      
+      await Promise.all(updatePromises);
       
       toast({
         title: "Applications rejected",
@@ -178,7 +189,7 @@ export const ApplicationsManager = ({
     } finally {
       setIsUpdating(false);
     }
-  }, [selectedApplications, toast, onSelectApplications, onApplicationUpdate]);
+  }, [selectedApplications, applications, toast, onSelectApplications, onApplicationUpdate]);
 
   return (
     <div className="flex-1">
