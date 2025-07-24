@@ -790,7 +790,14 @@ export type Database = {
         Returns: Json
       }
       generate_unique_email: {
-        Args: { user_id: string; full_name: string; email: string }
+        Args:
+          | { user_id: string; full_name: string; email: string }
+          | {
+              user_id: string
+              full_name: string
+              email: string
+              company_name?: string
+            }
         Returns: string
       }
       get_admin_platform_stats: {

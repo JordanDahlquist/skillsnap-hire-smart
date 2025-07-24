@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SignUpFormData } from "@/pages/SignUp";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CompanyInfoStepProps {
   formData: SignUpFormData;
@@ -46,6 +47,36 @@ export const CompanyInfoStep = ({
   isLoading = false
 }: CompanyInfoStepProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [checkingCompanyName, setCheckingCompanyName] = useState(false);
+
+  // Check if company name already exists
+  const checkCompanyNameAvailability = useCallback(async (companyName: string) => {
+    if (!companyName.trim()) return;
+    
+    setCheckingCompanyName(true);
+    try {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('company_name', companyName.trim());
+      
+      if (error) throw error;
+      
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        if (count && count > 0) {
+          newErrors.companyName = "This company name is already taken. Please choose a different name.";
+        } else {
+          delete newErrors.companyName;
+        }
+        return newErrors;
+      });
+    } catch (error) {
+      console.error('Error checking company name:', error);
+    } finally {
+      setCheckingCompanyName(false);
+    }
+  }, []);
 
   const validateForm = useCallback(() => {
     const newErrors: Record<string, string> = {};
@@ -62,11 +93,22 @@ export const CompanyInfoStep = ({
       newErrors.industry = "Industry is required";
     }
 
-    setErrors(newErrors);
-    const isValid = Object.keys(newErrors).length === 0;
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    const isValid = Object.keys({ ...errors, ...newErrors }).length === 0 && !checkingCompanyName;
     onValidationChange(isValid);
     return isValid;
-  }, [formData.companyName, formData.companySize, formData.industry, onValidationChange]);
+  }, [formData.companyName, formData.companySize, formData.industry, errors, checkingCompanyName, onValidationChange]);
+
+  // Check company name availability with debounce
+  useEffect(() => {
+    if (!formData.companyName.trim()) return;
+    
+    const timeoutId = setTimeout(() => {
+      checkCompanyNameAvailability(formData.companyName);
+    }, 500); // 500ms debounce
+    
+    return () => clearTimeout(timeoutId);
+  }, [formData.companyName, checkCompanyNameAvailability]);
 
   // Immediate validation on form data changes
   useEffect(() => {
