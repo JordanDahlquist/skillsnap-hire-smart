@@ -21,6 +21,14 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
   const metrics = useBriefingMetrics();
   const [showAnalytics, setShowAnalytics] = useState(false);
 
+  // Debug logging to understand the data mismatch
+  console.log('=== AI Daily Briefing Debug ===');
+  console.log('useJobs data:', jobs, 'length:', jobs.length);
+  console.log('briefing data:', briefing?.briefing_data);
+  console.log('briefing loading:', isLoading);
+  console.log('briefing error:', error);
+  console.log('=== End Debug ===');
+
   const getFallbackContent = () => {
     const now = new Date();
     const hour = now.getHours();
@@ -89,8 +97,11 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       );
     }
 
-    // Check if user is new (no jobs created yet)
-    if (jobs.length === 0) {
+    // Use briefing data as source of truth for job count, not the separate jobs query
+    const hasJobs = briefing?.briefing_data?.total_jobs > 0;
+    
+    // Only show new user content if briefing data confirms no jobs exist
+    if (briefing && !hasJobs) {
       return getNewUserContent();
     }
 
@@ -203,7 +214,7 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
               <Button 
                 onClick={onCreateJob}
                 size="sm"
-                className={`bg-blue-600 hover:bg-blue-700 text-white ${jobs.length === 0 ? 'new-user-button-glow' : ''}`}
+                className={`bg-blue-600 hover:bg-blue-700 text-white ${!briefing?.briefing_data?.total_jobs ? 'new-user-button-glow' : ''}`}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Job
