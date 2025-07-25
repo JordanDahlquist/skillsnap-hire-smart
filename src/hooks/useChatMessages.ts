@@ -58,7 +58,11 @@ const fetchJobData = async (jobIds: string[]) => {
   }
 };
 
-export const useChatMessages = ({ conversationId, onConversationUpdate }: UseChatMessagesProps) => {
+interface UseChatMessagesExtendedProps extends UseChatMessagesProps {
+  startNewConversation?: () => Promise<string | null>;
+}
+
+export const useChatMessages = ({ conversationId, onConversationUpdate, startNewConversation }: UseChatMessagesExtendedProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -121,8 +125,25 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
   };
 
   const sendMessage = async (content: string) => {
-    if (!user || !content.trim() || !conversationId) {
-      // Simple validation without toast - let UI handle this with disabled state
+    if (!user || !content.trim()) {
+      return;
+    }
+
+    // If no conversation exists, create one first
+    let currentConversationId = conversationId;
+    if (!currentConversationId && startNewConversation) {
+      currentConversationId = await startNewConversation();
+      if (!currentConversationId) {
+        toast({
+          title: "Failed to create conversation",
+          description: "Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    if (!currentConversationId) {
       return;
     }
 
@@ -141,7 +162,7 @@ export const useChatMessages = ({ conversationId, onConversationUpdate }: UseCha
       const response = await supabase.functions.invoke('scout-ai-chat', {
         body: {
           message: content,
-          conversation_id: conversationId
+          conversation_id: currentConversationId
         }
       });
 

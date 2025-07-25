@@ -28,6 +28,7 @@ const Scout = () => {
           activeConversationId={activeConversationId}
           onConversationSelect={handleConversationSelect}
           onNewConversation={handleNewConversation}
+          startNewConversation={startNewConversation}
         />
       </div>
     </div>

@@ -7,16 +7,19 @@ import { ChatContainer } from './ChatContainer';
 interface ScoutChatProps {
   conversationId: string | null;
   onConversationUpdate?: () => void;
+  startNewConversation?: () => Promise<string | null>;
 }
 
 export const ScoutChat = ({ 
   conversationId, 
-  onConversationUpdate
+  onConversationUpdate,
+  startNewConversation
 }: ScoutChatProps) => {
   const { user } = useAuth();
   const { messages, isLoading, sendMessage } = useChatMessages({
     conversationId,
-    onConversationUpdate
+    onConversationUpdate,
+    startNewConversation
   });
   const { scrollAreaRef, messagesContainerRef } = useChatScroll(messages);
 

@@ -10,13 +10,15 @@ interface NewChatLayoutProps {
   onConversationSelect: (conversationId: string) => void;
   onNewConversation: () => void;
   onConversationChange?: (conversationId: string) => void;
+  startNewConversation?: () => Promise<string | null>;
 }
 
 export const NewChatLayout = ({
   activeConversationId,
   onConversationSelect,
   onNewConversation,
-  onConversationChange
+  onConversationChange,
+  startNewConversation
 }: NewChatLayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { availableHeight } = useViewportHeight();
@@ -65,6 +67,7 @@ export const NewChatLayout = ({
         <MainChatArea 
           conversationId={activeConversationId} 
           onConversationChange={onConversationChange}
+          startNewConversation={startNewConversation}
         />
       </div>
     </div>
