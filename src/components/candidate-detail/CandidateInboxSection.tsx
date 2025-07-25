@@ -9,6 +9,7 @@ import { Send, Mail, User, Briefcase, AtSign, Building, RefreshCw } from 'lucide
 import { useToast } from '@/components/ui/use-toast';
 import { emailService } from '@/services/emailService';
 import { useOptimizedAuth } from '@/hooks/useOptimizedAuth';
+import { useEmailThreadSync } from '@/hooks/useEmailThreadSync';
 import type { Application, Job } from '@/types';
 
 interface CandidateInboxSectionProps {
@@ -43,6 +44,10 @@ const processTemplateVariables = (content: string, application: Application, job
 export const CandidateInboxSection = ({ application, job }: CandidateInboxSectionProps) => {
   const { toast } = useToast();
   const { user, profile } = useOptimizedAuth();
+  
+  // Sync email threads to ensure they use the correct unique email format
+  useEmailThreadSync();
+  
   const {
     messages,
     threads,
