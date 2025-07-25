@@ -141,6 +141,9 @@ export const useChatMessages = ({ conversationId, onConversationUpdate, startNew
         });
         return;
       }
+      
+      // Immediately update the conversation list when a new conversation is created
+      onConversationUpdate?.();
     }
 
     if (!currentConversationId) {
