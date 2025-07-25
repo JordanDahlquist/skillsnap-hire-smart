@@ -37,7 +37,7 @@ export const useDailyBriefing = () => {
       return data?.briefing as DailyBriefing;
     },
     enabled: !!user,
-    staleTime: 1000 * 60 * 60 * 23, // 23 hours
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours to align with server expiration
     retry: 1,
   });
 };

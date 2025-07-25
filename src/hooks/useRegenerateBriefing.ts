@@ -16,14 +16,17 @@ export const useRegenerateBriefing = () => {
     if (!profile) return 0;
     
     const today = new Date().toDateString();
-    const lastRegenDate = profile.last_regeneration_date ? new Date(profile.last_regeneration_date).toDateString() : null;
+    const lastRegenDate = profile.last_regeneration_date ? 
+      new Date(profile.last_regeneration_date).toDateString() : null;
     
-    // Reset count if it's a new day
+    // If it's a new day, user gets fresh 3 regenerations
     if (lastRegenDate !== today) {
       return 3;
     }
     
-    return Math.max(0, 3 - (profile.daily_briefing_regenerations || 0));
+    // If same day, subtract from daily limit
+    const usedToday = profile.daily_briefing_regenerations || 0;
+    return Math.max(0, 3 - usedToday);
   };
 
   const regenerateMutation = useMutation({

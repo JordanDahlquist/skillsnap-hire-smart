@@ -38,19 +38,22 @@ serve(async (req) => {
 
     const { force_regenerate } = await req.json().catch(() => ({}))
 
-    // Check for existing non-expired briefing (unless force regenerate)
+    // Check for existing briefing from today (unless force regenerate)
     if (!force_regenerate) {
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+      
       const { data: existingBriefing } = await supabase
         .from('daily_briefings')
         .select('*')
         .eq('user_id', user.id)
-        .gt('expires_at', new Date().toISOString())
+        .gte('created_at', todayStart.toISOString())
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
 
       if (existingBriefing) {
-        console.log('Returning existing briefing')
+        console.log('Returning existing briefing from today')
         return new Response(
           JSON.stringify({ briefing: existingBriefing }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -225,6 +228,18 @@ Keep it conversational, positive, and focused on what ${userDisplayName} should 
         .eq('id', user.id)
     }
 
+    // Clean up old briefings before storing new one
+    await supabase
+      .from('daily_briefings')
+      .delete()
+      .eq('user_id', user.id)
+      .lt('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) // Keep only last 7 days
+
+    // Set expiration to end of today
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(0, 0, 0, 0)
+
     // Store the new briefing
     const { data: newBriefing, error: insertError } = await supabase
       .from('daily_briefings')
@@ -232,7 +247,7 @@ Keep it conversational, positive, and focused on what ${userDisplayName} should 
         user_id: user.id,
         briefing_content: briefingContent,
         briefing_data: briefingData,
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        expires_at: tomorrow.toISOString()
       })
       .select()
       .single()
