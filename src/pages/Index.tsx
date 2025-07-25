@@ -4,7 +4,7 @@ import { JobCreatorPanel } from "@/components/JobCreatorPanel";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
 import { ProblemSection } from "@/components/home/ProblemSection";
@@ -14,16 +14,17 @@ import { FinalCTASection } from "@/components/home/FinalCTASection";
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user, loading } = useAuth();
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to dashboard only when on home page
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && location.pathname === '/') {
       navigate('/jobs');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, location.pathname]);
 
   const handleCreateRole = () => {
     if (!user) {
