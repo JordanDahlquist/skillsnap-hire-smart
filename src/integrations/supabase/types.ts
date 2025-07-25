@@ -781,6 +781,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_briefings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_default_hiring_stages: {
         Args: { job_id: string }
         Returns: undefined
