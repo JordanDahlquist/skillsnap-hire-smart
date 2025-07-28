@@ -120,6 +120,7 @@ export const UnifiedJobCreatorPanel = ({
           canProceedToStep6={canProceedToStep6}
           canActivate={canActivate}
           isSaving={state.isSaving}
+          isAnalyzingWebsite={state.isAnalyzingWebsite}
           onPrevStep={prevStep}
           onNextStep={handleNextStep}
           onSaveJob={handleSaveJob}

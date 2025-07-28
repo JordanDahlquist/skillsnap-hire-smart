@@ -29,6 +29,11 @@ export const Step2BasicInfo = ({
 
   // Enhanced auto-population with intelligent context awareness
   useEffect(() => {
+    // Don't auto-populate while website analysis is in progress
+    if (isAnalyzingWebsite) {
+      return;
+    }
+
     // Check if we should run auto-population
     const overviewChanged = formData.jobOverview.trim() && formData.jobOverview !== lastOverview.current;
     const websiteDataChanged = websiteAnalysisData !== lastWebsiteData.current;
@@ -59,7 +64,7 @@ export const Step2BasicInfo = ({
       lastOverview.current = formData.jobOverview;
       lastWebsiteData.current = websiteAnalysisData;
     }
-  }, [formData.jobOverview, websiteAnalysisData, actions, formData]);
+  }, [formData.jobOverview, websiteAnalysisData, actions, formData, isAnalyzingWebsite]);
 
   // Reset auto-population flag when overview changes significantly
   useEffect(() => {

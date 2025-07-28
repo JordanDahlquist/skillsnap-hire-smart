@@ -134,12 +134,12 @@ const extractLocation = (overview: string): string => {
   
   // Location patterns to match various formats
   const locationPatterns = [
-    // "[City] [State Abbrev] based" pattern
-    new RegExp(`\\b([A-Z][a-zA-Z\\s]+)\\s+(${stateAbbreviations})\\s+based\\b`, 'i'),
+    // "[City] [State Abbrev] based" pattern - more precise to avoid job titles
+    new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+(${stateAbbreviations})\\s+based\\b`, 'i'),
     // "[City], [State Abbrev]" pattern
-    new RegExp(`\\b([A-Z][a-zA-Z\\s]+),\\s+(${stateAbbreviations})\\b`, 'i'),
-    // "[City] [State Abbrev]" pattern (no comma)
-    new RegExp(`\\b([A-Z][a-zA-Z\\s]+)\\s+(${stateAbbreviations})\\b(?!\\s+based)`, 'i'),
+    new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*),\\s+(${stateAbbreviations})\\b`, 'i'),
+    // "[City] [State Abbrev]" pattern (no comma) - more precise
+    new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+(${stateAbbreviations})\\b(?!\\s+based)`, 'i'),
     // "in [City, Country]" or "in [City]"
     new RegExp(`\\bin\\s+([A-Z][a-zA-Z\\s,.-]+?)(?:\\s+(?:${countries}))\\b`, 'i'),
     // "located in [Location]"

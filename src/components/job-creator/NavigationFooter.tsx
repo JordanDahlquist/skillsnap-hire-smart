@@ -12,6 +12,7 @@ interface NavigationFooterProps {
   canProceedToStep6?: boolean;
   canActivate?: boolean;
   isSaving?: boolean;
+  isAnalyzingWebsite?: boolean;
   onPrevStep: () => void;
   onNextStep: () => void;
   onSaveJob: (status: 'draft' | 'active') => Promise<void>;
@@ -27,6 +28,7 @@ export const NavigationFooter = ({
   canProceedToStep6 = true,
   canActivate = true,
   isSaving = false,
+  isAnalyzingWebsite = false,
   onPrevStep,
   onNextStep,
   onSaveJob
@@ -77,9 +79,16 @@ export const NavigationFooter = ({
           ) : (
             <Button
               onClick={onNextStep}
-              disabled={!canProceed() || isSaving}
+              disabled={!canProceed() || isSaving || isAnalyzingWebsite}
             >
-              Next
+              {isAnalyzingWebsite && currentStep === 1 ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Analyzing...
+                </>
+              ) : (
+                "Next"
+              )}
             </Button>
           )}
         </div>
