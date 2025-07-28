@@ -123,18 +123,33 @@ const extractCompanyName = (overview: string, websiteData: CompanyAnalysisData |
 const extractLocation = (overview: string): string => {
   console.log('=== SMART LOCATION EXTRACTION ===');
   
+  // US state abbreviations
+  const stateAbbreviations = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+  ].join('|');
+  
+  const countries = 'australia|usa|uk|canada|germany|france|italy|spain|netherlands|sweden|norway|denmark|finland|switzerland|austria|belgium|ireland|new zealand|singapore|japan|south korea|india|brazil|mexico|argentina|chile|peru|colombia|venezuela|ecuador|bolivia|uruguay|paraguay|guyana|suriname|french guiana';
+  
   // Location patterns to match various formats
   const locationPatterns = [
+    // "[City] [State Abbrev] based" pattern
+    new RegExp(`\\b([A-Z][a-zA-Z\\s]+)\\s+(${stateAbbreviations})\\s+based\\b`, 'i'),
+    // "[City], [State Abbrev]" pattern
+    new RegExp(`\\b([A-Z][a-zA-Z\\s]+),\\s+(${stateAbbreviations})\\b`, 'i'),
+    // "[City] [State Abbrev]" pattern (no comma)
+    new RegExp(`\\b([A-Z][a-zA-Z\\s]+)\\s+(${stateAbbreviations})\\b(?!\\s+based)`, 'i'),
     // "in [City, Country]" or "in [City]"
-    /\bin\s+([A-Z][a-zA-Z\s,.-]+?)(?:\s+(?:australia|usa|uk|canada|germany|france|italy|spain|netherlands|sweden|norway|denmark|finland|switzerland|austria|belgium|ireland|new zealand|singapore|japan|south korea|india|brazil|mexico|argentina|chile|peru|colombia|venezuela|ecuador|bolivia|uruguay|paraguay|guyana|suriname|french guiana))\b/i,
+    new RegExp(`\\bin\\s+([A-Z][a-zA-Z\\s,.-]+?)(?:\\s+(?:${countries}))\\b`, 'i'),
     // "located in [Location]"
     /located\s+in\s+([A-Z][a-zA-Z\s,.-]+?)(?:\s|$|[,.])/i,
     // "based in [Location]"
     /based\s+in\s+([A-Z][a-zA-Z\s,.-]+?)(?:\s|$|[,.])/i,
     // "[City], [Country]" pattern
-    /\b([A-Z][a-zA-Z\s]+),\s*(australia|usa|uk|canada|germany|france|italy|spain|netherlands|sweden|norway|denmark|finland|switzerland|austria|belgium|ireland|new zealand|singapore|japan|south korea|india|brazil|mexico|argentina|chile|peru|colombia|venezuela|ecuador|bolivia|uruguay|paraguay|guyana|suriname|french guiana)\b/i,
+    new RegExp(`\\b([A-Z][a-zA-Z\\s]+),\\s*(${countries})\\b`, 'i'),
     // Simple "in [City] [Country]" pattern
-    /\bin\s+([a-zA-Z\s]+)\s+(australia|usa|uk|canada|germany|france|italy|spain|netherlands|sweden|norway|denmark|finland|switzerland|austria|belgium|ireland|new zealand|singapore|japan|south korea|india|brazil|mexico|argentina|chile|peru|colombia|venezuela|ecuador|bolivia|uruguay|paraguay|guyana|suriname|french guiana)\b/i
+    new RegExp(`\\bin\\s+([a-zA-Z\\s]+)\\s+(${countries})\\b`, 'i')
   ];
 
   for (const pattern of locationPatterns) {
