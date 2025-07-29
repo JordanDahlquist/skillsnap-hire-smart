@@ -1,11 +1,13 @@
 
-import { Upload, Link, Code, FileText, Video } from "lucide-react";
+import { Upload, Link, Code, FileText, Video, List } from "lucide-react";
+import { SkillsQuestion } from "@/types/skillsAssessment";
 
 interface SkillsTestQuestionInputProps {
   type: string;
+  question?: SkillsQuestion;
 }
 
-export const SkillsTestQuestionInput = ({ type }: SkillsTestQuestionInputProps) => {
+export const SkillsTestQuestionInput = ({ type, question }: SkillsTestQuestionInputProps) => {
   const renderInput = () => {
     switch (type) {
       case 'text':
@@ -74,6 +76,33 @@ export const SkillsTestQuestionInput = ({ type }: SkillsTestQuestionInputProps) 
             <div className="text-gray-600">function solution() {'{'}  </div>
             <div className="text-gray-600 ml-4">// Write your solution</div>
             <div className="text-gray-600">{'}'}</div>
+          </div>
+        );
+
+      case 'multiple_choice':
+        const options = question?.multipleChoice?.options || [];
+        const allowMultiple = question?.multipleChoice?.allowMultiple || false;
+        const inputType = allowMultiple ? 'checkbox' : 'radio';
+
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+              <List className="w-4 h-4" />
+              <span>Select {allowMultiple ? 'all that apply' : 'one option'}</span>
+            </div>
+            <div className="space-y-2">
+              {options.map((option, index) => (
+                <label key={index} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-not-allowed">
+                  <input 
+                    type={inputType}
+                    name="preview-options"
+                    disabled
+                    className="text-blue-600 focus:ring-blue-500 cursor-not-allowed"
+                  />
+                  <span className="text-gray-700">{option}</span>
+                </label>
+              ))}
+            </div>
           </div>
         );
 

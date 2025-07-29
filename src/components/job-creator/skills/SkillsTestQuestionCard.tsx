@@ -1,7 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { FileText, Upload, Link, Type } from "lucide-react";
+import { FileText, Upload, Link, Type, List } from "lucide-react";
 import { SkillsQuestion } from "@/types/skillsAssessment";
 import { SkillsTestQuestionInput } from "./SkillsTestQuestionInput";
 
@@ -17,6 +17,8 @@ const getQuestionTypeIcon = (type: string) => {
     case 'url_submission':
     case 'portfolio_link':
       return Link;
+    case 'multiple_choice':
+      return List;
     case 'text':
     case 'long_text':
     default:
@@ -40,6 +42,8 @@ const getQuestionTypeLabel = (type: string) => {
       return 'Video Upload';
     case 'code_submission':
       return 'Code Submission';
+    case 'multiple_choice':
+      return 'Multiple Choice';
     default:
       return 'Text Response';
   }
@@ -92,7 +96,7 @@ export const SkillsTestQuestionCard = ({ question, index }: SkillsTestQuestionCa
         {/* Input Preview */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-700">Response Format</h4>
-          <SkillsTestQuestionInput type={question.type} />
+          <SkillsTestQuestionInput type={question.type} question={question} />
         </div>
 
         {/* Additional Guidelines */}
