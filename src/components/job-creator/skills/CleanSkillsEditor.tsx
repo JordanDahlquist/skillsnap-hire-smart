@@ -182,7 +182,19 @@ export const CleanSkillsEditor = ({
                           </label>
                           <Select
                             value={challenge.type}
-                            onValueChange={(value: any) => updateChallenge(challenge.id, { type: value })}
+                            onValueChange={(value: any) => {
+                              const updates: Partial<SkillsQuestion> = { type: value };
+                              
+                              // Initialize multipleChoice object when type changes to multiple_choice
+                              if (value === 'multiple_choice' && !challenge.multipleChoice) {
+                                updates.multipleChoice = {
+                                  options: [''],
+                                  allowMultiple: false
+                                };
+                              }
+                              
+                              updateChallenge(challenge.id, updates);
+                            }}
                           >
                             <SelectTrigger className="w-full h-10 bg-white border-gray-300 text-sm">
                               <SelectValue />
