@@ -40,8 +40,7 @@ const questionTypes: QuestionType[] = [
     name: 'Multiple Choice',
     description: 'Select from predefined options',
     icon: List,
-    category: 'text',
-    badge: 'Coming Soon'
+    category: 'text'
   },
   {
     id: 'code_submission',

@@ -69,6 +69,7 @@ export const CleanSkillsEditor = ({
     const labels = {
       text: "Text Response",
       long_text: "Long Text Response",
+      multiple_choice: "Multiple Choice",
       video_upload: "Video Upload",
       file_upload: "File Upload",
       code_submission: "Code Submission",
@@ -189,6 +190,7 @@ export const CleanSkillsEditor = ({
                             <SelectContent>
                               <SelectItem value="text">Text Response</SelectItem>
                               <SelectItem value="long_text">Long Text Response</SelectItem>
+                              <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
                               <SelectItem value="file_upload">File Upload</SelectItem>
                               <SelectItem value="video_upload">Video Upload</SelectItem>
                               <SelectItem value="code_submission">Code Submission</SelectItem>
@@ -196,6 +198,88 @@ export const CleanSkillsEditor = ({
                             </SelectContent>
                           </Select>
                         </div>
+                        
+                        {/* Multiple Choice Options Configuration */}
+                        {challenge.type === 'multiple_choice' && (
+                          <div className="space-y-3 mt-4">
+                            <div className="flex items-center justify-between">
+                              <label className="block text-sm font-medium text-gray-700">
+                                Answer Options
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  id={`allow-multiple-${challenge.id}`}
+                                  checked={challenge.multipleChoice?.allowMultiple || false}
+                                  onChange={(e) => updateChallenge(challenge.id, {
+                                    multipleChoice: {
+                                      options: challenge.multipleChoice?.options || [],
+                                      allowMultiple: e.target.checked
+                                    }
+                                  })}
+                                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <label htmlFor={`allow-multiple-${challenge.id}`} className="text-sm text-gray-600">
+                                  Allow multiple selections
+                                </label>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              {(challenge.multipleChoice?.options || []).map((option, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                  <Input
+                                    value={option}
+                                    onChange={(e) => {
+                                      const newOptions = [...(challenge.multipleChoice?.options || [])];
+                                      newOptions[index] = e.target.value;
+                                      updateChallenge(challenge.id, {
+                                        multipleChoice: {
+                                          options: newOptions,
+                                          allowMultiple: challenge.multipleChoice?.allowMultiple || false
+                                        }
+                                      });
+                                    }}
+                                    placeholder={`Option ${index + 1}`}
+                                    className="flex-1"
+                                  />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newOptions = (challenge.multipleChoice?.options || []).filter((_, i) => i !== index);
+                                      updateChallenge(challenge.id, {
+                                        multipleChoice: {
+                                          options: newOptions,
+                                          allowMultiple: challenge.multipleChoice?.allowMultiple || false
+                                        }
+                                      });
+                                    }}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const newOptions = [...(challenge.multipleChoice?.options || []), ''];
+                                  updateChallenge(challenge.id, {
+                                    multipleChoice: {
+                                      options: newOptions,
+                                      allowMultiple: challenge.multipleChoice?.allowMultiple || false
+                                    }
+                                  });
+                                }}
+                                className="w-full border-dashed"
+                              >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add Option
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">

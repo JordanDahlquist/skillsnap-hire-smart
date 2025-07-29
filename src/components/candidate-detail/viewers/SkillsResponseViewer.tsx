@@ -10,7 +10,8 @@ import {
   Upload, 
   ExternalLink,
   Download,
-  Eye
+  Eye,
+  List
 } from "lucide-react";
 import { formatFileSize } from "@/utils/skillsFileUpload";
 
@@ -18,7 +19,7 @@ interface SkillsResponse {
   questionId?: string;
   question: string;
   answer: string;
-  answerType?: 'text' | 'video' | 'file' | 'url' | 'code';
+  answerType?: 'text' | 'video' | 'file' | 'url' | 'code' | 'multiple_choice';
   videoUrl?: string;
   videoFileName?: string;
   videoFileSize?: number;
@@ -49,6 +50,8 @@ export const SkillsResponseViewer = ({
         return LinkIcon;
       case 'code':
         return Code;
+      case 'multiple_choice':
+        return List;
       default:
         return FileText;
     }
@@ -64,6 +67,8 @@ export const SkillsResponseViewer = ({
         return 'URL Submission';
       case 'code':
         return 'Code Submission';
+      case 'multiple_choice':
+        return 'Multiple Choice';
       default:
         return 'Text Response';
     }
@@ -252,6 +257,28 @@ export const SkillsResponseViewer = ({
               <pre className="whitespace-pre-wrap break-words">
                 {response.answer}
               </pre>
+            </div>
+          </div>
+        );
+
+      case 'multiple_choice':
+        return (
+          <div className="space-y-3">
+            <div className="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <List className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  Selected Options
+                </p>
+              </div>
+              <div className="space-y-2">
+                {response.answer.split(',').filter(Boolean).map((option, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
+                    <span className="text-blue-800 dark:text-blue-200">{option.trim()}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         );

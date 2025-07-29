@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Clock, FileText, Upload, Link, Type, AlertCircle, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, FileText, Upload, Link, Type, AlertCircle, Info, List } from "lucide-react";
 import { Job } from "@/types";
 import { SkillsQuestion, SkillsResponse } from "@/types/skillsAssessment";
 import { SkillsFileUpload } from "../SkillsFileUpload";
@@ -29,6 +29,8 @@ const getQuestionTypeIcon = (type: string) => {
     case 'url_submission':
     case 'portfolio_link':
       return Link;
+    case 'multiple_choice':
+      return List;
     case 'text':
     case 'long_text':
     default:
@@ -42,6 +44,8 @@ const getQuestionTypeLabel = (type: string) => {
       return 'Text Response';
     case 'long_text':
       return 'Long Text Response';
+    case 'multiple_choice':
+      return 'Multiple Choice';
     case 'file_upload':
       return 'File Upload';
     case 'url_submission':
@@ -114,6 +118,12 @@ export const SkillsAssessmentStep = ({
           // For file uploads, check if we have a file URL
           if (!response.fileUrl || !response.answer?.trim()) {
             errors[question.id] = 'Please upload a file';
+            isValid = false;
+          }
+        } else if (question.type === 'multiple_choice') {
+          // For multiple choice, check if at least one option is selected
+          if (!response.answer?.trim()) {
+            errors[question.id] = 'Please select at least one option';
             isValid = false;
           }
         } else {
@@ -305,6 +315,42 @@ export const SkillsAssessmentStep = ({
                         fileSize: response.fileSize || 0
                       } : undefined}
                     />
+                  ) : question.type === 'multiple_choice' ? (
+                    <div className="space-y-3">
+                      {question.multipleChoice?.options?.map((option, index) => {
+                        const selectedAnswers = response?.answer ? response.answer.split(',') : [];
+                        const isSelected = selectedAnswers.includes(option);
+                        
+                        return (
+                          <label
+                            key={index}
+                            className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <input
+                              type={question.multipleChoice?.allowMultiple ? "checkbox" : "radio"}
+                              name={`question-${question.id}`}
+                              value={option}
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (question.multipleChoice?.allowMultiple) {
+                                  // Handle multiple selection
+                                  let newAnswers = selectedAnswers.filter(a => a !== option);
+                                  if (e.target.checked) {
+                                    newAnswers.push(option);
+                                  }
+                                  updateResponse(question.id, { answer: newAnswers.join(',') });
+                                } else {
+                                  // Handle single selection
+                                  updateResponse(question.id, { answer: option });
+                                }
+                              }}
+                              className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                            />
+                            <span className="text-gray-700 flex-1">{option}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
                   ) : question.type === 'long_text' ? (
                     <Textarea
                       value={response?.answer || ''}

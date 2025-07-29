@@ -39,6 +39,7 @@ const getStepTypeLabel = (type: string) => {
   const labels = {
     text: "Text Response",
     long_text: "Long Text Response",
+    multiple_choice: "Multiple Choice",
     video_upload: "Video Upload",
     video_link: "Video Link",
     portfolio_link: "Portfolio Link",
@@ -227,6 +228,7 @@ export const SimplifiedSkillsStepEditor = ({
                             <SelectContent>
                               <SelectItem value="text">Text Response</SelectItem>
                               <SelectItem value="long_text">Long Text Response</SelectItem>
+                              <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
                               <SelectItem value="file_upload">File Upload</SelectItem>
                               <SelectItem value="video_upload">Video Upload</SelectItem>
                               <SelectItem value="code_submission">Code Submission</SelectItem>
