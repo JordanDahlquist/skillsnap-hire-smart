@@ -79,6 +79,11 @@ export const QuestionCard = ({
   const [isEditingType, setIsEditingType] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [isEditingOptions, setIsEditingOptions] = useState(false);
+  const [tempOptions, setTempOptions] = useState<{options: string[], allowMultiple: boolean}>({
+    options: [],
+    allowMultiple: false
+  });
 
   const IconComponent = getQuestionIcon(question.type);
   const isComplete = question.question.trim().length > 0;
@@ -100,6 +105,50 @@ export const QuestionCard = ({
     
     onUpdate(updates);
     setIsEditingType(false);
+  };
+
+  const handleEditOptions = () => {
+    setTempOptions({
+      options: [...(question.multipleChoice?.options || [''])],
+      allowMultiple: question.multipleChoice?.allowMultiple || false
+    });
+    setIsEditingOptions(true);
+  };
+
+  const handleSaveOptions = () => {
+    onUpdate({
+      multipleChoice: {
+        options: tempOptions.options.filter(opt => opt.trim() !== ''),
+        allowMultiple: tempOptions.allowMultiple
+      }
+    });
+    setIsEditingOptions(false);
+  };
+
+  const handleCancelOptions = () => {
+    setIsEditingOptions(false);
+    setTempOptions({ options: [], allowMultiple: false });
+  };
+
+  const addTempOption = () => {
+    setTempOptions(prev => ({
+      ...prev,
+      options: [...prev.options, '']
+    }));
+  };
+
+  const removeTempOption = (index: number) => {
+    setTempOptions(prev => ({
+      ...prev,
+      options: prev.options.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateTempOption = (index: number, value: string) => {
+    setTempOptions(prev => ({
+      ...prev,
+      options: prev.options.map((opt, i) => i === index ? value : opt)
+    }));
   };
 
   return (
@@ -268,83 +317,109 @@ export const QuestionCard = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">Answer Options</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const currentOptions = question.multipleChoice?.options || [];
-                  onUpdate({
-                    multipleChoice: {
-                      ...question.multipleChoice,
-                      options: [...currentOptions, ''],
-                      allowMultiple: question.multipleChoice?.allowMultiple || false
-                    }
-                  });
-                }}
-                className="h-8 text-xs"
-              >
-                <Plus className="w-3 h-3 mr-1" />
-                Add Option
-              </Button>
-            </div>
-
-            {question.multipleChoice?.options?.map((option, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  value={option}
-                  onChange={(e) => {
-                    const newOptions = [...(question.multipleChoice?.options || [])];
-                    newOptions[index] = e.target.value;
-                    onUpdate({
-                      multipleChoice: {
-                        ...question.multipleChoice,
-                        options: newOptions,
-                        allowMultiple: question.multipleChoice?.allowMultiple || false
-                      }
-                    });
-                  }}
-                  placeholder={`Option ${index + 1}`}
-                  className="flex-1"
-                />
+              {!isEditingOptions && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const newOptions = [...(question.multipleChoice?.options || [])];
-                    newOptions.splice(index, 1);
-                    onUpdate({
-                      multipleChoice: {
-                        ...question.multipleChoice,
-                        options: newOptions,
-                        allowMultiple: question.multipleChoice?.allowMultiple || false
-                      }
-                    });
-                  }}
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                  onClick={handleEditOptions}
+                  className="h-8 text-xs"
                 >
-                  <X className="w-4 h-4" />
+                  Edit Options
                 </Button>
-              </div>
-            ))}
-
-            <div className="flex items-center space-x-2">
-              <Switch
-                id={`allow-multiple-${question.id}`}
-                checked={question.multipleChoice?.allowMultiple || false}
-                onCheckedChange={(checked) => {
-                  onUpdate({
-                    multipleChoice: {
-                      ...question.multipleChoice,
-                      options: question.multipleChoice?.options || [],
-                      allowMultiple: checked
-                    }
-                  });
-                }}
-              />
-              <Label htmlFor={`allow-multiple-${question.id}`} className="text-sm">
-                Allow multiple selections
-              </Label>
+              )}
             </div>
+
+            {!isEditingOptions ? (
+              // View mode - show current options
+              <div className="space-y-2">
+                {question.multipleChoice?.options?.length ? (
+                  question.multipleChoice.options.map((option, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                      <span className="text-sm text-gray-600">
+                        {question.multipleChoice?.allowMultiple ? '☐' : '○'}
+                      </span>
+                      <span className="text-sm">{option || `Option ${index + 1}`}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-gray-500 p-2 bg-gray-50 rounded">
+                    No options added yet
+                  </div>
+                )}
+                {question.multipleChoice?.allowMultiple && (
+                  <div className="text-xs text-gray-500">
+                    Multiple selections allowed
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Edit mode - editable options
+              <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-900">Editing Options</span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelOptions}
+                      className="h-7 text-xs"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleSaveOptions}
+                      className="h-7 text-xs"
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+
+                {tempOptions.options.map((option, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      value={option}
+                      onChange={(e) => updateTempOption(index, e.target.value)}
+                      placeholder={`Option ${index + 1}`}
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeTempOption(index)}
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addTempOption}
+                  className="h-8 text-xs w-full"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Add Option
+                </Button>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id={`temp-allow-multiple-${question.id}`}
+                    checked={tempOptions.allowMultiple}
+                    onCheckedChange={(checked) => 
+                      setTempOptions(prev => ({ ...prev, allowMultiple: checked }))
+                    }
+                  />
+                  <Label htmlFor={`temp-allow-multiple-${question.id}`} className="text-sm">
+                    Allow multiple selections
+                  </Label>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
