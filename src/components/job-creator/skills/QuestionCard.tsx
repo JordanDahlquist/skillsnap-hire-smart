@@ -19,7 +19,10 @@ import {
   Link,
   Code,
   Upload,
-  AlertTriangle
+  AlertTriangle,
+  List,
+  Plus,
+  X
 } from "lucide-react";
 import { SkillsQuestion } from "@/types/skillsAssessment";
 import { QuestionTypeSelector } from "./QuestionTypeSelector";
@@ -38,6 +41,7 @@ const getQuestionIcon = (type: string) => {
   const icons = {
     text: FileText,
     long_text: FileText,
+    multiple_choice: List,
     video_upload: Video,
     video_link: Link,
     portfolio_link: Link,
@@ -248,6 +252,91 @@ export const QuestionCard = ({
             Use **bold** for emphasis, bullet points with -, and ## for headings. This is where detailed instructions should go.
           </p>
         </div>
+
+        {/* Multiple Choice Options */}
+        {question.type === 'multiple_choice' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Answer Options</Label>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const currentOptions = question.multipleChoice?.options || [];
+                  onUpdate({
+                    multipleChoice: {
+                      ...question.multipleChoice,
+                      options: [...currentOptions, ''],
+                      allowMultiple: question.multipleChoice?.allowMultiple || false
+                    }
+                  });
+                }}
+                className="h-8 text-xs"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Add Option
+              </Button>
+            </div>
+
+            {question.multipleChoice?.options?.map((option, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={option}
+                  onChange={(e) => {
+                    const newOptions = [...(question.multipleChoice?.options || [])];
+                    newOptions[index] = e.target.value;
+                    onUpdate({
+                      multipleChoice: {
+                        ...question.multipleChoice,
+                        options: newOptions,
+                        allowMultiple: question.multipleChoice?.allowMultiple || false
+                      }
+                    });
+                  }}
+                  placeholder={`Option ${index + 1}`}
+                  className="flex-1"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const newOptions = [...(question.multipleChoice?.options || [])];
+                    newOptions.splice(index, 1);
+                    onUpdate({
+                      multipleChoice: {
+                        ...question.multipleChoice,
+                        options: newOptions,
+                        allowMultiple: question.multipleChoice?.allowMultiple || false
+                      }
+                    });
+                  }}
+                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id={`allow-multiple-${question.id}`}
+                checked={question.multipleChoice?.allowMultiple || false}
+                onCheckedChange={(checked) => {
+                  onUpdate({
+                    multipleChoice: {
+                      ...question.multipleChoice,
+                      options: question.multipleChoice?.options || [],
+                      allowMultiple: checked
+                    }
+                  });
+                }}
+              />
+              <Label htmlFor={`allow-multiple-${question.id}`} className="text-sm">
+                Allow multiple selections
+              </Label>
+            </div>
+          </div>
+        )}
 
         {/* Basic Settings */}
         <div className="flex items-center justify-between">
