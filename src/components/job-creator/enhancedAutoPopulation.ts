@@ -132,6 +132,10 @@ const extractLocation = (overview: string): string => {
   
   const countries = 'australia|usa|uk|canada|germany|france|italy|spain|netherlands|sweden|norway|denmark|finland|switzerland|austria|belgium|ireland|new zealand|singapore|japan|south korea|india|brazil|mexico|argentina|chile|peru|colombia|venezuela|ecuador|bolivia|uruguay|paraguay|guyana|suriname|french guiana';
   
+  // Common major US cities that don't need state clarification
+  const majorCities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco', 'Indianapolis', 'Seattle', 'Denver', 'Washington', 'Boston', 'El Paso', 'Nashville', 'Detroit', 'Oklahoma City', 'Portland', 'Las Vegas', 'Memphis', 'Louisville', 'Baltimore', 'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento', 'Mesa', 'Kansas City', 'Atlanta', 'Long Beach', 'Colorado Springs', 'Raleigh', 'Miami', 'Virginia Beach', 'Omaha', 'Oakland', 'Minneapolis', 'Tulsa', 'Arlington', 'Tampa', 'New Orleans', 'Wichita', 'Cleveland', 'Bakersfield', 'Aurora', 'Anaheim', 'Honolulu', 'Santa Ana', 'Corpus Christi', 'Riverside', 'Lexington', 'Stockton', 'Henderson', 'Saint Paul', 'St. Louis', 'Cincinnati', 'Pittsburgh', 'Greensboro', 'Anchorage', 'Plano', 'Lincoln', 'Orlando', 'Irvine', 'Newark', 'Toledo', 'Durham', 'Chula Vista', 'Fort Wayne', 'Jersey City', 'St. Petersburg', 'Laredo', 'Madison', 'Chandler', 'Buffalo', 'Lubbock', 'Scottsdale', 'Reno', 'Glendale', 'Gilbert', 'Winston Salem', 'North Las Vegas', 'Norfolk', 'Chesapeake', 'Garland', 'Irving', 'Hialeah', 'Fremont', 'Baton Rouge', 'Richmond', 'Boise', 'San Bernardino'];
+  const majorCitiesPattern = majorCities.join('|');
+  
   // Location patterns to match various formats
   const locationPatterns = [
     // "[City] [State Abbrev] based" pattern - more precise to avoid job titles
@@ -140,6 +144,8 @@ const extractLocation = (overview: string): string => {
     new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*),\\s+(${stateAbbreviations})\\b`, 'i'),
     // "[City] [State Abbrev]" pattern (no comma) - more precise
     new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+(${stateAbbreviations})\\b(?!\\s+based)`, 'i'),
+    // "[Major City] based" pattern without state requirement - NEW
+    new RegExp(`\\b(${majorCitiesPattern})\\s+based\\b`, 'i'),
     // "in [City, Country]" or "in [City]"
     new RegExp(`\\bin\\s+([A-Z][a-zA-Z\\s,.-]+?)(?:\\s+(?:${countries}))\\b`, 'i'),
     // "located in [Location]"
