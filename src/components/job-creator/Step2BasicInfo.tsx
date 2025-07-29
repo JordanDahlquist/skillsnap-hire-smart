@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } from "@/types/jobForm";
 import { useEffect, useRef } from "react";
 import { Loader2, CheckCircle, Sparkles, Crown } from "lucide-react";
-import { enhancedAutoPopulateFromOverview } from "./enhancedAutoPopulation";
+import { createAIAutoPopulateFunction } from "./enhancedAutoPopulation";
 
 interface Step2BasicInfoProps {
   formData: UnifiedJobFormData;
@@ -26,8 +26,9 @@ export const Step2BasicInfo = ({
   const hasAutoPopulated = useRef(false);
   const lastOverview = useRef('');
   const lastWebsiteData = useRef<CompanyAnalysisData | null>(null);
+  const aiAutoPopulate = createAIAutoPopulateFunction();
 
-  // Enhanced auto-population with intelligent context awareness
+  // AI-powered auto-population with fallback to regex
   useEffect(() => {
     // Don't auto-populate while website analysis is in progress
     if (isAnalyzingWebsite) {
@@ -43,28 +44,36 @@ export const Step2BasicInfo = ({
       return;
     }
 
-    console.log('Running enhanced intelligent auto-population...');
+    console.log('Running AI-powered auto-population...');
     console.log('Overview changed:', overviewChanged);
     console.log('Website data changed:', websiteDataChanged);
 
-    // Get intelligent auto-population suggestions
-    const updates = enhancedAutoPopulateFromOverview(formData.jobOverview, websiteAnalysisData, formData);
+    // Run AI-powered auto-population
+    const runAutoPopulation = async () => {
+      try {
+        const updates = await aiAutoPopulate(formData.jobOverview, websiteAnalysisData, formData);
 
-    // Apply updates if there are any
-    if (Object.keys(updates).length > 0) {
-      console.log('Applying intelligent auto-population updates:', updates);
-      Object.entries(updates).forEach(([field, value]) => {
-        if (value && typeof value === 'string') {
-          actions.updateFormData(field as keyof UnifiedJobFormData, value);
+        // Apply updates if there are any
+        if (Object.keys(updates).length > 0) {
+          console.log('Applying AI auto-population updates:', updates);
+          Object.entries(updates).forEach(([field, value]) => {
+            if (value && typeof value === 'string') {
+              actions.updateFormData(field as keyof UnifiedJobFormData, value);
+            }
+          });
+
+          // Update refs
+          hasAutoPopulated.current = true;
+          lastOverview.current = formData.jobOverview;
+          lastWebsiteData.current = websiteAnalysisData;
         }
-      });
+      } catch (error) {
+        console.error('Auto-population failed:', error);
+      }
+    };
 
-      // Update refs
-      hasAutoPopulated.current = true;
-      lastOverview.current = formData.jobOverview;
-      lastWebsiteData.current = websiteAnalysisData;
-    }
-  }, [formData.jobOverview, websiteAnalysisData, actions, formData, isAnalyzingWebsite]);
+    runAutoPopulation();
+  }, [formData.jobOverview, websiteAnalysisData, actions, formData, isAnalyzingWebsite, aiAutoPopulate]);
 
   // Reset auto-population flag when overview changes significantly
   useEffect(() => {

@@ -1,5 +1,6 @@
 
 import { UnifiedJobFormData, CompanyAnalysisData } from "@/types/jobForm";
+import { useAIJobParsing, AIJobData } from "@/hooks/useAIJobParsing";
 
 type EmploymentType = "full-time" | "part-time" | "contract" | "project";
 type ExperienceLevel = "entry-level" | "mid-level" | "senior-level" | "executive";
@@ -379,13 +380,106 @@ const getExecutiveSkills = (title: string, websiteData: CompanyAnalysisData | nu
   return skills.slice(0, 8).join(', '); // Limit to 8 most relevant skills
 };
 
-// Enhanced auto-population main function
+// Create AI-powered auto-population function (with regex fallback)
+export const createAIAutoPopulateFunction = () => {
+  const { parseJobOverview } = useAIJobParsing();
+  
+  return async (
+    overview: string,
+    websiteData: CompanyAnalysisData | null,
+    currentFormData: UnifiedJobFormData
+  ): Promise<Partial<UnifiedJobFormData>> => {
+    console.log('=== AI-POWERED AUTO-POPULATION ===');
+    console.log('Overview:', overview);
+    console.log('Website data:', websiteData ? 'Available' : 'None');
+
+    const updates: Partial<UnifiedJobFormData> = {};
+
+    // Try AI parsing first
+    const aiData = await parseJobOverview(overview);
+    
+    if (aiData) {
+      console.log('AI parsed data:', aiData);
+      
+      // Apply AI-extracted data to form fields (only if current field is empty)
+      if (!currentFormData.companyName?.trim() && aiData.companyName) {
+        updates.companyName = aiData.companyName;
+      }
+      
+      if (!currentFormData.title?.trim() && aiData.jobTitle) {
+        updates.title = aiData.jobTitle;
+      }
+      
+      if (!currentFormData.location?.trim() && aiData.location) {
+        updates.location = aiData.location;
+      }
+      
+      if (!currentFormData.experienceLevel?.trim() && aiData.experienceLevel) {
+        updates.experienceLevel = aiData.experienceLevel as ExperienceLevel;
+      }
+      
+      if (!currentFormData.employmentType?.trim() && aiData.employmentType) {
+        updates.employmentType = aiData.employmentType as EmploymentType;
+      }
+      
+      if (!currentFormData.locationType?.trim() && aiData.workLocation) {
+        updates.locationType = aiData.workLocation as LocationType;
+      }
+      
+      // Executive role handling
+      if (aiData.isExecutiveRole) {
+        console.log('AI detected executive role - applying executive defaults');
+        updates.experienceLevel = 'executive';
+        updates.employmentType = 'full-time';
+        updates.locationType = updates.locationType || 'hybrid';
+        
+        if (!currentFormData.skills?.trim()) {
+          updates.skills = getExecutiveSkills(aiData.jobTitle || '', websiteData);
+        }
+        
+        if (!currentFormData.benefits?.trim()) {
+          updates.benefits = EXECUTIVE_CONTEXT.benefits.join(', ');
+        }
+      }
+      
+      // Intelligent salary calculation based on AI data
+      const finalTitle = updates.title || currentFormData.title || aiData.jobTitle;
+      const finalExperienceLevel = updates.experienceLevel || currentFormData.experienceLevel;
+      const finalEmploymentType = updates.employmentType || currentFormData.employmentType;
+      const finalLocation = updates.location || currentFormData.location || 'Remote';
+      
+      if (finalTitle && finalEmploymentType !== 'project' && !currentFormData.salary?.trim()) {
+        const intelligentSalary = getIntelligentSalary(
+          finalTitle,
+          aiData.isExecutiveRole,
+          finalExperienceLevel,
+          finalLocation,
+          finalEmploymentType,
+          websiteData
+        );
+        if (intelligentSalary) {
+          updates.salary = intelligentSalary;
+        }
+      }
+      
+      console.log('=== AI AUTO-POPULATION COMPLETE ===');
+      console.log('Applied updates:', Object.keys(updates));
+      return updates;
+    }
+    
+    // Fallback to existing regex-based logic
+    console.log('AI parsing failed, falling back to regex-based extraction');
+    return enhancedAutoPopulateFromOverview(overview, websiteData, currentFormData);
+  };
+};
+
+// Enhanced auto-population main function (fallback for when AI fails)
 export const enhancedAutoPopulateFromOverview = (
   overview: string,
   websiteData: CompanyAnalysisData | null,
   currentFormData: UnifiedJobFormData
 ): Partial<UnifiedJobFormData> => {
-  console.log('=== ENHANCED INTELLIGENT AUTO-POPULATION ===');
+  console.log('=== ENHANCED INTELLIGENT AUTO-POPULATION (REGEX FALLBACK) ===');
   console.log('Overview:', overview);
   console.log('Website data:', websiteData ? 'Available' : 'None');
 
