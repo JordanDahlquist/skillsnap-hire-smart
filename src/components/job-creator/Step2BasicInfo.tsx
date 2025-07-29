@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UnifiedJobFormData, UnifiedJobCreatorActions, CompanyAnalysisData } from "@/types/jobForm";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, CheckCircle, Sparkles, Crown } from "lucide-react";
 import { createAIAutoPopulateFunction } from "./enhancedAutoPopulation";
 
@@ -21,12 +21,16 @@ export const Step2BasicInfo = ({
   websiteAnalysisData,
   isAnalyzingWebsite = false
 }: Step2BasicInfoProps) => {
+  const [isParsingJobOverview, setIsParsingJobOverview] = useState(false);
   const isProjectBased = formData.employmentType === 'project';
   const isExecutiveRole = formData.experienceLevel === 'executive';
   const hasAutoPopulated = useRef(false);
   const lastOverview = useRef('');
   const lastWebsiteData = useRef<CompanyAnalysisData | null>(null);
   const aiAutoPopulate = createAIAutoPopulateFunction();
+  
+  // Calculate if fields should be disabled
+  const fieldsDisabled = isAnalyzingWebsite || isParsingJobOverview;
 
   // AI-powered auto-population with fallback to regex
   useEffect(() => {
@@ -50,6 +54,7 @@ export const Step2BasicInfo = ({
 
     // Run AI-powered auto-population
     const runAutoPopulation = async () => {
+      setIsParsingJobOverview(true);
       try {
         const updates = await aiAutoPopulate(formData.jobOverview, websiteAnalysisData, formData);
 
@@ -69,6 +74,8 @@ export const Step2BasicInfo = ({
         }
       } catch (error) {
         console.error('Auto-population failed:', error);
+      } finally {
+        setIsParsingJobOverview(false);
       }
     };
 
@@ -105,7 +112,7 @@ export const Step2BasicInfo = ({
           }
         </p>
         
-        {/* Website Analysis Status */}
+        {/* Analysis Status */}
         {isAnalyzingWebsite && (
           <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded-md">
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -113,10 +120,17 @@ export const Step2BasicInfo = ({
           </div>
         )}
         
-        {websiteAnalysisData && !isAnalyzingWebsite && (
+        {isParsingJobOverview && !isAnalyzingWebsite && (
+          <div className="flex items-center gap-2 text-sm text-purple-600 bg-purple-50 p-2 rounded-md">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            AI is analyzing job overview and populating fields...
+          </div>
+        )}
+        
+        {!fieldsDisabled && (websiteAnalysisData || hasAutoPopulated.current) && (
           <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2 rounded-md">
             <CheckCircle className="w-4 h-4" />
-            Website analyzed and form intelligently populated with company information
+            Form intelligently populated - you can now edit any field
           </div>
         )}
       </CardHeader>
@@ -130,7 +144,8 @@ export const Step2BasicInfo = ({
               value={formData.companyName}
               onChange={(e) => actions.updateFormData('companyName', e.target.value)}
               placeholder="e.g. TechCorp Inc."
-              className="mt-1"
+              className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={fieldsDisabled}
               required
             />
           </div>
@@ -141,7 +156,8 @@ export const Step2BasicInfo = ({
               value={formData.title}
               onChange={(e) => actions.updateFormData('title', e.target.value)}
               placeholder={isExecutiveRole ? "e.g. Chief Executive Officer" : "e.g. Senior React Developer"}
-              className="mt-1"
+              className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={fieldsDisabled}
               required
             />
           </div>
@@ -153,8 +169,9 @@ export const Step2BasicInfo = ({
             <Select
               value={formData.employmentType}
               onValueChange={(value) => actions.updateFormData('employmentType', value)}
+              disabled={fieldsDisabled}
             >
-              <SelectTrigger className="mt-1">
+              <SelectTrigger className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -170,8 +187,9 @@ export const Step2BasicInfo = ({
             <Select
               value={formData.experienceLevel}
               onValueChange={(value) => actions.updateFormData('experienceLevel', value)}
+              disabled={fieldsDisabled}
             >
-              <SelectTrigger className="mt-1">
+              <SelectTrigger className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -190,8 +208,9 @@ export const Step2BasicInfo = ({
             <Select
               value={formData.locationType}
               onValueChange={(value) => actions.updateFormData('locationType', value)}
+              disabled={fieldsDisabled}
             >
-              <SelectTrigger className="mt-1">
+              <SelectTrigger className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <SelectValue placeholder="Select work arrangement" />
               </SelectTrigger>
               <SelectContent>
@@ -208,7 +227,8 @@ export const Step2BasicInfo = ({
               value={formData.location}
               onChange={(e) => actions.updateFormData('location', e.target.value)}
               placeholder={isExecutiveRole ? "e.g. San Francisco, CA or Global" : "e.g. New York, NY or Worldwide"}
-              className="mt-1"
+              className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={fieldsDisabled}
             />
           </div>
         </div>
@@ -223,7 +243,8 @@ export const Step2BasicInfo = ({
                   value={formData.budget}
                   onChange={(e) => actions.updateFormData('budget', e.target.value)}
                   placeholder="$50-100/hr or $5k project"
-                  className="mt-1"
+                  className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={fieldsDisabled}
                 />
               </div>
               <div>
@@ -233,7 +254,8 @@ export const Step2BasicInfo = ({
                   value={formData.duration}
                   onChange={(e) => actions.updateFormData('duration', e.target.value)}
                   placeholder="3 months"
-                  className="mt-1"
+                  className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={fieldsDisabled}
                 />
               </div>
             </>
@@ -251,7 +273,8 @@ export const Step2BasicInfo = ({
                     ? "$200,000 - $500,000 per year"
                     : "$100,000 - $120,000 per year"
                 }
-                className="mt-1"
+                className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={fieldsDisabled}
               />
             </div>
           )}
@@ -271,7 +294,8 @@ export const Step2BasicInfo = ({
                   ? "Executive compensation, equity, health insurance, executive perks..."
                   : "Health insurance, 401(k), paid time off..."
               }
-              className="mt-1"
+              className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={fieldsDisabled}
             />
           </div>
         )}
@@ -289,7 +313,8 @@ export const Step2BasicInfo = ({
                 ? "Strategic Planning, Leadership, Business Development, Team Management..."
                 : "React, TypeScript, Node.js..."
             }
-            className="mt-1"
+            className={`mt-1 ${fieldsDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={fieldsDisabled}
           />
         </div>
       </CardContent>
