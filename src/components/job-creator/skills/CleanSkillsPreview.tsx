@@ -28,6 +28,8 @@ export const CleanSkillsPreview = ({
         return '💻';
       case 'url_submission':
         return '🔗';
+      case 'multiple_choice':
+        return '🔘';
       default:
         return '✍️';
     }
@@ -40,7 +42,8 @@ export const CleanSkillsPreview = ({
       video_upload: "Video Upload",
       file_upload: "File Upload",
       code_submission: "Code Submission",
-      url_submission: "URL Submission"
+      url_submission: "URL Submission",
+      multiple_choice: "Multiple Choice"
     };
     return labels[type as keyof typeof labels] || "Text Response";
   };
@@ -131,6 +134,7 @@ export const CleanSkillsPreview = ({
                       {challenge.type === 'file_upload' && 'File upload area'}
                       {challenge.type === 'code_submission' && 'Code editor area'}
                       {challenge.type === 'url_submission' && 'URL input field'}
+                      {challenge.type === 'multiple_choice' && 'Multiple choice options area'}
                       {(challenge.type === 'text' || challenge.type === 'long_text') && 'Text response area'}
                     </p>
                   </div>
