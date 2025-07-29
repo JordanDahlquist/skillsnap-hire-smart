@@ -9,7 +9,8 @@ import {
   Code,
   Upload,
   Clock,
-  Type
+  Type,
+  List
 } from "lucide-react";
 import { SkillsQuestion } from "@/types/skillsAssessment";
 import { parseMarkdown } from "@/utils/markdownParser";
@@ -22,6 +23,7 @@ const getQuestionIcon = (type: string) => {
   const icons = {
     text: FileText,
     long_text: FileText,
+    multiple_choice: Type,
     video_upload: Video,
     video_link: Link,
     portfolio_link: Link,
@@ -37,6 +39,7 @@ const getQuestionTypeLabel = (type: string) => {
   const labels = {
     text: "Text Response",
     long_text: "Long Text Response",
+    multiple_choice: "Multiple Choice",
     video_upload: "Video Upload",
     video_link: "Video Link",
     portfolio_link: "Portfolio Link",
@@ -105,6 +108,33 @@ export const QuestionPreview = ({ question }: QuestionPreviewProps) => {
             <div className="text-gray-600">function solution() {'{'}</div>
             <div className="text-gray-600 ml-4">// Implementation</div>
             <div className="text-gray-600">{'}'}</div>
+          </div>
+        );
+
+      case 'multiple_choice':
+        const options = question.multipleChoice?.options || [];
+        const allowMultiple = question.multipleChoice?.allowMultiple || false;
+        const inputType = allowMultiple ? 'checkbox' : 'radio';
+
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+              <List className="w-4 h-4" />
+              <span>Select {allowMultiple ? 'all that apply' : 'one option'}</span>
+            </div>
+            <div className="space-y-2">
+              {options.map((option, index) => (
+                <label key={index} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50">
+                  <input 
+                    type={inputType}
+                    name="preview-options"
+                    disabled
+                    className="text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-700">{option || `Option ${index + 1}`}</span>
+                </label>
+              ))}
+            </div>
           </div>
         );
 

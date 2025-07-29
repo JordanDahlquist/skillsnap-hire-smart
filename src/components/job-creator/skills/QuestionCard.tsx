@@ -88,7 +88,17 @@ export const QuestionCard = ({
   const isTitleTooLong = titleLength > 60;
 
   const handleTypeChange = (newType: string) => {
-    onUpdate({ type: newType as any });
+    const updates: Partial<SkillsQuestion> = { type: newType as any };
+    
+    // Initialize multipleChoice object for multiple_choice type
+    if (newType === 'multiple_choice' && !question.multipleChoice) {
+      updates.multipleChoice = {
+        options: [''],
+        allowMultiple: false
+      };
+    }
+    
+    onUpdate(updates);
     setIsEditingType(false);
   };
 
