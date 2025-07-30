@@ -28,6 +28,8 @@ const getQuestionTypeIcon = (type: string) => {
       return Upload;
     case 'url_submission':
     case 'portfolio_link':
+    case 'video_upload':
+    case 'video_link':
       return Link;
     case 'multiple_choice':
       return List;
@@ -52,6 +54,9 @@ const getQuestionTypeLabel = (type: string) => {
       return 'URL Submission';
     case 'portfolio_link':
       return 'Portfolio Link';
+    case 'video_upload':
+    case 'video_link':
+      return 'Video/Audio Link';
     default:
       return 'Text Response';
   }
@@ -62,6 +67,9 @@ const getPlaceholderText = (type: string) => {
     case 'url_submission':
     case 'portfolio_link':
       return 'Share a public Google Drive link, Dropbox link, or website URL...';
+    case 'video_upload':
+    case 'video_link':
+      return 'Share a public link to your video/audio recording (Google Drive, Dropbox, YouTube, etc.)...';
     case 'long_text':
       return 'Provide your detailed response here...';
     default:
@@ -278,15 +286,16 @@ export const SkillsAssessmentStep = ({
                 )}
 
                 {/* Submission Guidelines */}
-                {(question.type === 'url_submission' || question.type === 'portfolio_link' || question.type === 'file_upload') && (
+                {(question.type === 'url_submission' || question.type === 'portfolio_link' || question.type === 'file_upload' || question.type === 'video_upload' || question.type === 'video_link') && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div className="flex items-start gap-2">
                       <Info className="w-4 h-4 text-green-600 mt-0.5" />
                       <div className="text-sm text-green-800">
                         <p className="font-medium mb-1">Submission Guidelines:</p>
                         <ul className="space-y-1 text-green-700">
-                          <li>• Upload your work to Google Drive, Dropbox, or similar platform</li>
+                          <li>• Upload your work to Google Drive, Dropbox, YouTube, or similar platform</li>
                           <li>• Make sure the link is publicly accessible (anyone with the link can view)</li>
+                          <li>• For audio/video: Record your response and upload to a cloud service</li>
                           <li>• Paste the shareable link in the field below</li>
                           <li>• Double-check that the link works before submitting</li>
                         </ul>
@@ -315,7 +324,7 @@ export const SkillsAssessmentStep = ({
                         fileSize: response.fileSize || 0
                       } : undefined}
                     />
-                  ) : question.type === 'multiple_choice' ? (
+                  ) : question.type === 'multiple_choice' && question.multipleChoice?.options ? (
                     <div className="space-y-3">
                       {question.multipleChoice?.options?.map((option, index) => {
                         const selectedAnswers = response?.answer ? response.answer.split(',') : [];
@@ -359,9 +368,14 @@ export const SkillsAssessmentStep = ({
                       className="min-h-[120px] border-gray-300 focus:border-blue-500"
                       rows={6}
                     />
+                  ) : question.type === 'multiple_choice' ? (
+                    <div className="space-y-2 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-sm text-gray-600">This question has no available options.</p>
+                      <p className="text-xs text-gray-500">Please contact the employer for clarification.</p>
+                    </div>
                   ) : (
                     <Input
-                      type={question.type === 'url_submission' || question.type === 'portfolio_link' ? 'url' : 'text'}
+                      type={question.type === 'url_submission' || question.type === 'portfolio_link' || question.type === 'video_upload' || question.type === 'video_link' ? 'url' : 'text'}
                       value={response?.answer || ''}
                       onChange={(e) => updateResponse(question.id, { answer: e.target.value })}
                       placeholder={getPlaceholderText(question.type)}
