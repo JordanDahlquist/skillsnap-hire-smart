@@ -99,13 +99,31 @@ export const JobOverviewSection = ({ job, onContinue }: JobOverviewSectionProps)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {job.required_skills.split(',').map((skill, index) => (
-              <Badge key={index} variant="outline" className="text-sm border-gray-300 text-gray-800">
-                {skill.trim()}
-              </Badge>
-            ))}
-          </div>
+          {(() => {
+            const skills = job.required_skills;
+            // Check if skills are formatted as sentences/paragraphs (contains periods or is very long)
+            const isSentenceFormat = skills.includes('.') || skills.length > 100 || !skills.includes(',');
+            
+            if (isSentenceFormat) {
+              return (
+                <div className="prose prose-gray max-w-none">
+                  <div className="text-gray-800 whitespace-pre-wrap text-left">
+                    {skills}
+                  </div>
+                </div>
+              );
+            } else {
+              return (
+                <div className="flex flex-wrap gap-2">
+                  {skills.split(',').map((skill, index) => (
+                    <Badge key={index} variant="outline" className="text-sm border-gray-300 text-gray-800">
+                      {skill.trim()}
+                    </Badge>
+                  ))}
+                </div>
+              );
+            }
+          })()}
         </CardContent>
       </Card>
 
