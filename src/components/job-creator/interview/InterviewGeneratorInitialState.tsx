@@ -86,7 +86,7 @@ export const InterviewGeneratorInitialState = ({
               <div className="pt-3 border-t border-gray-200">
                 <Button 
                   variant="outline" 
-                  onClick={() => actions.setCurrentStep(5)} 
+                  onClick={() => actions.setCurrentStep(6)} 
                   className="w-full text-gray-600 hover:text-gray-800 border-gray-200"
                 >
                   <SkipForward className="w-4 h-4 mr-2" />
