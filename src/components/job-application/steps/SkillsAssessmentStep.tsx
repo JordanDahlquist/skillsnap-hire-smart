@@ -93,6 +93,31 @@ export const SkillsAssessmentStep = ({
   try {
     if (job.generated_test) {
       skillsData = JSON.parse(job.generated_test);
+      
+      // Normalize skills data: generate missing IDs and order fields
+      if (skillsData.questions && Array.isArray(skillsData.questions)) {
+        skillsData.questions = skillsData.questions.map((question, index) => {
+          const normalizedQuestion = { ...question };
+          
+          // Generate missing ID
+          if (!normalizedQuestion.id) {
+            // Create a simple hash from question content + index for uniqueness
+            const contentHash = btoa(question.question + index).replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+            normalizedQuestion.id = `q_${index}_${contentHash}`;
+            console.log(`Generated missing ID for question ${index}:`, normalizedQuestion.id);
+          }
+          
+          // Generate missing order field
+          if (typeof normalizedQuestion.order !== 'number') {
+            normalizedQuestion.order = index + 1;
+            console.log(`Generated missing order for question ${normalizedQuestion.id}:`, normalizedQuestion.order);
+          }
+          
+          return normalizedQuestion;
+        });
+        
+        console.log('Normalized skills test data:', skillsData);
+      }
     }
   } catch (error) {
     console.error('Error parsing skills test data:', error);
