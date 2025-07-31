@@ -128,6 +128,12 @@ export const SkillsAssessmentStep = ({
             errors[question.id] = 'Please upload a file';
             isValid = false;
           }
+        } else if (question.type === 'url_submission' || question.type === 'portfolio_link' || question.type === 'video_upload' || question.type === 'video_link') {
+          // For URL submissions, only check if answer (URL) exists and is not empty
+          if (!response.answer?.trim()) {
+            errors[question.id] = 'Please provide a valid URL';
+            isValid = false;
+          }
         } else if (question.type === 'multiple_choice') {
           // For multiple choice, check if at least one option is selected
           if (!response.answer?.trim()) {
