@@ -32,22 +32,36 @@ export const MultiSelectDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const getDisplayValue = () => {
+    console.log('MultiSelectDropdown getDisplayValue:', { 
+      category, 
+      selectedValues, 
+      options: options.map(o => ({ value: o.value, label: o.label })),
+      placeholder 
+    });
+    
     const prefix = category ? `${category}: ` : '';
     
-    if (!selectedValues || selectedValues.includes('all') || selectedValues.length === 0) {
+    // Handle null/undefined selectedValues or empty array
+    if (!selectedValues || selectedValues.length === 0 || selectedValues.includes('all')) {
       const allOption = options.find(opt => opt.value === 'all');
       const displayText = allOption ? allOption.label.replace(/^All\s+/, 'All') : placeholder;
-      return category ? `${prefix}${displayText}` : displayText;
+      const result = category ? `${prefix}${displayText}` : displayText;
+      console.log('Returning (all case):', result);
+      return result;
     }
     
     if (selectedValues.length === 1) {
       const option = options.find(opt => opt.value === selectedValues[0]);
       const displayText = option?.label || placeholder;
-      return category ? `${prefix}${displayText}` : displayText;
+      const result = category ? `${prefix}${displayText}` : displayText;
+      console.log('Returning (single case):', result, { option, selectedValue: selectedValues[0] });
+      return result;
     }
     
     const displayText = `${selectedValues.length} Sel`;
-    return category ? `${prefix}${displayText}` : displayText;
+    const result = category ? `${prefix}${displayText}` : displayText;
+    console.log('Returning (multiple case):', result);
+    return result;
   };
 
   const handleToggleOption = (value: string) => {
