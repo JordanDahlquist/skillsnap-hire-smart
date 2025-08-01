@@ -75,6 +75,14 @@ export const StatusDropdown = ({
     onStatusChange(newStatus);
   };
 
+  // Get display label for button (past tense for archived)
+  const getDisplayLabel = () => {
+    if (currentStatus === 'archived') {
+      return 'Archived';
+    }
+    return currentConfig?.label || currentStatus;
+  };
+
   // Get theme-aware button color class
   const getButtonColorClass = () => {
     if (currentTheme === 'black') {
@@ -98,7 +106,7 @@ export const StatusDropdown = ({
           ) : (
             <CurrentIcon className="w-4 h-4 mr-2" />
           )}
-          {currentConfig?.label || currentStatus}
+          {getDisplayLabel()}
           <ChevronDown className="w-4 h-4 ml-2" />
         </Button>
       </DropdownMenuTrigger>
