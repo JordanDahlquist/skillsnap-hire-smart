@@ -9,6 +9,7 @@ export const useJobActions = (job: Job, onJobUpdate: () => void) => {
   const { toast } = useToast();
 
   const handleStatusChange = async (newStatus: string) => {
+    console.log('Updating job status to:', newStatus, 'for job:', job.id);
     setIsUpdating(true);
     try {
       const { error } = await supabase
@@ -16,7 +17,10 @@ export const useJobActions = (job: Job, onJobUpdate: () => void) => {
         .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', job.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "Status updated",
@@ -102,7 +106,13 @@ export const useJobActions = (job: Job, onJobUpdate: () => void) => {
   };
 
   const handleArchiveJob = async () => {
-    await handleStatusChange('closed');
+    console.log('Archive job clicked for job:', job.id);
+    try {
+      await handleStatusChange('closed');
+      console.log('Job archived successfully');
+    } catch (error) {
+      console.error('Archive job failed:', error);
+    }
   };
 
   return {

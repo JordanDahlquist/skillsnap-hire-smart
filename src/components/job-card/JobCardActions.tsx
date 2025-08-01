@@ -8,13 +8,15 @@ interface JobCardActionsProps {
   onEdit: () => void;
   onDuplicate: () => void;
   onArchive: () => void;
+  isUpdating?: boolean;
 }
 
 export const JobCardActions = ({ 
   jobId, 
   onEdit, 
   onDuplicate, 
-  onArchive 
+  onArchive,
+  isUpdating = false
 }: JobCardActionsProps) => {
   return (
     <div className="flex items-center justify-between">
@@ -27,9 +29,9 @@ export const JobCardActions = ({
           <Copy className="w-4 h-4 mr-1" />
           Duplicate
         </Button>
-        <Button variant="outline" size="sm" onClick={onArchive}>
+        <Button variant="outline" size="sm" onClick={onArchive} disabled={isUpdating}>
           <Archive className="w-4 h-4 mr-1" />
-          Archive
+          {isUpdating ? "Archiving..." : "Archive"}
         </Button>
       </div>
       
