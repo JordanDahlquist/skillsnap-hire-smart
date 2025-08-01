@@ -11,6 +11,10 @@ export interface EmailThread {
   status: 'active' | 'archived';
   created_at: string;
   updated_at: string;
+  // Joined fields from related tables
+  job_title?: string;
+  company_name?: string;
+  applicant_name?: string;
 }
 
 export interface EmailMessage {

@@ -36,13 +36,28 @@ export const useInboxData = () => {
       console.log('Fetching email threads for user:', user.id);
       const { data, error } = await supabase
         .from('email_threads')
-        .select('*')
+        .select(`
+          *,
+          jobs!left(title, company_name),
+          applications!left(name)
+        `)
         .eq('user_id', user.id)
         .order('last_message_at', { ascending: false });
 
       if (error) throw error;
       console.log('Fetched threads:', data);
-      return data as EmailThread[];
+      
+      // Transform the data to flatten job and application fields
+      const transformedData = data?.map(thread => ({
+        ...thread,
+        job_title: thread.jobs?.title,
+        company_name: thread.jobs?.company_name,
+        applicant_name: thread.applications?.name,
+        jobs: undefined, // Remove nested objects
+        applications: undefined
+      })) || [];
+      
+      return transformedData as EmailThread[];
     },
     enabled: !!user?.id,
   });
@@ -173,7 +188,10 @@ export const useInboxData = () => {
               email: recipientEmail,
               name: recipientEmail.split('@')[0]
             }],
-            job: { title: 'Reply' },
+            job: { 
+              title: thread.job_title || 'Reply',
+              company_name: thread.company_name || 'Your Company'
+            },
             subject: `Re: ${thread.subject}`,
             content: plainTextContent,
             reply_to_email: profile.unique_email

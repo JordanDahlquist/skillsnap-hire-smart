@@ -61,14 +61,29 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
       
       const { data, error } = await supabase
         .from('email_threads')
-        .select('*')
+        .select(`
+          *,
+          jobs!left(title, company_name),
+          applications!left(name)
+        `)
         .eq('user_id', user.id)
         .order('last_message_at', { ascending: false });
 
       if (error) throw error;
       console.log('Fetched all threads:', data);
+      
+      // Transform the data to flatten job and application fields
+      const transformedData = data?.map(thread => ({
+        ...thread,
+        job_title: thread.jobs?.title,
+        company_name: thread.jobs?.company_name,
+        applicant_name: thread.applications?.name,
+        jobs: undefined, // Remove nested objects
+        applications: undefined
+      })) || [];
+      
       setLastRefreshTime(new Date());
-      return data as EmailThread[];
+      return transformedData as EmailThread[];
     },
     enabled: !!user?.id,
     staleTime: 30000,
@@ -274,7 +289,10 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
               email: recipientEmail,
               name: recipientEmail.split('@')[0]
             }],
-            job: { title: 'Reply' },
+            job: { 
+              title: thread.job_title || 'Reply',
+              company_name: thread.company_name || 'Your Company'
+            },
             subject: `Re: ${thread.subject}`,
             content: plainTextContent,
             reply_to_email: profile.unique_email
