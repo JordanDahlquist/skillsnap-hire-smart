@@ -105,20 +105,10 @@ export const useJobActions = (job: Job, onJobUpdate: () => void) => {
     }
   };
 
-  const handleArchiveJob = async () => {
-    console.log('Archive job clicked for job:', job.id);
-    try {
-      await handleStatusChange('closed');
-      console.log('Job archived successfully');
-    } catch (error) {
-      console.error('Archive job failed:', error);
-    }
-  };
 
   return {
     isUpdating,
     handleStatusChange,
-    handleDuplicateJob,
-    handleArchiveJob
+    handleDuplicateJob
   };
 };

@@ -42,6 +42,12 @@ const statusConfig = {
     icon: Archive,
     color: "bg-destructive/10 text-destructive",
     buttonColor: "text-destructive border-destructive/20"
+  },
+  archived: {
+    label: "Archived",
+    icon: Archive,
+    color: "bg-destructive/10 text-destructive",
+    buttonColor: "text-destructive border-destructive/20"
   }
 };
 

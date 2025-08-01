@@ -57,7 +57,7 @@ export const OptimizedJobCard = memo(({
   const applicationsCount = useMemo(() => getApplicationCount(job), [job]);
   
   const { isGeneratingDescription, getDisplayDescription } = useJobDescription(job, onJobUpdate);
-  const { isUpdating, handleStatusChange, handleDuplicateJob, handleArchiveJob } = useJobActions(job, onJobUpdate);
+  const { isUpdating, handleStatusChange, handleDuplicateJob } = useJobActions(job, onJobUpdate);
 
   const getLocationDisplay = useCallback(() => {
     const { location_type, country, state, region, city } = job;
@@ -131,7 +131,6 @@ export const OptimizedJobCard = memo(({
             jobId={job.id}
             onEdit={handleEditPanelOpen}
             onDuplicate={handleDuplicateJob}
-            onArchive={handleArchiveJob}
           />
         </CardContent>
       </Card>

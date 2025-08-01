@@ -1,22 +1,18 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Pencil, Copy, Archive, ExternalLink, BarChart3 } from "lucide-react";
+import { Pencil, Copy, ExternalLink, BarChart3 } from "lucide-react";
 
 interface JobCardActionsProps {
   jobId: string;
   onEdit: () => void;
   onDuplicate: () => void;
-  onArchive: () => void;
-  isUpdating?: boolean;
 }
 
 export const JobCardActions = ({ 
   jobId, 
   onEdit, 
-  onDuplicate, 
-  onArchive,
-  isUpdating = false
+  onDuplicate
 }: JobCardActionsProps) => {
   return (
     <div className="flex items-center justify-between">
@@ -28,10 +24,6 @@ export const JobCardActions = ({
         <Button variant="outline" size="sm" onClick={onDuplicate}>
           <Copy className="w-4 h-4 mr-1" />
           Duplicate
-        </Button>
-        <Button variant="outline" size="sm" onClick={onArchive} disabled={isUpdating}>
-          <Archive className="w-4 h-4 mr-1" />
-          {isUpdating ? "Archiving..." : "Archive"}
         </Button>
       </div>
       
