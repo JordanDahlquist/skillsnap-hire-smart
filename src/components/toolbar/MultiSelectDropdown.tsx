@@ -44,7 +44,7 @@ export const MultiSelectDropdown = ({
     // Handle null/undefined selectedValues or empty array
     if (!selectedValues || selectedValues.length === 0 || selectedValues.includes('all')) {
       const allOption = options.find(opt => opt.value === 'all');
-      const displayText = allOption ? allOption.label.replace(/^All\s+/, 'All') : placeholder;
+      const displayText = allOption ? allOption.label.replace(/^All\s+.*/, 'All') : placeholder;
       const result = category ? `${prefix}${displayText}` : displayText;
       console.log('Returning (all case):', result);
       return result;
