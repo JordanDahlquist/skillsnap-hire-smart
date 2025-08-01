@@ -293,7 +293,9 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
               title: thread.job_title || 'Reply',
               company_name: thread.company_name || 'Your Company'
             },
-            subject: `Re: ${thread.subject}`,
+            subject: thread.company_name 
+              ? `Re: Regarding {position} Application at {company}`
+              : `Re: ${thread.subject}`,
             content: plainTextContent,
             reply_to_email: profile.unique_email
           }
