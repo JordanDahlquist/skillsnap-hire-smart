@@ -275,7 +275,7 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
               name: recipientEmail.split('@')[0]
             }],
             job: { title: 'Reply' },
-            subject: `Re: ${thread.subject} [Thread:${threadId}]`,
+            subject: `Re: ${thread.subject}`,
             content: plainTextContent,
             reply_to_email: profile.unique_email
           }
