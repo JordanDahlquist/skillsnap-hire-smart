@@ -194,6 +194,7 @@ export const useInboxData = () => {
               title: thread.job_title || 'Reply',
               company_name: thread.company_name || 'Your Company'
             },
+            company_name: thread.company_name || 'Your Company',
             subject: thread.company_name 
               ? `Re: Regarding {position} Application at {company}`
               : `Re: ${thread.subject}`,
