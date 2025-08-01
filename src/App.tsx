@@ -7,6 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createOptimizedQueryClient } from "@/config/queryClient";
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 
@@ -43,7 +44,7 @@ import { AdminRoute } from "./components/admin/AdminRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Help from "./pages/Help";
 
-const queryClient = new QueryClient();
+const queryClient = createOptimizedQueryClient();
 
 // Scroll to top on route change
 const ScrollToTop = () => {
