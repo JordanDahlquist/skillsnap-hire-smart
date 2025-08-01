@@ -46,6 +46,7 @@ export const useInboxData = () => {
 
       if (error) throw error;
       console.log('Fetched threads:', data);
+      console.log('First thread jobs data:', data?.[0]?.jobs);
       
       // Transform the data to flatten job and application fields
       const transformedData = data?.map(thread => ({
@@ -57,6 +58,7 @@ export const useInboxData = () => {
         applications: undefined
       })) || [];
       
+      console.log('Transformed thread data:', transformedData?.[0]);
       return transformedData as EmailThread[];
     },
     enabled: !!user?.id,

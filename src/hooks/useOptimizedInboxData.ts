@@ -71,6 +71,7 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
 
       if (error) throw error;
       console.log('Fetched all threads:', data);
+      console.log('First thread jobs data:', data?.[0]?.jobs);
       
       // Transform the data to flatten job and application fields
       const transformedData = data?.map(thread => ({
@@ -82,6 +83,7 @@ export const useOptimizedInboxData = (currentFilter: InboxFilter = 'active') => 
         applications: undefined
       })) || [];
       
+      console.log('Transformed thread data:', transformedData?.[0]);
       setLastRefreshTime(new Date());
       return transformedData as EmailThread[];
     },
