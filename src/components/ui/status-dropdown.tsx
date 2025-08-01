@@ -44,7 +44,7 @@ const statusConfig = {
     buttonColor: "text-destructive border-destructive/20"
   },
   archived: {
-    label: "Archived",
+    label: "Archive",
     icon: Archive,
     color: "bg-destructive/10 text-destructive",
     buttonColor: "text-destructive border-destructive/20"
