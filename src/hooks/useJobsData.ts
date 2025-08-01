@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { JobFilters, defaultFilters } from "./job-filtering/types";
 import { extractAvailableOptions } from "./job-filtering/availableOptions";
 import { applyJobFiltersOptimized, sortJobs } from "./job-filtering/optimizedFilterUtils";
@@ -13,12 +13,23 @@ interface UseJobsDataProps {
 
 export const useJobsData = ({ jobs, isLoading = false, refetch }: UseJobsDataProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<JobFilters>(defaultFilters);
+  const [filters, setFilters] = useState<JobFilters>(() => {
+    const savedStatus = localStorage.getItem("jobs-status-filter");
+    return {
+      ...defaultFilters,
+      status: savedStatus ? JSON.parse(savedStatus) : defaultFilters.status
+    };
+  });
   const [sortBy, setSortBy] = useState("created_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // Debounce search to prevent excessive filtering
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  // Persist status filter changes to localStorage
+  useEffect(() => {
+    localStorage.setItem("jobs-status-filter", JSON.stringify(filters.status));
+  }, [filters.status]);
 
   // Memoized calculations
   const availableOptions = useMemo(() => {

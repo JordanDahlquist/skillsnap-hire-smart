@@ -17,7 +17,7 @@ export const defaultFilters: JobFilters = {
   state: "all",
   budgetRange: [0, 200000],
   duration: "all",
-  status: ["all"]
+  status: ["active"]
 };
 
 export interface AvailableOptions {
