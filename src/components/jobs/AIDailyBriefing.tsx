@@ -185,7 +185,10 @@ export const AIDailyBriefing = React.memo(({ userDisplayName, onCreateJob }: AID
         <div className="max-w-7xl mx-auto">
           <Collapsible open={!isCollapsed} onOpenChange={(open) => !open && toggleCollapsed()}>
             <Card className="border-2 border-border/50 bg-card transition-all duration-300 shadow-sm hover:shadow-md hover:border-border/60">
-              <CardContent className="p-6 relative">
+              <CardContent 
+                className={`p-6 relative ${isCollapsed ? 'cursor-pointer hover:bg-muted/50 transition-colors' : ''}`}
+                onClick={isCollapsed ? toggleCollapsed : undefined}
+              >
                 {/* Header with AI badge and regenerate button */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -196,7 +199,10 @@ export const AIDailyBriefing = React.memo(({ userDisplayName, onCreateJob }: AID
                   </div>
                   
                   <Button
-                    onClick={regenerate}
+                    onClick={(e) => {
+                      if (isCollapsed) e.stopPropagation();
+                      regenerate();
+                    }}
                     disabled={!canRegenerate || isRegenerating}
                     variant="outline"
                     size="sm"
@@ -272,7 +278,7 @@ export const AIDailyBriefing = React.memo(({ userDisplayName, onCreateJob }: AID
                     </CollapsibleTrigger>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{isCollapsed ? 'Expand briefing' : 'Collapse briefing'}</p>
+                    <p>{isCollapsed ? 'Click anywhere to expand' : 'Collapse briefing'}</p>
                   </TooltipContent>
                 </Tooltip>
               </CardContent>
