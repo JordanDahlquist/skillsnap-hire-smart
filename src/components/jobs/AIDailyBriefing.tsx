@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Loader2, Sparkles, Users, Bell, RefreshCw, BarChart3, Plus, Briefcase, Calendar } from "lucide-react";
 import { useDailyBriefing } from "@/hooks/useDailyBriefing";
 import { useRegenerateBriefing } from "@/hooks/useRegenerateBriefing";
@@ -14,7 +14,7 @@ interface AIDailyBriefingProps {
   onCreateJob: () => void;
 }
 
-export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefingProps) => {
+export const AIDailyBriefing = React.memo(({ userDisplayName, onCreateJob }: AIDailyBriefingProps) => {
   const { data: briefing, isLoading, error } = useDailyBriefing();
   const { regenerate, isRegenerating, remainingRegenerations, canRegenerate } = useRegenerateBriefing();
   const { data: jobs = [] } = useJobs();
@@ -241,4 +241,4 @@ export const AIDailyBriefing = ({ userDisplayName, onCreateJob }: AIDailyBriefin
       />
     </div>
   );
-};
+});
