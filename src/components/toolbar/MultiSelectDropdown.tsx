@@ -101,7 +101,7 @@ export const MultiSelectDropdown = ({
           <ChevronDown className="w-4 h-4 opacity-50 flex-shrink-0 ml-1" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-56 p-0 bg-background/95 backdrop-blur-sm border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl z-50">
+      <PopoverContent className="w-auto min-w-full p-0 bg-background/95 backdrop-blur-sm border-2 border-border/50 shadow-[0_8px_24px_rgba(0,0,0,0.25),0_4px_8px_rgba(0,0,0,0.15)] rounded-xl z-50">
         <div className="p-2">
           {options.map((option) => (
             <div
