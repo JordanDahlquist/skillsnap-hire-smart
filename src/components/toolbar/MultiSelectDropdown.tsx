@@ -17,6 +17,7 @@ interface MultiSelectDropdownProps {
   placeholder?: string;
   icon?: React.ReactNode;
   className?: string;
+  category?: string;
 }
 
 export const MultiSelectDropdown = ({
@@ -25,21 +26,28 @@ export const MultiSelectDropdown = ({
   onSelectionChange,
   placeholder = "Select options",
   icon = <MapPin className="w-4 h-4" />,
-  className = "w-24"
+  className = "w-24",
+  category
 }: MultiSelectDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const getDisplayValue = () => {
+    const prefix = category ? `${category}: ` : '';
+    
     if (!selectedValues || selectedValues.includes('all') || selectedValues.length === 0) {
-      return placeholder;
+      const allOption = options.find(opt => opt.value === 'all');
+      const displayText = allOption ? allOption.label.replace(/^All\s+/, 'All') : placeholder;
+      return category ? `${prefix}${displayText}` : displayText;
     }
     
     if (selectedValues.length === 1) {
       const option = options.find(opt => opt.value === selectedValues[0]);
-      return option?.label || placeholder;
+      const displayText = option?.label || placeholder;
+      return category ? `${prefix}${displayText}` : displayText;
     }
     
-    return `${selectedValues.length} Sel`;
+    const displayText = `${selectedValues.length} Sel`;
+    return category ? `${prefix}${displayText}` : displayText;
   };
 
   const handleToggleOption = (value: string) => {
