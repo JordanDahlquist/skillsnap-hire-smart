@@ -27,6 +27,7 @@ export const useDailyBriefing = () => {
     queryFn: async () => {
       if (!user) return null;
 
+      console.log('🤖 Daily briefing API call triggered');
       const { data, error } = await supabase.functions.invoke('generate-daily-briefing');
       
       if (error) {
@@ -34,10 +35,17 @@ export const useDailyBriefing = () => {
         throw error;
       }
 
+      console.log('🤖 Daily briefing API response received');
       return data?.briefing as DailyBriefing;
     },
     enabled: !!user,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours to align with server expiration
+    gcTime: 1000 * 60 * 60 * 24 * 2, // Keep in cache for 48 hours
     retry: 1,
+    // Explicitly prevent unnecessary refetches
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
   });
 };
