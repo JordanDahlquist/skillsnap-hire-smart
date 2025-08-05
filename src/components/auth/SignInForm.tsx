@@ -6,6 +6,8 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { GoogleAuthButton } from "./GoogleAuthButton";
+import { AuthDivider } from "./AuthDivider";
 
 interface SignInFormProps {
   onForgotPassword: () => void;
@@ -55,6 +57,8 @@ export const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
 
   return (
     <div className="space-y-6 bg-white">
+      <GoogleAuthButton mode="signin" disabled={loading} />
+      <AuthDivider />
       <form onSubmit={handleSignIn} className="space-y-6">
         <div className="space-y-3">
           <Label htmlFor="signin-email" className="text-sm font-medium text-gray-700">Email</Label>
