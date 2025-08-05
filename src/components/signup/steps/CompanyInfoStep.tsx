@@ -93,11 +93,12 @@ export const CompanyInfoStep = ({
       newErrors.industry = "Industry is required";
     }
 
-    setErrors(prev => ({ ...prev, ...newErrors }));
-    const isValid = Object.keys({ ...errors, ...newErrors }).length === 0 && !checkingCompanyName;
+    // Clear any existing errors for fields that are now valid
+    setErrors(newErrors);
+    const isValid = Object.keys(newErrors).length === 0 && !checkingCompanyName;
     onValidationChange(isValid);
     return isValid;
-  }, [formData.companyName, formData.companySize, formData.industry, errors, checkingCompanyName, onValidationChange]);
+  }, [formData.companyName, formData.companySize, formData.industry, checkingCompanyName, onValidationChange]);
 
   // Check company name availability with debounce
   useEffect(() => {
@@ -178,7 +179,7 @@ export const CompanyInfoStep = ({
             )}>
               <SelectValue placeholder="Select company size" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white dark:bg-gray-800 z-50">
               {COMPANY_SIZES.map((size) => (
                 <SelectItem key={size} value={size}>
                   {size}
@@ -206,7 +207,7 @@ export const CompanyInfoStep = ({
             )}>
               <SelectValue placeholder="Select your industry" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white dark:bg-gray-800 z-50">
               {INDUSTRIES.map((industry) => (
                 <SelectItem key={industry} value={industry}>
                   {industry}
