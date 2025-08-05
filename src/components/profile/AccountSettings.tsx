@@ -16,12 +16,22 @@ export const AccountSettings = () => {
   const { toast } = useToast();
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!currentPassword) {
+      toast({
+        title: 'Current password required',
+        description: 'Please enter your current password to continue.',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     if (newPassword !== confirmPassword) {
       toast({
@@ -44,6 +54,22 @@ export const AccountSettings = () => {
     setPasswordLoading(true);
 
     try {
+      // First verify the current password
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword,
+      });
+
+      if (verifyError) {
+        toast({
+          title: 'Current password incorrect',
+          description: 'Please enter your correct current password.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // If verification succeeds, update the password
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -55,6 +81,8 @@ export const AccountSettings = () => {
         description: 'Your password has been changed successfully.',
       });
 
+      // Clear all password fields
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: any) {
@@ -147,6 +175,18 @@ export const AccountSettings = () => {
                 />
               </div>
 
+              <div className="md:col-span-2">
+                <Label htmlFor="current_password">Current Password</Label>
+                <Input
+                  id="current_password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter your current password"
+                  required
+                />
+              </div>
+
               <div>
                 <Label htmlFor="new_password">New Password</Label>
                 <Input
@@ -156,6 +196,7 @@ export const AccountSettings = () => {
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
                   minLength={6}
+                  required
                 />
               </div>
 
@@ -168,6 +209,7 @@ export const AccountSettings = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
                   minLength={6}
+                  required
                 />
               </div>
             </div>
@@ -175,7 +217,7 @@ export const AccountSettings = () => {
             <div className="flex justify-end">
               <Button 
                 type="submit" 
-                disabled={passwordLoading || !newPassword || !confirmPassword}
+                disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword}
               >
                 {passwordLoading ? (
                   <>
