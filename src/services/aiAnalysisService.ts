@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Application, Job } from "@/types";
 import { DASHBOARD_ACTION_CONSTANTS } from "@/constants/dashboardActions";
+import { constructResumeUrl } from "@/utils/resumeUploadUtils";
 
 
 interface StreamlinedAnalysisData {
@@ -135,12 +136,35 @@ export class AIAnalysisService {
 
       console.log(`Parsing resume for application: ${application.id}, Resume: ${application.resume_file_path}`);
       
+      const resumeUrl = constructResumeUrl(application.resume_file_path);
       
-      // Resume parsing functions have been removed
-      console.log(`Parsing resume for application: ${application.id}, Resume: ${application.resume_file_path}`);
-      
-      // These functions were removed, so skip resume parsing for now
-      return { success: false, error: 'Resume parsing functions removed' };
+      const { data, error } = await supabase.functions.invoke('parse-resume-eden', {
+        body: { resumeUrl }
+      });
+
+      if (error || !data?.parsedData) {
+        console.error('Resume parsing failed:', error || 'No parsed data returned');
+        return { 
+          success: false, 
+          error: error?.message || 'Resume parsing failed' 
+        };
+      }
+
+      // Update application with parsed data
+      const { error: updateError } = await supabase
+        .from('applications')
+        .update({
+          parsed_resume_data: data.parsedData,
+          ai_rating: data.aiRating,
+          resume_summary: data.summary,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', application.id);
+
+      if (updateError) {
+        console.error('Failed to update application with parsed data:', updateError);
+        return { success: false, error: 'Failed to save parsed resume data' };
+      }
       
       console.log(`Successfully parsed and saved resume data for: ${application.name}`);
       return { success: true };
