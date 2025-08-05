@@ -18,10 +18,16 @@ export const GoogleAuthButton = ({ mode, disabled }: GoogleAuthButtonProps) => {
     setGoogleLoading(true);
     
     try {
+      // For new signups, redirect to complete profile page
+      // For existing users, redirect to main app
+      const redirectTo = mode === "signup" 
+        ? `${window.location.origin}/complete-profile`
+        : `${window.location.origin}/jobs`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo,
         }
       });
 

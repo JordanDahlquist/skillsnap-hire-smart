@@ -43,6 +43,7 @@ import AdminActivityPage from "./pages/admin/AdminActivityPage";
 import { AdminRoute } from "./components/admin/AdminRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Help from "./pages/Help";
+import CompleteProfile from "./pages/CompleteProfile";
 
 const queryClient = createOptimizedQueryClient();
 
@@ -71,6 +72,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/signup" element={<SignUp />} />
+              <Route path="/complete-profile" element={<AuthGuard><CompleteProfile /></AuthGuard>} />
               <Route path="/confirm" element={<ConfirmEmail />} />
               <Route path="/confirm-email" element={<ConfirmEmail />} />
               <Route path="/reset-password" element={<ResetPassword />} />

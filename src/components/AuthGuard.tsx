@@ -35,6 +35,14 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
     return <Navigate to="/auth" replace />;
   }
 
+  // Check if user needs to complete their profile (missing business data from OAuth signup)
+  if (requireAuth && isAuthenticated && profile && profile.status === 'active' && location.pathname !== '/complete-profile') {
+    const profileIncomplete = !profile.company_size || !profile.industry;
+    if (profileIncomplete) {
+      return <Navigate to="/complete-profile" replace />;
+    }
+  }
+
   if (requireAuth && !isAuthenticated) {
     // Store the current location for redirect after login
     const redirectUrl = location.pathname + location.search;
@@ -47,6 +55,14 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
   // FIXED: Remove the automatic redirect for authenticated users on home page
   // Let authenticated users access any page they want to visit
   if (!requireAuth && isAuthenticated && location.pathname === '/auth') {
+    // Check if profile is complete first
+    if (profile) {
+      const profileIncomplete = !profile.company_size || !profile.industry;
+      if (profileIncomplete) {
+        return <Navigate to="/complete-profile" replace />;
+      }
+    }
+    
     // Only redirect away from auth page if user is already authenticated
     const storedRedirectUrl = sessionStorage.getItem('auth_redirect_url');
     if (storedRedirectUrl) {

@@ -9,6 +9,7 @@ interface UserProfile {
   full_name: string | null;
   email: string | null;
   company_name: string | null;
+  company_size: string | null;
   job_title: string | null;
   phone: string | null;
   profile_picture_url: string | null;
