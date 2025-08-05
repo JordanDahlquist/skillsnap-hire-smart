@@ -19,8 +19,8 @@ export const DashboardPreview = () => {
         {/* Dashboard Screenshot */}
         <div className="bg-white rounded-lg shadow-xl border border-border overflow-hidden">
           <img 
-            src="/lovable-uploads/d12e161a-1aed-488d-a5f6-e41f9bfd3cf0.png" 
-            alt="Atract AI-powered hiring dashboard showing candidate profiles, AI briefings, and recruitment analytics"
+            src="/lovable-uploads/98b4fa8d-7028-4741-bf12-a7e292ce8320.png" 
+            alt="Atract AI-powered hiring dashboard showing job listings, AI daily briefing, candidate management, and recruitment analytics"
             className="w-full h-auto max-w-full"
           />
         </div>
