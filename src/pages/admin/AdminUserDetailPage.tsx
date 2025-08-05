@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Mail, Phone, Building, MapPin, Calendar, User, Briefcase } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Building, MapPin, Calendar, User, Briefcase, Target, Users, Wrench, AlertCircle } from "lucide-react";
 import { AdminUser } from "@/types/admin";
 
 export default function AdminUserDetailPage() {
@@ -22,10 +22,18 @@ export default function AdminUserDetailPage() {
       if (!userId) return;
 
       try {
-        // Fetch user profile
+        // Fetch user profile with all signup data
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select(`
+            *,
+            hiring_goals,
+            current_tools,
+            biggest_challenges,
+            hires_per_month,
+            company_size,
+            job_title_signup
+          `)
           .eq('id', userId)
           .single();
 
@@ -63,7 +71,10 @@ export default function AdminUserDetailPage() {
 
         setUser({
           ...profile,
-          role: userRole
+          role: userRole,
+          hiring_goals: Array.isArray(profile.hiring_goals) ? profile.hiring_goals.filter(g => typeof g === 'string') as string[] : [],
+          current_tools: Array.isArray(profile.current_tools) ? profile.current_tools.filter(t => typeof t === 'string') as string[] : [],
+          biggest_challenges: Array.isArray(profile.biggest_challenges) ? profile.biggest_challenges.filter(c => typeof c === 'string') as string[] : []
         });
 
         setStats({
@@ -235,6 +246,106 @@ export default function AdminUserDetailPage() {
           </Card>
         </div>
 
+        {/* Signup Information */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Hiring Goals */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                Hiring Goals
+              </CardTitle>
+              <CardDescription>What they're looking to hire for</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {user.hiring_goals && Array.isArray(user.hiring_goals) && user.hiring_goals.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {user.hiring_goals.map((goal: string, index: number) => (
+                    <Badge key={index} variant="secondary">{goal}</Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No hiring goals specified</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Current Tools */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wrench className="w-5 h-5" />
+                Current Tools
+              </CardTitle>
+              <CardDescription>Tools they're currently using</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {user.current_tools && Array.isArray(user.current_tools) && user.current_tools.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {user.current_tools.map((tool: string, index: number) => (
+                    <Badge key={index} variant="outline">{tool}</Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No tools specified</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Biggest Challenges */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Biggest Challenges
+              </CardTitle>
+              <CardDescription>Main hiring challenges they face</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {user.biggest_challenges && Array.isArray(user.biggest_challenges) && user.biggest_challenges.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {user.biggest_challenges.map((challenge: string, index: number) => (
+                    <Badge key={index} variant="destructive">{challenge}</Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No challenges specified</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Hiring Volume & Company Size */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Hiring Details
+              </CardTitle>
+              <CardDescription>Company size and hiring volume</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium">Company Size</p>
+                <p className="text-sm text-muted-foreground">
+                  {user.company_size || 'Not specified'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Hires Per Month</p>
+                <p className="text-sm text-muted-foreground">
+                  {user.hires_per_month || 'Not specified'}
+                </p>
+              </div>
+              {user.job_title_signup && (
+                <div>
+                  <p className="text-sm font-medium">Job Title (Signup)</p>
+                  <p className="text-sm text-muted-foreground">{user.job_title_signup}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Additional Details */}
         <Card>
           <CardHeader>
@@ -258,6 +369,10 @@ export default function AdminUserDetailPage() {
               <div>
                 <p className="text-sm font-medium">Industry</p>
                 <p className="text-sm text-muted-foreground">{user.industry || 'Not specified'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Company Size</p>
+                <p className="text-sm text-muted-foreground">{user.company_size || 'Not specified'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium">User ID</p>

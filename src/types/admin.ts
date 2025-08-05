@@ -19,6 +19,12 @@ export interface AdminUser {
   phone: string | null;
   default_location: string | null;
   status: 'active' | 'inactive' | 'deleted';
+  hiring_goals?: string[] | null;
+  current_tools?: string[] | null;
+  biggest_challenges?: string[] | null;
+  hires_per_month?: string | null;
+  company_size?: string | null;
+  job_title_signup?: string | null;
 }
 
 export interface AdminAuditLog {
