@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { useNavigate, useLocation } from "react-router-dom";
 import { HeroSection } from "@/components/home/HeroSection";
+import { DashboardPreview } from "@/components/home/DashboardPreview";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
 import { ProblemSection } from "@/components/home/ProblemSection";
 import { SolutionWorkflowSection } from "@/components/home/SolutionWorkflowSection";
@@ -51,6 +52,9 @@ const Index = () => {
 
         {/* Hero Section */}
         <HeroSection onGetStarted={handleGetStarted} />
+
+        {/* Dashboard Preview */}
+        <DashboardPreview />
 
         {/* Features at a Glance */}
         <FeaturesSection />
