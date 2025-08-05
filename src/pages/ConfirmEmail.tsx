@@ -20,10 +20,15 @@ const ConfirmEmail = () => {
   
   const email = searchParams.get('email') || 'your email';
   const name = searchParams.get('name') || '';
+  
+  // Check if user arrived via email confirmation link (has auth tokens in URL)
+  const hasAuthTokens = searchParams.has('access_token') || searchParams.has('refresh_token') || 
+                       searchParams.has('token_hash') || searchParams.has('type');
+  const isFromEmailLink = hasAuthTokens;
 
   // Check if user is authenticated and redirect to dashboard
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    if (!loading && isAuthenticated && isFromEmailLink) {
       // User has successfully confirmed email and is now authenticated
       toast({
         title: "Email confirmed!",
@@ -35,7 +40,7 @@ const ConfirmEmail = () => {
         navigate('/jobs', { replace: true });
       }, 1500);
     }
-  }, [isAuthenticated, loading, navigate, toast]);
+  }, [isAuthenticated, loading, navigate, toast, isFromEmailLink]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -105,8 +110,8 @@ const ConfirmEmail = () => {
     );
   }
 
-  // If user is authenticated, show success message while redirecting
-  if (isAuthenticated) {
+  // If user is authenticated and came from email link, show success message while redirecting
+  if (isAuthenticated && isFromEmailLink) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -114,7 +119,7 @@ const ConfirmEmail = () => {
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Email Confirmed!</h1>
-          <p className="text-gray-600 mb-4">Redirecting to your dashboard...</p>
+          <p className="text-gray-600 mb-4">Welcome to Atract! Redirecting to your dashboard...</p>
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       </div>

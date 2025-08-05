@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2, Rocket, Zap, Users } from "lucide-react";
 import { SignUpFormData } from "@/pages/SignUp";
+import { useNavigate } from "react-router-dom";
 
 interface WelcomeStepProps {
   formData: SignUpFormData;
@@ -14,6 +15,7 @@ export const WelcomeStep = ({ formData, onComplete, onCreateAccount }: WelcomeSt
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleCreateAccount = async () => {
     try {
@@ -22,9 +24,9 @@ export const WelcomeStep = ({ formData, onComplete, onCreateAccount }: WelcomeSt
       await onCreateAccount();
       setAccountCreated(true);
       
-      // Wait a moment then redirect
+      // Wait a moment then redirect to confirm email page
       setTimeout(() => {
-        onComplete();
+        navigate(`/confirm-email?email=${encodeURIComponent(formData.email)}&name=${encodeURIComponent(formData.fullName)}`);
       }, 2000);
     } catch (error: any) {
       console.error('Account creation error:', error);
