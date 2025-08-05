@@ -85,7 +85,8 @@ export const useSignupForm = () => {
             company_name: formData.companyName,
             company_size: formData.companySize,
             industry: formData.industry
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/confirm-email`
         }
       });
 

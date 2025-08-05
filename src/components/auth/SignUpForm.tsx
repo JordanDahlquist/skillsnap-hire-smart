@@ -74,7 +74,8 @@ export const SignUpForm = () => {
           data: {
             full_name: fullName,
             company_name: companyName
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/confirm-email`
         }
       });
 

@@ -219,7 +219,7 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
             full_name: fullName,
             company_name: companyName,
           },
-          emailRedirectTo: `${window.location.origin}/`
+          emailRedirectTo: `${window.location.origin}/confirm-email`
         }
       });
 

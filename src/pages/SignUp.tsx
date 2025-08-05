@@ -131,7 +131,8 @@ const SignUp = () => {
             hires_per_month: formData.hiresPerMonth,
             current_tools: formData.currentTools,
             biggest_challenges: formData.biggestChallenges,
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/confirm-email`
         }
       });
 
