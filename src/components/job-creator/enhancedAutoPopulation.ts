@@ -139,6 +139,8 @@ const extractLocation = (overview: string): string => {
   
   // Location patterns to match various formats
   const locationPatterns = [
+    // Generic "[Proper Noun] based" pattern (e.g., "California based", "London based")
+    new RegExp(`\\b(?!A\\s|An\\s|The\\s)([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+based\\b`, 'i'),
     // "[City] [State Abbrev] based" pattern - more precise to avoid job titles
     new RegExp(`\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+(${stateAbbreviations})\\s+based\\b`, 'i'),
     // "[City], [State Abbrev]" pattern
@@ -150,9 +152,9 @@ const extractLocation = (overview: string): string => {
     // "in [City, Country]" or "in [City]"
     new RegExp(`\\bin\\s+([A-Z][a-zA-Z\\s,.-]+?)(?:\\s+(?:${countries}))\\b`, 'i'),
     // "located in [Location]"
-    /located\s+in\s+([A-Z][a-zA-Z\s,.-]+?)(?:\s|$|[,.])/i,
+    /located\\s+in\\s+([A-Z][a-zA-Z\\s,.-]+?)(?:\\s|$|[,.])/i,
     // "based in [Location]"
-    /based\s+in\s+([A-Z][a-zA-Z\s,.-]+?)(?:\s|$|[,.])/i,
+    /based\\s+in\\s+([A-Z][a-zA-Z\\s,.-]+?)(?:\\s|$|[,.])/i,
     // "[City], [Country]" pattern
     new RegExp(`\\b([A-Z][a-zA-Z\\s]+),\\s*(${countries})\\b`, 'i'),
     // Simple "in [City] [Country]" pattern
@@ -439,6 +441,21 @@ export const createAIAutoPopulateFunction = () => {
         
         if (!currentFormData.benefits?.trim()) {
           updates.benefits = EXECUTIVE_CONTEXT.benefits.join(', ');
+        }
+      }
+
+      // If not executive, try enriching skills from website technologies
+      if (!updates.skills && !currentFormData.skills?.trim() && websiteData?.technologies?.length) {
+        updates.skills = websiteData.technologies.slice(0, 6).join(', ');
+      }
+
+      // Prefer website company name when available, unless user already typed a specific brand
+      if (websiteData?.companyName) {
+        const websiteName = capitalizeCompanyName(websiteData.companyName);
+        const current = (currentFormData.companyName || '').trim();
+        const looksGeneric = /\b(Based|Company|Business|Agency|Firm)\b/i.test(current) && !/(Inc|LLC|Ltd|Corp|Group|Studio|Labs|Solutions|Systems|Holdings|Partners|Enterprises)/i.test(current);
+        if (!current || looksGeneric) {
+          updates.companyName = websiteName;
         }
       }
       
