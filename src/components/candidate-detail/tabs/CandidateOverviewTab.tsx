@@ -192,41 +192,21 @@ export const CandidateOverviewTab = ({
           {/* Actions Bar - Prominent at the very top */}
           <div className="bg-muted/20 border-b border-border p-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">Application Summary</h3>
-              <div className="flex items-center gap-2">
-                {localApplication.status === 'rejected' ? (
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={onUnreject}
-                    disabled={isUpdating}
-                    className="border-green-200 text-green-600 hover:bg-green-50 h-9 px-4"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Unreject
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="destructive"
-                    size="sm"
-                    onClick={onReject}
-                    disabled={isUpdating}
-                    className="h-9 px-4"
-                  >
-                    <ThumbsDown className="w-4 h-4 mr-2" />
-                    Reject
-                  </Button>
-                )}
-                <Button 
-                  size="sm"
-                  onClick={onEmail}
-                  disabled={isUpdating}
-                  className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Email
-                </Button>
-              </div>
+        <h3 className="text-lg font-semibold text-foreground">Application Summary</h3>
+        {localApplication.status === 'rejected' && (
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={onUnreject}
+              disabled={isUpdating}
+              className="border-green-200 text-green-600 hover:bg-green-50 h-9 px-4"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Unreject
+            </Button>
+          </div>
+        )}
             </div>
           </div>
 
