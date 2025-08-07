@@ -74,6 +74,29 @@ export const SkillsResponseViewer = ({
     }
   };
 
+  // Convert URLs in plain text into clickable links
+  const linkify = (text: string) => {
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    return text
+      .split(urlPattern)
+      .map((part, i) => {
+        if (/^https?:\/\/[^\s]+$/.test(part)) {
+          return (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline break-words"
+            >
+              {part}
+            </a>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      });
+  };
+
   const renderResponseContent = () => {
     switch (response.answerType) {
       case 'video':
@@ -287,7 +310,7 @@ export const SkillsResponseViewer = ({
         return (
           <div className="p-4 bg-muted border border-border rounded-lg">
             <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
-              {response.answer}
+              {linkify(response.answer)}
             </div>
           </div>
         );
@@ -296,7 +319,7 @@ export const SkillsResponseViewer = ({
     return (
       <div className="p-4 bg-muted border border-border rounded-lg">
         <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
-          {response.answer}
+          {linkify(response.answer)}
         </div>
       </div>
     );
