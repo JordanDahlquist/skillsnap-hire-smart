@@ -85,7 +85,14 @@ const capitalizeCompanyName = (companyName: string): string => {
 const extractCompanyName = (overview: string, websiteData: CompanyAnalysisData | null): string => {
   console.log('=== SMART COMPANY NAME EXTRACTION ===');
   
-  // Priority 1: Extract from user overview using intelligent patterns
+  // Priority 1: Use website analysis data if available (authoritative)
+  if (websiteData?.companyName && websiteData.companyName.length > 2) {
+    const capitalizedName = capitalizeCompanyName(websiteData.companyName);
+    console.log('Using website company name:', capitalizedName);
+    return capitalizedName;
+  }
+
+  // Priority 2: Extract from user overview using intelligent patterns
   const companyPatterns = [
     // "at [Company Name]" or "for [Company Name]"
     /(?:at|for|with)\s+([A-Z][a-zA-Z\s&.,-]+?)(?:\s+(?:called|named|known)|$|[,.]|\s+(?:we|I|they|that|which))/i,
@@ -107,13 +114,6 @@ const extractCompanyName = (overview: string, websiteData: CompanyAnalysisData |
         return capitalizedName;
       }
     }
-  }
-
-  // Priority 2: Use website analysis data if available and makes sense
-  if (websiteData?.companyName && websiteData.companyName.length > 2) {
-    const capitalizedName = capitalizeCompanyName(websiteData.companyName);
-    console.log('Using website company name:', capitalizedName);
-    return capitalizedName;
   }
 
   console.log('No company name extracted');
@@ -459,6 +459,14 @@ export const createAIAutoPopulateFunction = () => {
         );
         if (intelligentSalary) {
           updates.salary = intelligentSalary;
+        }
+      }
+      
+      // Ensure company name is populated using website/overview if AI didn't provide it
+      if (!updates.companyName && !currentFormData.companyName?.trim()) {
+        const extractedCompany = extractCompanyName(overview, websiteData);
+        if (extractedCompany) {
+          updates.companyName = extractedCompany;
         }
       }
       
