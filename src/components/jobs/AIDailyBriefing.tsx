@@ -181,8 +181,8 @@ export const AIDailyBriefing = React.memo(({ userDisplayName, onCreateJob }: AID
 
   return (
     <TooltipProvider>
-      <div className="py-4 px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="py-4">
+        <div className="max-w-7xl mx-auto px-8">
           <Collapsible open={!isCollapsed} onOpenChange={(open) => !open && toggleCollapsed()}>
             <Card className="border-2 border-border/50 bg-card transition-all duration-300 shadow-sm hover:shadow-md hover:border-border/60">
               <CardContent 
