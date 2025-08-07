@@ -155,20 +155,6 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
           <p className="text-sm text-muted-foreground mb-4">
             This candidate did not submit any video responses during the skills assessment or interview.
           </p>
-          {import.meta.env.DEV && (
-            <details className="text-xs text-left bg-gray-50 p-4 rounded">
-              <summary className="cursor-pointer font-medium">Debug Info</summary>
-              <pre className="mt-2 whitespace-pre-wrap">
-                Skills responses: {JSON.stringify(skillsResponses, null, 2)}
-                {'\n'}
-                Interview responses (interview_video_responses): {JSON.stringify(application.interview_video_responses, null, 2)}
-                {'\n'}
-                Interview responses (interview_video_url): {JSON.stringify(application.interview_video_url, null, 2)}
-                {'\n'}
-                Parsed interview responses: {JSON.stringify(interviewResponses, null, 2)}
-              </pre>
-            </details>
-          )}
         </CardContent>
       </Card>
     );
