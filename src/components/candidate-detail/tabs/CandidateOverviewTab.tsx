@@ -192,7 +192,7 @@ export const CandidateOverviewTab = ({
           {/* Actions Bar - Prominent at the very top */}
           <div className="bg-muted/20 border-b border-border p-4">
             <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Application Summary</h3>
+        <CardTitle>Application Summary</CardTitle>
         {localApplication.status === 'rejected' && (
           <div className="flex items-center gap-2">
             <Button 
