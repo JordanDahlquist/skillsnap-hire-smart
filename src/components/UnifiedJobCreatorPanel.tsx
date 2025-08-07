@@ -56,11 +56,16 @@ export const UnifiedJobCreatorPanel = ({
         handleGenerateJobPost();
       }
       actions.setCurrentStep(state.currentStep + 1);
+    } else if (state.currentStep === 3) {
+      // Auto-save job post edits when moving forward from the editor step
+      if (state.isEditingJobPost) {
+        actions.setIsEditingJobPost(false);
+      }
+      actions.setCurrentStep(state.currentStep + 1);
     } else if (state.currentStep < 6) {
       actions.setCurrentStep(state.currentStep + 1);
     }
   };
-
   const prevStep = () => {
     if (state.currentStep > 1) actions.setCurrentStep(state.currentStep - 1);
   };
