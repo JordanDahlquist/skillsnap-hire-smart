@@ -155,7 +155,7 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
           <p className="text-sm text-muted-foreground mb-4">
             This candidate did not submit any video responses during the skills assessment or interview.
           </p>
-          {process.env.NODE_ENV === 'development' && (
+          {import.meta.env.DEV && (
             <details className="text-xs text-left bg-gray-50 p-4 rounded">
               <summary className="cursor-pointer font-medium">Debug Info</summary>
               <pre className="mt-2 whitespace-pre-wrap">
@@ -202,7 +202,7 @@ export const CandidateVideoTab = ({ application }: CandidateVideoTabProps) => {
               )}
               
               {/* Manual Process Button (for development/testing) */}
-              {process.env.NODE_ENV === 'development' && (
+              {import.meta.env.DEV && (
                 <Button
                   variant="outline"
                   size="sm"
