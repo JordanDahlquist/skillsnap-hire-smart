@@ -51,12 +51,18 @@ export const DashboardHeaderActions = ({
     app.resume_file_path && !app.parsed_resume_data
   ).length;
 
+  // Disable AI Rank if updating/refreshing or fewer than 3 candidates
+  const aiDisabled = isUpdating || isRefreshingAI || applications.length < 3;
+
   const handleStatusChange = (newStatus: string) => {
     onStatusChange(newStatus);
   };
 
   // Get theme-aware AI Rank button classes
   const getAIRankButtonClasses = () => {
+    if (aiDisabled) {
+      return "border-border text-muted-foreground opacity-60 cursor-not-allowed";
+    }
     if (currentTheme === 'black') {
       return "border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/30";
     }
@@ -65,6 +71,9 @@ export const DashboardHeaderActions = ({
 
   // Create dynamic tooltip content
   const getAIRankTooltip = () => {
+    if (applications.length < 3) {
+      return "You need at least 3 candidates before you can use AI Rank";
+    }
     if (unparsedResumeCount > 0) {
       return `Process ${unparsedResumeCount} unprocessed resumes and analyze all applications with AI`;
     }
@@ -83,23 +92,25 @@ export const DashboardHeaderActions = ({
 
         <Tooltip delayDuration={500}>
           <TooltipTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onRefreshAI}
-              disabled={isUpdating || isRefreshingAI}
-              className={`gap-2 ${getAIRankButtonClasses()}`}
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
-              <span className="font-medium">
-                AI Rank
-                {unparsedResumeCount > 0 && (
-                  <span className="ml-1 text-xs bg-orange-500 text-white px-1 rounded-full">
-                    {unparsedResumeCount}
-                  </span>
-                )}
-              </span>
-            </Button>
+            <span className="inline-flex">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onRefreshAI}
+                disabled={aiDisabled}
+                className={`gap-2 ${getAIRankButtonClasses()}`}
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshingAI ? 'animate-spin' : ''}`} />
+                <span className="font-medium">
+                  AI Rank
+                  {unparsedResumeCount > 0 && (
+                    <span className="ml-1 text-xs bg-orange-500 text-white px-1 rounded-full">
+                      {unparsedResumeCount}
+                    </span>
+                  )}
+                </span>
+              </Button>
+            </span>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="z-[9999]">
             <p>{getAIRankTooltip()}</p>
