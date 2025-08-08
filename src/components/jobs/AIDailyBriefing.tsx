@@ -198,23 +198,33 @@ export const AIDailyBriefing = React.memo(({ userDisplayName, onCreateJob }: AID
                     </span>
                   </div>
                   
-                  <Button
-                    onClick={(e) => {
-                      if (isCollapsed) e.stopPropagation();
-                      regenerate();
-                    }}
-                    disabled={!canRegenerate || isRegenerating}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-7 px-2"
-                  >
-                    {isRegenerating ? (
-                      <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                    ) : (
-                      <RefreshCw className="w-3 h-3 mr-1" />
-                    )}
-                    Regenerate ({remainingRegenerations} left today)
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0} className="inline-flex">
+                        <Button
+                          onClick={(e) => {
+                            if (isCollapsed) e.stopPropagation();
+                            regenerate();
+                          }}
+                          disabled={!canRegenerate || isRegenerating}
+                          variant="outline"
+                          size="sm"
+                          aria-label={`Regenerate AI Daily Briefing. ${remainingRegenerations} left in this 24h cycle`}
+                          className="text-xs h-7 px-2"
+                        >
+                          {isRegenerating ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-3 h-3" />
+                          )}
+                          <span className="ml-1 text-[10px] leading-none">{remainingRegenerations}</span>
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Regenerate your AI briefing. {remainingRegenerations} left in this 24h cycle.</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
 
                 <CollapsibleContent className="space-y-4">
