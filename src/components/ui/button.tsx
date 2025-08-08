@@ -15,7 +15,7 @@ const buttonVariants = cva(
         solid: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl",
         "glass-premium": "backdrop-blur-2xl bg-gradient-to-br from-white/30 via-white/20 to-white/12 text-slate-900 shadow-[0_8px_40px_rgba(0,0,0,0.12),0_0_0_1px_rgba(255,255,255,0.4)_inset,0_1px_0_rgba(255,255,255,0.6)_inset,0_-1px_0_rgba(0,0,0,0.05)_inset] border border-white/20 hover:shadow-[0_16px_64px_rgba(0,0,0,0.18),0_0_0_1px_rgba(255,255,255,0.6)_inset,0_2px_0_rgba(255,255,255,0.8)_inset,0_-1px_0_rgba(0,0,0,0.08)_inset] hover:bg-gradient-to-br hover:from-white/40 hover:via-white/30 hover:to-white/18 hover:border-white/30",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg hover:shadow-xl",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-lg hover:shadow-xl",
+        outline: "border border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground shadow-lg hover:shadow-xl",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-lg hover:shadow-xl",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline hover:text-primary/80 bg-transparent backdrop-blur-none shadow-none border-none",
