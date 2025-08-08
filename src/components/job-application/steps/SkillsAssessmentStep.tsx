@@ -308,12 +308,10 @@ export const SkillsAssessmentStep = ({
                 </div>
 
                 {/* Instructions */}
-                {question.candidateInstructions && (
-                  <Card className="bg-blue-50 border-blue-200">
-                    <CardContent className="p-4">
-                      <MarkdownTextRenderer text={question.candidateInstructions} />
-                    </CardContent>
-                  </Card>
+                {question.candidateInstructions && !(['file_upload','url_submission','portfolio_link','video_upload','video_link'].includes(question.type)) && (
+                  <div className="text-sm text-muted-foreground">
+                    <MarkdownTextRenderer text={question.candidateInstructions} />
+                  </div>
                 )}
 
                 {/* Submission Guidelines */}
