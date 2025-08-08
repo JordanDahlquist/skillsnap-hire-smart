@@ -15,7 +15,7 @@ import {
 import { HiringMetrics, PipelineData } from "@/hooks/useHiringAnalytics";
 import { PerformanceScoreCard } from "./overview/PerformanceScoreCard";
 import { EnhancedMetricCard } from "./overview/EnhancedMetricCard";
-import { ActionableInsights } from "./overview/ActionableInsights";
+
 
 interface OverviewTabProps {
   analytics: {
@@ -99,7 +99,8 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <TooltipProvider>
+      <div className="space-y-6 animate-fade-in">
       {/* Performance Score - Now Compact */}
       <PerformanceScoreCard metrics={metrics} />
 
@@ -113,32 +114,32 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
         </div>
 
       {/* Pipeline Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <Card className="border-0 shadow-md">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2 text-left">
-              <Target className="w-5 h-5 text-blue-600" />
+              <Target className="w-5 h-5 text-primary" />
               Pipeline Status
             </CardTitle>
             <p className="text-sm text-muted-foreground">Quick view of applications across stages</p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
-                { label: 'Pending Review', value: pipelineData.pending, Icon: Clock, iconCls: 'text-yellow-600', badgeBg: 'bg-yellow-100', badgeText: 'text-yellow-800', tooltip: 'Applications awaiting review' },
-                { label: 'Approved', value: pipelineData.approved, Icon: CheckCircle, iconCls: 'text-green-600', badgeBg: 'bg-green-100', badgeText: 'text-green-800', tooltip: 'Applications moved forward' },
-                { label: 'Rejected', value: pipelineData.rejected, Icon: ThumbsUp, iconCls: 'text-red-600 rotate-180', badgeBg: 'bg-red-100', badgeText: 'text-red-800', tooltip: 'Applications not moving forward' }
-              ].map((s, i) => (
-                <Tooltip key={i}>
+                { key: 'pending', label: 'Pending Review', value: pipelineData.pending, Icon: Clock, tone: 'warning', tooltip: 'Applications awaiting review' },
+                { key: 'approved', label: 'Approved', value: pipelineData.approved, Icon: CheckCircle, tone: 'success', tooltip: 'Applications moved forward' },
+                { key: 'rejected', label: 'Rejected', value: pipelineData.rejected, Icon: ThumbsUp, tone: 'destructive', tooltip: 'Applications not moving forward' }
+              ].map((s) => (
+                <Tooltip key={s.key}>
                   <TooltipTrigger asChild>
-                    <div className="flex justify-between items-center p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <s.Icon className={`w-4 h-4 ${s.iconCls}`} />
-                        <span className="text-sm font-medium text-left">{s.label}</span>
+                    <div className="rounded-xl border bg-card/50 p-4 shadow-sm hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <s.Icon className={`w-4 h-4 ${s.tone === 'warning' ? 'text-yellow-600' : s.tone === 'success' ? 'text-green-600' : 'text-red-600 rotate-180'}`} />
+                          <span className="text-sm font-medium">{s.label}</span>
+                        </div>
+                        <span className={`text-lg font-semibold ${s.tone === 'warning' ? 'text-yellow-700' : s.tone === 'success' ? 'text-green-700' : 'text-red-700'}`}>{s.value}</span>
                       </div>
-                      <Badge variant="secondary" className={`${s.badgeBg} ${s.badgeText}`}>
-                        {s.value}
-                      </Badge>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -149,12 +150,8 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Actionable Insights takes 2 columns */}
-        <div className="lg:col-span-2">
-          <ActionableInsights metrics={metrics} pipelineData={pipelineData} />
-        </div>
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 };
