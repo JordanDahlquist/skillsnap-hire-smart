@@ -7,6 +7,31 @@ interface MarkdownTextRendererProps {
 export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRendererProps) => {
   if (!text) return null;
 
+  // Clean incoming HTML-ish content into simple markdown-ish text
+  const cleanToMarkdownish = (input: string): string => {
+    if (!input) return "";
+    let s = input;
+    // Preserve structural breaks
+    s = s.replace(/<br\s*\/?>(\s*)/gi, "\n");
+    s = s.replace(/<\/(p|div)>\s*<\s*(p|div)[^>]*>/gi, "\n\n");
+    s = s.replace(/<\/(p|div)>/gi, "\n\n");
+    s = s.replace(/<li[^>]*>\s*/gi, "- ");
+    s = s.replace(/<\/(li)>\s*/gi, "\n");
+    // Map bold tags to markdown
+    s = s.replace(/<\s*(strong|b)[^>]*>(.*?)<\s*\/\s*(strong|b)\s*>/gi, "**$2**");
+    // Remove any remaining tags (like <p data-start="...">)
+    s = s.replace(/<[^>]+>/g, "");
+    // Decode basic HTML entities in the browser
+    if (typeof window !== "undefined") {
+      const txt = document.createElement("textarea");
+      txt.innerHTML = s;
+      s = txt.value;
+    }
+    // Normalize multiple newlines
+    s = s.replace(/\n{3,}/g, "\n\n");
+    return s.trim();
+  };
+
   const renderMarkdown = (content: string): JSX.Element[] => {
     const lines = content.split('\n');
     const elements: JSX.Element[] = [];
@@ -121,7 +146,7 @@ export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRende
 
   return (
     <div className={`prose prose-sm max-w-none ${className}`}>
-      {renderMarkdown(text)}
+      {renderMarkdown(cleanToMarkdownish(text))}
     </div>
   );
 };
