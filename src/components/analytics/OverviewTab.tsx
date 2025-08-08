@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   Users, 
   Briefcase, 
@@ -98,19 +99,18 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Performance Score - Now Compact */}
       <PerformanceScoreCard metrics={metrics} />
 
       {/* Enhanced Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {metricCards.map((metric, index) => (
-          <EnhancedMetricCard
-            key={index}
-            {...metric}
-          />
-        ))}
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {metricCards.map((metric, index) => (
+            <div key={index} className="hover-scale animate-fade-in">
+              <EnhancedMetricCard {...metric} />
+            </div>
+          ))}
+        </div>
 
       {/* Pipeline Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -120,34 +120,32 @@ export const OverviewTab = ({ analytics }: OverviewTabProps) => {
               <Target className="w-5 h-5 text-blue-600" />
               Pipeline Status
             </CardTitle>
+            <p className="text-sm text-muted-foreground">Quick view of applications across stages</p>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm font-medium text-left">Pending Review</span>
-              </div>
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                {pipelineData.pending}
-              </Badge>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-left">Approved</span>
-              </div>
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                {pipelineData.approved}
-              </Badge>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <ThumbsUp className="w-4 h-4 text-red-600 rotate-180" />
-                <span className="text-sm font-medium text-left">Rejected</span>
-              </div>
-              <Badge variant="secondary" className="bg-red-100 text-red-800">
-                {pipelineData.rejected}
-              </Badge>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { label: 'Pending Review', value: pipelineData.pending, Icon: Clock, iconCls: 'text-yellow-600', badgeBg: 'bg-yellow-100', badgeText: 'text-yellow-800', tooltip: 'Applications awaiting review' },
+                { label: 'Approved', value: pipelineData.approved, Icon: CheckCircle, iconCls: 'text-green-600', badgeBg: 'bg-green-100', badgeText: 'text-green-800', tooltip: 'Applications moved forward' },
+                { label: 'Rejected', value: pipelineData.rejected, Icon: ThumbsUp, iconCls: 'text-red-600 rotate-180', badgeBg: 'bg-red-100', badgeText: 'text-red-800', tooltip: 'Applications not moving forward' }
+              ].map((s, i) => (
+                <Tooltip key={i}>
+                  <TooltipTrigger asChild>
+                    <div className="flex justify-between items-center p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <s.Icon className={`w-4 h-4 ${s.iconCls}`} />
+                        <span className="text-sm font-medium text-left">{s.label}</span>
+                      </div>
+                      <Badge variant="secondary" className={`${s.badgeBg} ${s.badgeText}`}>
+                        {s.value}
+                      </Badge>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{s.tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
             </div>
           </CardContent>
         </Card>
