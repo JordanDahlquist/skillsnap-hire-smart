@@ -37,7 +37,7 @@ export const HiringStagesNav = ({
   }
 
   return (
-    <div className="p-4 py-3">
+    <div className="py-3">
       <div 
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-auto-fit gap-2" 
         style={{

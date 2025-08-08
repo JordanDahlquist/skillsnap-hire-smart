@@ -251,7 +251,7 @@ export const ApplicationsManager = ({
         onStageSelect={setSelectedStage}
       />
 
-      <div className="p-6">
+      <div className="py-6">
         <div className="max-w-7xl mx-auto">
           {/* Applications Grid - Optimized layout with narrower list and wider profile */}
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-6">
