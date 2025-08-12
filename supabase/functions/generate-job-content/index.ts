@@ -187,7 +187,8 @@ serve(async (req) => {
   }
 
   try {
-    const { type, jobData, formData, existingJobPost, existingSkillsTest, websiteAnalysisData, writingTone } = await req.json();
+    const { type, jobData, formData, existingJobPost, generatedJobPost, existingSkillsTest, websiteAnalysisData, writingTone } = await req.json();
+    const priorJobPost = existingJobPost || generatedJobPost || '';
     console.log('Received request type:', type);
     console.log('Enhanced website analysis data available:', !!websiteAnalysisData);
     console.log('Company analysis preview:', websiteAnalysisData ? {
@@ -298,7 +299,7 @@ End immediately after "What We Offer" with EXACTLY: "Ready to make an impact? Cl
     } else if (type === 'skills-test') {
       responseKey = 'skillsTest';
       
-      const currentFormData = formData || {};
+      const currentFormData = jobData || {};
       const title = currentFormData.title || 'Unknown Role';
       const skills = currentFormData.skills || '';
       const experienceLevel = currentFormData.experienceLevel || 'intermediate';
@@ -333,7 +334,7 @@ ${companyContext}
 - If website context implies a different domain than the Job Title, IGNORE it and stay strictly within the ${title} domain.
 
 **JOB DESCRIPTION CONTEXT:**
-${existingJobPost}
+${priorJobPost}
 
 **CRITICAL TITLE REQUIREMENTS:**
 1. **TITLE MUST BE SHORT**: Maximum 10 words, preferably 5-8 words
@@ -499,7 +500,7 @@ ${companyContext}
 
 **JOB POSTING:**
 
-${existingJobPost}
+${priorJobPost}
 
 ${existingSkillsTest ? `Additional context from skills test:\n${existingSkillsTest}\n` : ''}
 
