@@ -793,6 +793,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      email_exists: {
+        Args: { p_email: string }
+        Returns: boolean
+      }
       generate_unique_email: {
         Args:
           | { user_id: string; full_name: string; email: string }
