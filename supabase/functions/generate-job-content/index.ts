@@ -306,17 +306,7 @@ End immediately after "What We Offer" with EXACTLY: "Ready to make an impact? Cl
       const employmentType = currentFormData.employmentType || 'full-time';
       const companyName = currentFormData.companyName || 'the company';
       
-      let companyContext = '';
-      if (websiteAnalysisData) {
-        companyContext = `
-**COMPANY CONTEXT (from website analysis):**
-- Company: ${websiteAnalysisData.companyName || companyName}
-- Industry: ${websiteAnalysisData.industry || 'Not specified'}
-- Company Size: ${websiteAnalysisData.companySize || 'Not specified'}
-- Tech Stack: ${websiteAnalysisData.techStack || 'Not specified'}
-- Culture: ${websiteAnalysisData.culture || 'Not specified'}
-- Products/Services: ${websiteAnalysisData.products || 'Not specified'}`;
-      }
+      const companyContext = ''; // Removed to keep generation strictly role-first and avoid website drift
 
       prompt = `You are an expert skills assessment designer. Create ONE comprehensive, integrated project challenge for a ${title} position that can be completed in 60-90 minutes and demonstrates multiple key competencies.
 
@@ -425,7 +415,7 @@ Brief description of what they're creating and why it matters for the role.
 1. **SINGLE INTEGRATED PROJECT**: Create ONE cohesive task, not multiple separate challenges
 2. **TIME-BOUNDED**: Must be completable in 60-90 minutes maximum
 3. **MULTI-SKILL DEMONSTRATION**: The single task should naturally require multiple skills from the job requirements
-4. **REALISTIC WORK SCENARIO**: Mirror actual work they'd do at ${companyName}
+4. **REALISTIC WORK SCENARIO**: Mirror actual work they'd do as a ${title} at ${companyName}
 5. **CLEAR SCOPE BOUNDARIES**: Prevent over-engineering with specific deliverable requirements
 6. **PROPERLY FORMATTED INSTRUCTIONS**: candidateInstructions MUST follow the exact markdown template above
 7. **CLEAR SUBMISSION PROCESS**: MUST include detailed submission instructions about sharing public links
@@ -565,7 +555,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
           {
             role: 'system',
             content: type === 'skills-test' 
-              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with ## headers, numbered steps with **bold** phase names, bullet points, clear line breaks between sections, and DETAILED submission instructions about sharing public links. NO WALL OF TEXT ALLOWED - instructions must be properly structured and scannable with clear headers. MUST include comprehensive submission guidelines. ALWAYS return valid JSON in the exact format specified.'
+              ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. ROLE-FIRST: Strictly align the challenge to the job title and required skills; IGNORE any company website context that conflicts with the role domain. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with ## headers, numbered steps with **bold** phase names, bullet points, clear line breaks between sections, and DETAILED submission instructions about sharing public links. NO WALL OF TEXT ALLOWED. ALWAYS return valid JSON in the exact format specified.'
               : type === 'job-post' 
                 ? 'You are an elite job posting creator who makes companies irresistible to top talent. Your mission is to transform company intelligence into compelling, exciting job postings that make qualified candidates genuinely thrilled to apply. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections. Job postings must end with the exact call-to-action specified and NOTHING ELSE. Use the rich company analysis data to create specific, engaging content that highlights achievements, awards, growth, and what makes the company amazing. Pay attention to writing tone requirements and make every job posting sound exciting and prestigious using factual company accomplishments.'
                 : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
