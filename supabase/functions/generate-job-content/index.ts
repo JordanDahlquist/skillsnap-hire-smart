@@ -328,6 +328,10 @@ End immediately after "What We Offer" with EXACTLY: "Ready to make an impact? Cl
 
 ${companyContext}
 
+**ROLE-FIRST OVERRIDE (CRITICAL):**
+- The Job Title (${title}) and Required Skills (${skills}) take absolute precedence over website context.
+- If website context implies a different domain than the Job Title, IGNORE it and stay strictly within the ${title} domain.
+
 **JOB DESCRIPTION CONTEXT:**
 ${existingJobPost}
 
@@ -425,15 +429,15 @@ Brief description of what they're creating and why it matters for the role.
 6. **PROPERLY FORMATTED INSTRUCTIONS**: candidateInstructions MUST follow the exact markdown template above
 7. **CLEAR SUBMISSION PROCESS**: MUST include detailed submission instructions about sharing public links
 
-**COMPANY INTEGRATION:**
+**COMPANY INTEGRATION (USE ONLY IF ALIGNED WITH ROLE):**
 ${websiteAnalysisData ? `
-- Create a task directly relevant to ${websiteAnalysisData.companyName}'s business: ${websiteAnalysisData.products}
-- Incorporate their industry context: ${websiteAnalysisData.industry}
-- Reference relevant tools from their tech stack: ${websiteAnalysisData.techStack}
-- Align with company culture: ${websiteAnalysisData.culture}` : `
-- Create a task that reflects real work at ${companyName}
-- Use specific business scenarios relevant to their industry
-- Reference the skills they actually need: ${skills}`}
+- Create a task relevant to ${websiteAnalysisData.companyName}'s business ONLY if it fits the ${title} role (otherwise omit)
+- Incorporate industry context only when pertinent to ${title}
+- Reference tools from their tech stack that a ${title} would actually use
+- Align with company culture where helpful` : `
+- Create a task that reflects real ${title} work at ${companyName}
+- Use business scenarios relevant to ${title}
+- Keep strictly aligned to the required skills: ${skills}`}
 
 **REQUIRED JSON RESPONSE FORMAT:**
 Return a JSON object with this exact structure:
