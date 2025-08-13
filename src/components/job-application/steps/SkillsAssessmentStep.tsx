@@ -246,19 +246,8 @@ export const SkillsAssessmentStep = ({
       </Card>
 
       {/* Instructions */}
-      {skillsData.instructions && (
-        <Card className="border-blue-200">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Info className="w-5 h-5 text-blue-600" />
-              <CardTitle className="text-lg text-blue-900">Instructions</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <MarkdownTextRenderer text={skillsData.instructions} />
-          </CardContent>
-        </Card>
-      )}
+      {/* Instructions removed - per client request */}
+
 
       {/* Questions */}
       <div className="space-y-6">
