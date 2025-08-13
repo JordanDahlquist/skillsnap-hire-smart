@@ -308,11 +308,12 @@ export const SkillsAssessmentStep = ({
                 </div>
 
                 {/* Instructions */}
-                {question.candidateInstructions && !(['file_upload','url_submission','portfolio_link','video_upload','video_link'].includes(question.type)) && (
+                {question.candidateInstructions && (
                   <div className="text-sm text-muted-foreground">
                     <MarkdownTextRenderer text={question.candidateInstructions} />
                   </div>
                 )}
+
 
                 {/* Submission Guidelines */}
                 {(question.type === 'url_submission' || question.type === 'portfolio_link' || question.type === 'file_upload' || question.type === 'video_upload' || question.type === 'video_link') && (
