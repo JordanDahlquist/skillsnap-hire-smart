@@ -52,7 +52,8 @@ export const useInterviewQuestions = (questions: string) => {
     const parseEnumeratedBlocks = (raw: string): string[] => {
       if (!raw) return [];
       const lines = raw.replace(/\r\n?/g, "\n").split(/\n/);
-      const startRe = /^(?:\s*)(?:Question\s*\d+[:.)-]?|Q\s*\d+[:.)-]?|\d+\.\s+|[-*•]\s+)/i;
+      // Updated regex to handle markdown format: **Question 1:** and other formats
+      const startRe = /^(?:\s*)(?:\*\*Question\s*\d+[:.)\s-]*\*\*|Question\s*\d+[:.)-]?|Q\s*\d+[:.)-]?|\d+\.\s+|[-*•]\s+)/i;
       const results: string[] = [];
       let current: string[] = [];
 
@@ -62,7 +63,8 @@ export const useInterviewQuestions = (questions: string) => {
           joined &&
           joined.length >= 3 &&
           !/interview questions?/i.test(joined) &&
-          !/instructions?/i.test(joined)
+          !/instructions?/i.test(joined) &&
+          !/what we're looking for/i.test(joined) // Skip evaluation criteria sections
         ) {
           results.push(joined);
         }
@@ -70,12 +72,35 @@ export const useInterviewQuestions = (questions: string) => {
       };
 
       for (const line of lines) {
-        if (startRe.test(line)) {
+        const trimmedLine = line.trim();
+        
+        // Skip empty lines and markdown headers that aren't questions
+        if (!trimmedLine || /^#{1,6}\s/.test(trimmedLine)) {
+          if (current.length) {
+            // Only push if we have substantial content
+            const joined = current.join(" ").trim();
+            if (joined.length > 10) {
+              pushCurrent();
+            } else {
+              current = [];
+            }
+          }
+          continue;
+        }
+
+        if (startRe.test(trimmedLine)) {
           if (current.length) pushCurrent();
-          current.push(line.replace(startRe, "").trim());
-        } else if (current.length) {
-          // Continuation of the current question
-          current.push(line.trim());
+          // Clean up markdown formatting and question prefixes
+          const cleanedLine = trimmedLine
+            .replace(/^\*\*(.*?)\*\*/, '$1') // Remove markdown bold
+            .replace(/^(?:Question\s*\d+[:.)\s-]*|Q\s*\d+[:.)\s-]*|\d+\.\s+|[-*•]\s+)/i, "")
+            .trim();
+          if (cleanedLine) {
+            current.push(cleanedLine);
+          }
+        } else if (current.length && !trimmedLine.startsWith("**What we're looking for")) {
+          // Continuation of the current question, but skip evaluation criteria
+          current.push(trimmedLine);
         }
       }
       if (current.length) pushCurrent();
