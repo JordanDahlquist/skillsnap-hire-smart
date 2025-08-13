@@ -56,15 +56,16 @@ export const useInterviewQuestions = (questions: string) => {
       const startRe = /^(?:\s*)(?:\*\*Question\s*\d+[:.)\s-]*\*\*|Question\s*\d+[:.)-]?|Q\s*\d+[:.)-]?|\d+\.\s+|[-*•]\s+)/i;
       const results: string[] = [];
       let current: string[] = [];
+      let insideEvaluationCriteria = false;
 
       const pushCurrent = () => {
         const joined = normalize(current.join(" "));
         if (
           joined &&
-          joined.length >= 3 &&
-          !/interview questions?/i.test(joined) &&
-          !/instructions?/i.test(joined) &&
-          !/what we're looking for/i.test(joined) // Skip evaluation criteria sections
+          joined.length >= 10 && // Increased minimum length
+          !/^interview questions?$/i.test(joined) &&
+          !/^instructions?$/i.test(joined) &&
+          !/^what we're looking for/i.test(joined) // Skip evaluation criteria sections
         ) {
           results.push(joined);
         }
@@ -74,35 +75,37 @@ export const useInterviewQuestions = (questions: string) => {
       for (const line of lines) {
         const trimmedLine = line.trim();
         
-        // Skip empty lines and markdown headers that aren't questions
-        if (!trimmedLine || /^#{1,6}\s/.test(trimmedLine)) {
-          if (current.length) {
-            // Only push if we have substantial content
-            const joined = current.join(" ").trim();
-            if (joined.length > 10) {
-              pushCurrent();
-            } else {
-              current = [];
-            }
-          }
+        // Skip empty lines
+        if (!trimmedLine) {
           continue;
         }
 
+        // Check for evaluation criteria section start
+        if (/^\*+What we're looking for/i.test(trimmedLine)) {
+          insideEvaluationCriteria = true;
+          continue;
+        }
+
+        // If we hit a new question header, reset evaluation criteria flag
         if (startRe.test(trimmedLine)) {
+          insideEvaluationCriteria = false;
           if (current.length) pushCurrent();
+          
           // Clean up markdown formatting and question prefixes
           const cleanedLine = trimmedLine
             .replace(/^\*\*(.*?)\*\*/, '$1') // Remove markdown bold
             .replace(/^(?:Question\s*\d+[:.)\s-]*|Q\s*\d+[:.)\s-]*|\d+\.\s+|[-*•]\s+)/i, "")
             .trim();
+          
           if (cleanedLine) {
             current.push(cleanedLine);
           }
-        } else if (current.length && !trimmedLine.startsWith("**What we're looking for")) {
-          // Continuation of the current question, but skip evaluation criteria
+        } else if (current.length && !insideEvaluationCriteria) {
+          // Only add content if we're not inside evaluation criteria section
           current.push(trimmedLine);
         }
       }
+      
       if (current.length) pushCurrent();
 
       return dedupe(results);
@@ -127,6 +130,10 @@ export const useInterviewQuestions = (questions: string) => {
     // 3) Fallback: sentences ending with '?'
     if (!parsed.length) parsed = parseByQuestionMarks(questions || "");
 
+    // Debug logging
+    console.log('Raw questions input:', questions);
+    console.log('Parsed questions:', parsed);
+    
     // Final cleanup: cap to 5, keep order
     setInterviewQuestions(parsed.slice(0, MAX_QUESTIONS));
   }, [questions]);
