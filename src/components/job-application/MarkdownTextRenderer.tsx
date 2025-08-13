@@ -125,23 +125,75 @@ export const MarkdownTextRenderer = ({ text, className = "" }: MarkdownTextRende
   };
 
   const formatInlineText = (text: string): JSX.Element => {
-    // Handle inline bold text (**text**)
-    const parts = text.split(/(\*\*[^*]+\*\*)/);
-    
-    return (
-      <>
-        {parts.map((part, index) => {
-          if (part.startsWith('**') && part.endsWith('**')) {
-            return (
-              <strong key={index} className="font-semibold text-gray-900">
-                {part.slice(2, -2)}
-              </strong>
-            );
-          }
-          return <span key={index}>{part}</span>;
-        })}
-      </>
-    );
+    // Render bold inside plain text segments
+    const renderBold = (segment: string): JSX.Element => {
+      const parts = segment.split(/(\*\*[^*]+\*\*)/);
+      return (
+        <>
+          {parts.map((part, i) => {
+            if (part.startsWith("**") && part.endsWith("**")) {
+              return (
+                <strong key={`b-${i}`} className="font-semibold text-gray-900">
+                  {part.slice(2, -2)}
+                </strong>
+              );
+            }
+            return <span key={`t-${i}`}>{part}</span>;
+          })}
+        </>
+      );
+    };
+
+    // Detect markdown links [text](url) and bare URLs
+    const linkRegex = /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|((?:https?:\/\/|www\.)[^\s)]+)/gi;
+    const elements: JSX.Element[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = linkRegex.exec(text)) !== null) {
+      const start = match.index;
+      const before = text.slice(lastIndex, start);
+      if (before) elements.push(<span key={`before-${start}`}>{renderBold(before)}</span>);
+
+      if (match[2] && match[3]) {
+        // Markdown link [label](url)
+        const label = match[2];
+        const href = match[3];
+        elements.push(
+          <a
+            key={`md-${start}`}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline hover:text-blue-700 break-words"
+          >
+            {label}
+          </a>
+        );
+      } else if (match[4]) {
+        // Bare URL
+        const urlText = match[4];
+        const href = urlText.startsWith("http") ? urlText : `https://${urlText}`;
+        elements.push(
+          <a
+            key={`url-${start}`}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline hover:text-blue-700 break-words"
+          >
+            {urlText}
+          </a>
+        );
+      }
+
+      lastIndex = linkRegex.lastIndex;
+    }
+
+    const after = text.slice(lastIndex);
+    if (after) elements.push(<span key={`after-${lastIndex}`}>{renderBold(after)}</span>);
+
+    return <>{elements}</>;
   };
 
   return (
