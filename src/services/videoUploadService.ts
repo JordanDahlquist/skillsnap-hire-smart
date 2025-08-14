@@ -73,15 +73,15 @@ class VideoUploadService {
 
       // Configure request
       xhr.timeout = 300000; // 5 minute timeout
-      xhr.open('POST', `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/application-files/${filePath}`);
+      xhr.open('POST', `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/application-files`);
       
       // Set headers
       xhr.setRequestHeader('Authorization', authHeader);
       xhr.setRequestHeader('apikey', apiKey);
       xhr.setRequestHeader('x-upsert', 'false');
       
-      // Prepare form data
-      formData.append('', blob, filePath.split('/').pop());
+      // Prepare form data with correct path structure
+      formData.append('', blob, filePath);
       
       // Start upload
       xhr.send(formData);
