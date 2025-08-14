@@ -20,48 +20,71 @@ class VideoUploadService {
   private retryDelay = 1000;
   private maxChunkSize = 50 * 1024 * 1024; // 50MB chunks
 
-  private simulateProgress(
+  private async uploadWithProgress(
     blob: Blob,
-    onProgress: (progress: UploadProgress) => void,
-    uploadPromise: Promise<any>
+    filePath: string,
+    onProgress?: (progress: UploadProgress) => void
   ): Promise<any> {
+    // Get Supabase auth headers before starting the Promise
+    const { data: { session } } = await supabase.auth.getSession();
+    const authHeader = session?.access_token ? `Bearer ${session.access_token}` : '';
+    const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
     return new Promise((resolve, reject) => {
-      const fileSize = blob.size;
-      const estimatedDuration = Math.max(3000, Math.min(fileSize / 1000, 30000)); // 3-30 seconds
-      const updateInterval = 100; // Update every 100ms
-      const totalUpdates = estimatedDuration / updateInterval;
-      const progressIncrement = 85 / totalUpdates; // Go up to 85%, then jump to 100% when done
+      const xhr = new XMLHttpRequest();
+      const formData = new FormData();
       
-      let currentProgress = 0;
-      let progressTimer: NodeJS.Timeout;
-
-      const updateProgress = () => {
-        if (currentProgress < 85) {
-          currentProgress += progressIncrement;
-          onProgress({
-            loaded: Math.round((currentProgress / 100) * fileSize),
-            total: fileSize,
-            percentage: Math.round(currentProgress)
-          });
-          progressTimer = setTimeout(updateProgress, updateInterval);
-        }
-      };
-
-      // Start simulated progress
-      updateProgress();
-
-      // Handle the actual upload
-      uploadPromise
-        .then((result) => {
-          clearTimeout(progressTimer);
-          // Complete the progress
-          onProgress({ loaded: fileSize, total: fileSize, percentage: 100 });
-          resolve(result);
-        })
-        .catch((error) => {
-          clearTimeout(progressTimer);
-          reject(error);
+      // Setup upload progress tracking
+      if (onProgress) {
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentage = Math.round((event.loaded / event.total) * 100);
+            onProgress({
+              loaded: event.loaded,
+              total: event.total,
+              percentage
+            });
+          }
         });
+      }
+
+      // Setup completion handlers
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve({ data: response, error: null });
+          } catch (e) {
+            resolve({ data: { path: filePath }, error: null });
+          }
+        } else {
+          const error = new Error(`Upload failed with status ${xhr.status}`);
+          reject(error);
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
+      });
+
+      xhr.addEventListener('timeout', () => {
+        reject(new Error('Upload timeout'));
+      });
+
+      // Configure request
+      xhr.timeout = 300000; // 5 minute timeout
+      xhr.open('POST', `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/application-files/${filePath}`);
+      
+      // Set headers
+      xhr.setRequestHeader('Authorization', authHeader);
+      xhr.setRequestHeader('apikey', apiKey);
+      xhr.setRequestHeader('x-upsert', 'false');
+      
+      // Prepare form data
+      formData.append('', blob, filePath.split('/').pop());
+      
+      // Start upload
+      xhr.send(formData);
     });
   }
 
@@ -70,38 +93,8 @@ class VideoUploadService {
     filePath: string,
     onProgress?: (progress: UploadProgress) => void
   ): Promise<any> {
-    const fileSize = blob.size;
-    
-    // If file is small enough, upload directly
-    if (fileSize <= this.maxChunkSize) {
-      const uploadPromise = supabase.storage
-        .from('application-files')
-        .upload(filePath, blob, {
-          contentType: blob.type || 'video/webm',
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (onProgress) {
-        return this.simulateProgress(blob, onProgress, uploadPromise);
-      }
-      return uploadPromise;
-    }
-
-    // For larger files, we still use direct upload but with better progress simulation
-    // Note: Supabase doesn't support true chunked uploads, but we can simulate better progress
-    const uploadPromise = supabase.storage
-      .from('application-files')
-      .upload(filePath, blob, {
-        contentType: blob.type || 'video/webm',
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (onProgress) {
-      return this.simulateProgress(blob, onProgress, uploadPromise);
-    }
-    return uploadPromise;
+    // Use the new XMLHttpRequest-based upload with real progress tracking
+    return this.uploadWithProgress(blob, filePath, onProgress);
   }
 
   async uploadVideo(
