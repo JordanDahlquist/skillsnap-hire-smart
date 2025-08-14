@@ -73,18 +73,16 @@ class VideoUploadService {
 
       // Configure request
       xhr.timeout = 300000; // 5 minute timeout
-      xhr.open('POST', `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/application-files`);
+      xhr.open('POST', `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/application-files/${filePath}`);
       
       // Set headers
       xhr.setRequestHeader('Authorization', authHeader);
       xhr.setRequestHeader('apikey', apiKey);
+      xhr.setRequestHeader('Content-Type', 'video/webm');
       xhr.setRequestHeader('x-upsert', 'false');
       
-      // Prepare form data with correct path structure
-      formData.append('', blob, filePath);
-      
-      // Start upload
-      xhr.send(formData);
+      // Send blob directly (not FormData)
+      xhr.send(blob);
     });
   }
 
