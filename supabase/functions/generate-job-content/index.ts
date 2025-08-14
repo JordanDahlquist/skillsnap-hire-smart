@@ -466,7 +466,7 @@ Return a JSON object with this exact structure:
 Create an integrated project that candidates will find engaging, realistic, and directly relevant to the actual work they'll do at ${companyName}.`;
 
     } else if (type === 'interview-questions') {
-      responseKey = 'questions';
+      responseKey = 'interviewQuestionsData';
       
       let companyContext = '';
       if (websiteAnalysisData) {
@@ -484,17 +484,36 @@ Create an integrated project that candidates will find engaging, realistic, and 
 `;
       }
       
-      prompt = `Create 3-5 hard-hitting interview questions for video responses based on this job posting and company context:
+      prompt = `Create 3-5 hard-hitting interview questions for video responses. Return ONLY valid JSON matching this exact structure:
+
+{
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Detailed question text with specific context about the role, company, or industry challenges",
+      "type": "video_response",
+      "required": true,
+      "order": 1,
+      "videoMaxLength": 3,
+      "evaluationCriteria": "Brief explanation of what ideal response should demonstrate",
+      "candidateInstructions": "Clear instructions for the candidate about how to approach this question"
+    }
+  ],
+  "mode": "ai_generated",
+  "estimatedCompletionTime": 15,
+  "instructions": "General instructions for the entire interview process"
+}
+
+**CONTEXT:**
 
 ${companyContext}
 
 **JOB POSTING:**
-
 ${priorJobPost}
 
 ${existingSkillsTest ? `Additional context from skills test:\n${existingSkillsTest}\n` : ''}
 
-Job details:
+**JOB DETAILS:**
 - Company: ${jobData.companyName}
 - Title: ${jobData.title}
 - Employment Type: ${jobData.employmentType}
@@ -502,40 +521,24 @@ Job details:
 - Experience Level: ${jobData.experienceLevel}
 - Required Skills: ${jobData.skills}
 
-Create questions that:
-1. Test deep understanding of the role and industry
+**REQUIREMENTS:**
+1. Create 3-5 questions that test deep understanding of the role and industry
 2. Evaluate problem-solving and critical thinking
 3. Assess experience with relevant challenges
 4. Reveal personality and work style fit
-5. Are specific to the ${jobData.title} position at ${jobData.companyName}
+5. Be specific to the ${jobData.title} position at ${jobData.companyName}
 6. Consider the ${jobData.locationType} work arrangement requirements
 7. Leverage company-specific context (achievements, culture, industry position)
-
-**FORMATTING REQUIREMENTS:**
-Each question MUST include substantial content - no blank or minimal questions allowed.
 
 **QUALITY STANDARDS:**
 - Each question must be fully developed with specific, relevant content
 - Questions should be challenging but fair
 - Must be answerable within a 3-15 minute video response
 - Use company intelligence to make questions more specific and relevant
-- Ensure all questions have substantial, meaningful content - NO blank or incomplete questions
+- Set appropriate videoMaxLength (1-5 minutes based on question complexity)
+- Include meaningful evaluationCriteria and candidateInstructions
 
-Format each question clearly with context and what you're looking for in the response. These will be answered via video submission, so make them engaging and thought-provoking.
-
-Example format:
-**Question [Number]: [Descriptive Title]**
-[Detailed question text with specific context about the role, company, or industry challenges]
-*What we're looking for: [Brief explanation of ideal response]*
-
-Format each question clearly with context and what you're looking for in the response. These will be answered via video submission, so make them engaging and thought-provoking.
-
-Example format:
-**Question 1: [Title]**
-[Question text with context]
-*What we're looking for: [Brief explanation of ideal response]*
-
-Make the questions challenging but fair, and ensure they can be answered well within a 3-15 minute video response.`;
+**CRITICAL: Return ONLY the JSON object, no other text or formatting.**`;
 
     } else {
       throw new Error('Invalid request type');
@@ -558,7 +561,7 @@ Make the questions challenging but fair, and ensure they can be answered well wi
               ? 'You are an expert skills assessment designer. Create ONE comprehensive, integrated project that demonstrates multiple skills within a realistic 60-90 minute timeframe. ROLE-FIRST: Strictly align the challenge to the job title and required skills; IGNORE any company website context that conflicts with the role domain. CRITICAL: Titles must be SHORT (maximum 10 words). CRITICAL: candidateInstructions must use proper Markdown formatting with ## headers, numbered steps with **bold** phase names, bullet points, clear line breaks between sections, and DETAILED submission instructions about sharing public links. NO WALL OF TEXT ALLOWED. ALWAYS return valid JSON in the exact format specified.'
               : type === 'job-post' 
                 ? 'You are an elite job posting creator who makes companies irresistible to top talent. Your mission is to transform company intelligence into compelling, exciting job postings that make qualified candidates genuinely thrilled to apply. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections. Job postings must end with the exact call-to-action specified and NOTHING ELSE. Use the rich company analysis data to create specific, engaging content that highlights achievements, awards, growth, and what makes the company amazing. Pay attention to writing tone requirements and make every job posting sound exciting and prestigious using factual company accomplishments.'
-                : 'You are an expert HR professional who creates job postings. CRITICAL RULE: NEVER include application instructions, email addresses, or "How to Apply" sections in job postings. Job postings must end with the exact call-to-action specified in the prompt and NOTHING ELSE. Candidates apply through the platform, not via email. Pay close attention to the writing tone requirements and adjust your language style accordingly.'
+                : 'You are an expert interview question designer. Create structured interview question data in JSON format. Each question must be well-crafted, specific to the role and company, and suitable for video responses. Return ONLY valid JSON matching the exact structure specified in the prompt.'
           },
           {
             role: 'user',
@@ -610,6 +613,35 @@ Make the questions challenging but fair, and ensure they can be answered well wi
         return new Response(
           JSON.stringify({ questions }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    if (type === 'interview-questions') {
+      try {
+        const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const interviewQuestionsData = JSON.parse(jsonMatch[0]);
+          console.log('Parsed interview questions data:', interviewQuestionsData);
+          
+          return new Response(
+            JSON.stringify({ interviewQuestionsData }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          throw new Error('No JSON found in interview questions response');
+        }
+      } catch (parseError) {
+        console.error('Error parsing interview questions JSON:', parseError);
+        console.log('Raw content:', generatedContent);
+        
+        // Return error instead of fallback for better debugging
+        return new Response(
+          JSON.stringify({ error: 'Failed to parse interview questions JSON', raw: generatedContent }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
         );
       }
     }

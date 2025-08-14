@@ -115,26 +115,17 @@ export const useJobContentGeneration = () => {
         throw error;
       }
 
-      // The edge function returns { questions: content } for interview-questions type
-      if (data?.questions) {
-        console.log('Raw questions received:', data.questions);
-        
-        // Parse the raw markdown into structured data
-        const parsedInterviewData = parseInterviewQuestionsFromMarkdown(data.questions);
-        console.log('Parsed interview data:', parsedInterviewData);
+      // The edge function now returns structured interview questions data
+      if (data?.interviewQuestionsData) {
+        console.log('Structured interview questions received:', data.interviewQuestionsData);
         
         // Set the structured data for the editor
-        setInterviewQuestionsDataCallback(parsedInterviewData);
+        setInterviewQuestionsDataCallback(data.interviewQuestionsData);
         setInterviewQuestionsViewStateCallback('editor'); // Go directly to editor view
         
-        // IMPORTANT: Also set the raw generated text for database storage
+        // Store the structured data as JSON string for database storage
         if (setGeneratedInterviewQuestionsCallback) {
-          if (data.rawQuestions) {
-            setGeneratedInterviewQuestionsCallback(data.rawQuestions);
-          } else {
-            // Use the original questions text as fallback
-            setGeneratedInterviewQuestionsCallback(data.questions);
-          }
+          setGeneratedInterviewQuestionsCallback(JSON.stringify(data.interviewQuestionsData));
         }
       } else {
         console.error('No interview questions received:', data);

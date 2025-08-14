@@ -7,13 +7,13 @@ import { VideoRecordingArea } from "./video-interview/VideoRecordingArea";
 import { CompletionCard } from "./video-interview/CompletionCard";
 import { VideoInterviewNavigation } from "./video-interview/VideoInterviewNavigation";
 import { useVideoRecording, ViewMode } from "./video-interview/useVideoRecording";
-import { useInterviewQuestions } from "./video-interview/useInterviewQuestions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { StorageBucketValidator } from "./video-interview/StorageBucketValidator";
 import { VideoUploadErrorHandler } from "./video-interview/VideoUploadErrorHandler";
 import { videoUploadService } from "@/services/videoUploadService";
 import { logger } from "@/services/loggerService";
+import { InterviewQuestionsData, InterviewQuestion } from "@/types/interviewQuestions";
 
 interface VideoInterviewProps {
   questions: string;
@@ -40,8 +40,35 @@ export const VideoInterview = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [storageReady, setStorageReady] = useState(false);
+  const [interviewQuestions, setInterviewQuestions] = useState<InterviewQuestion[]>([]);
+
+  // Parse interview questions from JSON string
+  useEffect(() => {
+    if (questions) {
+      try {
+        console.log('Parsing interview questions JSON:', questions);
+        const parsedData: InterviewQuestionsData = JSON.parse(questions);
+        console.log('Parsed interview questions data:', parsedData);
+        
+        if (parsedData.questions && Array.isArray(parsedData.questions)) {
+          // Sort questions by order
+          const sortedQuestions = parsedData.questions.sort((a, b) => a.order - b.order);
+          setInterviewQuestions(sortedQuestions);
+          console.log('Set interview questions:', sortedQuestions);
+        } else {
+          console.error('No questions array found in parsed data:', parsedData);
+          setInterviewQuestions([]);
+        }
+      } catch (error) {
+        console.error('Error parsing interview questions JSON:', error);
+        console.log('Raw questions string:', questions);
+        setInterviewQuestions([]);
+      }
+    } else {
+      setInterviewQuestions([]);
+    }
+  }, [questions]);
   
-  const { interviewQuestions } = useInterviewQuestions(questions);
   const {
     stream,
     isRecording,
@@ -113,234 +140,219 @@ export const VideoInterview = ({
     }
   };
 
-  const handleStartRecording = () => {
-    startRecording(async (url) => {
-      setRecordedVideos(prev => ({
-        ...prev,
-        [currentQuestion]: url
-      }));
-      setQuestionViewModes(prev => ({
-        ...prev,
-        [currentQuestion]: 'playback'
-      }));
-
-      // Convert blob URL to actual blob and upload
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const uploadedUrl = await uploadVideoToStorage(blob, currentQuestion);
-        
-        if (uploadedUrl) {
-          setUploadedVideos(prev => ({
-            ...prev,
-            [currentQuestion]: uploadedUrl
-          }));
-        }
-      } catch (error) {
-        logger.error('Error processing recorded video:', error);
-        setUploadError('Failed to process recorded video');
-      }
-    });
+  const handleStartRecording = async () => {
+    try {
+      await startRecording();
+    } catch (error) {
+      logger.error('Error starting recording:', error);
+      toast.error('Failed to start recording');
+    }
   };
 
   const handleStorageValidation = (isValid: boolean) => {
     setStorageReady(isValid);
-    logger.debug('Storage validation completed:', { isValid });
   };
 
   const retakeVideo = () => {
     if (recordedVideos[currentQuestion]) {
       URL.revokeObjectURL(recordedVideos[currentQuestion]);
-      const newRecordedVideos = { ...recordedVideos };
-      delete newRecordedVideos[currentQuestion];
-      setRecordedVideos(newRecordedVideos);
-      
-      const newViewModes = { ...questionViewModes };
-      delete newViewModes[currentQuestion];
-      setQuestionViewModes(newViewModes);
-
-      const newUploadedVideos = { ...uploadedVideos };
-      delete newUploadedVideos[currentQuestion];
-      setUploadedVideos(newUploadedVideos);
     }
+    
+    setRecordedVideos(prev => {
+      const newVideos = { ...prev };
+      delete newVideos[currentQuestion];
+      return newVideos;
+    });
+    
+    setUploadedVideos(prev => {
+      const newVideos = { ...prev };
+      delete newVideos[currentQuestion];
+      return newVideos;
+    });
+    
+    setUploadError(null);
   };
 
   const handleQuestionChange = (index: number) => {
     setCurrentQuestion(index);
-    
-    if (recordedVideos[index]) {
-      setQuestionViewModes(prev => ({
-        ...prev,
-        [index]: 'playback'
-      }));
-      switchToPlaybackMode();
-    } else {
-      setQuestionViewModes(prev => ({
-        ...prev,
-        [index]: 'live'
-      }));
-      switchToLiveMode();
-    }
   };
 
   const handlePreviousQuestion = () => {
     if (currentQuestion > 0) {
-      handleQuestionChange(currentQuestion - 1);
+      setCurrentQuestion(currentQuestion - 1);
     }
   };
 
   const handleNextQuestion = () => {
     if (currentQuestion < interviewQuestions.length - 1) {
-      handleQuestionChange(currentQuestion + 1);
+      setCurrentQuestion(currentQuestion + 1);
     }
   };
 
   const handleSwitchToLive = () => {
-    switchToLiveMode();
     setQuestionViewModes(prev => ({
       ...prev,
       [currentQuestion]: 'live'
     }));
+    switchToLiveMode();
   };
 
   const handleSwitchToPlayback = () => {
     if (recordedVideos[currentQuestion]) {
-      switchToPlaybackMode();
       setQuestionViewModes(prev => ({
         ...prev,
         [currentQuestion]: 'playback'
       }));
+      switchToPlaybackMode();
     }
   };
 
-  const completedVideos = Object.keys(uploadedVideos).length;
-  const allCompleted = completedVideos === interviewQuestions.length;
-  const isCurrentQuestionRecorded = !!uploadedVideos[currentQuestion];
-  const canGoPrevious = currentQuestion > 0;
-  const canGoNext = currentQuestion < interviewQuestions.length - 1;
-  const canProceedToReview = allCompleted && !isUploading && !uploadError;
-
-  // Update the onChange callback to pass properly structured video responses
+  // Update the onChange callback when all videos are uploaded
   useEffect(() => {
-    if (allCompleted && Object.keys(uploadedVideos).length === interviewQuestions.length) {
-      const interviewResponses = interviewQuestions.map((question, index) => ({
-        question,
-        questionIndex: index,
-        answerType: 'video',
-        videoUrl: uploadedVideos[index],
-        recordedAt: new Date().toISOString(),
-        answer: 'Video response'
-      }));
+    const allVideosUploaded = interviewQuestions.every((_, index) => uploadedVideos[index]);
+    if (allVideosUploaded && interviewQuestions.length > 0) {
+      const videoResponses = Object.entries(uploadedVideos)
+        .sort(([a], [b]) => parseInt(a) - parseInt(b))
+        .map(([index, url]) => ({
+          questionIndex: parseInt(index),
+          questionText: interviewQuestions[parseInt(index)]?.question || '',
+          videoUrl: url
+        }));
       
-      logger.debug('Generating video interview responses:', interviewResponses);
-      onChange(JSON.stringify(interviewResponses));
+      onChange(JSON.stringify(videoResponses));
+    } else {
+      onChange(null);
     }
-  }, [allCompleted, uploadedVideos, interviewQuestions, onChange]);
+  }, [uploadedVideos, interviewQuestions, onChange]);
 
-  useEffect(() => {
-    if (interviewQuestions.length > 0) {
-      const hasRecording = recordedVideos[currentQuestion];
-      const initialMode = hasRecording ? 'playback' : 'live';
-      
-      setQuestionViewModes(prev => ({
-        ...prev,
-        [currentQuestion]: initialMode
-      }));
-      
-      if (hasRecording) {
-        switchToPlaybackMode();
-      } else {
-        switchToLiveMode();
-      }
-    }
-  }, [interviewQuestions.length, currentQuestion]);
-
-  if (interviewQuestions.length === 0) {
+  // Show loading state while questions are being parsed
+  if (questions && interviewQuestions.length === 0) {
     return (
-      <div className="text-center py-8">
-        <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">Loading Interview Questions...</h3>
-        <p className="text-gray-700">Please wait while we prepare your video interview.</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading interview questions...</p>
+        </div>
       </div>
     );
   }
 
+  // Show error if no questions found
+  if (!questions || interviewQuestions.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Interview Questions</h3>
+          <p className="text-gray-600 mb-6">No interview questions have been set up for this position.</p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={onBack}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Go Back
+            </button>
+            <button
+              onClick={onNext}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const allQuestionsRecorded = interviewQuestions.every((_, index) => uploadedVideos[index]);
+
   return (
-    <div className="space-y-6">
-      <StorageBucketValidator onValidationComplete={handleStorageValidation} />
+    <div className="max-w-4xl mx-auto space-y-6">
+      <StorageBucketValidator />
       
       <VideoInterviewHeader 
-        maxLength={maxLength}
-        completedVideos={completedVideos}
+        currentQuestion={currentQuestion + 1}
         totalQuestions={interviewQuestions.length}
+        isRecording={isRecording}
+        recordingTime={recordingTime}
       />
 
-      <QuestionNavigation 
-        questions={interviewQuestions}
+      <QuestionNavigation
+        questions={interviewQuestions.map((q, index) => ({
+          id: q.id,
+          number: index + 1,
+          isRecorded: !!uploadedVideos[index]
+        }))}
         currentQuestion={currentQuestion}
-        recordedVideos={uploadedVideos}
-        onQuestionChange={handleQuestionChange}
+        onQuestionSelect={handleQuestionChange}
       />
 
-      <CurrentQuestion 
+      <CurrentQuestion
         questionNumber={currentQuestion + 1}
         totalQuestions={interviewQuestions.length}
-        questionText={interviewQuestions[currentQuestion]}
+        questionText={interviewQuestions[currentQuestion]?.question || ''}
         isRecorded={!!uploadedVideos[currentQuestion]}
       />
 
-      <VideoRecordingArea 
-        currentQuestion={currentQuestion}
-        totalQuestions={interviewQuestions.length}
-        maxLength={maxLength}
-        stream={stream}
-        isRecording={isRecording || isUploading}
-        recordingTime={recordingTime}
-        videoReady={videoReady && storageReady}
-        permissionGranted={permissionGranted}
-        videoLoading={videoLoading || isUploading}
-        viewMode={viewMode}
-        recordedVideoUrl={recordedVideos[currentQuestion] || null}
-        onStartRecording={handleStartRecording}
-        onStopRecording={stopRecording}
-        onRetakeVideo={retakeVideo}
-        onPermissionRequest={requestPermissions}
-        onSwitchToLive={handleSwitchToLive}
-        onSwitchToPlayback={handleSwitchToPlayback}
-      />
-
-      <VideoUploadErrorHandler 
-        error={uploadError}
-        onRetry={retryUpload}
-        isRetrying={isUploading}
-      />
-
-      <VideoInterviewNavigation
-        currentQuestion={currentQuestion}
-        totalQuestions={interviewQuestions.length}
-        isCurrentQuestionRecorded={isCurrentQuestionRecorded}
-        allCompleted={canProceedToReview}
-        onPrevious={handlePreviousQuestion}
-        onNext={handleNextQuestion}
-        onContinueToReview={onNext}
-        canGoPrevious={canGoPrevious}
-        canGoNext={canGoNext}
-      />
-
-      <CompletionCard isAllCompleted={canProceedToReview} />
-      
       {isUploading && (
-        <div className="text-center space-y-2">
-          <div className="text-sm text-muted-foreground">
-            Uploading video... {uploadProgress}% complete
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-blue-900">Uploading video...</span>
+            <span className="text-sm text-blue-700">{Math.round(uploadProgress)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-blue-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
         </div>
+      )}
+
+      {uploadError && (
+        <VideoUploadErrorHandler 
+          error={uploadError}
+          onRetry={retryUpload}
+          onDismiss={() => setUploadError(null)}
+        />
+      )}
+
+      <VideoRecordingArea
+        permissionGranted={permissionGranted}
+        stream={stream}
+        isRecording={isRecording}
+        recordingTime={recordingTime}
+        videoReady={videoReady}
+        videoLoading={videoLoading}
+        viewMode={questionViewModes[currentQuestion] || viewMode}
+        recordedVideoUrl={recordedVideos[currentQuestion]}
+        onRequestPermissions={requestPermissions}
+        onStartRecording={handleStartRecording}
+        onStopRecording={stopRecording}
+        onSwitchToLive={handleSwitchToLive}
+        onSwitchToPlayback={handleSwitchToPlayback}
+        onRetakeVideo={retakeVideo}
+        storageReady={storageReady}
+        maxLength={interviewQuestions[currentQuestion]?.videoMaxLength || maxLength}
+        isUploaded={!!uploadedVideos[currentQuestion]}
+        isUploading={isUploading}
+      />
+
+      {allQuestionsRecorded ? (
+        <CompletionCard 
+          totalQuestions={interviewQuestions.length}
+          onNext={onNext}
+        />
+      ) : (
+        <VideoInterviewNavigation
+          currentQuestion={currentQuestion}
+          totalQuestions={interviewQuestions.length}
+          canGoNext={currentQuestion < interviewQuestions.length - 1}
+          canGoPrevious={currentQuestion > 0}
+          onNext={handleNextQuestion}
+          onPrevious={handlePreviousQuestion}
+          onBack={onBack}
+        />
       )}
     </div>
   );
