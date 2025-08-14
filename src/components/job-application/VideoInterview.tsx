@@ -172,7 +172,7 @@ export const VideoInterview = ({
     switchToPlaybackMode
   } = useVideoRecording();
 
-  const uploadVideoToStorage = async (blob: Blob, questionIndex: number): Promise<string | null> => {
+  const uploadVideoToStorage = async (blob: Blob, questionIndex: number): Promise<void> => {
     try {
       setIsUploading(true);
       setUploadError(null);
@@ -189,18 +189,22 @@ export const VideoInterview = ({
       if (!result.success) {
         setUploadError(result.error || 'Upload failed');
         toast.error(`Failed to upload video ${questionIndex + 1}: ${result.error}`);
-        return null;
+        return;
       }
 
+      // Update uploaded videos state on success
+      setUploadedVideos(prev => ({
+        ...prev,
+        [questionIndex]: result.url!
+      }));
+
       toast.success(`Video ${questionIndex + 1} uploaded successfully`);
-      return result.url || null;
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
       logger.error('Error uploading video:', error);
       setUploadError(errorMessage);
       toast.error(`Failed to upload video: ${errorMessage}`);
-      return null;
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -212,15 +216,8 @@ export const VideoInterview = ({
       try {
         const response = await fetch(recordedVideos[currentQuestion]);
         const blob = await response.blob();
-        const uploadedUrl = await uploadVideoToStorage(blob, currentQuestion);
-        
-        if (uploadedUrl) {
-          setUploadedVideos(prev => ({
-            ...prev,
-            [currentQuestion]: uploadedUrl
-          }));
-          setUploadError(null);
-        }
+        await uploadVideoToStorage(blob, currentQuestion);
+        setUploadError(null);
       } catch (error) {
         logger.error('Error retrying upload:', error);
         toast.error('Failed to retry upload');
@@ -229,24 +226,16 @@ export const VideoInterview = ({
   };
 
   const handleStartRecording = async () => {
-    startRecording((url: string) => {
+    startRecording((blob: Blob, url: string) => {
       setRecordedVideos(prev => ({
         ...prev,
         [currentQuestion]: url
       }));
       
-      // Upload to storage after recording completes
+      // Upload the blob directly to storage after recording completes
       const handleUpload = async () => {
         try {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          const uploadedUrl = await uploadVideoToStorage(blob, currentQuestion);
-          if (uploadedUrl) {
-            setUploadedVideos(prev => ({
-              ...prev,
-              [currentQuestion]: uploadedUrl
-            }));
-          }
+          await uploadVideoToStorage(blob, currentQuestion);
         } catch (error) {
           logger.error('Error uploading recorded video:', error);
         }

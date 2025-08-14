@@ -53,13 +53,42 @@ export const useVideoRecording = () => {
     }
   };
 
-  const startRecording = (onRecordingComplete: (url: string) => void) => {
+  const startRecording = (onRecordingComplete: (blob: Blob, url: string) => void) => {
     if (!stream || !videoReady) {
       toast.error('Video not ready. Please wait for camera to load.');
       return;
     }
 
-    const recorder = new MediaRecorder(stream);
+    // Configure MediaRecorder with compression settings
+    const options = {
+      mimeType: 'video/webm;codecs=vp8,opus',
+      videoBitsPerSecond: 2500000, // 2.5 Mbps for good quality but reasonable file size
+      audioBitsPerSecond: 128000   // 128 kbps for audio
+    };
+
+    // Check if the desired codec is supported, fallback if needed
+    let recorder: MediaRecorder;
+    try {
+      if (MediaRecorder.isTypeSupported(options.mimeType)) {
+        recorder = new MediaRecorder(stream, options);
+      } else if (MediaRecorder.isTypeSupported('video/webm')) {
+        recorder = new MediaRecorder(stream, { 
+          mimeType: 'video/webm',
+          videoBitsPerSecond: 2500000,
+          audioBitsPerSecond: 128000
+        });
+      } else {
+        // Fallback to default with bitrate limits
+        recorder = new MediaRecorder(stream, {
+          videoBitsPerSecond: 2500000,
+          audioBitsPerSecond: 128000
+        });
+      }
+    } catch (error) {
+      console.warn('Error creating MediaRecorder with compression settings, using defaults:', error);
+      recorder = new MediaRecorder(stream);
+    }
+
     setMediaRecorder(recorder);
     setIsRecording(true);
     setRecordingTime(0);
@@ -73,9 +102,14 @@ export const useVideoRecording = () => {
     };
 
     recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/webm' });
+      const blob = new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
       const url = URL.createObjectURL(blob);
-      onRecordingComplete(url);
+      
+      // Log file size for debugging
+      const sizeInMB = (blob.size / (1024 * 1024)).toFixed(2);
+      console.log(`Video recorded: ${sizeInMB}MB, duration: ${recordingTime}s`);
+      
+      onRecordingComplete(blob, url);
       
       setIsRecording(false);
       setViewMode('playback'); // Switch to playback mode after recording
