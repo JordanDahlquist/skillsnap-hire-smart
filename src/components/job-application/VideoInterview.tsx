@@ -81,38 +81,58 @@ export const VideoInterview = ({
 
   // Convert markdown format to InterviewQuestion array for backward compatibility
   const convertMarkdownToQuestions = (markdown: string): InterviewQuestion[] => {
-    const lines = markdown.split('\n').filter(line => line.trim());
+    console.log('Converting markdown to questions:', markdown);
+    
+    // Split by --- separators to get individual question blocks
+    const questionBlocks = markdown.split('---').map(block => block.trim()).filter(block => block);
     const questions: InterviewQuestion[] = [];
-    let currentOrder = 1;
-
-    for (const line of lines) {
-      const trimmedLine = line.trim();
+    
+    questionBlocks.forEach((block, index) => {
+      const lines = block.split('\n').map(line => line.trim()).filter(line => line);
       
-      // Skip headers and empty lines
-      if (trimmedLine.startsWith('#') || !trimmedLine) {
-        continue;
+      if (lines.length === 0) return;
+      
+      let questionTitle = '';
+      let questionContent = '';
+      
+      // Look for question title pattern: **Question X: Title**
+      const titleLine = lines.find(line => line.match(/^\*\*Question \d+:/));
+      if (titleLine) {
+        // Extract title from **Question X: Title**
+        const titleMatch = titleLine.match(/^\*\*Question \d+:\s*(.+?)\*\*$/);
+        if (titleMatch) {
+          questionTitle = titleMatch[1].trim();
+        }
       }
       
-      // Extract question text (remove bullet points, numbers, etc.)
-      let questionText = trimmedLine;
-      questionText = questionText.replace(/^[-*•]\s*/, ''); // Remove bullet points
-      questionText = questionText.replace(/^\d+\.\s*/, ''); // Remove numbers
-      questionText = questionText.trim();
+      // Collect question content (skip title line and evaluation criteria)
+      const contentLines = lines.filter(line => {
+        // Skip the title line
+        if (line.match(/^\*\*Question \d+:/)) return false;
+        // Skip evaluation criteria lines
+        if (line.startsWith('*What we') && line.includes('looking for:*')) return false;
+        return true;
+      });
       
-      if (questionText) {
+      questionContent = contentLines.join(' ').trim();
+      
+      // If we have content, create the question
+      if (questionContent) {
+        const finalQuestion = questionTitle ? `${questionTitle}: ${questionContent}` : questionContent;
+        
         questions.push({
-          id: `q${currentOrder}`,
-          question: questionText,
+          id: `q${index + 1}`,
+          question: finalQuestion,
           type: 'video_response',
           required: true,
-          order: currentOrder,
+          order: index + 1,
           videoMaxLength: maxLength,
           candidateInstructions: 'Please record your video response.'
         });
-        currentOrder++;
       }
-    }
-
+    });
+    
+    console.log('Converted questions:', questions);
     return questions;
   };
   
