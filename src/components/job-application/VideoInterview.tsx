@@ -83,54 +83,75 @@ export const VideoInterview = ({
   const convertMarkdownToQuestions = (markdown: string): InterviewQuestion[] => {
     console.log('Converting markdown to questions:', markdown);
     
-    // Split by --- separators to get individual question blocks
-    const questionBlocks = markdown.split('---').map(block => block.trim()).filter(block => block);
+    // Split by **Question pattern to identify individual questions
+    const questionPattern = /\*\*Question \d+:/g;
+    const matches = Array.from(markdown.matchAll(questionPattern));
+    
+    if (matches.length === 0) {
+      // Fallback: treat entire content as one question
+      return [{
+        id: 'q1',
+        question: markdown.trim(),
+        type: 'video_response',
+        required: true,
+        order: 1,
+        videoMaxLength: maxLength,
+        candidateInstructions: 'Please record your video response.'
+      }];
+    }
+    
     const questions: InterviewQuestion[] = [];
     
-    questionBlocks.forEach((block, index) => {
-      const lines = block.split('\n').map(line => line.trim()).filter(line => line);
+    for (let i = 0; i < matches.length; i++) {
+      const currentMatch = matches[i];
+      const nextMatch = matches[i + 1];
       
-      if (lines.length === 0) return;
+      // Get the start position of current question
+      const startPos = currentMatch.index!;
+      // Get the end position (start of next question or end of text)
+      const endPos = nextMatch ? nextMatch.index! : markdown.length;
+      
+      // Extract the complete question block
+      const questionBlock = markdown.substring(startPos, endPos).trim();
+      const lines = questionBlock.split('\n').map(line => line.trim()).filter(line => line);
+      
+      if (lines.length === 0) continue;
       
       let questionTitle = '';
       let questionContent = '';
       
-      // Look for question title pattern: **Question X: Title**
-      const titleLine = lines.find(line => line.match(/^\*\*Question \d+:/));
-      if (titleLine) {
-        // Extract title from **Question X: Title**
-        const titleMatch = titleLine.match(/^\*\*Question \d+:\s*(.+?)\*\*$/);
-        if (titleMatch) {
-          questionTitle = titleMatch[1].trim();
-        }
+      // Extract title from first line: **Question X: Title**
+      const titleLine = lines[0];
+      const titleMatch = titleLine.match(/^\*\*Question \d+:\s*(.+?)\*\*$/);
+      if (titleMatch) {
+        questionTitle = titleMatch[1].trim();
       }
       
-      // Collect question content (skip title line and evaluation criteria)
-      const contentLines = lines.filter(line => {
-        // Skip the title line
-        if (line.match(/^\*\*Question \d+:/)) return false;
+      // Collect content lines (skip title and evaluation criteria)
+      const contentLines = lines.slice(1).filter(line => {
         // Skip evaluation criteria lines
         if (line.startsWith('*What we') && line.includes('looking for:*')) return false;
-        return true;
+        if (line.startsWith('*') && line.endsWith('*') && line.includes('looking for')) return false;
+        return line.length > 0;
       });
       
       questionContent = contentLines.join(' ').trim();
       
-      // If we have content, create the question
+      // Create the question
       if (questionContent) {
         const finalQuestion = questionTitle ? `${questionTitle}: ${questionContent}` : questionContent;
         
         questions.push({
-          id: `q${index + 1}`,
+          id: `q${i + 1}`,
           question: finalQuestion,
           type: 'video_response',
           required: true,
-          order: index + 1,
+          order: i + 1,
           videoMaxLength: maxLength,
           candidateInstructions: 'Please record your video response.'
         });
       }
-    });
+    }
     
     console.log('Converted questions:', questions);
     return questions;
