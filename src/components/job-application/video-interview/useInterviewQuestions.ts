@@ -51,64 +51,95 @@ export const useInterviewQuestions = (questions: string) => {
 
     const parseEnumeratedBlocks = (raw: string): string[] => {
       if (!raw) return [];
+      
+      console.log('🔍 Parsing input:', raw);
+      
       const lines = raw.replace(/\r\n?/g, "\n").split(/\n/);
-      // Updated regex to handle markdown format: **Question 1:** and other formats
-      const startRe = /^(?:\s*)(?:\*\*Question\s*\d+[:.)\s-]*\*\*|Question\s*\d+[:.)-]?|Q\s*\d+[:.)-]?|\d+\.\s+|[-*•]\s+)/i;
+      
+      // More specific regex to match **Question X: [Title]** format
+      const questionHeaderRe = /^\*\*Question\s*\d+:\s*\[.*?\]\*\*\s*$/i;
+      const separatorRe = /^-{3,}$/; // Triple dash separator
+      const evaluationRe = /^\*What we're looking for:/i;
+      
       const results: string[] = [];
-      let current: string[] = [];
+      let currentQuestion: string[] = [];
       let insideEvaluationCriteria = false;
-
-      const pushCurrent = () => {
-        const joined = normalize(current.join(" "));
-        if (
-          joined &&
-          joined.length >= 10 && // Increased minimum length
-          !/^interview questions?$/i.test(joined) &&
-          !/^instructions?$/i.test(joined) &&
-          !/^what we're looking for/i.test(joined) // Skip evaluation criteria sections
-        ) {
-          results.push(joined);
+      
+      const pushCurrentQuestion = () => {
+        if (currentQuestion.length > 0) {
+          const questionText = currentQuestion
+            .join(" ")
+            .replace(/\s+/g, " ")
+            .trim();
+          
+          if (questionText && questionText.length >= 20) {
+            console.log('✅ Adding question:', questionText.substring(0, 100) + '...');
+            results.push(questionText);
+          } else {
+            console.log('❌ Skipping short question:', questionText);
+          }
         }
-        current = [];
+        currentQuestion = [];
+        insideEvaluationCriteria = false;
       };
 
-      for (const line of lines) {
-        const trimmedLine = line.trim();
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
         
         // Skip empty lines
-        if (!trimmedLine) {
+        if (!line) continue;
+        
+        console.log(`Line ${i}: "${line}"`);
+        
+        // Check for question header
+        if (questionHeaderRe.test(line)) {
+          console.log('🎯 Found question header:', line);
+          // Push previous question if exists
+          if (currentQuestion.length > 0) {
+            pushCurrentQuestion();
+          }
+          
+          // Extract question title from header
+          const titleMatch = line.match(/\[([^\]]+)\]/);
+          if (titleMatch) {
+            currentQuestion.push(titleMatch[1] + ':');
+            console.log('📝 Starting new question with title:', titleMatch[1]);
+          }
           continue;
         }
-
-        // Check for evaluation criteria section start
-        if (/^\*+What we're looking for/i.test(trimmedLine)) {
+        
+        // Check for separator (end of question)
+        if (separatorRe.test(line)) {
+          console.log('🔚 Found separator, ending current question');
+          pushCurrentQuestion();
+          continue;
+        }
+        
+        // Check for evaluation criteria
+        if (evaluationRe.test(line)) {
+          console.log('🚫 Found evaluation criteria, skipping section');
           insideEvaluationCriteria = true;
           continue;
         }
-
-        // If we hit a new question header, reset evaluation criteria flag
-        if (startRe.test(trimmedLine)) {
-          insideEvaluationCriteria = false;
-          if (current.length) pushCurrent();
-          
-          // Clean up markdown formatting and question prefixes
-          const cleanedLine = trimmedLine
-            .replace(/^\*\*(.*?)\*\*/, '$1') // Remove markdown bold
-            .replace(/^(?:Question\s*\d+[:.)\s-]*|Q\s*\d+[:.)\s-]*|\d+\.\s+|[-*•]\s+)/i, "")
-            .trim();
-          
-          if (cleanedLine) {
-            current.push(cleanedLine);
-          }
-        } else if (current.length && !insideEvaluationCriteria) {
-          // Only add content if we're not inside evaluation criteria section
-          current.push(trimmedLine);
+        
+        // Add content to current question if not in evaluation section
+        if (currentQuestion.length > 0 && !insideEvaluationCriteria) {
+          console.log('➕ Adding content to current question:', line.substring(0, 50) + '...');
+          currentQuestion.push(line);
         }
       }
       
-      if (current.length) pushCurrent();
-
-      return dedupe(results);
+      // Push final question
+      if (currentQuestion.length > 0) {
+        pushCurrentQuestion();
+      }
+      
+      console.log('🏁 Final parsed questions:', results.length);
+      results.forEach((q, i) => {
+        console.log(`Question ${i + 1}: ${q.substring(0, 100)}...`);
+      });
+      
+      return results;
     };
 
     const parseByQuestionMarks = (raw: string): string[] => {
