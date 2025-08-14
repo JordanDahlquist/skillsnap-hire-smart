@@ -25,14 +25,38 @@ class VideoUploadService {
     filePath: string,
     onProgress?: (progress: UploadProgress) => void
   ): Promise<any> {
-    // Get Supabase auth headers before starting the Promise
+    // Validate blob before upload
+    if (!blob || blob.size === 0) {
+      throw new Error('Invalid or empty video file');
+    }
+    
+    // Log upload details for debugging
+    logger.debug(`Upload attempt: ${filePath}, size: ${blob.size} bytes, type: ${blob.type}`);
+    
+    // Get Supabase auth headers
     const { data: { session } } = await supabase.auth.getSession();
     const authHeader = session?.access_token ? `Bearer ${session.access_token}` : '';
-    const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+    const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybnNjd2FkY2V0YmltcHN0bnB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNzg5MDksImV4cCI6MjA2NDc1NDkwOX0.zWkFNauyxZ7t8omUVH7o7oarg8NTV35PXKp3xe7gx_o';
+    
+    // First try direct XMLHttpRequest approach
+    try {
+      return await this.uploadWithXHR(blob, filePath, authHeader, apiKey, onProgress);
+    } catch (xhrError) {
+      logger.warn(`XMLHttpRequest upload failed, trying Supabase SDK: ${xhrError}`);
+      // Fallback to Supabase SDK with progress simulation
+      return await this.uploadWithSDK(blob, filePath, onProgress);
+    }
+  }
 
+  private async uploadWithXHR(
+    blob: Blob,
+    filePath: string,
+    authHeader: string,
+    apiKey: string,
+    onProgress?: (progress: UploadProgress) => void
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      const formData = new FormData();
       
       // Setup upload progress tracking
       if (onProgress) {
@@ -50,6 +74,8 @@ class VideoUploadService {
 
       // Setup completion handlers
       xhr.addEventListener('load', () => {
+        logger.debug(`Upload response: status=${xhr.status}, body=${xhr.responseText}`);
+        
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             const response = JSON.parse(xhr.responseText);
@@ -58,16 +84,25 @@ class VideoUploadService {
             resolve({ data: { path: filePath }, error: null });
           }
         } else {
-          const error = new Error(`Upload failed with status ${xhr.status}`);
-          reject(error);
+          let errorMessage = `Upload failed with status ${xhr.status}`;
+          try {
+            const errorBody = JSON.parse(xhr.responseText);
+            errorMessage += `: ${errorBody.error || errorBody.message || xhr.responseText}`;
+          } catch (e) {
+            errorMessage += `: ${xhr.responseText}`;
+          }
+          logger.error(`Upload error: ${errorMessage}`);
+          reject(new Error(errorMessage));
         }
       });
 
       xhr.addEventListener('error', () => {
+        logger.error('XMLHttpRequest network error');
         reject(new Error('Network error during upload'));
       });
 
       xhr.addEventListener('timeout', () => {
+        logger.error('XMLHttpRequest timeout');
         reject(new Error('Upload timeout'));
       });
 
@@ -75,15 +110,66 @@ class VideoUploadService {
       xhr.timeout = 300000; // 5 minute timeout
       xhr.open('POST', `https://wrnscwadcetbimpstnpu.supabase.co/storage/v1/object/application-files/${filePath}`);
       
-      // Set headers
+      // Set headers - let browser set Content-Type automatically for better compatibility
       xhr.setRequestHeader('Authorization', authHeader);
       xhr.setRequestHeader('apikey', apiKey);
-      xhr.setRequestHeader('Content-Type', 'video/webm');
-      xhr.setRequestHeader('x-upsert', 'false');
+      xhr.setRequestHeader('x-upsert', 'true'); // Allow file updates
       
-      // Send blob directly (not FormData)
+      logger.debug(`Upload headers: Authorization=${authHeader ? 'set' : 'missing'}, apikey=${apiKey ? 'set' : 'missing'}`);
+      
+      // Send blob directly
       xhr.send(blob);
     });
+  }
+
+  private async uploadWithSDK(
+    blob: Blob,
+    filePath: string,
+    onProgress?: (progress: UploadProgress) => void
+  ): Promise<any> {
+    // Simulate progress for SDK upload
+    if (onProgress) {
+      const progressInterval = setInterval(() => {
+        const randomProgress = Math.min(Math.random() * 100, 90);
+        onProgress({
+          loaded: Math.floor((randomProgress / 100) * blob.size),
+          total: blob.size,
+          percentage: Math.floor(randomProgress)
+        });
+      }, 500);
+
+      try {
+        const { data, error } = await supabase.storage
+          .from('application-files')
+          .upload(filePath, blob, {
+            upsert: true,
+            contentType: 'video/webm'
+          });
+
+        clearInterval(progressInterval);
+        
+        if (onProgress) {
+          onProgress({ loaded: blob.size, total: blob.size, percentage: 100 });
+        }
+
+        if (error) throw error;
+        return { data, error: null };
+      } catch (error) {
+        clearInterval(progressInterval);
+        throw error;
+      }
+    } else {
+      // No progress tracking needed
+      const { data, error } = await supabase.storage
+        .from('application-files')
+        .upload(filePath, blob, {
+          upsert: true,
+          contentType: 'video/webm'
+        });
+
+      if (error) throw error;
+      return { data, error: null };
+    }
   }
 
   private async uploadInChunks(
