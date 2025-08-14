@@ -42,11 +42,13 @@ export const VideoInterview = ({
   const [storageReady, setStorageReady] = useState(false);
   const [interviewQuestions, setInterviewQuestions] = useState<InterviewQuestion[]>([]);
 
-  // Parse interview questions from JSON string
+  // Parse interview questions from JSON string or convert from markdown
   useEffect(() => {
     if (questions) {
       try {
-        console.log('Parsing interview questions JSON:', questions);
+        console.log('Processing interview questions:', questions);
+        
+        // First try to parse as JSON (new format)
         const parsedData: InterviewQuestionsData = JSON.parse(questions);
         console.log('Parsed interview questions data:', parsedData);
         
@@ -54,20 +56,65 @@ export const VideoInterview = ({
           // Sort questions by order
           const sortedQuestions = parsedData.questions.sort((a, b) => a.order - b.order);
           setInterviewQuestions(sortedQuestions);
-          console.log('Set interview questions:', sortedQuestions);
+          console.log('Set interview questions from JSON:', sortedQuestions);
         } else {
           console.error('No questions array found in parsed data:', parsedData);
           setInterviewQuestions([]);
         }
       } catch (error) {
-        console.error('Error parsing interview questions JSON:', error);
-        console.log('Raw questions string:', questions);
-        setInterviewQuestions([]);
+        console.log('JSON parsing failed, attempting markdown conversion:', error);
+        
+        // If JSON parsing fails, try to convert from markdown format (backward compatibility)
+        try {
+          const convertedQuestions = convertMarkdownToQuestions(questions);
+          setInterviewQuestions(convertedQuestions);
+          console.log('Set interview questions from markdown:', convertedQuestions);
+        } catch (conversionError) {
+          console.error('Failed to convert markdown to questions:', conversionError);
+          setInterviewQuestions([]);
+        }
       }
     } else {
       setInterviewQuestions([]);
     }
   }, [questions]);
+
+  // Convert markdown format to InterviewQuestion array for backward compatibility
+  const convertMarkdownToQuestions = (markdown: string): InterviewQuestion[] => {
+    const lines = markdown.split('\n').filter(line => line.trim());
+    const questions: InterviewQuestion[] = [];
+    let currentOrder = 1;
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Skip headers and empty lines
+      if (trimmedLine.startsWith('#') || !trimmedLine) {
+        continue;
+      }
+      
+      // Extract question text (remove bullet points, numbers, etc.)
+      let questionText = trimmedLine;
+      questionText = questionText.replace(/^[-*•]\s*/, ''); // Remove bullet points
+      questionText = questionText.replace(/^\d+\.\s*/, ''); // Remove numbers
+      questionText = questionText.trim();
+      
+      if (questionText) {
+        questions.push({
+          id: `q${currentOrder}`,
+          question: questionText,
+          type: 'video_response',
+          required: true,
+          order: currentOrder,
+          videoMaxLength: maxLength,
+          candidateInstructions: 'Please record your video response.'
+        });
+        currentOrder++;
+      }
+    }
+
+    return questions;
+  };
   
   const {
     stream,
