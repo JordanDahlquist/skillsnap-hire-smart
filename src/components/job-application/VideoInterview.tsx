@@ -141,12 +141,31 @@ export const VideoInterview = ({
   };
 
   const handleStartRecording = async () => {
-    try {
-      await startRecording();
-    } catch (error) {
-      logger.error('Error starting recording:', error);
-      toast.error('Failed to start recording');
-    }
+    startRecording((url: string) => {
+      setRecordedVideos(prev => ({
+        ...prev,
+        [currentQuestion]: url
+      }));
+      
+      // Upload to storage after recording completes
+      const handleUpload = async () => {
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const uploadedUrl = await uploadVideoToStorage(blob, currentQuestion);
+          if (uploadedUrl) {
+            setUploadedVideos(prev => ({
+              ...prev,
+              [currentQuestion]: uploadedUrl
+            }));
+          }
+        } catch (error) {
+          logger.error('Error uploading recorded video:', error);
+        }
+      };
+      
+      handleUpload();
+    });
   };
 
   const handleStorageValidation = (isValid: boolean) => {
@@ -268,23 +287,19 @@ export const VideoInterview = ({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <StorageBucketValidator />
+      <StorageBucketValidator onValidationComplete={handleStorageValidation} />
       
       <VideoInterviewHeader 
-        currentQuestion={currentQuestion + 1}
+        maxLength={maxLength}
+        completedVideos={Object.keys(uploadedVideos).length}
         totalQuestions={interviewQuestions.length}
-        isRecording={isRecording}
-        recordingTime={recordingTime}
       />
 
       <QuestionNavigation
-        questions={interviewQuestions.map((q, index) => ({
-          id: q.id,
-          number: index + 1,
-          isRecorded: !!uploadedVideos[index]
-        }))}
+        questions={interviewQuestions.map(q => q.question)}
         currentQuestion={currentQuestion}
-        onQuestionSelect={handleQuestionChange}
+        recordedVideos={uploadedVideos}
+        onQuestionChange={handleQuestionChange}
       />
 
       <CurrentQuestion
@@ -313,45 +328,45 @@ export const VideoInterview = ({
         <VideoUploadErrorHandler 
           error={uploadError}
           onRetry={retryUpload}
-          onDismiss={() => setUploadError(null)}
+          isRetrying={isUploading}
         />
       )}
 
       <VideoRecordingArea
-        permissionGranted={permissionGranted}
+        currentQuestion={currentQuestion + 1}
+        totalQuestions={interviewQuestions.length}
+        maxLength={interviewQuestions[currentQuestion]?.videoMaxLength || maxLength}
         stream={stream}
         isRecording={isRecording}
         recordingTime={recordingTime}
         videoReady={videoReady}
+        permissionGranted={permissionGranted}
         videoLoading={videoLoading}
         viewMode={questionViewModes[currentQuestion] || viewMode}
-        recordedVideoUrl={recordedVideos[currentQuestion]}
-        onRequestPermissions={requestPermissions}
+        recordedVideoUrl={recordedVideos[currentQuestion] || null}
         onStartRecording={handleStartRecording}
         onStopRecording={stopRecording}
+        onRetakeVideo={retakeVideo}
+        onPermissionRequest={requestPermissions}
         onSwitchToLive={handleSwitchToLive}
         onSwitchToPlayback={handleSwitchToPlayback}
-        onRetakeVideo={retakeVideo}
-        storageReady={storageReady}
-        maxLength={interviewQuestions[currentQuestion]?.videoMaxLength || maxLength}
-        isUploaded={!!uploadedVideos[currentQuestion]}
-        isUploading={isUploading}
       />
 
       {allQuestionsRecorded ? (
         <CompletionCard 
-          totalQuestions={interviewQuestions.length}
-          onNext={onNext}
+          isAllCompleted={true}
         />
       ) : (
         <VideoInterviewNavigation
           currentQuestion={currentQuestion}
           totalQuestions={interviewQuestions.length}
-          canGoNext={currentQuestion < interviewQuestions.length - 1}
-          canGoPrevious={currentQuestion > 0}
-          onNext={handleNextQuestion}
+          isCurrentQuestionRecorded={!!uploadedVideos[currentQuestion]}
+          allCompleted={allQuestionsRecorded}
           onPrevious={handlePreviousQuestion}
-          onBack={onBack}
+          onNext={handleNextQuestion}
+          onContinueToReview={onNext}
+          canGoPrevious={currentQuestion > 0}
+          canGoNext={currentQuestion < interviewQuestions.length - 1}
         />
       )}
     </div>
